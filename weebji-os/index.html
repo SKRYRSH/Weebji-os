@@ -880,10 +880,10 @@
 
   /* ══ INSTALL PROMPT ══════════════════════════ */
   #install-prompt {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 870;
+    position: fixed; bottom: 68px; left: 0; right: 0; z-index: 870;
     background: rgba(10,10,15,0.98); border-top: 1px solid rgba(255,255,255,0.08);
-    padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 10px;
-    transform: translateY(100%); transition: transform 0.38s cubic-bezier(0.16,1,0.3,1);
+    padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 10px;
+    transform: translateY(calc(100% + 68px)); transition: transform 0.38s cubic-bezier(0.16,1,0.3,1);
     backdrop-filter: blur(20px);
   }
   #install-prompt.visible { transform: translateY(0); }
@@ -2072,6 +2072,44 @@
       </div>`;
   }
 
+  // Opens checkout — requires sign-in first so premium ties to their account
+  function _openCheckout(baseUrl) {
+    const user = SupabaseSync.getUser();
+    if (user) {
+      // Already signed in — pre-fill email so webhook finds their account
+      const url = `${baseUrl}?checkout[email]=${encodeURIComponent(user.email)}`;
+      window.open(url, '_blank');
+    } else {
+      // Not signed in — show sign-in prompt first
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:24px;';
+      modal.innerHTML = `
+        <div style="background:#0d0d14;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px 24px;max-width:340px;width:100%;text-align:center;">
+          <p style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.4em;color:#555577;text-transform:uppercase;margin:0 0 12px;">Required</p>
+          <p style="font-family:'Cinzel',serif;font-size:18px;color:#fff;margin:0 0 12px;">Create Your Account First</p>
+          <p style="font-family:'Inter',sans-serif;font-size:13px;color:#666;line-height:1.6;margin:0 0 24px;">Sign in so your premium access is tied to your account — works on every device, forever.</p>
+          <input id="_checkout_email" type="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;margin-bottom:12px;outline:none;">
+          <button id="_checkout_send" style="width:100%;padding:13px;background:rgba(0,245,255,0.1);border:1px solid rgba(0,245,255,0.4);border-radius:8px;color:#00F5FF;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;">Send Magic Link</button>
+          <button id="_checkout_cancel" style="margin-top:10px;width:100%;padding:10px;background:transparent;border:none;color:#444;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;">Cancel</button>
+          <p id="_checkout_msg" style="font-family:'Inter',sans-serif;font-size:12px;color:#00F5FF;margin:12px 0 0;min-height:18px;"></p>
+        </div>`;
+      document.body.appendChild(modal);
+      modal.querySelector('#_checkout_cancel').onclick = () => modal.remove();
+      modal.querySelector('#_checkout_send').onclick = async () => {
+        const email = modal.querySelector('#_checkout_email').value.trim();
+        if (!email) return;
+        const msg = modal.querySelector('#_checkout_msg');
+        msg.textContent = 'Sending...';
+        const { error } = await SupabaseSync.signInWithEmail(email);
+        if (error) { msg.textContent = 'Error — try again'; return; }
+        msg.textContent = 'Magic link sent! Check your email, then come back to purchase.';
+        modal.querySelector('#_checkout_send').disabled = true;
+        // Store intended checkout URL so user can proceed after login
+        localStorage.setItem('weebji_pending_checkout', baseUrl);
+      };
+    }
+  }
+
   function renderWeebjiPlusSection(color) {
     const el = document.getElementById('profile-plus-section');
     if (!el) return;
@@ -2111,13 +2149,13 @@
         </div>
         <button class="ghost-shop-btn" id="ghost-shop-btn">👻 Need a Ghost Token? — $0.99</button>`;
       el.querySelector('#plus-plan-monthly').addEventListener('click', () => {
-        window.open(WEEBJI_PLUS_STRIPE_URL, '_blank'); Sound.play('tap');
+        Sound.play('tap'); _openCheckout(WEEBJI_PLUS_STRIPE_URL);
       });
       el.querySelector('#plus-plan-annual').addEventListener('click', () => {
-        window.open(WEEBJI_PLUS_ANNUAL_URL, '_blank'); Sound.play('tap');
+        Sound.play('tap'); _openCheckout(WEEBJI_PLUS_ANNUAL_URL);
       });
       el.querySelector('#ghost-shop-btn').addEventListener('click', () => {
-        window.open(WEEBJI_GHOST_TOKEN_URL, '_blank'); Sound.play('tap');
+        Sound.play('tap'); _openCheckout(WEEBJI_GHOST_TOKEN_URL);
       });
     }
   }
@@ -2857,8 +2895,18 @@
       streakEl.addEventListener('animationend', () => streakEl.classList.remove('streak-ping'), { once: true });
     });
 
-    // Music: start ambient if no session active
-    if (!MusicEngine.currentTheme()) MusicEngine.play('ambient');
+    // Music: start ambient — unlock AudioContext if browser suspended it
+    if (!MusicEngine.currentTheme()) {
+      MusicEngine.play('ambient');
+      // Browsers suspend AudioContext until user gesture — retry on next tap if needed
+      const _unlockMusic = () => {
+        MusicEngine.play('ambient');
+        document.removeEventListener('click', _unlockMusic);
+        document.removeEventListener('touchstart', _unlockMusic);
+      };
+      document.addEventListener('click', _unlockMusic);
+      document.addEventListener('touchstart', _unlockMusic);
+    }
     _updateMusicBtn();
 
     // Day-1 Welcome Card — only for true first-timers
@@ -6805,6 +6853,16 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (planData) {
           localStorage.setItem('weebji_plus', 'true');
           localStorage.setItem('weebji_plus_plan', planData.plan);
+        }
+
+        // Resume pending checkout if user just signed in to purchase
+        const pendingCheckout = localStorage.getItem('weebji_pending_checkout');
+        if (pendingCheckout && !planData) {
+          localStorage.removeItem('weebji_pending_checkout');
+          const url = `${pendingCheckout}?checkout[email]=${encodeURIComponent(currentUser.email)}`;
+          window.open(url, '_blank');
+        } else if (pendingCheckout) {
+          localStorage.removeItem('weebji_pending_checkout'); // already has plus, clear it
         }
 
         // Restore progress

@@ -6844,12 +6844,15 @@ DEV.skipSplash()      → go straight to class select (if no session)
     async function pullProgress() {
       if (!client || !currentUser) return;
       try {
+        // Claim any plan purchased before account existed (email match → assign user_id)
+        await client.rpc('claim_user_plan').catch(() => {});
+
         // Restore premium status from DB (works across devices/browsers)
         const { data: planData } = await client.from('user_plans')
           .select('plan, status')
-          .eq('user_id', currentUser.id)
+          .or(`user_id.eq.${currentUser.id},email.eq.${currentUser.email}`)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
         if (planData) {
           localStorage.setItem('weebji_plus', 'true');
           localStorage.setItem('weebji_plus_plan', planData.plan);

@@ -1,10 +1,11 @@
-// ── WEEBJI OS — Service Worker v2 ──────────────────────────────────────────
-// Single-file PWA. Only caches what actually exists.
+// ── WEEBJI OS — Service Worker v3 ──────────────────────────────────────────
+// Relative paths so it works on any host (GitHub Pages, Netlify, custom domain)
 
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
-const CACHE_NAME = 'weebji-os-v2';
-const SHELL = ['/index.html', '/manifest.json'];
+const CACHE_NAME = 'weebji-os-v3';
+const BASE = self.registration.scope; // e.g. https://skryrsh.github.io/Weebji-os/weebji-os/
+const SHELL = [BASE, BASE + 'manifest.json'];
 
 // Install — cache the shell
 self.addEventListener('install', e => {
@@ -22,19 +23,18 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch — cache-first for shell, passthrough for Google Fonts / CDN
+// Fetch — cache-first for shell, passthrough for CDN
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
-        // Only cache same-origin responses
         if (!res || res.status !== 200 || res.type === 'opaque') return res;
         const clone = res.clone();
         caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
         return res;
-      }).catch(() => caches.match('/index.html'));
+      }).catch(() => caches.match(BASE));
     })
   );
 });
@@ -47,12 +47,12 @@ self.addEventListener('push', e => {
   e.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon:      '/icons/icon-192.png',
-      badge:     '/icons/icon-192.png',
+      icon:      BASE + 'icons/icon-192.png',
+      badge:     BASE + 'icons/icon-192.png',
       tag:       'weebji-daily',
       renotify:  true,
       vibrate:   [200, 100, 200],
-      data:      { url: data.url || '/' }
+      data:      { url: data.url || BASE }
     })
   );
 });
@@ -60,12 +60,13 @@ self.addEventListener('push', e => {
 // Notification clicked — open / focus the app
 self.addEventListener('notificationclick', e => {
   e.notification.close();
+  const target = e.notification.data?.url || BASE;
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const client of list) {
         if ('focus' in client) return client.focus();
       }
-      return clients.openWindow('/');
+      return clients.openWindow(target);
     })
   );
 });

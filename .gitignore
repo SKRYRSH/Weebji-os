@@ -1,0 +1,25 @@
+# MCP config contains API tokens — never commit this
+.mcp.json
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Root screenshots (large, not needed in repo)
+/*.png
+/*.jpg
+/*.jpeg
+/*.PNG
+/*.JPG
+/*.JPEG
+
+# Claude Code local config (contains tokens — never commit)
+.claude/
+
+# Playwright MCP logs
+.playwright-mcp/

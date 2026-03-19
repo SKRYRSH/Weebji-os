@@ -1976,36 +1976,19 @@
     // Always clean the URL immediately so token isn't bookmarked/shared
     window.history.replaceState({}, '', window.location.pathname);
 
-    // 1. Validate token against Supabase plus_tokens table
+    // 1. Validate + redeem token atomically via secure server-side function
     try {
       const client = SupabaseSync._client();
       if (!client) { activateWeebjiPlus(token); return; } // offline fallback
 
-      const { data, error } = await client
-        .from('plus_tokens')
-        .select('id, used, expires_at')
-        .eq('token', token)
-        .single();
+      const { data, error } = await client.rpc('redeem_plus_token', { p_token: token });
 
-      if (error || !data) {
-        // Token not found — could be replay or manual forgery
+      if (error || !data || data.error) {
+        // not_found / already_used / expired — silent reject
         return;
       }
 
-      if (data.used) {
-        // Token already redeemed — silent reject (don't hint to attacker)
-        return;
-      }
-
-      if (data.expires_at && new Date(data.expires_at) < new Date()) {
-        // Expired link
-        return;
-      }
-
-      // 2. Mark token as used server-side (one-time use)
-      await client.from('plus_tokens').update({ used: true, used_at: new Date().toISOString() }).eq('id', data.id);
-
-      // 3. Activate locally
+      // 2. Activate locally (server already marked token as used)
       activateWeebjiPlus(token);
 
     } catch (_) {

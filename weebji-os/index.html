@@ -6816,7 +6816,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
     async function signInWithEmail(email) {
       if (!client) return { error: 'Supabase not configured' };
-      const { error } = await client.auth.signInWithOtp({ email });
+      const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: 'https://skryrsh.github.io/Weebji-os/weebji-os/' } });
       return { error };
     }
 

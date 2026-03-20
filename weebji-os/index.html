@@ -2348,6 +2348,19 @@
   // Tab visibility breach detection
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && TheVoid.isActive()) TheVoid.onBreach();
+    // Re-check premium when returning from checkout tab
+    if (!document.hidden && typeof SupabaseSync !== 'undefined') {
+      const wasPlusBefore = localStorage.getItem('weebji_plus') === 'true';
+      SupabaseSync.pullProgress().then(() => {
+        if (!wasPlusBefore && localStorage.getItem('weebji_plus') === 'true') {
+          // Just activated — show premium welcome
+          if (document.getElementById('dashboard').classList.contains('active')) {
+            initDashboard();
+            SystemVoice.say('WEEBJI+ activated. The System recognises your commitment.');
+          }
+        }
+      });
+    }
   });
 
   // Void surrender button

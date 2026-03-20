@@ -1,5 +1,5 @@
 // ── WEEBJI OS — Service Worker v7 (icon fix) ─────────────────────────────────
-const CACHE_NAME = 'weebji-os-v8';
+const CACHE_NAME = 'weebji-os-v9';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 

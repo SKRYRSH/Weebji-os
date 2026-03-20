@@ -7218,7 +7218,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           const onProfile = document.getElementById('profile').classList.contains('active');
           if (currentUser) {
             localStorage.setItem('weebji_account_linked', '1');
-            // If user just signed in via magic link while on the sign-in gate, proceed to dashboard
+            checkPremiumFromSupabase();
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
             if (gateActive) { enterDashboard(false); }
             WeebjPush.init();
@@ -7334,6 +7334,31 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
     function getUser() { return currentUser; }
 
+    async function checkPremiumFromSupabase() {
+      if (!client || !currentUser?.email) return;
+      try {
+        const { data } = await client
+          .from('user_plans')
+          .select('plan, status, user_id')
+          .eq('email', currentUser.email)
+          .eq('status', 'active')
+          .maybeSingle();
+        if (!data) return;
+        // Activate premium locally
+        activateWeebjiPlus();
+        // Link user_id to plan row if not already set
+        if (!data.user_id) {
+          await client.from('user_plans')
+            .update({ user_id: currentUser.id })
+            .eq('email', currentUser.email);
+        }
+        // Re-render profile if open
+        if (document.getElementById('profile')?.classList.contains('active')) {
+          renderProfile();
+        }
+      } catch(e) { console.warn('Premium check failed', e); }
+    }
+
     function renderAuthSection() {
       const el = document.getElementById('profile-auth-section');
       if (!el) return;
@@ -7360,7 +7385,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
     }
 
     function getClient() { return client; }
-    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, signOut, getUser, renderAuthSection, _client: getClient };
+    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, signOut, getUser, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
   })();
 
   /* ══ GUILD SYSTEM ════════════════════════════ */

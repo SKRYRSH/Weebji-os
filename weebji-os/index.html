@@ -1733,9 +1733,11 @@
   });
 
   function showInstallPromptWhenReady() {
+    // Already running as installed PWA — never show
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (isStandalone) { localStorage.setItem('weebji_install_dismissed', '1'); return; }
     const dismissed = localStorage.getItem('weebji_install_dismissed');
     if (dismissed || !deferredInstallEvent) return;
-    // Never show if user hasn't done anything yet (class-select / contract screens)
     const cls = localStorage.getItem('weebji_class');
     if (!cls) return;
     const firstActionDone = localStorage.getItem('weebji_first_action_done');
@@ -1743,6 +1745,7 @@
     setTimeout(() => {
       if (!deferredInstallEvent) return;
       if (localStorage.getItem('weebji_install_dismissed')) return;
+      if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) return;
       document.getElementById('install-prompt').classList.add('visible');
     }, delay);
   }
@@ -7292,6 +7295,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (planData) {
           localStorage.setItem('weebji_plus', 'true');
           localStorage.setItem('weebji_plus_plan', planData.plan);
+          if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
         }
 
         // Get or create sequential hunter number

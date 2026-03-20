@@ -12,8 +12,6 @@
   <title>WEEBJI OS</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" type="image/png" />
-  <!-- OneSignal Push SDK — replace YOUR_APP_ID after creating OneSignal account -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <!-- Supabase JS — replace SUPABASE_URL + SUPABASE_ANON_KEY in SupabaseSync.init() below -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1636,38 +1634,62 @@
       .catch(e => console.warn('[SW] failed', e));
   }
 
-  /* ══ ONESIGNAL PUSH INIT ═════════════════════
-     Paste your OneSignal App ID below after creating
-     your account at onesignal.com.
-     Leave as-is until you have an App ID.
-  ══════════════════════════════════════════════ */
-  const ONESIGNAL_APP_ID = 'd01da00b-3bb3-4b2f-812a-3042d915da12';
+  /* ══ NATIVE WEB PUSH ════════════════════════ */
+  const WeebjPush = (() => {
+    const VAPID_PK   = 'BEAWkgoqC3rrnfEx7LaQ1-erv94Gfp_IbHQL62mK_nvQm7E_NTKVhsZ_SaXizuwYeatc47IEDhjRG4NJsXsjfQs';
+    const SEND_URL   = 'https://qpcqbiicomlpsmkgqhsm.supabase.co/functions/v1/send-push';
+    const ANON_KEY   = 'sb_publishable_mn4VVnBOgUzwSoB6msiFYA_AleeHLa2';
 
-  if (ONESIGNAL_APP_ID) {
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId:               ONESIGNAL_APP_ID,
-        notifyButton:        { enable: false },
-        welcomeNotification: { disable: true },
-      });
-      // Tag user for segment-based automated messages
+    function _toUint8(b64) {
+      const pad = '='.repeat((4 - b64.length % 4) % 4);
+      const b = atob((b64 + pad).replace(/-/g,'+').replace(/_/g,'/'));
+      return new Uint8Array([...b].map(c => c.charCodeAt(0)));
+    }
+
+    async function subscribe() {
+      if (!('Notification' in window) || !('serviceWorker' in navigator)) return false;
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') return false;
       try {
-        const p   = loadProgress();
-        const cls = localStorage.getItem('weebji_class') || 'unknown';
-        const streak = p.streak || 0;
-        const segment = streak === 0 ? 'new' : streak < 7 ? 'building' : streak < 30 ? 'committed' : 'elite';
-        await OneSignal.User.addTags({
-          class:       cls,
-          level:       String(p.level || 1),
-          streak:      String(streak),
-          segment:     segment,
-          last_active: new Date().toISOString().split('T')[0],
-          hp:          String(p.hp || 5),
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: _toUint8(VAPID_PK) });
+        await _store(sub);
+        return true;
+      } catch { return false; }
+    }
+
+    async function _store(sub) {
+      const user = SupabaseSync.getUser();
+      if (!user) return;
+      const j = sub.toJSON();
+      await SupabaseSync.upsertPushSub({ user_id: user.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth });
+    }
+
+    async function send(type, extras = {}) {
+      const user = SupabaseSync.getUser();
+      if (!user) return;
+      if (Notification.permission !== 'granted') return;
+      try {
+        fetch(SEND_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ANON_KEY}` },
+          body: JSON.stringify({ user_id: user.id, type, ...extras })
         });
-      } catch(e) {}
-    });
-  }
+      } catch {}
+    }
+
+    async function init() {
+      if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) await _store(sub);
+      } catch {}
+    }
+
+    return { subscribe, send, init };
+  })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
   let deferredInstallEvent = null;
@@ -1739,13 +1761,7 @@
   document.getElementById('notif-yes-btn').addEventListener('click', () => {
     document.getElementById('notif-prompt').classList.remove('visible');
     localStorage.setItem('weebji_notif_dismissed', '1');
-    if (ONESIGNAL_APP_ID) {
-      OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Slidedown.promptPush();
-      });
-    } else {
-      Notification.requestPermission();
-    }
+    WeebjPush.subscribe();
   });
 
   document.getElementById('notif-no-btn').addEventListener('click', () => {
@@ -2006,16 +2022,6 @@
     // Session D: Supabase cloud backup (fire-and-forget, offline-safe)
     if (typeof SupabaseSync !== 'undefined') SupabaseSync.pushProgress();
     if (typeof GuildSystem !== 'undefined') GuildSystem.syncMemberStats();
-    // Keep OneSignal tags current for segmented push campaigns
-    if (typeof OneSignalDeferred !== 'undefined' && ONESIGNAL_APP_ID) {
-      try {
-        const streak = p.streak || 0;
-        const segment = streak === 0 ? 'new' : streak < 7 ? 'building' : streak < 30 ? 'committed' : 'elite';
-        OneSignalDeferred.push(async function(OneSignal) {
-          await OneSignal.User.addTags({ streak: String(streak), segment, level: String(p.level||1), hp: String(p.hp||5), last_active: new Date().toISOString().split('T')[0] });
-        });
-      } catch(e) {}
-    }
   }
 
   /* ══ WEEBJI+ ═════════════════════════════════ */
@@ -2596,7 +2602,7 @@
       }
     });
     p.titles = earned;
-    if (_titleQueue.length > 0 && !_titleBusy) _drainTitleQueue();
+    if (_titleQueue.length > 0 && !_titleBusy) { WeebjPush.send('secret_title'); _drainTitleQueue(); }
   }
 
   function _drainTitleQueue() {
@@ -5044,6 +5050,7 @@
     p.hp -= 1;
     saveProgress(p);
     updateStats(p);
+    if (p.hp === 1) WeebjPush.send('hp_critical');
   }
 
   // Expose for testing in dev console
@@ -5445,6 +5452,11 @@
     el.addEventListener('animationend', () => el.classList.remove('active'), { once: true });
     // Phase 5: System Voice
     setTimeout(() => SystemVoice.onStreakMilestone(streak), 800);
+    // Push notifications
+    if (streak === 7)        WeebjPush.send('streak_7');
+    else if (streak === 30)  WeebjPush.send('streak_30');
+    else if (streak === 100) WeebjPush.send('streak_100');
+    else if (streak === 365) WeebjPush.send('streak_365');
   }
 
   // 5. GHOST SHIMMER — silver sweep on ghost token use
@@ -5859,6 +5871,7 @@
     Sound.play('ghostCrisis');
     // Phase 5: System Voice
     setTimeout(() => SystemVoice.onStreakLoss(p.prevStreak), 600);
+    if (p.ghostTokens <= 0) WeebjPush.send('ghost_token');
   }
 
   document.getElementById('ghost-use-btn').addEventListener('click', () => {
@@ -6956,6 +6969,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             // If user just signed in via magic link while on the sign-in gate, proceed to dashboard
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
             if (gateActive) { enterDashboard(false); }
+            WeebjPush.init();
             pullProgress();
             if (onProfile) { renderAuthSection(); if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(); }
           } else {
@@ -6968,6 +6982,16 @@ DEV.skipSplash()      → go straight to class select (if no session)
           renderAuthSection();
         });
       } catch(e) { console.warn('Supabase init error:', e); }
+    }
+
+    async function upsertPushSub({ user_id, endpoint, p256dh, auth }) {
+      if (!client) return;
+      try {
+        await client.from('push_subscriptions').upsert(
+          { user_id, endpoint, p256dh, auth, updated_at: new Date().toISOString() },
+          { onConflict: 'endpoint' }
+        );
+      } catch {}
     }
 
     async function pushProgress() {
@@ -7063,7 +7087,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
     }
 
     function getClient() { return client; }
-    return { init, pushProgress, pullProgress, signInWithEmail, signOut, getUser, renderAuthSection, _client: getClient };
+    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, signOut, getUser, renderAuthSection, _client: getClient };
   })();
 
   /* ══ GUILD SYSTEM ════════════════════════════ */

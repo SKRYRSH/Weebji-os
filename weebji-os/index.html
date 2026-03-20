@@ -7300,7 +7300,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
           const { data: newHn } = await client.from('hunter_numbers').insert({ user_id: currentUser.id }).select('number').single();
           hn = newHn;
         }
-        if (hn?.number) localStorage.setItem('weebji_hunter_num', String(hn.number));
+        if (hn?.number) {
+          localStorage.setItem('weebji_hunter_num', String(hn.number));
+          const badge = document.getElementById('dash-hunter');
+          if (badge) badge.textContent = '#' + hn.number;
+        }
 
         // Restore progress
         const { data } = await client.from('progress').select('*').eq('user_id', currentUser.id).single();

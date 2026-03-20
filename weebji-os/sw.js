@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v5 (nav bar fix) ──────────────────────────────
-const CACHE_NAME = 'weebji-os-v5';
+// ── WEEBJI OS — Service Worker v6 (custom tasks) ─────────────────────────────
+const CACHE_NAME = 'weebji-os-v6';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 

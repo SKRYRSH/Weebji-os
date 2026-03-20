@@ -7232,6 +7232,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         client.auth.getSession().then(({ data }) => {
           currentUser = data?.session?.user || null;
           renderAuthSection();
+          if (currentUser) pullProgress();
         });
       } catch(e) { console.warn('Supabase init error:', e); }
     }

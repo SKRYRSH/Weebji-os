@@ -327,6 +327,19 @@
   .quest-row.done .quest-name { text-decoration: line-through; color: #444466; }
   .quest-xp { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #FFD700; flex-shrink: 0; text-shadow: 0 0 6px rgba(255,215,0,0.9), 0 0 16px rgba(255,215,0,0.35); transition: opacity 0.3s ease; }
   .quest-row.done .quest-xp { opacity: 0.25; }
+  .custom-task-delete { background: none; border: none; color: rgba(255,255,255,0.12); font-size: 18px; line-height: 1; cursor: pointer; padding: 4px 0 4px 10px; flex-shrink: 0; transition: color 0.2s; -webkit-tap-highlight-color: transparent; }
+  .custom-task-delete:active { color: rgba(255,80,80,0.6); }
+  .custom-task-add { display: flex; align-items: center; gap: 8px; padding: 11px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.18); cursor: pointer; border-top: 1px dashed rgba(255,255,255,0.06); margin-top: 6px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
+  .custom-task-add span { font-size: 18px; line-height: 1; font-weight: 300; }
+  .custom-task-add:active { color: rgba(255,255,255,0.4); }
+  .custom-task-locked { color: rgba(255,200,50,0.3); }
+  .custom-task-locked span { color: rgba(255,200,50,0.55); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
+  .custom-task-input-row { display: flex; align-items: center; gap: 6px; padding: 8px 0 2px; border-top: 1px dashed rgba(255,255,255,0.06); margin-top: 6px; }
+  .custom-task-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 9px 11px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.75); outline: none; min-width: 0; }
+  .custom-task-input::placeholder { color: rgba(255,255,255,0.18); }
+  .custom-task-input:focus { border-color: rgba(255,255,255,0.22); }
+  .custom-task-confirm { background: none; border: 1px solid rgba(0,245,255,0.3); border-radius: 7px; color: rgba(0,245,255,0.75); font-size: 15px; padding: 7px 11px; cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+  .custom-task-cancel  { background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 7px; color: rgba(255,255,255,0.35); font-size: 15px; padding: 7px 11px; cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
 
   /* Stats strip */
   .stats-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
@@ -1328,6 +1341,7 @@
         <div class="dash-card dash-card--cyan" id="quest-card">
           <div class="dash-card__head"><h3 class="dash-card__title">DAILY QUESTS</h3></div>
           <div id="quest-list"></div>
+          <div id="custom-task-list"></div>
         </div>
 
         <div class="stats-strip">
@@ -1894,6 +1908,7 @@
       titles         : JSON.parse(localStorage.getItem('weebji_titles')        || '[]'),
       workoutChecked : JSON.parse(localStorage.getItem('weebji_wk_checked')    || '[]'),
       questsChecked  : JSON.parse(localStorage.getItem('weebji_q_checked')     || '[]'),
+      customDone     : JSON.parse(localStorage.getItem('weebji_custom_done')   || '[]'),
       workoutBonus   : localStorage.getItem('weebji_wk_bonus') === 'true',
       monkChecked    : JSON.parse(localStorage.getItem('weebji_monk_checked')  || '[]'),
       monkBonus      : localStorage.getItem('weebji_monk_bonus') === 'true',
@@ -1960,7 +1975,7 @@
         if (!grid.includes(p.lastDate)) { grid.push(p.lastDate); p.mmGrid = grid; }
       }
       // Daily reset
-      p.workoutChecked = []; p.questsChecked = []; p.workoutBonus = false;
+      p.workoutChecked = []; p.questsChecked = []; p.customDone = []; p.workoutBonus = false;
       p.monkChecked = []; p.monkBonus = false; p.mmSessions = 0;
       p.lastDate = today;
       saveProgress(p);
@@ -1994,6 +2009,7 @@
     localStorage.setItem('weebji_best_streak',      p.bestStreak || 0);
     localStorage.setItem('weebji_wk_checked',       JSON.stringify(p.workoutChecked));
     localStorage.setItem('weebji_q_checked',        JSON.stringify(p.questsChecked));
+    localStorage.setItem('weebji_custom_done',      JSON.stringify(p.customDone    || []));
     localStorage.setItem('weebji_wk_bonus',         p.workoutBonus);
     localStorage.setItem('weebji_monk_checked',     JSON.stringify(p.monkChecked  || []));
     localStorage.setItem('weebji_monk_bonus',       p.monkBonus || false);
@@ -2999,6 +3015,7 @@
     renderWeekBar();
     renderForgeArea(p, cls);
     renderQuests(p, CLASS_QUESTS[cls] || CLASS_QUESTS.monarch);
+    renderCustomTasks(p, color);
     renderSecondaryPillars(p, cls);
     updateXPBar(p);
     updateStats(p);
@@ -3407,6 +3424,112 @@
       row.addEventListener('click', () => onQuestTap(i, row, quests));
       list.appendChild(row);
     });
+  }
+
+  /* ── Custom Tasks ────────────────────────────────────────────────── */
+  const FREE_CUSTOM_LIMIT = 1;
+
+  function loadCustomTasks() {
+    try { return JSON.parse(localStorage.getItem('weebji_custom_tasks') || '[]'); } catch { return []; }
+  }
+  function saveCustomTasks(tasks) {
+    localStorage.setItem('weebji_custom_tasks', JSON.stringify(tasks));
+  }
+
+  function renderCustomTasks(p, color) {
+    const container = document.getElementById('custom-task-list');
+    if (!container) return;
+    container.innerHTML = '';
+    const tasks = loadCustomTasks();
+    const plus  = isWeebjiPlus();
+    const limit = plus ? 20 : FREE_CUSTOM_LIMIT;
+
+    tasks.forEach(t => {
+      const done = (p.customDone || []).includes(t.id);
+      const row  = document.createElement('div');
+      row.className = `quest-row custom-task-row${done ? ' done' : ''}`;
+      row.innerHTML = `
+        <div class="quest-check">${done ? CHECK_SVG : ''}</div>
+        <div class="quest-name">${t.name}</div>
+        <div class="quest-xp">+${t.xp} XP</div>
+        <button class="custom-task-delete" data-id="${t.id}">×</button>`;
+      row.addEventListener('click', e => {
+        if (e.target.closest('.custom-task-delete')) return;
+        onCustomTaskTap(t, row);
+      });
+      row.querySelector('.custom-task-delete').addEventListener('click', e => {
+        e.stopPropagation();
+        saveCustomTasks(loadCustomTasks().filter(x => x.id !== t.id));
+        const pp = loadProgress();
+        if ((pp.customDone || []).includes(t.id)) {
+          pp.xp = Math.max(0, pp.xp - t.xp);
+          pp.customDone = pp.customDone.filter(id => id !== t.id);
+          saveProgress(pp); updateXPBar(pp); updateStats(pp);
+        }
+        renderCustomTasks(loadProgress(), color);
+      });
+      container.appendChild(row);
+    });
+
+    // Add button / upsell row
+    const addRow = document.createElement('div');
+    if (tasks.length >= limit) {
+      addRow.className = 'custom-task-add custom-task-locked';
+      addRow.innerHTML = `<span>◆ WEEBJI+</span> Unlock more custom tasks`;
+      addRow.addEventListener('click', () => _openCheckout(WEEBJI_PLUS_STRIPE_URL));
+    } else {
+      addRow.className = 'custom-task-add';
+      addRow.innerHTML = `<span>+</span> Add your own`;
+      addRow.addEventListener('click', () => _showAddTaskInput(container, addRow, color));
+    }
+    container.appendChild(addRow);
+  }
+
+  function _showAddTaskInput(container, addRow, color) {
+    addRow.style.display = 'none';
+    const inputRow = document.createElement('div');
+    inputRow.className = 'custom-task-input-row';
+    inputRow.innerHTML = `
+      <input class="custom-task-input" placeholder="What's the task?" maxlength="40" autocomplete="off">
+      <button class="custom-task-confirm">✓</button>
+      <button class="custom-task-cancel">×</button>`;
+    container.appendChild(inputRow);
+    const input = inputRow.querySelector('.custom-task-input');
+    input.focus();
+
+    const confirm = () => {
+      const name = input.value.trim();
+      if (!name) { cancel(); return; }
+      const tasks = loadCustomTasks();
+      tasks.push({ id: 'ct_' + Date.now(), name, xp: 15 });
+      saveCustomTasks(tasks);
+      renderCustomTasks(loadProgress(), color);
+      Sound.play('tap');
+    };
+    const cancel = () => { inputRow.remove(); addRow.style.display = ''; };
+    inputRow.querySelector('.custom-task-confirm').addEventListener('click', confirm);
+    inputRow.querySelector('.custom-task-cancel').addEventListener('click', cancel);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') confirm(); if (e.key === 'Escape') cancel(); });
+  }
+
+  function onCustomTaskTap(task, row) {
+    const p = loadProgress();
+    const done = (p.customDone || []).includes(task.id);
+    if (done) {
+      p.xp = Math.max(0, p.xp - task.xp);
+      p.customDone = (p.customDone || []).filter(id => id !== task.id);
+      row.classList.remove('done'); row.querySelector('.quest-check').innerHTML = '';
+    } else {
+      if (!p.customDone) p.customDone = [];
+      p.customDone.push(task.id);
+      row.classList.add('done'); row.querySelector('.quest-check').innerHTML = CHECK_SVG;
+      p.xp += rollCriticalDrop(task.xp, row.querySelector('.quest-xp'), p);
+      Sound.play('check');
+      markFirstActionDone();
+    }
+    const leveled = checkLevelUp(p);
+    saveProgress(p); updateXPBar(p); updateStats(p);
+    if (leveled) triggerLevelUp(p.level);
   }
 
   /* ══ INTERACTION HANDLERS ════════════════════ */

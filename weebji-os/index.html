@@ -1226,7 +1226,7 @@
         <div class="class-card class-card--mastermind" data-class="mastermind" data-color="#FF2233" data-label="THE MASTERMIND">
           <div class="class-card__icon"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="14,2 26,14 14,26 2,14"/></svg></div>
           <div class="class-card__name">THE MASTERMIND</div>
-          <p class="class-card__desc">Your future self never wasted a single hour.</p>
+          <p class="class-card__desc">For builders and students. Track deep work, study sessions, and execute without mercy.</p>
           <span class="class-card__arrow"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h10M10 5l4 4-4 4"/></svg></span>
         </div>
 
@@ -2736,11 +2736,21 @@
 
   /* ══ FLOW: S01 → S02 ══════════════════════════ */
   const splashTimer = setTimeout(() => {
-    playInkWash(() => {
-      showScreen('class-select');
-      document.querySelectorAll('.class-card').forEach((card, i) =>
-        setTimeout(() => card.classList.add('visible'), 120 + i * 130));
-    });
+    const existingClass = localStorage.getItem('weebji_class');
+    if (existingClass) {
+      // Returning user — restore state and go straight to dashboard
+      State.selectedClass = existingClass;
+      State.selectedColor = localStorage.getItem('weebji_color') || '#00F5FF';
+      State.selectedLabel = localStorage.getItem('weebji_label') || 'THE MONARCH';
+      State.playerName    = localStorage.getItem('weebji_name')  || 'Hunter';
+      enterDashboard(false);
+    } else {
+      playInkWash(() => {
+        showScreen('class-select');
+        document.querySelectorAll('.class-card').forEach((card, i) =>
+          setTimeout(() => card.classList.add('visible'), 120 + i * 130));
+      });
+    }
   }, 3000);
 
   /* ══ FLOW: S02 → S03 ══════════════════════════ */

@@ -2348,18 +2348,22 @@
   // Tab visibility breach detection
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && TheVoid.isActive()) TheVoid.onBreach();
-    // Re-check premium when returning from checkout tab
+    // Re-check premium when returning from checkout tab (throttled to once per 30s)
     if (!document.hidden && typeof SupabaseSync !== 'undefined') {
-      const wasPlusBefore = localStorage.getItem('weebji_plus') === 'true';
-      SupabaseSync.pullProgress().then(() => {
-        if (!wasPlusBefore && localStorage.getItem('weebji_plus') === 'true') {
-          // Just activated — show premium welcome
-          if (document.getElementById('dashboard').classList.contains('active')) {
-            initDashboard();
-            SystemVoice.say('WEEBJI+ activated. The System recognises your commitment.');
+      const now = Date.now();
+      const last = parseInt(sessionStorage.getItem('weebji_last_pull') || '0', 10);
+      if (now - last > 30000) {
+        sessionStorage.setItem('weebji_last_pull', String(now));
+        const wasPlusBefore = localStorage.getItem('weebji_plus') === 'true';
+        SupabaseSync.pullProgress().then(() => {
+          if (!wasPlusBefore && localStorage.getItem('weebji_plus') === 'true') {
+            if (document.getElementById('dashboard').classList.contains('active')) {
+              initDashboard();
+              SystemVoice.say('WEEBJI+ activated. The System recognises your commitment.');
+            }
           }
-        }
-      });
+        });
+      }
     }
   });
 
@@ -6976,7 +6980,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
     function init() {
       if (!window.supabase || !SUPABASE_URL || SUPABASE_URL.includes('YOUR_PROJECT')) return;
       try {
-        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: 'pkce' } });
         client.auth.onAuthStateChange((event, session) => {
           currentUser = session?.user || null;
           const onProfile = document.getElementById('profile').classList.contains('active');
@@ -7141,7 +7145,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       if (!client || !user) return null;
       const guildId = localStorage.getItem(LS_KEY);
       if (!guildId) return null;
-      const { data } = await client.from('guilds').select('*').eq('id', guildId).single();
+      const { data } = await client.from('guilds').select('id,name,tag,description,created_by,max_members,created_at').eq('id', guildId).single();
       return data;
     }
 
@@ -7151,6 +7155,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const { data } = await client.from('guild_members')
         .select('display_name,class,level,xp,streak,user_id')
         .eq('guild_id', guildId)
+        .order('level', { ascending: false })
         .order('xp', { ascending: false })
         .limit(10);
       return data || [];
@@ -7159,8 +7164,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
     async function joinGuild(tag) {
       const client = _client(), user = _user();
       if (!client || !user) return { error: 'Sign in first' };
-      const { data: guild } = await client.from('guilds').select('id,name,tag').ilike('tag', tag.trim()).single();
+      const { data: guild } = await client.from('guilds').select('id,name,tag,max_members').ilike('tag', tag.trim()).single();
       if (!guild) return { error: 'Guild not found. Check the tag.' };
+      // Enforce member cap
+      const { count } = await client.from('guild_members').select('*', { count: 'exact', head: true }).eq('guild_id', guild.id);
+      if (count >= (guild.max_members || 30)) return { error: `Guild is full (${guild.max_members || 30} members max).` };
       const p = loadProgress();
       const { error } = await client.from('guild_members').insert({
         guild_id: guild.id, user_id: user.id,
@@ -7293,7 +7301,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             <div class="guild-tag" style="color:${hexC};border-color:${hexRgba(hexC,0.3)};background:${hexRgba(hexC,0.06)}">[${guild.tag}]</div>
             <div>
               <div class="guild-name-text">${guild.name}</div>
-              <div class="guild-meta">${members.length} member${members.length !== 1 ? 's' : ''}</div>
+              <div class="guild-meta">${members.length} / ${guild.max_members || 30} members</div>
             </div>
           </div>
           ${myRank > 0 ? `<div class="guild-rank-badge"><span>#${myRank}</span>YOUR RANK IN GUILD</div>` : ''}

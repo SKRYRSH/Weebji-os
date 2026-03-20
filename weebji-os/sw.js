@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v4 (native push, no OneSignal) ──────────────
-const CACHE_NAME = 'weebji-os-v4';
+// ── WEEBJI OS — Service Worker v5 (nav bar fix) ──────────────────────────────
+const CACHE_NAME = 'weebji-os-v5';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 

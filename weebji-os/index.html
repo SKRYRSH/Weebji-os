@@ -705,6 +705,22 @@
   .guild-btn.danger:active { background: rgba(255,34,51,0.06); }
   .guild-divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 12px 0; }
   .guild-msg { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.25); text-align: center; padding: 4px 0; }
+  /* Global Leaderboard */
+  .lb-card { background: rgba(10,10,20,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px 16px; margin-bottom: 12px; }
+  .lb-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .lb-share-btn { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .lb-share-btn:active { background: rgba(255,255,255,0.08); }
+  .lb-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; background: rgba(255,255,255,0.02); margin-bottom: 4px; }
+  .lb-row.is-you { background: rgba(255,255,255,0.06); outline: 1px solid rgba(255,255,255,0.1); }
+  .lb-row.is-you-gap { background: transparent; justify-content: center; padding: 4px; margin: 2px 0; }
+  .lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.25); width: 22px; text-align: center; flex-shrink: 0; }
+  .lb-rank.top { color: gold; font-weight: 700; }
+  .lb-name { flex: 1; font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-name small { font-size: 9px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; opacity: 0.4; display: block; }
+  .lb-streak { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+  .lb-streak span { color: #FFD700; font-weight: 700; }
+  .lb-my-rank { text-align: center; padding: 10px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.14em; color: rgba(255,255,255,0.3); }
+  .lb-my-rank strong { font-size: 22px; font-family: 'Cinzel', serif; color: rgba(255,255,255,0.7); display: block; letter-spacing: 0; }
   .guild-plus-lock { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.14em; color: rgba(255,200,50,0.45); margin-left: 6px; }
   .profile-share-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
   .profile-share-btn:active { transform: scale(0.96); }
@@ -1472,6 +1488,7 @@
         <div id="profile-auth-section"></div>
         <div id="profile-plus-section"></div>
         <div id="profile-analytics"></div>
+        <div id="profile-leaderboard"></div>
         <div id="profile-guild-section"></div>
         <div style="height:32px"></div>
       </div>
@@ -5431,9 +5448,80 @@
     renderWeebjiPlusSection(color);
     // Deep analytics (WEEBJI+ gated)
     renderDeepAnalytics(p, color);
+    // Global leaderboard
+    renderLeaderboard(color);
     // Guilds section
     if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(color);
   }
+
+  async function renderLeaderboard(color) {
+    const el = document.getElementById('profile-leaderboard');
+    if (!el) return;
+    if (typeof SupabaseSync === 'undefined') { el.innerHTML = ''; return; }
+    const client = SupabaseSync._client();
+    const me = SupabaseSync.getUser();
+    if (!client) { el.innerHTML = ''; return; }
+
+    const ri = parseInt(color.slice(1,3),16), gi = parseInt(color.slice(3,5),16), bi = parseInt(color.slice(5,7),16);
+    const rgb = `${ri},${gi},${bi}`;
+    el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;font-size:13px">Loading...</div></div>`;
+
+    const { data: rows } = await client
+      .from('leaderboard')
+      .select('user_id,display_name,class,color,hunter_number,level,best_streak')
+      .order('best_streak', { ascending: false })
+      .order('level', { ascending: false })
+      .limit(20);
+
+    if (!rows || rows.length === 0) {
+      el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;font-size:13px">No hunters yet. Be the first.</div></div>`;
+      return;
+    }
+
+    let myRank = null;
+    if (me) {
+      const myIdx = rows.findIndex(r => r.user_id === me.id);
+      if (myIdx >= 0) {
+        myRank = myIdx + 1;
+      } else {
+        const p = loadProgress();
+        const { count } = await client
+          .from('leaderboard')
+          .select('*', { count: 'exact', head: true })
+          .or(`best_streak.gt.${p.bestStreak || 0},and(best_streak.eq.${p.bestStreak || 0},level.gt.${p.level || 1})`);
+        myRank = (count || 0) + 1;
+      }
+      if (myRank) localStorage.setItem('weebji_lb_rank', String(myRank));
+    }
+
+    const rankGlyph = ['▲','▲','▲'];
+    const rowsHtml = rows.map((r, i) => {
+      const rank = i + 1;
+      const isYou = me && r.user_id === me.id;
+      const rColor = r.color || '#00F5FF';
+      const rri = parseInt(rColor.slice(1,3),16), rgi = parseInt(rColor.slice(3,5),16), rbi = parseInt(rColor.slice(5,7),16);
+      const rrb = `${rri},${rgi},${rbi}`;
+      return `<div class="lb-row${isYou ? ' is-you' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}">
+        <span class="lb-rank" style="color:${rank<=3 ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
+        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${r.display_name}</span>` : r.display_name}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${r.hunter_number}</span>` : ''}</span>
+        <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.best_streak}<span style="font-size:11px;opacity:0.5"> days</span></span>
+      </div>`;
+    }).join('');
+
+    const outsideHtml = myRank && myRank > 20
+      ? `<div class="lb-my-rank" style="color:rgba(${rgb},0.7)">Your rank: <strong style="color:${color}">#${myRank}</strong></div>` : '';
+
+    const shareHtml = myRank
+      ? `<button class="lb-share-btn" onclick="openShareScreen()" style="border-color:rgba(${rgb},0.4);color:${color}">Share Rank #${myRank}</button>` : '';
+
+    el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)">
+      <div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD${shareHtml}</div>
+      <div class="lb-rows">${rowsHtml}</div>
+      ${outsideHtml}
+    </div>`;
+  }
+
+  function openShareScreen() { showArcCard(); }
 
   function renderCustomWorkouts(cls, color, p) {
     const el = document.getElementById('profile-custom-workouts');
@@ -5857,6 +5945,27 @@
     ctx.font = '700 48px "JetBrains Mono", monospace';
     ctx.fillStyle = color;
     ctx.fillText('DAYS', W/2, streakNumY + 64);
+
+    // Global rank badge
+    const lbRank = localStorage.getItem('weebji_lb_rank');
+    if (lbRank) {
+      const rankText = `GLOBAL RANK #${lbRank}`;
+      ctx.font = '700 32px "JetBrains Mono", monospace';
+      const rankW = ctx.measureText(rankText).width + 48;
+      const rankX = W/2 - rankW/2, rankY = streakNumY + 96, rankH = 52;
+      const rankBr = 12;
+      ctx.beginPath();
+      ctx.moveTo(rankX+rankBr, rankY); ctx.lineTo(rankX+rankW-rankBr, rankY); ctx.arcTo(rankX+rankW, rankY, rankX+rankW, rankY+rankBr, rankBr);
+      ctx.lineTo(rankX+rankW, rankY+rankH-rankBr); ctx.arcTo(rankX+rankW, rankY+rankH, rankX+rankW-rankBr, rankY+rankH, rankBr);
+      ctx.lineTo(rankX+rankBr, rankY+rankH); ctx.arcTo(rankX, rankY+rankH, rankX, rankY+rankH-rankBr, rankBr);
+      ctx.lineTo(rankX, rankY+rankBr); ctx.arcTo(rankX, rankY, rankX+rankBr, rankY, rankBr); ctx.closePath();
+      ctx.fillStyle = `rgba(${rgb},0.12)`; ctx.fill();
+      ctx.strokeStyle = `rgba(${rgb},0.45)`; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.font = '700 28px "JetBrains Mono", monospace';
+      ctx.fillStyle = color; ctx.shadowColor = `rgba(${rgb},0.6)`; ctx.shadowBlur = 14;
+      ctx.fillText(rankText, W/2, rankY + rankH/2 + 10);
+      ctx.shadowBlur = 0;
+    }
 
     // Stats row
     const statsTopY = streakNumY + 136;
@@ -7149,6 +7258,19 @@ DEV.skipSplash()      → go straight to class select (if no session)
           total_study_mins: p.totalStudyMins || 0,
           total_workout_days: p.totalWorkoutDays || 0,
           updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+
+        // Update global leaderboard
+        const hunterNum = localStorage.getItem('weebji_hunter_num');
+        await client.from('leaderboard').upsert({
+          user_id:      currentUser.id,
+          display_name: localStorage.getItem('weebji_name') || 'Hunter',
+          class:        localStorage.getItem('weebji_class') || 'monarch',
+          color:        localStorage.getItem('weebji_color') || '#00F5FF',
+          hunter_number: hunterNum ? parseInt(hunterNum) : null,
+          level:        p.level,
+          best_streak:  p.bestStreak || 0,
+          updated_at:   new Date().toISOString(),
         }, { onConflict: 'user_id' });
       } catch(e) {}
     }

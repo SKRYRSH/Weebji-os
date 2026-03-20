@@ -7286,15 +7286,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
         // Claim any plan purchased before account existed (email match → assign user_id)
         await client.rpc('claim_user_plan').catch(() => {});
 
-        // Restore premium status from DB (works across devices/browsers)
-        const { data: planData } = await client.from('user_plans')
-          .select('plan, status')
-          .eq('email', currentUser.email)
-          .eq('status', 'active')
-          .maybeSingle();
-        if (planData) {
+        // Restore premium status via secure server-side RPC (bypasses RLS)
+        const { data: premiumPlan } = await client.rpc('get_premium_status');
+        if (premiumPlan) {
           localStorage.setItem('weebji_plus', 'true');
-          localStorage.setItem('weebji_plus_plan', planData.plan);
+          localStorage.setItem('weebji_plus_plan', premiumPlan);
           if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
         }
 
@@ -7345,27 +7341,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
     function getUser() { return currentUser; }
 
     async function checkPremiumFromSupabase() {
-      if (!client || !currentUser?.email) return;
+      if (!client || !currentUser) return;
       try {
-        const { data } = await client
-          .from('user_plans')
-          .select('plan, status, user_id')
-          .eq('email', currentUser.email)
-          .eq('status', 'active')
-          .maybeSingle();
-        if (!data) return;
-        // Activate premium locally
+        const { data: premiumPlan } = await client.rpc('get_premium_status');
+        if (!premiumPlan) return;
         activateWeebjiPlus();
-        // Link user_id to plan row if not already set
-        if (!data.user_id) {
-          await client.from('user_plans')
-            .update({ user_id: currentUser.id })
-            .eq('email', currentUser.email);
-        }
-        // Re-render profile if open
-        if (document.getElementById('profile')?.classList.contains('active')) {
-          renderProfile();
-        }
+        if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
       } catch(e) { console.warn('Premium check failed', e); }
     }
 

@@ -94,6 +94,27 @@
   .class-card__arrow svg { width: 18px; height: 18px; display: block; }
   .class-card:hover .class-card__arrow { opacity: 0.8; transform: translateY(-50%) translateX(4px); }
 
+  /* ══ SCREEN 03B — SIGN-IN GATE ═══════════════ */
+  #sign-in-gate { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 28px; overflow-y: auto; }
+  .gate__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: #555577; margin-bottom: 16px; text-align: center; }
+  .gate__title { font-family: 'Cinzel', serif; font-size: clamp(22px,6vw,28px); font-weight: 900; letter-spacing: 0.15em; text-align: center; margin-bottom: 10px; }
+  .gate__sub { font-family: 'Inter', sans-serif; font-size: 13px; color: #555577; text-align: center; line-height: 1.7; margin-bottom: 32px; }
+  .gate__input { width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px 20px; font-family: 'Inter', sans-serif; font-size: 15px; color: #fff; outline: none; transition: border-color 0.3s, box-shadow 0.3s; caret-color: var(--gate-accent, #00F5FF); margin-bottom: 14px; }
+  .gate__input:focus { border-color: var(--gate-accent, #00F5FF); box-shadow: 0 0 0 1px var(--gate-accent, #00F5FF), 0 0 20px rgba(0,245,255,0.12); }
+  .gate__btn { width: 100%; padding: 15px; background: transparent; border: 1px solid var(--gate-accent, #00F5FF); border-radius: 12px; color: var(--gate-accent, #00F5FF); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; box-shadow: 0 0 14px rgba(0,245,255,0.1); }
+  .gate__btn:active { transform: scale(0.97); }
+  .gate__msg { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gate-accent, #00F5FF); text-align: center; margin-top: 12px; min-height: 16px; }
+  .gate__divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); margin: 28px 0; }
+  /* Install steps */
+  .gate__install-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase; color: #555577; text-align: center; margin-bottom: 20px; }
+  .gate__steps { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+  .gate__step { display: flex; align-items: flex-start; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px 16px; }
+  .gate__step-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--gate-accent, #00F5FF); opacity: 0.7; flex-shrink: 0; padding-top: 1px; }
+  .gate__step-text { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.55; }
+  .gate__step-text strong { color: rgba(255,255,255,0.95); font-weight: 600; }
+  .gate__install-btn { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: rgba(255,255,255,0.8); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; margin-bottom: 14px; }
+  .gate__already { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #333355; text-align: center; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; padding: 8px; }
+
   /* ══ SCREEN 03 — CONTRACT ═════════════════════ */
   #contract { overflow-y: auto; scrollbar-width: none; }
   #contract::-webkit-scrollbar { display: none; }
@@ -1164,7 +1185,7 @@
       <div class="class-select__header">
         <p class="class-select__eyebrow">Step 01 of 03</p>
         <h2 class="class-select__title">Choose Your Class</h2>
-        <p class="class-select__sub">This is your core identity. It cannot be changed.<br><span style="font-size:11px;color:#333355;letter-spacing:0.08em">Sign in after onboarding to save your progress — or it lives on this device only.</span></p>
+        <p class="class-select__sub">This is your core identity. It cannot be changed.</p>
       </div>
       <div class="class-list">
 
@@ -1230,6 +1251,27 @@
         <div class="identity__line" id="id-line-3"><p class="identity__name" id="id-player-name"></p></div>
         <div class="identity__line" id="id-line-4"><p class="identity__tagline">Your future self sent this. Don't let them down.</p></div>
         <div class="identity__line" id="id-line-5"><p class="identity__manifest" id="id-manifest-text"></p></div>
+      </div>
+    </div>
+
+    <!-- ══ S04B: SIGN-IN GATE ══════════════════ -->
+    <div id="sign-in-gate" class="screen">
+      <div id="gate-form-wrap" style="width:100%;max-width:380px;">
+        <p class="gate__eyebrow" id="gate-eyebrow">Step 03 of 03 — Lock In</p>
+        <h2 class="gate__title" id="gate-title">Save Your Identity</h2>
+        <p class="gate__sub">Enter your email. We'll send a magic link — no password.<br>Your progress saves to the cloud, forever.</p>
+        <input class="gate__input" id="gate-email" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" />
+        <button class="gate__btn" id="gate-send-btn">Lock In My Identity</button>
+        <p class="gate__msg" id="gate-msg"></p>
+      </div>
+      <div id="gate-install-wrap" style="width:100%;max-width:380px;display:none;">
+        <p class="gate__eyebrow">Magic Link Sent ✓</p>
+        <p class="gate__sub" style="margin-bottom:20px;">Check your email and tap the link to unlock the OS.<br><span style="color:#333355;">While you wait — install the app:</span></p>
+        <div class="gate__divider"></div>
+        <p class="gate__install-title">Add to Home Screen</p>
+        <div class="gate__steps" id="gate-install-steps"></div>
+        <div class="gate__divider"></div>
+        <p class="gate__already" id="gate-already-installed">Already installed? Just check your email.</p>
       </div>
     </div>
 
@@ -2097,42 +2139,15 @@
       </div>`;
   }
 
-  // Opens checkout — requires sign-in first so premium ties to their account
+  // Opens checkout — go straight to Lemon Squeezy, pre-fill email if signed in
   function _openCheckout(baseUrl) {
     const user = SupabaseSync.getUser();
-    if (user) {
-      // Already signed in — pre-fill email so webhook finds their account
-      const url = `${baseUrl}?checkout[email]=${encodeURIComponent(user.email)}`;
-      window.open(url, '_blank');
-    } else {
-      // Not signed in — show sign-in prompt first
-      const modal = document.createElement('div');
-      modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:24px;';
-      modal.innerHTML = `
-        <div style="background:#0d0d14;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px 24px;max-width:340px;width:100%;text-align:center;">
-          <p style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.4em;color:#555577;text-transform:uppercase;margin:0 0 12px;">Required</p>
-          <p style="font-family:'Cinzel',serif;font-size:18px;color:#fff;margin:0 0 12px;">Create Your Account First</p>
-          <p style="font-family:'Inter',sans-serif;font-size:13px;color:#666;line-height:1.6;margin:0 0 24px;">Sign in so your premium access is tied to your account — works on every device, forever.</p>
-          <input id="_checkout_email" type="email" placeholder="your@email.com" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;margin-bottom:12px;outline:none;">
-          <button id="_checkout_send" style="width:100%;padding:13px;background:rgba(0,245,255,0.1);border:1px solid rgba(0,245,255,0.4);border-radius:8px;color:#00F5FF;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;">Send Magic Link</button>
-          <button id="_checkout_cancel" style="margin-top:10px;width:100%;padding:10px;background:transparent;border:none;color:#444;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;">Cancel</button>
-          <p id="_checkout_msg" style="font-family:'Inter',sans-serif;font-size:12px;color:#00F5FF;margin:12px 0 0;min-height:18px;"></p>
-        </div>`;
-      document.body.appendChild(modal);
-      modal.querySelector('#_checkout_cancel').onclick = () => modal.remove();
-      modal.querySelector('#_checkout_send').onclick = async () => {
-        const email = modal.querySelector('#_checkout_email').value.trim();
-        if (!email) return;
-        const msg = modal.querySelector('#_checkout_msg');
-        msg.textContent = 'Sending...';
-        const { error } = await SupabaseSync.signInWithEmail(email);
-        if (error) { msg.textContent = 'Error — try again'; return; }
-        msg.textContent = 'Magic link sent! Check your email, then come back to purchase.';
-        modal.querySelector('#_checkout_send').disabled = true;
-        // Store intended checkout URL so user can proceed after login
-        localStorage.setItem('weebji_pending_checkout', baseUrl);
-      };
-    }
+    const successUrl = encodeURIComponent(window.location.href.split('?')[0]);
+    let url = `${baseUrl}?checkout[success_url]=${successUrl}`;
+    if (user?.email) url += `&checkout[email]=${encodeURIComponent(user.email)}`;
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    document.body.appendChild(a); a.click(); a.remove();
   }
 
   function renderWeebjiPlusSection(color) {
@@ -2447,7 +2462,7 @@
     };
     const expected = _progressHash(p);
     // Consistency checks — catch impossible values even if hash passes
-    const maxPossibleXP = XP_PER_LEVEL * (p.level + 2); // generous ceiling
+    const maxPossibleXP = xpForLevel(p.level) * 3; // generous ceiling
     const isSuspicious = p.xp > maxPossibleXP || p.level > 100 || p.hp > 5 || p.hp < 0
       || p.streak > 3650 || p.ghostTokens > 10 || p.bestStreak < p.streak;
 
@@ -2808,11 +2823,78 @@
         }
       }, 300 + i * 800);
     });
-    setTimeout(() => enterDashboard(), 300 + revealIds.length * 800 + 1000);
+    setTimeout(() => enterDashboard(true), 300 + revealIds.length * 800 + 1000);
+  }
+
+  /* ══ FLOW: S04B — SIGN-IN GATE ═══════════════ */
+  function showSignInGate() {
+    const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+    const gate  = document.getElementById('sign-in-gate');
+    gate.style.setProperty('--gate-accent', color);
+    showScreen('sign-in-gate');
+
+    const sendBtn  = document.getElementById('gate-send-btn');
+    const emailIn  = document.getElementById('gate-email');
+    const msgEl    = document.getElementById('gate-msg');
+    const formWrap = document.getElementById('gate-form-wrap');
+    const instWrap = document.getElementById('gate-install-wrap');
+
+    sendBtn.addEventListener('click', async () => {
+      const email = emailIn.value.trim();
+      if (!email || !email.includes('@')) {
+        emailIn.style.borderColor = '#ff4466'; emailIn.focus();
+        setTimeout(() => emailIn.style.borderColor = '', 1200); return;
+      }
+      sendBtn.disabled = true;
+      msgEl.textContent = 'Sending...';
+      const { error } = await SupabaseSync.signInWithEmail(email);
+      if (error) { msgEl.textContent = 'Error — try again'; sendBtn.disabled = false; return; }
+      // Switch to install instructions
+      formWrap.style.display = 'none';
+      instWrap.style.display = '';
+      _renderInstallSteps(color);
+      Sound.play('tap');
+    });
+  }
+
+  function _renderInstallSteps(color) {
+    const stepsEl = document.getElementById('gate-install-steps');
+    const ua = navigator.userAgent;
+    const isIOS     = /iphone|ipad|ipod/i.test(ua);
+    const isAndroid = /android/i.test(ua);
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+    if (isInstalled) {
+      stepsEl.innerHTML = `<div class="gate__step"><span class="gate__step-num">✓</span><span class="gate__step-text" style="color:${color}">App already installed — just check your email and tap the link.</span></div>`;
+      return;
+    }
+    if (isIOS) {
+      stepsEl.innerHTML = `
+        <div class="gate__step"><span class="gate__step-num">01</span><span class="gate__step-text">Tap the <strong>Share button ⬆</strong> at the bottom of Safari</span></div>
+        <div class="gate__step"><span class="gate__step-num">02</span><span class="gate__step-text">Scroll down and tap <strong>"Add to Home Screen"</strong></span></div>
+        <div class="gate__step"><span class="gate__step-num">03</span><span class="gate__step-text">Tap <strong>"Add"</strong> — the app appears on your home screen</span></div>`;
+    } else if (isAndroid && deferredInstallEvent) {
+      const installBtn = document.createElement('button');
+      installBtn.className = 'gate__install-btn';
+      installBtn.textContent = '⬇ Install App Now';
+      installBtn.onclick = () => {
+        deferredInstallEvent.prompt();
+        deferredInstallEvent.userChoice.then(() => { installBtn.textContent = '✓ Installing...'; installBtn.disabled = true; });
+      };
+      stepsEl.parentNode.insertBefore(installBtn, stepsEl);
+      stepsEl.innerHTML = `<div class="gate__step"><span class="gate__step-num">OR</span><span class="gate__step-text">Tap <strong>⋮ menu</strong> in Chrome → <strong>"Add to Home screen"</strong></span></div>`;
+    } else {
+      stepsEl.innerHTML = `
+        <div class="gate__step"><span class="gate__step-num">01</span><span class="gate__step-text">Open your <strong>browser menu</strong> (⋮ or ⬜)</span></div>
+        <div class="gate__step"><span class="gate__step-num">02</span><span class="gate__step-text">Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong></span></div>`;
+    }
   }
 
   /* ══ FLOW: S04 → S05 ══════════════════════════ */
-  function enterDashboard() {
+  function enterDashboard(fromOnboarding = false) {
+    if (fromOnboarding && !SupabaseSync.getUser() && !localStorage.getItem('weebji_account_linked')) {
+      showSignInGate(); return;
+    }
     showScreen('dashboard');
     Sound.play('appOpen');
     initDashboard();
@@ -4576,15 +4658,25 @@
   }
 
   /* ══ XP / LEVEL / STATS ══════════════════════ */
+  function xpForLevel(level) {
+    if (level <= 10) return 150;
+    if (level <= 20) return 250;
+    if (level <= 35) return 400;
+    if (level <= 50) return 600;
+    return 900;
+  }
+
   function checkLevelUp(p) {
-    if (p.xp >= XP_PER_LEVEL) { p.xp -= XP_PER_LEVEL; p.level += 1; return true; }
+    const needed = xpForLevel(p.level);
+    if (p.xp >= needed) { p.xp -= needed; p.level += 1; return true; }
     return false;
   }
 
   function updateXPBar(p) {
-    const pct = Math.min((p.xp / XP_PER_LEVEL) * 100, 100);
+    const needed = xpForLevel(p.level);
+    const pct = Math.min((p.xp / needed) * 100, 100);
     document.getElementById('xp-fill').style.width  = `${pct}%`;
-    document.getElementById('xp-label').textContent = `${p.xp} / ${XP_PER_LEVEL} XP`;
+    document.getElementById('xp-label').textContent = `${p.xp} / ${needed} XP`;
   }
 
   function updateStats(p) {
@@ -5094,7 +5186,7 @@
 
     // Stats
     const totalDays = getTotalDays();
-    const xpTotal   = (p.level - 1) * XP_PER_LEVEL + p.xp;
+    let xpTotal = p.xp; for (let i = 1; i < p.level; i++) xpTotal += xpForLevel(i);
     document.getElementById('profile-stats').innerHTML = `
       <div class="profile-stat"><div class="profile-stat__label">Level</div><div class="profile-stat__value" style="color:${color}">${p.level}</div></div>
       <div class="profile-stat"><div class="profile-stat__label">Best Streak</div><div class="profile-stat__value" style="color:${color}">${p.bestStreak}d</div></div>
@@ -5514,14 +5606,31 @@
     ctx.fillStyle = `rgba(${rgb},0.7)`;
     ctx.fillText('WEEBJI OS', 68, 100);
     ctx.textAlign = 'right';
-    ctx.font = '400 28px "JetBrains Mono", monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.fillText(`#${num}`, W-68, 80);
+    if (plus) {
+      ctx.font = '700 24px "JetBrains Mono", monospace';
+      ctx.fillStyle = 'rgba(255,210,60,0.9)';
+      ctx.shadowColor = 'rgba(255,180,0,0.7)'; ctx.shadowBlur = 18;
+      ctx.fillText('WEEBJI+ ◆', W-68, 80);
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.font = '400 28px "JetBrains Mono", monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.fillText(`#${num}`, W-68, 80);
+    }
     ctx.font = '700 26px "JetBrains Mono", monospace';
     ctx.fillStyle = color;
     ctx.fillText(`LVL ${p.level}  ${tierInfo.rank}-RANK`, W-68, 112);
     ctx.beginPath(); ctx.moveTo(68, 136); ctx.lineTo(W-68, 136);
-    ctx.strokeStyle = `rgba(${rgb},0.18)`; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = plus ? 'rgba(255,200,60,0.25)' : `rgba(${rgb},0.18)`; ctx.lineWidth = 1; ctx.stroke();
+    if (plus) {
+      // Gold shimmer lines across card
+      [H*0.28, H*0.72].forEach(ly => {
+        const sg = ctx.createLinearGradient(0, ly, W, ly);
+        sg.addColorStop(0,'rgba(255,180,0,0)'); sg.addColorStop(0.35,'rgba(255,200,60,0.07)');
+        sg.addColorStop(0.5,'rgba(255,220,80,0.13)'); sg.addColorStop(0.65,'rgba(255,200,60,0.07)'); sg.addColorStop(1,'rgba(255,180,0,0)');
+        ctx.fillStyle = sg; ctx.fillRect(0, ly-1, W, 2);
+      });
+    }
 
     // ── BOTTOM INFO SECTION ───────────────────────────────────────────────
     // All anchored from Y=1050 when avatar fills screen, else Y=890
@@ -5633,8 +5742,15 @@
 
     // Footer
     ctx.font = '300 28px "Inter", sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    ctx.fillText('weebji.app', W/2, arcY + 56);
+    if (plus) {
+      ctx.fillStyle = 'rgba(255,200,60,0.45)';
+      ctx.shadowColor = 'rgba(255,180,0,0.3)'; ctx.shadowBlur = 12;
+      ctx.fillText('WEEBJI+ ◆  weebji.app', W/2, arcY + 56);
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillText('weebji.app', W/2, arcY + 56);
+    }
   }
 
   function showArcCard() {
@@ -6703,7 +6819,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
     devAction('devbtn-levelup', () => {
       const p = loadProgress();
-      p.xp = XP_PER_LEVEL; // set XP to threshold so checkLevelUp fires
+      p.xp = xpForLevel(p.level); // set XP to threshold so checkLevelUp fires
       const leveled = checkLevelUp(p);
       saveProgress(p);
       updateXPBar(p);
@@ -6836,6 +6952,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
           currentUser = session?.user || null;
           const onProfile = document.getElementById('profile').classList.contains('active');
           if (currentUser) {
+            localStorage.setItem('weebji_account_linked', '1');
+            // If user just signed in via magic link while on the sign-in gate, proceed to dashboard
+            const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
+            if (gateActive) { enterDashboard(false); }
             pullProgress();
             if (onProfile) { renderAuthSection(); if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(); }
           } else {
@@ -6881,16 +7001,6 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (planData) {
           localStorage.setItem('weebji_plus', 'true');
           localStorage.setItem('weebji_plus_plan', planData.plan);
-        }
-
-        // Resume pending checkout if user just signed in to purchase
-        const pendingCheckout = localStorage.getItem('weebji_pending_checkout');
-        if (pendingCheckout && !planData) {
-          localStorage.removeItem('weebji_pending_checkout');
-          const url = `${pendingCheckout}?checkout[email]=${encodeURIComponent(currentUser.email)}`;
-          window.open(url, '_blank');
-        } else if (pendingCheckout) {
-          localStorage.removeItem('weebji_pending_checkout'); // already has plus, clear it
         }
 
         // Restore progress

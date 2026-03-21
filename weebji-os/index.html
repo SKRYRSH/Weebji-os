@@ -2067,12 +2067,11 @@
   const WEEBJI_GHOST_TOKEN_URL  = 'https://weebji.lemonsqueezy.com/checkout/buy/0992fda8-8640-4d7f-a48c-f25e1b7e07aa';
 
   function isWeebjiPlus() {
-    return localStorage.getItem('weebji_plus') === 'true';
+    return SupabaseSync.isPremium();
   }
 
-  function activateWeebjiPlus(token) {
-    localStorage.setItem('weebji_plus', 'true');
-    if (token) localStorage.setItem('weebji_plus_token', token);
+  function activateWeebjiPlus() {
+    SupabaseSync.checkPremiumFromSupabase();
   }
 
   // Detect ?weebji_plus=TOKEN — validates against Supabase before activating
@@ -2088,7 +2087,7 @@
     // 1. Validate + redeem token atomically via secure server-side function
     try {
       const client = SupabaseSync._client();
-      if (!client) { activateWeebjiPlus(token); return; } // offline fallback
+      if (!client) { return; } // offline — can't verify, don't grant
 
       const { data, error } = await client.rpc('redeem_plus_token', { p_token: token });
 
@@ -2390,9 +2389,9 @@
       const last = parseInt(sessionStorage.getItem('weebji_last_pull') || '0', 10);
       if (now - last > 30000) {
         sessionStorage.setItem('weebji_last_pull', String(now));
-        const wasPlusBefore = localStorage.getItem('weebji_plus') === 'true';
+        const wasPlusBefore = SupabaseSync.isPremium();
         SupabaseSync.pullProgress().then(() => {
-          if (!wasPlusBefore && localStorage.getItem('weebji_plus') === 'true') {
+          if (!wasPlusBefore && SupabaseSync.isPremium()) {
             if (document.getElementById('dashboard').classList.contains('active')) {
               initDashboard();
               SystemVoice.say('WEEBJI+ activated. The System recognises your commitment.');
@@ -2499,8 +2498,7 @@
   }
 
   function _progressHash(p) {
-    const plus = localStorage.getItem('weebji_plus') === 'true' ? 1 : 0;
-    const core = `${p.xp}|${p.level}|${p.streak}|${p.hp}|${p.bestStreak||0}|${p.ghostTokens||0}|${plus}|${_SALT}`;
+    const core = `${p.xp}|${p.level}|${p.streak}|${p.hp}|${p.bestStreak||0}|${p.ghostTokens||0}|${_SALT}`;
     return _djb2(core);
   }
 
@@ -2533,11 +2531,6 @@
       if (p.streak > 3650)          localStorage.setItem('weebji_streak','0');
       if (p.hp > 5 || p.hp < 0)    localStorage.setItem('weebji_hp',    '3');
       if (p.ghostTokens > 10)       localStorage.setItem('weebji_ghost_tokens', '3');
-      // Strip Plus if it wasn't in the hash
-      if (stored !== expected && localStorage.getItem('weebji_plus') === 'true') {
-        localStorage.removeItem('weebji_plus');
-        localStorage.removeItem('weebji_plus_token');
-      }
       _writeHash({ xp: 0, level: lvl, streak: 0, hp: 3, bestStreak: 0, ghostTokens: 3 });
       return false;
     }
@@ -7221,6 +7214,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
     let client = null;
     let currentUser = null;
+    let premiumStatus = false;
 
     function init() {
       if (!window.supabase || !SUPABASE_URL || SUPABASE_URL.includes('YOUR_PROJECT')) return;
@@ -7298,11 +7292,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
         // Restore premium status via secure server-side RPC (bypasses RLS)
         const { data: premiumPlan } = await client.rpc('get_premium_status');
-        if (premiumPlan) {
-          localStorage.setItem('weebji_plus', 'true');
-          localStorage.setItem('weebji_plus_plan', premiumPlan);
-          if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
-        }
+        premiumStatus = !!premiumPlan;
+        if (premiumPlan && document.getElementById('profile')?.classList.contains('active')) renderProfile();
 
         // Get or create sequential hunter number
         let { data: hn } = await client.from('hunter_numbers').select('number').eq('user_id', currentUser.id).maybeSingle();
@@ -7345,18 +7336,19 @@ DEV.skipSplash()      → go straight to class select (if no session)
       if (!client) return;
       await client.auth.signOut();
       currentUser = null;
+      premiumStatus = false;
       renderAuthSection();
     }
 
     function getUser() { return currentUser; }
+    function isPremium() { return premiumStatus; }
 
     async function checkPremiumFromSupabase() {
       if (!client || !currentUser) return;
       try {
         const { data: premiumPlan } = await client.rpc('get_premium_status');
-        if (!premiumPlan) return;
-        activateWeebjiPlus();
-        if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
+        premiumStatus = !!premiumPlan;
+        if (premiumPlan && document.getElementById('profile')?.classList.contains('active')) renderProfile();
       } catch(e) { console.warn('Premium check failed', e); }
     }
 
@@ -7386,7 +7378,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
     }
 
     function getClient() { return client; }
-    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, signOut, getUser, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
+    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, signOut, getUser, isPremium, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
   })();
 
   /* ══ GUILD SYSTEM ════════════════════════════ */

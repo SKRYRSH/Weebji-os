@@ -1985,21 +1985,22 @@
       // Yesterday's completion: check all class activity types
       const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0);
 
-      // Apply penalty for yesterday
+      // Apply penalty/reward for yesterday
       if (p.lastDate) {
         if (yesterdayDone === 0) {
           p.prevStreak = p.streak; // save for Ghost Token restoration
-          p.hp = Math.max(1, p.hp - 20);
+          p.hp = Math.max(1, p.hp - 1);
           p.streak = 0;
           p.streakLostToday = true;
         } else {
           p.streak = (p.streak || 0) + 1;
+          p.hp = Math.min(5, p.hp + 1); // restore 1 HP segment for active day
         }
       }
 
       // Apply penalty for each additional fully-missed day beyond yesterday
       if (missedDays > 0) {
-        p.hp = Math.max(1, p.hp - (20 * missedDays));
+        p.hp = Math.max(1, p.hp - missedDays);
         p.streak = 0;
       }
 

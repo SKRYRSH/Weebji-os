@@ -7470,9 +7470,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
     async function getMyGuild() {
       const client = _client(), user = _user();
       if (!client || !user) return null;
-      const guildId = localStorage.getItem(LS_KEY);
-      if (!guildId) return null;
-      const { data } = await client.from('guilds').select('id,name,tag,description,created_by,max_members,created_at').eq('id', guildId).single();
+      // First check if user is actually in any guild (source of truth is DB)
+      const { data: membership } = await client.from('guild_members').select('guild_id').eq('user_id', user.id).maybeSingle();
+      if (!membership) { localStorage.removeItem(LS_KEY); return null; }
+      localStorage.setItem(LS_KEY, membership.guild_id);
+      const { data } = await client.from('guilds').select('id,name,tag,description,created_by,max_members,created_at').eq('id', membership.guild_id).single();
       return data;
     }
 
@@ -7484,18 +7486,40 @@ DEV.skipSplash()      → go straight to class select (if no session)
         .eq('guild_id', guildId)
         .order('level', { ascending: false })
         .order('xp', { ascending: false })
-        .limit(10);
+        .limit(20);
       return data || [];
     }
 
-    async function joinGuild(tag) {
+    async function searchGuilds(query) {
+      const client = _client();
+      if (!client) return [];
+      const q = query.trim().toUpperCase();
+      const { data } = await client.from('guilds')
+        .select('id,name,tag,description,max_members')
+        .or(`tag.ilike.%${q}%,name.ilike.%${q}%`)
+        .order('name')
+        .limit(8);
+      if (!data || !data.length) return [];
+      // Get member counts
+      const ids = data.map(g => g.id);
+      const { data: counts } = await client.from('guild_members').select('guild_id').in('guild_id', ids);
+      const countMap = {};
+      (counts || []).forEach(r => { countMap[r.guild_id] = (countMap[r.guild_id] || 0) + 1; });
+      return data.map(g => ({ ...g, memberCount: countMap[g.id] || 0 }));
+    }
+
+    async function joinGuild(guildId) {
       const client = _client(), user = _user();
-      if (!client || !user) return { error: 'Sign in first' };
-      const { data: guild } = await client.from('guilds').select('id,name,tag,max_members').ilike('tag', tag.trim()).single();
-      if (!guild) return { error: 'Guild not found. Check the tag.' };
+      if (!client || !user) return { error: 'Sign in first.' };
+      // Check already in a guild
+      const { data: existing } = await client.from('guild_members').select('guild_id').eq('user_id', user.id).maybeSingle();
+      if (existing) return { error: 'Leave your current guild first.' };
+      // Get guild info
+      const { data: guild } = await client.from('guilds').select('id,name,tag,max_members').eq('id', guildId).single();
+      if (!guild) return { error: 'Guild not found.' };
       // Enforce member cap
       const { count } = await client.from('guild_members').select('*', { count: 'exact', head: true }).eq('guild_id', guild.id);
-      if (count >= (guild.max_members || 30)) return { error: `Guild is full (${guild.max_members || 30} members max).` };
+      if (count >= (guild.max_members || 30)) return { error: `Guild is full (${guild.max_members || 30} max).` };
       const p = loadProgress();
       const { error } = await client.from('guild_members').insert({
         guild_id: guild.id, user_id: user.id,
@@ -7503,22 +7527,29 @@ DEV.skipSplash()      → go straight to class select (if no session)
         class: localStorage.getItem('weebji_class') || 'monarch',
         level: p.level || 1, xp: p.xp || 0, streak: p.streak || 0,
       });
-      if (error) return { error: error.code === '23505' ? 'Already in a guild.' : error.message };
+      if (error) return { error: 'Could not join guild. Try again.' };
       localStorage.setItem(LS_KEY, guild.id);
       return { guild };
     }
 
     async function createGuild(name, tag, desc) {
       const client = _client(), user = _user();
-      if (!client || !user) return { error: 'Sign in first' };
+      if (!client || !user) return { error: 'Sign in first.' };
       if (!isWeebjiPlus()) return { error: 'WEEBJI+ required to create guilds.' };
+      // Check already in a guild
+      const { data: existing } = await client.from('guild_members').select('guild_id').eq('user_id', user.id).maybeSingle();
+      if (existing) return { error: 'Leave your current guild before creating one.' };
       const cleanTag = tag.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
       if (!cleanTag || cleanTag.length < 2) return { error: 'Tag must be 2–5 letters/numbers.' };
-      if (!name || name.trim().length < 3) return { error: 'Guild name must be at least 3 characters.' };
+      if (!name || name.trim().length < 3) return { error: 'Name must be at least 3 characters.' };
       const { data: guild, error } = await client.from('guilds')
         .insert({ name: name.trim(), tag: cleanTag, created_by: user.id, description: desc || '' })
         .select().single();
-      if (error) return { error: error.code === '23505' ? 'Guild name taken.' : error.message };
+      if (error) {
+        if (error.code === '23505' && error.message.includes('tag')) return { error: `Tag [${cleanTag}] is already taken.` };
+        if (error.code === '23505') return { error: `Guild name "${name.trim()}" is already taken.` };
+        return { error: error.message };
+      }
       const p = loadProgress();
       await client.from('guild_members').insert({
         guild_id: guild.id, user_id: user.id,
@@ -7535,7 +7566,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       if (!client || !user) return;
       const guildId = localStorage.getItem(LS_KEY);
       if (!guildId) return;
-      await client.from('guild_members').delete().eq('guild_id', guildId).eq('user_id', user.id);
+      await client.from('guild_members').delete().eq('user_id', user.id);
       localStorage.removeItem(LS_KEY);
     }
 
@@ -7562,31 +7593,61 @@ DEV.skipSplash()      → go straight to class select (if no session)
       if (!guild) {
         el.innerHTML = `
           <div class="guild-card">
-            <div class="guild-card__header">Guilds</div>
+            <div class="guild-card__header">◆ GUILDS</div>
+            <div class="guild-msg" style="margin-bottom:12px;text-align:left;color:rgba(255,255,255,0.3)">Search by name or tag to find a guild, then tap Join.</div>
             <div class="guild-input-row">
-              <input class="guild-input" id="guild-join-tag" placeholder="ENTER TAG" maxlength="5">
-              <button class="guild-btn primary" id="guild-join-btn">Join</button>
+              <input class="guild-input" id="guild-search-input" placeholder="SEARCH GUILDS..." maxlength="28" style="text-transform:none">
+              <button class="guild-btn primary" id="guild-search-btn">Search</button>
             </div>
-            <div class="guild-msg" id="guild-join-msg"></div>
+            <div id="guild-search-results" style="margin-top:8px"></div>
             <hr class="guild-divider">
             <div class="guild-card__header" style="margin-bottom:10px">Create a Guild <span class="guild-plus-lock">WEEBJI+</span></div>
             <input class="guild-input" id="guild-create-name" placeholder="GUILD NAME" maxlength="28" style="margin-bottom:8px;display:block;width:100%;box-sizing:border-box">
             <div class="guild-input-row">
-              <input class="guild-input" id="guild-create-tag" placeholder="TAG (2-5)" maxlength="5">
+              <input class="guild-input" id="guild-create-tag" placeholder="TAG (2-5 chars)" maxlength="5">
               <button class="guild-btn primary" id="guild-create-btn">Create</button>
             </div>
             <div class="guild-msg" id="guild-create-msg"></div>
           </div>`;
 
-        el.querySelector('#guild-join-btn').addEventListener('click', async () => {
-          const tag = el.querySelector('#guild-join-tag').value.trim();
-          const msgEl = el.querySelector('#guild-join-msg');
-          if (!tag) return;
-          msgEl.textContent = 'Searching...';
-          const { guild: g, error } = await joinGuild(tag);
-          if (error) { msgEl.textContent = error; return; }
-          msgEl.textContent = `Joined ${g.name}!`;
-          setTimeout(() => renderGuildSection(color), 800);
+        const resultsEl = el.querySelector('#guild-search-results');
+
+        function renderResults(guilds) {
+          if (!guilds.length) { resultsEl.innerHTML = `<div class="guild-msg">No guilds found.</div>`; return; }
+          resultsEl.innerHTML = guilds.map(g => `
+            <div class="guild-lb-row" style="justify-content:space-between;padding:10px 12px">
+              <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+                <div class="guild-tag" style="color:${hexC};border-color:${hexRgba(hexC,0.3)};background:${hexRgba(hexC,0.06)};font-size:9px;padding:3px 7px;flex-shrink:0">[${g.tag}]</div>
+                <div style="min-width:0">
+                  <div class="guild-lb-name" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name}</div>
+                  <div class="guild-meta">${g.memberCount} / ${g.max_members || 30} members</div>
+                </div>
+              </div>
+              <button class="guild-btn primary" data-guild-id="${g.id}" data-guild-name="${g.name}" style="flex-shrink:0;margin-left:8px;font-size:9px;padding:8px 12px">Join</button>
+            </div>`).join('');
+          resultsEl.querySelectorAll('[data-guild-id]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const gid = btn.dataset.guildId;
+              const gname = btn.dataset.guildName;
+              btn.textContent = '...';
+              btn.disabled = true;
+              const { error } = await joinGuild(gid);
+              if (error) { btn.textContent = 'Join'; btn.disabled = false; resultsEl.insertAdjacentHTML('afterbegin', `<div class="guild-msg" style="color:rgba(255,80,80,0.7);margin-bottom:6px">${error}</div>`); return; }
+              setTimeout(() => renderGuildSection(color), 600);
+            });
+          });
+        }
+
+        el.querySelector('#guild-search-btn').addEventListener('click', async () => {
+          const q = el.querySelector('#guild-search-input').value.trim();
+          if (!q) return;
+          resultsEl.innerHTML = `<div class="guild-msg">Searching...</div>`;
+          const guilds = await searchGuilds(q);
+          renderResults(guilds);
+        });
+
+        el.querySelector('#guild-search-input').addEventListener('keydown', e => {
+          if (e.key === 'Enter') el.querySelector('#guild-search-btn').click();
         });
 
         el.querySelector('#guild-create-btn').addEventListener('click', async () => {
@@ -7623,7 +7684,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
       el.innerHTML = `
         <div class="guild-card" style="border-color:${hexRgba(hexC, 0.12)}">
-          <div class="guild-card__header">Guild</div>
+          <div class="guild-card__header">◆ GUILD</div>
           <div class="guild-banner">
             <div class="guild-tag" style="color:${hexC};border-color:${hexRgba(hexC,0.3)};background:${hexRgba(hexC,0.06)}">[${guild.tag}]</div>
             <div>
@@ -7632,8 +7693,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
             </div>
           </div>
           ${myRank > 0 ? `<div class="guild-rank-badge"><span>#${myRank}</span>YOUR RANK IN GUILD</div>` : ''}
-          <div class="guild-lb">${rows}</div>
-          <button class="guild-btn danger" id="guild-leave-btn" style="width:100%">Leave Guild</button>
+          <div class="guild-lb">${rows || '<div class="guild-msg">No members yet.</div>'}</div>
+          <button class="guild-btn danger" id="guild-leave-btn" style="width:100%;margin-top:4px">Leave Guild</button>
         </div>`;
 
       el.querySelector('#guild-leave-btn').addEventListener('click', async () => {

@@ -7225,7 +7225,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
     function init() {
       if (!window.supabase || !SUPABASE_URL || SUPABASE_URL.includes('YOUR_PROJECT')) return;
       try {
-        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: 'pkce' } });
+        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: 'implicit', detectSessionInUrl: true } });
         client.auth.onAuthStateChange((event, session) => {
           currentUser = session?.user || null;
           const onProfile = document.getElementById('profile').classList.contains('active');
@@ -7235,7 +7235,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
             if (gateActive) { enterDashboard(false); }
             WeebjPush.init();
-            pullProgress();
+            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
             if (onProfile) { renderAuthSection(); if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(); }
           } else {
             renderAuthSection();

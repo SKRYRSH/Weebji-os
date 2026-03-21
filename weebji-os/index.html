@@ -1954,8 +1954,8 @@
         ? Math.max(0, Math.round((new Date(today) - new Date(p.lastDate)) / 86400000) - 1)
         : 0;
 
-      // Yesterday's completion: stored before last reset
-      const yesterdayDone = p.workoutChecked.length;
+      // Yesterday's completion: check all class activity types
+      const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0);
 
       // Apply penalty for yesterday
       if (p.lastDate) {
@@ -1964,8 +1964,8 @@
           p.hp = Math.max(1, p.hp - 20);
           p.streak = 0;
           p.streakLostToday = true;
-        } else if (yesterdayDone > 0) {
-          p.hp = Math.max(1, p.hp - 5);
+        } else {
+          p.streak = (p.streak || 0) + 1;
         }
       }
 

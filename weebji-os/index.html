@@ -302,6 +302,9 @@
   /* Perfect set banner — slides up */
   @keyframes kf-bonus-slide { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
   .forge-bonus { margin-top: 14px; padding: 11px 16px; background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #FFD700; text-shadow: 0 0 12px rgba(255,215,0,0.6); text-align: center; animation: kf-bonus-slide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+  .forge-mode-toggle { display:flex; gap:8px; margin-bottom:16px; }
+  .forge-mode-btn { flex:1; padding:10px 8px; border-radius:8px; border:1px solid rgba(0,245,255,0.18); background:transparent; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em; color:rgba(0,245,255,0.35); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:all 0.2s; }
+  .forge-mode-btn.active { background:rgba(0,245,255,0.1); border-color:rgba(0,245,255,0.55); color:#00F5FF; text-shadow:0 0 8px rgba(0,245,255,0.5); }
 
   /* Rest card */
   .rest-body-quote { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.6); font-style: italic; text-align: center; padding: 4px 0 22px; line-height: 1.7; }
@@ -1349,6 +1352,7 @@
             <h3 class="dash-card__title" id="forge-title">THE FORGE</h3>
             <span class="dash-card__sub"  id="forge-sub"></span>
           </div>
+          <div id="forge-mode-wrap"></div>
           <div id="exercise-list"></div>
           <div class="forge-bonus hidden" id="forge-bonus">+25 BONUS XP — PERFECT SET</div>
         </div>
@@ -1844,6 +1848,30 @@
       { name: 'Glute Bridges',          sets: 3, reps: 20,    xp: 8  },
       { name: 'Wall Sit',               sets: 3, reps: '45s', xp: 10 },
       { name: 'Calf Raises',            sets: 3, reps: 25,    xp: 6  },
+    ],
+  };
+
+  const GYM_WORKOUTS = {
+    PUSH: [
+      { name: 'Barbell Bench Press',    sets: 4, reps: 8,  xp: 15 },
+      { name: 'Incline DB Press',       sets: 3, reps: 10, xp: 12 },
+      { name: 'Cable Flyes',            sets: 3, reps: 12, xp: 10 },
+      { name: 'Overhead Press',         sets: 3, reps: 10, xp: 12 },
+      { name: 'Tricep Pushdown',        sets: 3, reps: 12, xp: 8  },
+    ],
+    PULL: [
+      { name: 'Lat Pulldown',           sets: 4, reps: 8,  xp: 15 },
+      { name: 'Barbell Rows',           sets: 4, reps: 8,  xp: 15 },
+      { name: 'Seated Cable Rows',      sets: 3, reps: 12, xp: 10 },
+      { name: 'Face Pulls',             sets: 3, reps: 15, xp: 8  },
+      { name: 'Dumbbell Curls',         sets: 3, reps: 12, xp: 8  },
+    ],
+    LEGS: [
+      { name: 'Barbell Squats',         sets: 4, reps: 8,  xp: 18 },
+      { name: 'Romanian Deadlift',      sets: 3, reps: 10, xp: 15 },
+      { name: 'Leg Press',              sets: 3, reps: 12, xp: 12 },
+      { name: 'Leg Curls',              sets: 3, reps: 12, xp: 10 },
+      { name: 'Machine Calf Raises',    sets: 4, reps: 20, xp: 8  },
     ],
   };
 
@@ -3250,6 +3278,7 @@
     forgeCard.classList.remove('dash-card--cyan','dash-card--rest','dash-card--coming-soon');
     forgeCard.removeAttribute('style');
     titleEl.removeAttribute('style'); titleEl.className = 'dash-card__title';
+    const _mw = document.getElementById('forge-mode-wrap'); if (_mw) _mw.innerHTML = '';
 
     if (cls === 'mastermind') {
       forgeCard.style.borderColor = hexRgba('#FF2233', 0.25);
@@ -3283,9 +3312,28 @@
       renderRestContent(p);
     } else {
       forgeCard.classList.add('dash-card--cyan');
+      const workoutMode = localStorage.getItem('weebji_workout_mode') || 'home';
       titleEl.textContent = 'THE FORGE'; subEl.textContent = `${type} DAY`;
       bonusEl.classList.toggle('hidden', !p.workoutBonus);
-      renderExercises(p, WORKOUTS[type]);
+      const modeWrap = document.getElementById('forge-mode-wrap');
+      if (modeWrap) {
+        modeWrap.innerHTML = `<div class="forge-mode-toggle">
+          <button class="forge-mode-btn${workoutMode==='home'?' active':''}" id="forge-mode-home">🏠 Home</button>
+          <button class="forge-mode-btn${workoutMode==='gym'?' active':''}" id="forge-mode-gym">🏋️ Gym</button>
+        </div>`;
+        document.getElementById('forge-mode-home').addEventListener('click', () => {
+          localStorage.setItem('weebji_workout_mode', 'home');
+          p.workoutChecked = []; p.workoutBonus = false; saveProgress(p);
+          renderForgeArea(p, cls);
+        });
+        document.getElementById('forge-mode-gym').addEventListener('click', () => {
+          localStorage.setItem('weebji_workout_mode', 'gym');
+          p.workoutChecked = []; p.workoutBonus = false; saveProgress(p);
+          renderForgeArea(p, cls);
+        });
+      }
+      const workoutData = workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type];
+      renderExercises(p, workoutData);
     }
     // Monarch: calendar + PR board appended after exercise list
     requestAnimationFrame(() => {

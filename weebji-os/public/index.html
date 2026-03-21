@@ -12,7 +12,9 @@
   <title>WEEBJI OS</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" type="image/png" />
-  <!-- Supabase JS — replace SUPABASE_URL + SUPABASE_ANON_KEY in SupabaseSync.init() below -->
+  <!-- PostHog Analytics -->
+  <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_rUZFK8D1ws0J87t0xXS5m2pgivBILx5gXB0fqw52otw',{api_host:'https://us.i.posthog.com',defaults:'2026-01-30'});</script>
+  <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -2230,6 +2232,8 @@
     const successUrl = encodeURIComponent(window.location.href.split('?')[0]);
     let url = `${baseUrl}?checkout[success_url]=${successUrl}`;
     if (user?.email) url += `&checkout[email]=${encodeURIComponent(user.email)}`;
+    const plan = baseUrl === WEEBJI_PLUS_ANNUAL_URL ? 'annual' : baseUrl === WEEBJI_GHOST_TOKEN_URL ? 'ghost_token' : 'monthly';
+    if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, class: localStorage.getItem('weebji_class') });
     const a = document.createElement('a');
     a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
     document.body.appendChild(a); a.click(); a.remove();
@@ -2955,6 +2959,7 @@
       msgEl.textContent = 'Sending...';
       const { error } = await SupabaseSync.signInWithEmail(email);
       if (error) { msgEl.textContent = 'Error — try again'; sendBtn.disabled = false; return; }
+      if (typeof posthog !== 'undefined') posthog.capture('magic_link_sent', { class: localStorage.getItem('weebji_class') });
       // Switch to install instructions
       formWrap.style.display = 'none';
       instWrap.style.display = '';
@@ -3003,6 +3008,7 @@
     }
     showScreen('dashboard');
     Sound.play('appOpen');
+    if (typeof posthog !== 'undefined') posthog.capture('dashboard_opened', { from_onboarding: fromOnboarding, class: localStorage.getItem('weebji_class') });
     initDashboard();
     // Phase 5: System Voice greeting (slight delay so dashboard is visible)
     setTimeout(() => SystemVoice.greet(), 900);
@@ -3194,6 +3200,7 @@
   function markFirstActionDone() {
     if (localStorage.getItem('weebji_first_action_done')) return;
     localStorage.setItem('weebji_first_action_done', '1');
+    if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: localStorage.getItem('weebji_class') });
     const card = document.getElementById('welcome-day1-card');
     if (card) {
       card.style.transition = 'opacity 0.4s ease';
@@ -5156,6 +5163,7 @@
   function triggerLevelUp(newLevel) {
     const cls   = State.selectedClass  || localStorage.getItem('weebji_class')  || 'monarch';
     const color = State.selectedColor  || localStorage.getItem('weebji_color')  || '#00F5FF';
+    if (typeof posthog !== 'undefined') posthog.capture('level_up', { level: newLevel, class: cls });
 
     // Phase 4: Check avatar tier change → trigger evolution cinematic
     const newTier = getAvatarTier(newLevel);
@@ -7289,6 +7297,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
           const onProfile = document.getElementById('profile').classList.contains('active');
           if (currentUser) {
             localStorage.setItem('weebji_account_linked', '1');
+            if (typeof posthog !== 'undefined') {
+              posthog.identify(currentUser.id, { email: currentUser.email, class: localStorage.getItem('weebji_class') });
+              if (event === 'SIGNED_IN') posthog.capture('signed_in');
+            }
             checkPremiumFromSupabase();
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
             if (gateActive) { enterDashboard(false); }
@@ -7531,6 +7543,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       });
       if (error) return { error: 'Could not join guild. Try again.' };
       localStorage.setItem(LS_KEY, guild.id);
+      if (typeof posthog !== 'undefined') posthog.capture('guild_joined', { guild_name: guild.name, guild_tag: guild.tag });
       return { guild };
     }
 
@@ -7560,6 +7573,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         level: p.level || 1, xp: p.xp || 0, streak: p.streak || 0,
       });
       localStorage.setItem(LS_KEY, guild.id);
+      if (typeof posthog !== 'undefined') posthog.capture('guild_created', { guild_name: guild.name, guild_tag: guild.tag });
       return { guild };
     }
 

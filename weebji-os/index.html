@@ -7292,7 +7292,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
             checkPremiumFromSupabase();
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
             if (gateActive) { enterDashboard(false); }
-            WeebjPush.init();
+            // Re-store push subscription now that user is authenticated
+            if (Notification.permission === 'granted') WeebjPush.subscribe();
+            else WeebjPush.init();
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
             if (onProfile) { renderAuthSection(); if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(); }
           } else {

@@ -379,6 +379,13 @@
   @keyframes kf-xp-float-crit { 0% { opacity:0; transform:translateX(-50%) translateY(0) scale(0.7); } 12% { opacity:1; transform:translateX(-50%) translateY(-10px) scale(1.35); } 60% { opacity:1; transform:translateX(-50%) translateY(-40px) scale(1.1); } 100% { opacity:0; transform:translateX(-50%) translateY(-90px) scale(0.9); } }
 
   /* ══ CRITICAL DROP BANNER ════════════════════ */
+  .yt-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,40,40,0.18); border-radius:14px; overflow:hidden; }
+  .yt-card__header { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:#882222; text-transform:uppercase; padding:10px 14px 0; }
+  .yt-card__body { display:flex; align-items:center; gap:12px; padding:10px 14px 12px; }
+  .yt-card__thumb { width:72px; height:44px; border-radius:6px; object-fit:cover; flex-shrink:0; background:#111; }
+  .yt-card__info { flex:1; min-width:0; }
+  .yt-card__title { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:rgba(255,255,255,0.85); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .yt-card__watch { margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#FF3333; text-transform:uppercase; cursor:pointer; background:none; border:none; padding:0; -webkit-tap-highlight-color:transparent; }
   .drop-banner { position: fixed; left: 50%; top: 28%; z-index: 600; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #FF8800; text-shadow: 0 0 18px rgba(255,136,0,0.9), 0 0 40px rgba(255,136,0,0.3); white-space: nowrap; pointer-events: none; animation: kf-drop-banner 2.6s cubic-bezier(0.16,1,0.3,1) forwards; }
   @keyframes kf-drop-banner { 0% { opacity:0; transform:translateX(-50%) scale(0.75) translateY(14px); } 14% { opacity:1; transform:translateX(-50%) scale(1.08) translateY(0); } 65% { opacity:1; transform:translateX(-50%) scale(1) translateY(-6px); } 100% { opacity:0; transform:translateX(-50%) scale(0.95) translateY(-22px); } }
 
@@ -1400,6 +1407,9 @@
 
         <!-- Daily Challenge -->
         <div id="daily-challenge-container"></div>
+
+        <!-- YouTube Notice Board -->
+        <div id="yt-notice-board" style="margin:0 0 14px;display:none;"></div>
 
         <div style="height:8px"></div>
       </div>
@@ -2683,6 +2693,8 @@
     spawnXPFloat(finalXP, sourceEl, true);
     spawnDropBanner(drop.label);
     Sound.play('criticalDrop');
+    triggerFlash('flash-white', '#FFFFFF', null);
+    shakeApp(0.5);
     return finalXP;
   }
 
@@ -3820,6 +3832,14 @@
       if (typeof TheVoid !== 'undefined') TheVoid.exit();
       MusicEngine.play('ambient');
       Sound.play('levelup');
+      triggerFlash('flash-white', '#FFFFFF', null);
+      shakeApp(0.8);
+      const _col2 = localStorage.getItem('weebji_color') || '#FF2233';
+      const _cnv2 = document.getElementById('cinematic-canvas');
+      if (_cnv2) {
+        const _cx2 = _cnv2.offsetWidth / 2, _cy2 = _cnv2.offsetHeight * 0.4;
+        setTimeout(() => { CinCanvas.burst(_cx2, _cy2, 50, _col2, 14); CinCanvas.ringBurst(_cx2, _cy2, _col2, 2); }, 100);
+      }
       const cfg = MM_MODES[this.mode];
       const p = loadProgress();
       const mmTimerEl = document.getElementById('mm-timer-wrap');
@@ -3966,6 +3986,8 @@
       _remaining = SANCTUARY_MODES[_mode].mins * 60;
       _breathPhase = 0; _breathTick = 0;
       Sound.play('milestone');
+      triggerFlash('flash-white', '#FFFFFF', null);
+      shakeApp(0.4);
       MusicEngine.play('ambient');
       spawnDropBanner(`☯  SESSION COMPLETE — +${cfg.xp} XP`);
       SystemVoice.say('Session complete. You have returned to yourself.');
@@ -7880,6 +7902,56 @@ DEV.skipSplash()      → go straight to class select (if no session)
   SupabaseSync.init();
   // Validate WEEBJI+ purchase token from URL (must run after Supabase client is ready)
   checkUrlPlusActivation();
+
+  /* ══ YOUTUBE NOTICE BOARD ════════════════════
+     Fetches latest long-form video from your channel.
+     To update: change YT_PLAYLIST_ID to your long-form playlist ID.
+     Get it from: youtube.com/playlist?list=XXXXX → the XXXXX part.
+  ════════════════════════════════════════════ */
+  const YT_PLAYLIST_ID = 'YOUR_PLAYLIST_ID_HERE'; // ← swap this
+  const YT_CACHE_KEY   = 'weebji_yt_cache';
+  const YT_CACHE_TTL   = 2 * 60 * 60 * 1000; // 2 hours
+
+  async function loadYTNoticeBoard() {
+    const el = document.getElementById('yt-notice-board');
+    if (!el || YT_PLAYLIST_ID === 'YOUR_PLAYLIST_ID_HERE') return;
+
+    // Serve from cache if fresh
+    try {
+      const cached = JSON.parse(localStorage.getItem(YT_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.ts < YT_CACHE_TTL) { renderYTCard(el, cached); return; }
+    } catch(e) {}
+
+    try {
+      const rss  = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
+      const url  = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=1`;
+      const res  = await fetch(url);
+      const json = await res.json();
+      const item = json?.items?.[0];
+      if (!item) return;
+      const data = { ts: Date.now(), title: item.title, thumb: item.thumbnail, link: item.link };
+      localStorage.setItem(YT_CACHE_KEY, JSON.stringify(data));
+      renderYTCard(el, data);
+    } catch(e) {}
+  }
+
+  function renderYTCard(el, data) {
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div class="yt-card">
+        <div class="yt-card__header">◈ Latest Drop</div>
+        <div class="yt-card__body">
+          <img class="yt-card__thumb" src="${data.thumb}" alt="" loading="lazy" onerror="this.style.display='none'" />
+          <div class="yt-card__info">
+            <div class="yt-card__title">${data.title}</div>
+            <button class="yt-card__watch" onclick="window.open('${data.link}','_blank')">▶ Watch Now</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Load after dashboard is shown
+  document.addEventListener('DOMContentLoaded', () => setTimeout(loadYTNoticeBoard, 1200));
 </script>
 
 </body>

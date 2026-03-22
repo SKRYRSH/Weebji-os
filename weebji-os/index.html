@@ -7437,6 +7437,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
             initDashboard();
           }
         }
+        // Re-render profile if open (hunter num + stats may have changed)
+        if (document.getElementById('profile')?.classList.contains('active')) {
+          if (typeof renderProfile === 'function') renderProfile();
+        }
       } catch(e) {}
     }
 

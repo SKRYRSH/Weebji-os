@@ -7533,8 +7533,6 @@ DEV.skipSplash()      → go straight to class select (if no session)
       if (!guildId) return;
       const p = loadProgress();
       await client.from('guild_members').update({
-        display_name: p.name || 'Hunter',
-        class: localStorage.getItem('weebji_class') || 'monarch',
         level: p.level || 1,
         xp: p.xp || 0,
         streak: p.streak || 0,

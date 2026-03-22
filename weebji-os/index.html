@@ -1223,30 +1223,30 @@
     <!-- ══ S02: CLASS SELECT ════════════════════ -->
     <div id="class-select" class="screen">
       <div class="class-select__header">
-        <p class="class-select__eyebrow">Step 01 of 03</p>
+        <p class="class-select__eyebrow">The System has detected you</p>
         <h2 class="class-select__title">Choose Your Class</h2>
-        <p class="class-select__sub">This is your core identity. It cannot be changed.</p>
+        <p class="class-select__sub">This is who you are becoming.<br>Choose once. There is no going back.</p>
       </div>
       <div class="class-list">
 
         <div class="class-card class-card--monarch" data-class="monarch" data-color="#00F5FF" data-label="THE MONARCH">
           <div class="class-card__icon"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="14,3 26,25 2,25"/></svg></div>
           <div class="class-card__name">THE MONARCH</div>
-          <p class="class-card__desc">Your future self trained every day. It starts here.</p>
+          <p class="class-card__desc">Your body is the weapon. Train daily. Forge the version of you that never quits.</p>
           <span class="class-card__arrow"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h10M10 5l4 4-4 4"/></svg></span>
         </div>
 
         <div class="class-card class-card--mastermind" data-class="mastermind" data-color="#FF2233" data-label="THE MASTERMIND">
           <div class="class-card__icon"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="14,2 26,14 14,26 2,14"/></svg></div>
           <div class="class-card__name">THE MASTERMIND</div>
-          <p class="class-card__desc">For builders and students. Track deep work, study sessions, and execute without mercy.</p>
+          <p class="class-card__desc">Your mind is the battlefield. Pomodoro sessions, deep work, zero distraction. Build empires.</p>
           <span class="class-card__arrow"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h10M10 5l4 4-4 4"/></svg></span>
         </div>
 
         <div class="class-card class-card--monk" data-class="monk" data-color="#A8D8A8" data-label="THE MONK">
           <div class="class-card__icon"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="14" cy="14" r="11"/><circle cx="14" cy="14" r="4"/></svg></div>
           <div class="class-card__name">THE MONK</div>
-          <p class="class-card__desc">Your future self mastered the mind before the world.</p>
+          <p class="class-card__desc">Stillness is the sharpest weapon. Daily rituals, breathwork, presence. Master the inner world.</p>
           <span class="class-card__arrow"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h10M10 5l4 4-4 4"/></svg></span>
         </div>
 
@@ -2837,6 +2837,9 @@
       State.selectedClass = card.dataset.class;
       State.selectedColor = card.dataset.color;
       State.selectedLabel = card.dataset.label;
+      haptic([40, 20, 120]);
+      shakeApp(0.4);
+      Sound.play('tap');
       triggerFlash('flash-class', State.selectedColor, () => enterContract());
     });
   });
@@ -2920,6 +2923,9 @@
     const manifest = document.getElementById('manifest-input').value.trim();
     if (manifest) localStorage.setItem('weebji_manifest', manifest);
     if (!localStorage.getItem('weebji_start_date')) localStorage.setItem('weebji_start_date', new Date().toDateString());
+    haptic([80, 40, 80, 60, 300]);
+    shakeApp(0.6);
+    Sound.play('pillarUnlock');
     triggerFlash('flash-white', '#FFFFFF', () => enterIdentity());
   });
 
@@ -4412,9 +4418,9 @@
       days.push({ date: d.toDateString(), abbr: dayAbbrs[(d.getDay()+6)%7], isToday: i === 0 });
     }
     const maxSessions = Math.max(1, ...days.map(d => p.mmDaily[d.date] || 0));
-    // Focus streak: consecutive days with 1+ session ending today
+    // Focus streak: consecutive days with 1+ session counting back from today
     let focusStreak = 0;
-    for (let i = days.length - 1; i >= 0; i--) {
+    for (let i = 0; i < days.length; i++) {
       if ((p.mmDaily[days[i].date] || 0) > 0) focusStreak++;
       else break;
     }

@@ -747,11 +747,10 @@
 
   /* ── WAITLIST COUNT ── */
   async function loadWaitlistCount() {
-    const { count } = await sb.from('waitlist').select('*', { count: 'exact', head: true });
+    const { data } = await sb.rpc('get_waitlist_count');
     const el = document.getElementById('cnt-hunters');
-    if (el && count !== null) {
-      // Show a slightly boosted number for social proof (add baseline)
-      el.textContent = (count + 47).toLocaleString();
+    if (el && data !== null) {
+      el.textContent = (data + 47).toLocaleString();
     }
   }
   loadWaitlistCount();

@@ -307,6 +307,7 @@
   .forge-mode-toggle { display:flex; gap:8px; margin-bottom:16px; }
   .forge-mode-btn { flex:1; padding:10px 8px; border-radius:8px; border:1px solid rgba(0,245,255,0.18); background:transparent; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em; color:rgba(0,245,255,0.35); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:all 0.2s; }
   .forge-mode-btn.active { background:rgba(0,245,255,0.1); border-color:rgba(0,245,255,0.55); color:#00F5FF; text-shadow:0 0 8px rgba(0,245,255,0.5); }
+  .forge-mode-btn.disabled { opacity:0.3; cursor:not-allowed; pointer-events:none; }
 
   /* Rest card */
   .rest-body-quote { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.6); font-style: italic; text-align: center; padding: 4px 0 22px; line-height: 1.7; }
@@ -3385,20 +3386,21 @@
       bonusEl.classList.toggle('hidden', !p.workoutBonus);
       const modeWrap = document.getElementById('forge-mode-wrap');
       if (modeWrap) {
+        const workoutStarted = p.workoutChecked && p.workoutChecked.length > 0;
         modeWrap.innerHTML = `<div class="forge-mode-toggle">
-          <button class="forge-mode-btn${workoutMode==='home'?' active':''}" id="forge-mode-home">🏠 Home</button>
-          <button class="forge-mode-btn${workoutMode==='gym'?' active':''}" id="forge-mode-gym">🏋️ Gym</button>
-        </div>`;
-        document.getElementById('forge-mode-home').addEventListener('click', () => {
-          localStorage.setItem('weebji_workout_mode', 'home');
-          p.workoutChecked = []; p.workoutBonus = false; saveProgress(p);
-          renderForgeArea(p, cls);
-        });
-        document.getElementById('forge-mode-gym').addEventListener('click', () => {
-          localStorage.setItem('weebji_workout_mode', 'gym');
-          p.workoutChecked = []; p.workoutBonus = false; saveProgress(p);
-          renderForgeArea(p, cls);
-        });
+          <button class="forge-mode-btn${workoutMode==='home'?' active':''}${workoutStarted?' disabled':''}" id="forge-mode-home">🏠 Home</button>
+          <button class="forge-mode-btn${workoutMode==='gym'?' active':''}${workoutStarted?' disabled':''}" id="forge-mode-gym">🏋️ Gym</button>
+        </div>${workoutStarted ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;letter-spacing:0.2em;color:#333355;text-align:center;margin-top:4px;text-transform:uppercase;">Mode locked — workout in progress</div>' : ''}`;
+        if (!workoutStarted) {
+          document.getElementById('forge-mode-home').addEventListener('click', () => {
+            localStorage.setItem('weebji_workout_mode', 'home');
+            renderForgeArea(p, cls);
+          });
+          document.getElementById('forge-mode-gym').addEventListener('click', () => {
+            localStorage.setItem('weebji_workout_mode', 'gym');
+            renderForgeArea(p, cls);
+          });
+        }
       }
       const workoutData = workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type];
       renderExercises(p, workoutData);

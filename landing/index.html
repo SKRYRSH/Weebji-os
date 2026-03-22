@@ -465,6 +465,67 @@
     .reveal-delay-2 { transition-delay: 0.2s; }
     .reveal-delay-3 { transition-delay: 0.3s; }
 
+    /* ── SCREENSHOTS ── */
+    .screens-track-wrap {
+      overflow-x: auto;
+      overflow-y: visible;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 20px 0 40px;
+      cursor: grab;
+    }
+    .screens-track-wrap::-webkit-scrollbar { display: none; }
+    .screens-track-wrap:active { cursor: grabbing; }
+    .screens-track {
+      display: flex;
+      gap: 20px;
+      padding: 0 calc(50vw - 140px);
+      width: max-content;
+    }
+    .screen-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .screen-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+    }
+    .phone-frame {
+      width: 220px;
+      height: 440px;
+      border-radius: 32px;
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow: hidden;
+      background: #0A0A0F;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(0,245,255,0.04);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      flex-shrink: 0;
+    }
+    .phone-frame:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 60px 100px rgba(0,0,0,0.7), 0 0 80px rgba(0,245,255,0.08);
+    }
+    .phone-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+    }
+    .screens-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.12);
+      text-align: center;
+      margin-top: 8px;
+    }
+
     @media (max-width: 480px) {
       nav { padding: 16px 20px; }
       .waitlist-form { flex-direction: column; padding: 12px; gap: 10px; }
@@ -552,6 +613,41 @@
       </div>
     </div>
   </div>
+</section>
+
+<hr class="divider" />
+
+<!-- SCREENSHOTS -->
+<section style="padding:80px 0;overflow:hidden">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">In Action</div>
+    <h2 class="section-title reveal">See the System.</h2>
+  </div>
+  <div class="screens-track-wrap">
+    <div class="screens-track">
+      <div class="screen-item">
+        <div class="screen-label">The Awakening</div>
+        <div class="phone-frame"><img src="screenshots/splash.png" alt="Splash screen" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">Command Center</div>
+        <div class="phone-frame"><img src="screenshots/dashboard-improved.jpeg" alt="Dashboard" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">The Forge</div>
+        <div class="phone-frame"><img src="screenshots/forge.png" alt="Forge workout screen" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">Hunter Profile</div>
+        <div class="phone-frame"><img src="screenshots/profile-improved.jpeg" alt="Profile screen" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">Arc Share Card</div>
+        <div class="phone-frame"><img src="screenshots/share-card.png" alt="Share card" loading="lazy" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="screens-hint reveal">← swipe →</div>
 </section>
 
 <hr class="divider" />
@@ -754,6 +850,14 @@
     }
   }
   loadWaitlistCount();
+
+  /* ── DRAG TO SCROLL (desktop) ── */
+  const track = document.querySelector('.screens-track-wrap');
+  let isDragging = false, startX, scrollLeft;
+  track.addEventListener('mousedown', e => { isDragging = true; startX = e.pageX - track.offsetLeft; scrollLeft = track.scrollLeft; });
+  track.addEventListener('mouseleave', () => isDragging = false);
+  track.addEventListener('mouseup', () => isDragging = false);
+  track.addEventListener('mousemove', e => { if (!isDragging) return; e.preventDefault(); track.scrollLeft = scrollLeft - (e.pageX - track.offsetLeft - startX); });
 
   /* ── SCROLL REVEAL ── */
   const revealEls = document.querySelectorAll('.reveal');

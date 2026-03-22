@@ -1993,6 +1993,7 @@
       ghostWhisperEarned: localStorage.getItem('weebji_ghost_whisper') === 'true',
       penanceSurvived   : localStorage.getItem('weebji_penance_survived') === 'true',
       shadowSlayerEarned: localStorage.getItem('weebji_shadow_slayer') === 'true',
+      streakLostToday   : localStorage.getItem('weebji_streak_lost_today') === 'true',
     };
 
     if (p.lastDate !== today) {
@@ -2100,6 +2101,7 @@
     if (p.ghostWhisperEarned)           localStorage.setItem('weebji_ghost_whisper',   'true');
     if (p.penanceSurvived)              localStorage.setItem('weebji_penance_survived','true');
     if (p.shadowSlayerEarned)           localStorage.setItem('weebji_shadow_slayer',   'true');
+    localStorage.setItem('weebji_streak_lost_today', p.streakLostToday ? 'true' : 'false');
     // Anti-tamper: write integrity hash
     _writeHash(p);
     // Phase 4: save daily shadow snapshot
@@ -2953,7 +2955,22 @@
     const instWrap = document.getElementById('gate-install-wrap');
 
     let _gateEmail = '';
-    sendBtn.addEventListener('click', async () => {
+    const verifyBtn = document.getElementById('gate-verify-btn');
+
+    verifyBtn.onclick = async () => {
+      const code = document.getElementById('gate-code-input').value.trim();
+      if (code.length < 6) return;
+      verifyBtn.disabled = true; verifyBtn.textContent = 'Verifying...';
+      const { error: verifyErr } = await SupabaseSync.verifyOtp(_gateEmail, code);
+      if (verifyErr) {
+        document.getElementById('gate-code-msg').textContent = 'Invalid code — try again';
+        verifyBtn.disabled = false; verifyBtn.textContent = 'Verify Code';
+      } else {
+        document.getElementById('gate-code-msg').textContent = 'Verified! Loading your OS...';
+      }
+    };
+
+    sendBtn.onclick = async () => {
       const email = emailIn.value.trim();
       if (!email || !email.includes('@')) {
         emailIn.style.borderColor = '#ff4466'; emailIn.focus();
@@ -2963,27 +2980,18 @@
       sendBtn.disabled = true;
       msgEl.textContent = 'Sending...';
       const { error } = await SupabaseSync.signInWithEmail(email);
-      if (error) { msgEl.textContent = 'Error — try again'; sendBtn.disabled = false; return; }
+      if (error) {
+        const isRateLimit = error.status === 429 || error.code === 'over_email_send_rate_limit' || (error.message || '').toLowerCase().includes('rate');
+        msgEl.textContent = isRateLimit ? 'Too many attempts — wait 1 hour' : 'Error — try again';
+        sendBtn.disabled = false; return;
+      }
       if (typeof posthog !== 'undefined') posthog.capture('otp_sent', { class: localStorage.getItem('weebji_class') });
       formWrap.style.display = 'none';
       instWrap.style.display = '';
       _renderInstallSteps(color);
       Sound.play('tap');
       document.getElementById('gate-code-input').focus();
-      document.getElementById('gate-verify-btn').addEventListener('click', async () => {
-        const code = document.getElementById('gate-code-input').value.trim();
-        if (code.length < 6) return;
-        const verifyBtn = document.getElementById('gate-verify-btn');
-        verifyBtn.disabled = true; verifyBtn.textContent = 'Verifying...';
-        const { error: verifyErr } = await SupabaseSync.verifyOtp(_gateEmail, code);
-        if (verifyErr) {
-          document.getElementById('gate-code-msg').textContent = 'Invalid code — try again';
-          verifyBtn.disabled = false; verifyBtn.textContent = 'Verify Code';
-        } else {
-          document.getElementById('gate-code-msg').textContent = 'Verified! Loading your OS...';
-        }
-      });
-    });
+    };
   }
 
   function _renderInstallSteps(color) {
@@ -5319,7 +5327,7 @@
      'weebji_monarch_grid','weebji_mm_grid','weebji_mm_daily','weebji_prs','weebji_reflections',
      'weebji_ghost_tokens','weebji_prev_streak','weebji_start_date','weebji_shadow_snapshots',
      'weebji_manifest','weebji_voice_enabled','weebji_total_study_mins','weebji_total_workout_days',
-     'weebji_ghost_reset_month',
+     'weebji_ghost_reset_month','weebji_streak_lost_today',
     ].forEach(k => localStorage.removeItem(k));
     location.reload();
   }
@@ -7487,7 +7495,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
           const btn = el.querySelector('#auth-send-btn');
           btn.disabled = true; btn.textContent = 'Sending...';
           const { error } = await signInWithEmail(email);
-          if (error) { el.querySelector('#auth-msg').textContent = 'Error — try again'; btn.disabled = false; btn.textContent = '☁ Sign In / Create Account'; return; }
+          if (error) {
+            const isRateLimit = error.status === 429 || error.code === 'over_email_send_rate_limit' || (error.message || '').toLowerCase().includes('rate');
+            el.querySelector('#auth-msg').textContent = isRateLimit ? 'Too many attempts — wait 1 hour' : 'Error — try again';
+            btn.disabled = false; btn.textContent = '☁ Sign In / Create Account'; return;
+          }
           el.querySelector('#auth-email-step').style.display = 'none';
           el.querySelector('#auth-code-step').style.display = '';
           el.querySelector('#auth-code-input').focus();

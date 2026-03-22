@@ -5434,9 +5434,19 @@
 
     document.getElementById('profile-hunter-num').textContent = `#${hunterNum}`;
     const nameEl = document.getElementById('profile-name');
-    nameEl.textContent = name;
+    nameEl.innerHTML = `${name} <span style="font-size:0.55em;opacity:0.5;cursor:pointer;vertical-align:middle;" title="Edit name">✎</span>`;
     nameEl.style.color = color;
     nameEl.style.textShadow = `0 0 20px ${hexRgba(color, 0.6)}`;
+    nameEl.style.cursor = 'pointer';
+    nameEl.onclick = () => {
+      const n = prompt('Enter your Hunter name:', localStorage.getItem('weebji_name') || '');
+      if (!n || !n.trim()) return;
+      const clean = n.trim().slice(0, 20);
+      localStorage.setItem('weebji_name', clean);
+      State.playerName = clean;
+      renderProfile();
+      if (typeof GuildSystem !== 'undefined') GuildSystem.syncMemberStats?.();
+    };
 
     const clsLabel = document.getElementById('profile-class-label');
     clsLabel.textContent = label;

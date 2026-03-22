@@ -1291,19 +1291,22 @@
       <div id="gate-form-wrap" style="width:100%;max-width:380px;">
         <p class="gate__eyebrow" id="gate-eyebrow">Step 03 of 03 — Lock In</p>
         <h2 class="gate__title" id="gate-title">Save Your Identity</h2>
-        <p class="gate__sub">Enter your email. We'll send a magic link — no password.<br>Your progress saves to the cloud, forever.</p>
+        <p class="gate__sub">Enter your email. We'll send a 6-digit code — no password.<br>Your progress saves to the cloud, forever.</p>
         <input class="gate__input" id="gate-email" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" />
         <button class="gate__btn" id="gate-send-btn">Lock In My Identity</button>
         <p class="gate__msg" id="gate-msg"></p>
       </div>
       <div id="gate-install-wrap" style="width:100%;max-width:380px;display:none;">
-        <p class="gate__eyebrow">Magic Link Sent ✓</p>
-        <p class="gate__sub" style="margin-bottom:20px;">Check your email and tap the link to unlock the OS.<br><span style="color:#333355;">While you wait — install the app:</span></p>
+        <p class="gate__eyebrow">Code Sent ✓</p>
+        <p class="gate__sub" style="margin-bottom:16px;">Check your email for a <strong>6-digit code</strong> and enter it below.</p>
+        <input class="gate__input" id="gate-code-input" type="text" inputmode="numeric" placeholder="000000" maxlength="6" autocomplete="one-time-code" style="letter-spacing:0.3em;text-align:center;" />
+        <button class="gate__btn" id="gate-verify-btn">Verify Code</button>
+        <p class="gate__msg" id="gate-code-msg"></p>
         <div class="gate__divider"></div>
-        <p class="gate__install-title">Add to Home Screen</p>
+        <p class="gate__install-title">While you wait — install the app:</p>
         <div class="gate__steps" id="gate-install-steps"></div>
         <div class="gate__divider"></div>
-        <p class="gate__already" id="gate-already-installed">Already installed? Just check your email.</p>
+        <p class="gate__already" id="gate-already-installed">Already installed? Enter your code above.</p>
       </div>
     </div>
 
@@ -2949,22 +2952,37 @@
     const formWrap = document.getElementById('gate-form-wrap');
     const instWrap = document.getElementById('gate-install-wrap');
 
+    let _gateEmail = '';
     sendBtn.addEventListener('click', async () => {
       const email = emailIn.value.trim();
       if (!email || !email.includes('@')) {
         emailIn.style.borderColor = '#ff4466'; emailIn.focus();
         setTimeout(() => emailIn.style.borderColor = '', 1200); return;
       }
+      _gateEmail = email;
       sendBtn.disabled = true;
       msgEl.textContent = 'Sending...';
       const { error } = await SupabaseSync.signInWithEmail(email);
       if (error) { msgEl.textContent = 'Error — try again'; sendBtn.disabled = false; return; }
-      if (typeof posthog !== 'undefined') posthog.capture('magic_link_sent', { class: localStorage.getItem('weebji_class') });
-      // Switch to install instructions
+      if (typeof posthog !== 'undefined') posthog.capture('otp_sent', { class: localStorage.getItem('weebji_class') });
       formWrap.style.display = 'none';
       instWrap.style.display = '';
       _renderInstallSteps(color);
       Sound.play('tap');
+      document.getElementById('gate-code-input').focus();
+      document.getElementById('gate-verify-btn').addEventListener('click', async () => {
+        const code = document.getElementById('gate-code-input').value.trim();
+        if (code.length < 6) return;
+        const verifyBtn = document.getElementById('gate-verify-btn');
+        verifyBtn.disabled = true; verifyBtn.textContent = 'Verifying...';
+        const { error: verifyErr } = await SupabaseSync.verifyOtp(_gateEmail, code);
+        if (verifyErr) {
+          document.getElementById('gate-code-msg').textContent = 'Invalid code — try again';
+          verifyBtn.disabled = false; verifyBtn.textContent = 'Verify Code';
+        } else {
+          document.getElementById('gate-code-msg').textContent = 'Verified! Loading your OS...';
+        }
+      });
     });
   }
 
@@ -7410,6 +7428,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
       return { error };
     }
 
+    async function verifyOtp(email, token) {
+      if (!client) return { error: 'Supabase not configured' };
+      const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
+      return { error };
+    }
+
     async function signOut() {
       if (!client) return;
       await client.auth.signOut();
@@ -7433,7 +7457,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
     function renderAuthSection() {
       const el = document.getElementById('profile-auth-section');
       if (!el) return;
-      if (!client) { el.innerHTML = ''; return; } // not configured — hide entirely
+      if (!client) { el.innerHTML = ''; return; }
       if (currentUser) {
         el.innerHTML = `
           <div class="profile-auth-user">Synced as <span>${currentUser.email}</span></div>
@@ -7441,22 +7465,46 @@ DEV.skipSplash()      → go straight to class select (if no session)
         `;
         el.querySelector('#auth-signout-btn').addEventListener('click', () => signOut());
       } else {
+        let _authEmail = '';
         el.innerHTML = `
-          <button class="profile-auth-btn" id="auth-signin-btn">☁ Sign In / Create Account</button>
+          <div id="auth-email-step">
+            <input class="gate__input" id="auth-email-input" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" style="margin-bottom:10px;" />
+            <button class="profile-auth-btn" id="auth-send-btn">☁ Sign In / Create Account</button>
+            <p class="gate__msg" id="auth-msg" style="margin-top:8px;"></p>
+          </div>
+          <div id="auth-code-step" style="display:none;">
+            <p style="color:#888;font-size:13px;margin-bottom:10px;">Enter the 6-digit code from your email:</p>
+            <input class="gate__input" id="auth-code-input" type="text" inputmode="numeric" placeholder="000000" maxlength="6" autocomplete="one-time-code" style="letter-spacing:0.3em;text-align:center;margin-bottom:10px;" />
+            <button class="profile-auth-btn" id="auth-verify-btn">Verify Code</button>
+            <p class="gate__msg" id="auth-code-msg" style="margin-top:8px;"></p>
+          </div>
         `;
-        el.querySelector('#auth-signin-btn').addEventListener('click', () => {
-          const email = prompt('Enter your email — we\'ll send a magic login link:');
-          if (!email || !email.includes('@')) return;
-          signInWithEmail(email).then(({ error }) => {
-            if (error) { alert('Sign in error: ' + error.message); }
-            else { alert('Magic link sent! Check your email.'); }
-          });
+        el.querySelector('#auth-send-btn').addEventListener('click', async () => {
+          const emailIn = el.querySelector('#auth-email-input');
+          const email = emailIn.value.trim();
+          if (!email || !email.includes('@')) { emailIn.style.borderColor = '#ff4466'; return; }
+          _authEmail = email;
+          const btn = el.querySelector('#auth-send-btn');
+          btn.disabled = true; btn.textContent = 'Sending...';
+          const { error } = await signInWithEmail(email);
+          if (error) { el.querySelector('#auth-msg').textContent = 'Error — try again'; btn.disabled = false; btn.textContent = '☁ Sign In / Create Account'; return; }
+          el.querySelector('#auth-email-step').style.display = 'none';
+          el.querySelector('#auth-code-step').style.display = '';
+          el.querySelector('#auth-code-input').focus();
+        });
+        el.querySelector('#auth-verify-btn').addEventListener('click', async () => {
+          const code = el.querySelector('#auth-code-input').value.trim();
+          if (code.length < 6) return;
+          const btn = el.querySelector('#auth-verify-btn');
+          btn.disabled = true; btn.textContent = 'Verifying...';
+          const { error } = await verifyOtp(_authEmail, code);
+          if (error) { el.querySelector('#auth-code-msg').textContent = 'Invalid code — try again'; btn.disabled = false; btn.textContent = 'Verify Code'; }
         });
       }
     }
 
     function getClient() { return client; }
-    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, signOut, getUser, isPremium, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
+    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, verifyOtp, signOut, getUser, isPremium, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
   })();
 
   /* ══ GUILD SYSTEM ════════════════════════════ */

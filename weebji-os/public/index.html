@@ -3691,7 +3691,16 @@
       // Perfect set
       if (p.workoutChecked.length === exercises.length && !p.workoutBonus) {
         p.workoutBonus = true; p.xp += 25;
-        Sound.play('milestone');
+        Sound.play('workoutComplete');
+        haptic([80, 40, 80, 40, 200]);
+        triggerFlash('flash-white', '#FFFFFF', null);
+        shakeApp(0.7);
+        const _cnv = document.getElementById('cinematic-canvas');
+        if (_cnv) {
+          const _col = localStorage.getItem('weebji_color') || '#00F5FF';
+          const _cx = _cnv.offsetWidth / 2, _cy = _cnv.offsetHeight * 0.45;
+          setTimeout(() => { CinCanvas.burst(_cx, _cy, 40, _col, 12); CinCanvas.ringBurst(_cx, _cy, _col, 2); }, 80);
+        }
         const bonusEl = document.getElementById('forge-bonus');
         bonusEl.classList.remove('hidden');
         const card = document.getElementById('forge-card');
@@ -4076,7 +4085,9 @@
       Sound.play('check');
       if (p.monkChecked.length === MONK_RITUALS.length && !p.monkBonus) {
         p.monkBonus = true; p.xp += 25;
-        Sound.play('milestone');
+        Sound.play('workoutComplete');
+        triggerFlash('flash-white', '#FFFFFF', null);
+        shakeApp(0.5);
         const listEl = document.getElementById('exercise-list');
         const existing = listEl.querySelector('.monk-bonus');
         if (!existing) {
@@ -4491,9 +4502,11 @@
 
     const sounds = {
       check() {
-        // Ascending 2-note chime: C5 → G5
-        tone(523, 'sine', 0.18, 0.12);
-        tone(659, 'sine', 0.14, 0.08, 0.1);
+        // Punchy 3-note chime: C5 → E5 → G5 with noise body
+        noise(1200, 4, 0.06, 0.08);
+        tone(523, 'sine', 0.16, 0.14);
+        tone(659, 'sine', 0.14, 0.10, 0.08);
+        tone(784, 'sine', 0.12, 0.08, 0.16);
       },
       hpcrack() {
         // Descending sweep + bandpass crack
@@ -4541,8 +4554,9 @@
         tone(180, 'sawtooth', 0.2, 0.12, 0.15);
       },
       tap() {
-        // Ultra-short micro-click — subtle, premium feel
-        tone(520, 'sine', 0.055, 0.055);
+        // Premium micro-click: sine attack + tiny high-freq tick
+        tone(520, 'sine',     0.055, 0.06);
+        tone(2400, 'sine',    0.025, 0.025, 0.008);
       },
       pillarUnlock() {
         // Ominous reveal: low sub + ascending two-note chime + reverb
@@ -4554,14 +4568,44 @@
       },
     };
 
+    sounds.workoutComplete = function() {
+      // Epic forge completion — low rumble, power chord, crystal cascade
+      tone(55,  'sine',     0.6,  0.28);
+      tone(110, 'sine',     0.4,  0.18, 0.08);
+      const rv = makeReverb(2.2, 2.0);
+      tone(392, 'sawtooth', 0.18, 0.10, 0.18, rv);
+      tone(588, 'sawtooth', 0.18, 0.09, 0.22, rv);
+      [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 'sine', 0.18, 0.12, 0.38 + i * 0.09, rv));
+    };
+
+    const HAPTICS = {
+      tap:             [8],
+      check:           [22],
+      appOpen:         [30, 20, 50],
+      milestone:       [50, 30, 100],
+      workoutComplete: [80, 40, 80, 40, 200],
+      criticalDrop:    [60, 30, 60, 30, 120],
+      pillarUnlock:    [100, 50, 200, 50, 100],
+      levelup:         [100, 50, 100, 50, 250],
+      ghostCrisis:     [200, 100, 200],
+      hpcrack:         [200, 80, 400],
+      penanceUnlock:   [300, 150, 300],
+    };
+
     return {
       play(name) {
         init();
         if (ctx && ctx.state === 'suspended') ctx.resume();
         if (sounds[name]) sounds[name]();
+        try { if (navigator.vibrate && HAPTICS[name]) navigator.vibrate(HAPTICS[name]); } catch(e) {}
       },
     };
   })();
+
+  // Haptic helper — single source of truth for all vibration patterns
+  function haptic(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch(e) {}
+  }
 
   /* ══ MUSIC ENGINE ════════════════════════════
      Oscillator-only synthesis — zero beat sequencing, zero lag.

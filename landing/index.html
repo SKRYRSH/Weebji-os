@@ -645,20 +645,9 @@
       Track workouts, build focus, forge discipline — and watch your character evolve.
     </p>
 
-    <div class="hero-ctas" style="display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;max-width:420px;animation:fadeUp 1s 0.45s ease both;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:380px;animation:fadeUp 1s 0.45s ease both;">
       <a href="https://skryrsh.github.io/Weebji-os/" class="hero-open-btn" style="display:block;width:100%;background:var(--monarch);color:#000;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;padding:16px 24px;border-radius:14px;text-align:center;transition:all 0.2s;box-shadow:0 0 40px rgba(0,245,255,0.25);">◆ &nbsp; Launch the System</a>
-      <div style="width:100%">
-        <div class="class-pills">
-          <button class="class-pill" data-class="monarch">⚔ Monarch</button>
-          <button class="class-pill" data-class="mastermind">◈ Mastermind</button>
-          <button class="class-pill" data-class="monk">☯ Monk</button>
-        </div>
-        <form class="waitlist-form" id="waitlist-form">
-          <input class="waitlist-input" id="waitlist-email" type="email" inputmode="email" placeholder="Email for updates" autocomplete="email" required />
-          <button class="waitlist-btn" type="submit" id="waitlist-btn">Stay Updated</button>
-        </form>
-        <div class="waitlist-msg" id="waitlist-msg"></div>
-      </div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;color:rgba(255,255,255,0.2);text-transform:uppercase;">Free · No download required · iOS &amp; Android</p>
     </div>
   </div>
 </div>
@@ -759,7 +748,7 @@
           <li>Install the APK file</li>
           <li>Launch WEEBJI OS like any app</li>
         </ul>
-        <a href="https://github.com/SKRYRSH/Weebji-os/releases/download/v1.0.0/WEEBJI-OS-signed.apk" class="install-btn" id="apk-link">Download APK →</a>
+        <a href="https://github.com/SKRYRSH/Weebji-os/releases/download/v1.0.0/WEEBJI-OS.apk" class="install-btn" id="apk-link">Download APK →</a>
       </div>
       <div class="install-card reveal reveal-delay-2">
         <div class="install-platform">🍎 iPhone / iPad</div>
@@ -904,8 +893,13 @@
     requestAnimationFrame(drawStars);
   }
 
-  resizeCanvas(); initStars(); requestAnimationFrame(drawStars);
-  window.addEventListener('resize', () => { resizeCanvas(); initStars(); });
+  const isMobile = window.innerWidth < 600;
+  if (!isMobile) {
+    resizeCanvas(); initStars(); requestAnimationFrame(drawStars);
+    window.addEventListener('resize', () => { resizeCanvas(); initStars(); });
+  } else {
+    canvas.style.display = 'none';
+  }
 
   /* ── CLASS PILLS ── */
   let selectedClass = '';
@@ -953,15 +947,6 @@
     btnEl.textContent = '✓ Joined';
     loadWaitlistCount();
   }
-
-  document.getElementById('waitlist-form').addEventListener('submit', e => {
-    e.preventDefault();
-    submitWaitlist(
-      document.getElementById('waitlist-email').value,
-      document.getElementById('waitlist-msg'),
-      document.getElementById('waitlist-btn')
-    );
-  });
 
   document.getElementById('waitlist-form-2').addEventListener('submit', e => {
     e.preventDefault();

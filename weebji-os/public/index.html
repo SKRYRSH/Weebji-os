@@ -1774,6 +1774,14 @@
       } catch {}
     }
 
+    function local(notifType, title, body) {
+      if (Notification.permission !== 'granted') return;
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.ready.then(reg => {
+        reg.active?.postMessage({ type: 'LOCAL_NOTIF', notifType, title, body });
+      }).catch(() => {});
+    }
+
     async function init() {
       if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') return;
       try {
@@ -1783,7 +1791,7 @@
       } catch {}
     }
 
-    return { subscribe, send, init };
+    return { subscribe, send, local, init };
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
@@ -3752,6 +3760,7 @@
         p.workoutBonus = true; p.xp += 25;
         Sound.play('workoutComplete');
         haptic([80, 40, 80, 40, 200]);
+        WeebjPush.local('workout_complete', 'MISSION ACCOMPLISHED', 'Full protocol executed. +25 XP bonus recorded by the System.');
         triggerFlash('flash-white', '#FFFFFF', null);
         shakeApp(0.7);
         const _cnv = document.getElementById('cinematic-canvas');
@@ -4042,6 +4051,7 @@
       MusicEngine.play('ambient');
       spawnDropBanner(`☯  SESSION COMPLETE — +${cfg.xp} XP`);
       SystemVoice.say('Session complete. You have returned to yourself.');
+      WeebjPush.local('sanctuary_complete', 'VOID SESSION COMPLETE', `You survived the silence. +${cfg.xp} XP transferred.`);
       renderMonkUI(loadProgress());
     }
 
@@ -4161,6 +4171,7 @@
         Sound.play('workoutComplete');
         triggerFlash('flash-white', '#FFFFFF', null);
         shakeApp(0.5);
+        WeebjPush.local('ritual_complete', 'ALL RITUALS COMPLETE', 'Daily protocol satisfied. The System acknowledges. +25 XP bonus.');
         const listEl = document.getElementById('exercise-list');
         const existing = listEl.querySelector('.monk-bonus');
         if (!existing) {
@@ -5381,6 +5392,9 @@
       setTimeout(() => triggerPillarUnlock(newLevel, _cls), 2400);
     }
 
+    // Local notification
+    WeebjPush.local('level_up', `LEVEL ${newLevel} ACHIEVED`, 'Evolution detected. The System has upgraded your rank.');
+
     // Clean up
     luEl.addEventListener('animationend', () => luEl.classList.remove('active'), { once: true });
   }
@@ -5419,6 +5433,7 @@
     `;
     document.getElementById('app').appendChild(toast);
     toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    WeebjPush.local('pillar_unlock', 'NEW PATH UNLOCKED', `${meta.label} is now accessible. The System expands your arsenal.`);
   }
 
   /* ══ HP HEART BREAK ══════════════════════════ */
@@ -5449,7 +5464,10 @@
     p.hp -= 1;
     saveProgress(p);
     updateStats(p);
-    if (p.hp === 1) WeebjPush.send('hp_critical');
+    if (p.hp === 1) {
+      WeebjPush.send('hp_critical');
+      WeebjPush.local('hp_critical', '⚠ SYSTEM CRITICAL', 'One HP remaining. Miss today and you reset. The System demands action.');
+    }
   }
 
   // Expose for testing in dev console

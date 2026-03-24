@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0A0A0F" />
+  <title>Privacy Policy — WEEBJI OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #0A0A0F;
+      color: #C8C8E8;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      min-height: 100vh;
+      padding: 0 16px 80px;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,245,255,0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding-top: 60px;
+    }
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: rgba(0,245,255,0.6);
+      text-decoration: none;
+      margin-bottom: 48px;
+      transition: color 0.2s;
+    }
+    .back:hover { color: #00F5FF; }
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: rgba(0,245,255,0.5);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 700;
+      color: #E8E8FF;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.25);
+      margin-bottom: 48px;
+    }
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+      margin: 40px 0;
+    }
+    h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #00F5FF;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      margin-top: 40px;
+    }
+    p { margin-bottom: 14px; color: rgba(200,200,232,0.85); }
+    ul {
+      margin: 0 0 14px 20px;
+      color: rgba(200,200,232,0.85);
+    }
+    ul li { margin-bottom: 6px; }
+    a { color: #00F5FF; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 24px;
+      margin: 32px 0;
+    }
+    .card p:last-child { margin-bottom: 0; }
+    strong { color: #E8E8FF; font-weight: 600; }
+    .footer-nav {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-nav a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.08em;
+    }
+    .footer-nav a:hover { color: #00F5FF; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="../landing/">← WEEBJI OS</a>
+
+    <p class="eyebrow">Legal</p>
+    <h1>Privacy Policy</h1>
+    <p class="meta">Last updated: March 23, 2026</p>
+
+    <p>WEEBJI OS ("we", "our", "the Service") is committed to protecting your privacy. This policy explains what data we collect, why we collect it, and how it is used.</p>
+
+    <h2>1. Who We Are</h2>
+    <p>WEEBJI OS is an independent software product. For privacy inquiries, contact us at <a href="mailto:weebji@gmail.com">weebji@gmail.com</a>.</p>
+
+    <h2>2. Data We Collect</h2>
+
+    <p><strong>Account data</strong> — When you sign in, we collect your email address via Supabase Auth. No passwords are stored by us (magic-link / OTP authentication only).</p>
+
+    <p><strong>Progress data</strong> — Your in-app progress (XP, level, streak, HP, class, ghost tokens, workout/study history) is stored in our Supabase database and linked to your account. This data is essential for the core functionality of the app.</p>
+
+    <p><strong>Push notification subscriptions</strong> — If you opt in to push notifications, we store your push endpoint, encryption keys (p256dh, auth), and user ID in our database. This is used only to send you WEEBJI OS notifications. You can revoke this at any time by disabling notifications in your browser or device settings.</p>
+
+    <p><strong>Anonymous usage analytics</strong> — We use <strong>PostHog</strong> to collect anonymous event data (e.g., screen views, feature usage) to understand how the app is used and improve the experience. PostHog may use cookies. No personally identifiable information is sent to PostHog unless you explicitly identify yourself.</p>
+
+    <p><strong>Payment data</strong> — Payments for WEEBJI+ are processed by <strong>Lemon Squeezy</strong>. We do not store your payment card details. Lemon Squeezy acts as the Merchant of Record and their privacy policy applies to payment processing.</p>
+
+    <h2>3. How We Use Your Data</h2>
+    <ul>
+      <li>To authenticate you and maintain your session</li>
+      <li>To sync and back up your progress data across devices</li>
+      <li>To send you streak reminders, level-up alerts, and other in-app push notifications (only if you opt in)</li>
+      <li>To verify WEEBJI+ subscription status</li>
+      <li>To understand feature usage and improve the product</li>
+    </ul>
+
+    <h2>4. Data Sharing</h2>
+    <p>We do not sell, rent, or trade your personal data. We share data only with the following third-party services as required to operate the Service:</p>
+    <ul>
+      <li><strong>Supabase</strong> — Authentication, database, and edge functions (supabase.com)</li>
+      <li><strong>PostHog</strong> — Anonymous usage analytics (posthog.com)</li>
+      <li><strong>Lemon Squeezy</strong> — Payment processing for WEEBJI+ subscriptions (lemonsqueezy.com)</li>
+      <li><strong>Google Fonts</strong> — Font delivery (fonts.google.com)</li>
+    </ul>
+
+    <h2>5. Global Leaderboard</h2>
+    <p>Your display name, class, color, hunter number, level, and best streak may appear on the public global leaderboard within the app. You can update your display name at any time. Your email address is never displayed publicly.</p>
+
+    <h2>6. Data Retention</h2>
+    <p>Your account and progress data is retained as long as your account is active. Push notification subscriptions are automatically cleaned up when they expire or are revoked. You may request deletion of your data at any time by contacting <a href="mailto:weebji@gmail.com">weebji@gmail.com</a>.</p>
+
+    <h2>7. Your Rights</h2>
+    <p>Depending on your location, you may have the right to:</p>
+    <ul>
+      <li>Access the personal data we hold about you</li>
+      <li>Request correction or deletion of your data</li>
+      <li>Opt out of analytics (contact us or clear your browser cookies)</li>
+      <li>Withdraw consent for push notifications at any time</li>
+    </ul>
+    <p>To exercise any of these rights, email us at <a href="mailto:weebji@gmail.com">weebji@gmail.com</a>.</p>
+
+    <h2>8. Cookies</h2>
+    <p>We use minimal cookies required for authentication (session tokens via Supabase) and analytics (PostHog). We do not use advertising or tracking cookies. You can clear cookies at any time in your browser settings.</p>
+
+    <h2>9. Children's Privacy</h2>
+    <p>WEEBJI OS is not directed at children under the age of 13. We do not knowingly collect personal data from children under 13. If you believe a child has provided us with personal data, contact us and we will delete it.</p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>We may update this policy as the Service evolves. The "Last updated" date at the top will always reflect the most recent version. Continued use of the Service after changes constitutes acceptance of the updated policy.</p>
+
+    <h2>11. Contact</h2>
+    <p>Questions about this policy? Email us at <a href="mailto:weebji@gmail.com">weebji@gmail.com</a>.</p>
+
+    <div class="footer-nav">
+      <a href="./terms.html">Terms of Service</a>
+      <a href="./refund.html">Refund Policy</a>
+      <a href="../landing/">← Back to WEEBJI OS</a>
+    </div>
+  </div>
+</body>
+</html>

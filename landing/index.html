@@ -75,15 +75,21 @@
       color: rgba(255,255,255,0.8);
     }
     .nav-logo span { color: var(--monarch); }
-    .nav-badge {
+    .nav-cta {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.2em;
-      color: rgba(255,255,255,0.3);
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 5px 12px;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: #000;
+      background: var(--monarch);
+      border: none;
+      padding: 8px 18px;
       border-radius: 99px;
+      text-decoration: none;
+      font-weight: 700;
+      text-transform: uppercase;
+      transition: filter 0.2s, transform 0.2s;
     }
+    .nav-cta:hover { filter: brightness(1.15); transform: scale(1.03); }
 
     /* ── HERO ── */
     .hero {
@@ -526,6 +532,65 @@
       margin-top: 8px;
     }
 
+    .hero-open-btn:hover { filter: brightness(1.15); transform: translateY(-2px); box-shadow: 0 0 60px rgba(0,245,255,0.4); }
+    .hero-open-btn:active { transform: translateY(0); }
+
+    /* ── INSTALL SECTION ── */
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .install-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .install-platform {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+    }
+    .install-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.85);
+    }
+    .install-steps {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.9;
+      list-style: none;
+      padding: 0;
+    }
+    .install-steps li::before { content: '→ '; color: var(--monarch); }
+    .install-btn {
+      display: inline-block;
+      background: rgba(0,245,255,0.08);
+      border: 1px solid rgba(0,245,255,0.25);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--monarch);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      align-self: flex-start;
+    }
+    .install-btn:hover { background: rgba(0,245,255,0.14); border-color: rgba(0,245,255,0.5); }
+
     @media (max-width: 480px) {
       nav { padding: 16px 20px; }
       .waitlist-form { flex-direction: column; padding: 12px; gap: 10px; }
@@ -542,7 +607,7 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo">WEEBJI<span>OS</span></div>
-  <div class="nav-badge">Early Access</div>
+  <a href="https://skryrsh.github.io/Weebji-os/" class="nav-cta">Open App →</a>
 </nav>
 
 <!-- HERO -->
@@ -555,17 +620,20 @@
       Track workouts, build focus, forge discipline — and watch your character evolve.
     </p>
 
-    <div class="waitlist-wrap">
-      <div class="class-pills">
-        <button class="class-pill" data-class="monarch">⚔ Monarch</button>
-        <button class="class-pill" data-class="mastermind">◈ Mastermind</button>
-        <button class="class-pill" data-class="monk">☯ Monk</button>
+    <div class="hero-ctas" style="display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;max-width:420px;animation:fadeUp 1s 0.45s ease both;">
+      <a href="https://skryrsh.github.io/Weebji-os/" class="hero-open-btn" style="display:block;width:100%;background:var(--monarch);color:#000;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;padding:16px 24px;border-radius:14px;text-align:center;transition:all 0.2s;box-shadow:0 0 40px rgba(0,245,255,0.25);">◆ &nbsp; Launch the System</a>
+      <div style="width:100%">
+        <div class="class-pills">
+          <button class="class-pill" data-class="monarch">⚔ Monarch</button>
+          <button class="class-pill" data-class="mastermind">◈ Mastermind</button>
+          <button class="class-pill" data-class="monk">☯ Monk</button>
+        </div>
+        <form class="waitlist-form" id="waitlist-form">
+          <input class="waitlist-input" id="waitlist-email" type="email" inputmode="email" placeholder="Email for updates" autocomplete="email" required />
+          <button class="waitlist-btn" type="submit" id="waitlist-btn">Stay Updated</button>
+        </form>
+        <div class="waitlist-msg" id="waitlist-msg"></div>
       </div>
-      <form class="waitlist-form" id="waitlist-form">
-        <input class="waitlist-input" id="waitlist-email" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" required />
-        <button class="waitlist-btn" type="submit" id="waitlist-btn">Join Waitlist</button>
-      </form>
-      <div class="waitlist-msg" id="waitlist-msg"></div>
     </div>
   </div>
 </div>
@@ -652,6 +720,39 @@
 
 <hr class="divider" />
 
+<!-- INSTALL -->
+<section>
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Get the App</div>
+    <h2 class="section-title reveal">Install in 30 Seconds.</h2>
+    <div class="install-grid">
+      <div class="install-card reveal reveal-delay-1">
+        <div class="install-platform">🤖 Android</div>
+        <div class="install-title">Download APK</div>
+        <ul class="install-steps">
+          <li>Tap the button below</li>
+          <li>Install the APK file</li>
+          <li>Launch WEEBJI OS like any app</li>
+        </ul>
+        <a href="https://skryrsh.github.io/Weebji-os/" class="install-btn" id="apk-link">Download APK →</a>
+      </div>
+      <div class="install-card reveal reveal-delay-2">
+        <div class="install-platform">🍎 iPhone / iPad</div>
+        <div class="install-title">Add to Home Screen</div>
+        <ul class="install-steps">
+          <li>Open app link in Safari</li>
+          <li>Tap the Share icon at the bottom</li>
+          <li>Tap "Add to Home Screen"</li>
+          <li>Tap Add — done</li>
+        </ul>
+        <a href="https://skryrsh.github.io/Weebji-os/" class="install-btn">Open in Safari →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
 <!-- FEATURES -->
 <section>
   <div class="wrap">
@@ -713,15 +814,18 @@
       </div>
     </div>
 
-    <h2 class="cta-title reveal">Your Awakening<br>Starts Here.</h2>
-    <p class="cta-sub reveal">Early access opens soon. Waitlist members get in first — and the System remembers those who showed up early.</p>
+    <h2 class="cta-title reveal">Your Awakening<br>Starts Now.</h2>
+    <p class="cta-sub reveal">The System is live. Sign up for updates — or launch right now.</p>
 
-    <div class="waitlist-wrap reveal" style="max-width:420px;margin:0 auto">
-      <form class="waitlist-form" id="waitlist-form-2">
-        <input class="waitlist-input" id="waitlist-email-2" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" required />
-        <button class="waitlist-btn" type="submit" id="waitlist-btn-2">Join Waitlist</button>
-      </form>
-      <div class="waitlist-msg" id="waitlist-msg-2"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:420px;margin:0 auto" class="reveal">
+      <a href="https://skryrsh.github.io/Weebji-os/" class="hero-open-btn" style="display:block;width:100%;background:var(--monarch);color:#000;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;padding:16px 24px;border-radius:14px;text-align:center;transition:all 0.2s;box-shadow:0 0 40px rgba(0,245,255,0.25);">◆ &nbsp; Launch the System</a>
+      <div class="waitlist-wrap" style="width:100%;margin:0">
+        <form class="waitlist-form" id="waitlist-form-2">
+          <input class="waitlist-input" id="waitlist-email-2" type="email" inputmode="email" placeholder="Email for updates" autocomplete="email" required />
+          <button class="waitlist-btn" type="submit" id="waitlist-btn-2">Stay Updated</button>
+        </form>
+        <div class="waitlist-msg" id="waitlist-msg-2"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -730,8 +834,10 @@
 <footer>
   <div class="footer-logo">WEEBJI OS</div>
   <div class="footer-links">
-    <a href="mailto:weebji@gmail.com">Contact</a>
-    <a href="#" onclick="return false">Privacy</a>
+    <a href="mailto:weebjiglobal@gmail.com">Contact</a>
+    <a href="https://skryrsh.github.io/Weebji-os/legal/privacy.html">Privacy Policy</a>
+    <a href="https://skryrsh.github.io/Weebji-os/legal/terms.html">Terms</a>
+    <a href="https://skryrsh.github.io/Weebji-os/legal/refund.html">Refunds</a>
   </div>
 </footer>
 

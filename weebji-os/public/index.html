@@ -1091,21 +1091,35 @@
   .ritual-clock-save:active { transform:scale(0.97); }
 
   /* ══ THE VOID ════════════════════════════════════ */
-  #void-overlay { position:fixed; inset:0; background:#000; z-index:940; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:52px 32px; opacity:0; pointer-events:none; transition:opacity 0.5s ease; text-align:center; }
+  @keyframes kf-void-bg { 0%,100%{opacity:0.5;} 50%{opacity:1;} }
+  @keyframes kf-void-pulse { 0%,100%{text-shadow:0 0 20px rgba(160,0,220,0.6),0 0 60px rgba(120,0,180,0.3);} 50%{text-shadow:0 0 40px rgba(200,0,255,0.9),0 0 100px rgba(160,0,220,0.5);} }
+  @keyframes kf-void-breathe { 0%,100%{opacity:0.55;} 50%{opacity:1;} }
+  #void-overlay {
+    position:fixed; inset:0; z-index:940;
+    background:#000;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:18px; padding:52px 32px;
+    opacity:0; pointer-events:none; transition:opacity 0.6s ease;
+    text-align:center; overflow:hidden;
+  }
+  #void-overlay::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(120,0,180,0.18) 0%, rgba(60,0,100,0.08) 50%, transparent 75%);
+    animation: kf-void-bg 4s ease-in-out infinite;
+    pointer-events:none;
+  }
   #void-overlay.active { opacity:1; pointer-events:all; }
-  .void__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.45em; color:#1A001A; text-transform:uppercase; }
-  .void__title { font-family:'Cinzel',serif; font-size:28px; font-weight:900; letter-spacing:0.24em; color:#2A0033; text-shadow:0 0 30px rgba(80,0,100,0.4); animation:kf-void-pulse 3s ease-in-out infinite; }
-  @keyframes kf-void-pulse { 0%,100%{text-shadow:0 0 20px rgba(80,0,100,0.3);} 50%{text-shadow:0 0 40px rgba(120,0,160,0.5);} }
-  .void__timer { font-family:'JetBrains Mono',monospace; font-size:56px; font-weight:700; letter-spacing:0.06em; color:#1A001A; margin:8px 0; transition:color 0.4s; }
-  .void__timer.ticking { color:#3A0044; text-shadow:0 0 20px rgba(100,0,140,0.25); }
-  .void__mode-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:#150015; text-transform:uppercase; }
-  .void__warning { font-family:'Inter',sans-serif; font-size:11px; color:#200020; font-style:italic; max-width:240px; line-height:1.85; }
-  .void__penalty-flash { position:absolute; inset:0; background:rgba(180,0,0,0.18); opacity:0; pointer-events:none; transition:opacity 0.1s; }
+  .void__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.45em; color:rgba(180,80,220,0.5); text-transform:uppercase; position:relative; }
+  .void__title { font-family:'Cinzel',serif; font-size:30px; font-weight:900; letter-spacing:0.28em; color:#CC44FF; animation:kf-void-pulse 3s ease-in-out infinite; position:relative; }
+  .void__timer { font-family:'JetBrains Mono',monospace; font-size:64px; font-weight:700; letter-spacing:0.06em; color:rgba(180,60,220,0.35); margin:8px 0; transition:color 0.4s, text-shadow 0.4s; position:relative; }
+  .void__timer.ticking { color:#BB44EE; text-shadow:0 0 30px rgba(160,0,220,0.5), 0 0 80px rgba(120,0,180,0.25); }
+  .void__mode-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:rgba(160,60,200,0.45); text-transform:uppercase; position:relative; }
+  .void__warning { font-family:'Inter',sans-serif; font-size:13px; color:rgba(220,180,255,0.75); font-style:italic; max-width:260px; line-height:1.9; position:relative; animation:kf-void-breathe 5s ease-in-out infinite; }
+  .void__penalty-flash { position:absolute; inset:0; background:rgba(200,0,0,0.25); opacity:0; pointer-events:none; transition:opacity 0.1s; }
   .void__penalty-flash.flash { opacity:1; }
-  .void__surrender { margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#150015; text-decoration:underline; cursor:pointer; background:none; border:none; -webkit-tap-highlight-color:transparent; text-transform:uppercase; }
-  .void__surrender:active { color:#300030; }
-  .void__breach-banner { position:absolute; top:0; left:0; right:0; padding:14px 20px; background:rgba(180,0,0,0.9); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#FF3333; text-transform:uppercase; text-align:center; transform:translateY(-100%); transition:transform 0.3s ease; }
-  .void__breach-banner.show { transform:translateY(0); }
+  .void__surrender { margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:rgba(150,50,180,0.4); text-decoration:underline; cursor:pointer; background:none; border:none; -webkit-tap-highlight-color:transparent; text-transform:uppercase; position:relative; transition:color 0.2s; }
+  .void__surrender:active { color:rgba(200,100,240,0.7); }
+  .void__breach-banner { position:absolute; top:0; left:0; right:0; padding:14px 20px; background:rgba(160,0,0,0.92); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#FF5555; text-transform:uppercase; text-align:center; transform:translateY(-100%); transition:transform 0.3s ease; }
 
   /* Penance manifest reveal */
   .penance__manifest { font-family:'Inter',sans-serif; font-size:13px; color:#660000; font-style:italic; max-width:260px; line-height:1.8; border-left:2px solid #330000; padding-left:14px; text-align:left; opacity:0; transform:translateY(6px); transition:opacity 0.6s 0.8s ease, transform 0.6s 0.8s ease; }
@@ -1306,8 +1320,8 @@
       </div>
       <div id="gate-install-wrap" style="width:100%;max-width:380px;display:none;">
         <p class="gate__eyebrow">Code Sent ✓</p>
-        <p class="gate__sub" style="margin-bottom:16px;">Check your email for a <strong>6-digit code</strong> and enter it below.</p>
-        <input class="gate__input" id="gate-code-input" type="text" inputmode="numeric" placeholder="000000" maxlength="6" autocomplete="one-time-code" style="letter-spacing:0.3em;text-align:center;" />
+        <p class="gate__sub" style="margin-bottom:16px;">Check your email for the code and enter it below.</p>
+        <input class="gate__input" id="gate-code-input" type="text" inputmode="numeric" placeholder="000000" maxlength="8" autocomplete="one-time-code" style="letter-spacing:0.3em;text-align:center;" />
         <button class="gate__btn" id="gate-verify-btn">Verify Code</button>
         <p class="gate__msg" id="gate-code-msg"></p>
         <div class="gate__divider"></div>
@@ -1377,6 +1391,9 @@
           <div id="custom-task-list"></div>
         </div>
 
+        <!-- YouTube Notice Board -->
+        <div id="yt-notice-board" style="margin:0 0 14px;display:none;"></div>
+
         <div class="stats-strip">
           <div class="stat-mini">
             <p class="stat-mini__label">Streak</p>
@@ -1407,9 +1424,6 @@
 
         <!-- Daily Challenge -->
         <div id="daily-challenge-container"></div>
-
-        <!-- YouTube Notice Board -->
-        <div id="yt-notice-board" style="margin:0 0 14px;display:none;"></div>
 
         <div style="height:8px"></div>
       </div>
@@ -1699,9 +1713,20 @@
   <script>
   /* ══ SERVICE WORKER ══════════════════════════ */
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js')
-      .then(r => console.log('[SW]', r.scope))
-      .catch(e => console.warn('[SW] failed', e));
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            const banner = document.createElement('div');
+            banner.id = 'sw-update-banner';
+            banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(0,245,255,0.12);border:1px solid rgba(0,245,255,0.35);border-radius:12px;padding:12px 20px;color:#00F5FF;font-family:Inter,sans-serif;font-size:13px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);box-shadow:0 0 24px rgba(0,245,255,0.15);';
+            banner.innerHTML = '<span>⬆ New update available</span><button onclick="navigator.serviceWorker.controller.postMessage({type:\'SKIP_WAITING\'});location.reload();" style="background:rgba(0,245,255,0.2);border:1px solid rgba(0,245,255,0.4);border-radius:8px;color:#00F5FF;padding:5px 12px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;">Update</button>';
+            document.body.appendChild(banner);
+          }
+        });
+      });
+    }).catch(e => console.warn('[SW] failed', e));
   }
 
   /* ══ NATIVE WEB PUSH ════════════════════════ */
@@ -1741,7 +1766,7 @@
       if (!user) return;
       if (Notification.permission !== 'granted') return;
       try {
-        fetch(SEND_URL, {
+        await fetch(SEND_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ANON_KEY}` },
           body: JSON.stringify({ user_id: user.id, type, ...extras })
@@ -1798,7 +1823,7 @@
       deferredInstallEvent.userChoice.then(choice => {
         if (choice.outcome === 'accepted') localStorage.setItem('weebji_install_dismissed', '1');
         deferredInstallEvent = null;
-      });
+      }).catch(() => { deferredInstallEvent = null; });
     } else {
       // iOS or no native prompt — show manual instructions
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -2280,11 +2305,7 @@
     if (isWeebjiPlus()) {
       el.innerHTML = `
         <div class="profile-plus-active">WEEBJI+ ACTIVE</div>
-        <button class="ghost-shop-btn" id="ghost-shop-btn">👻 Buy Ghost Tokens — $0.99 each</button>`;
-      el.querySelector('#ghost-shop-btn').addEventListener('click', () => {
-        window.open(WEEBJI_GHOST_TOKEN_URL, '_blank');
-        Sound.play('tap');
-      });
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');window.open('${WEEBJI_GHOST_TOKEN_URL}','_blank')">👻 Buy Ghost Tokens — $0.99 each</button>`;
     } else {
       el.innerHTML = `
         <div class="plus-paywall">
@@ -2298,12 +2319,12 @@
             <li>Deep analytics — study streaks, HP history</li>
           </ul>
           <div class="plus-plans">
-            <div class="plus-plan" id="plus-plan-monthly">
+            <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('${WEEBJI_PLUS_STRIPE_URL}')">
               <div class="plus-plan__period">Monthly</div>
               <div class="plus-plan__price">$4.99</div>
               <div class="plus-plan__unit">/month</div>
             </div>
-            <div class="plus-plan featured" id="plus-plan-annual">
+            <div class="plus-plan featured" id="plus-plan-annual" onclick="Sound.play('tap');_openCheckout('${WEEBJI_PLUS_ANNUAL_URL}')">
               <div class="plus-plan__badge">BEST VALUE</div>
               <div class="plus-plan__period">Annual</div>
               <div class="plus-plan__price">$29.99</div>
@@ -2311,16 +2332,7 @@
             </div>
           </div>
         </div>
-        <button class="ghost-shop-btn" id="ghost-shop-btn">👻 Need a Ghost Token? — $0.99</button>`;
-      el.querySelector('#plus-plan-monthly').addEventListener('click', () => {
-        Sound.play('tap'); _openCheckout(WEEBJI_PLUS_STRIPE_URL);
-      });
-      el.querySelector('#plus-plan-annual').addEventListener('click', () => {
-        Sound.play('tap'); _openCheckout(WEEBJI_PLUS_ANNUAL_URL);
-      });
-      el.querySelector('#ghost-shop-btn').addEventListener('click', () => {
-        Sound.play('tap'); _openCheckout(WEEBJI_GHOST_TOKEN_URL);
-      });
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('${WEEBJI_GHOST_TOKEN_URL}')">👻 Need a Ghost Token? — $0.99</button>`;
     }
   }
 
@@ -3195,6 +3207,8 @@
 
     // Day-1 Welcome Card — only for true first-timers
     renderWelcomeCard(p, cls);
+    // YouTube Notice Board
+    loadYTNoticeBoard();
   }
 
   /* ── Day-1 Welcome Card ──────────────────── */
@@ -3801,7 +3815,10 @@
       this.render();
       Sound.play('check');
       MusicEngine.play('mastermind');
-      if (typeof TheVoid !== 'undefined') TheVoid.enter(MM_MODES[this.mode].label || this.mode + ' Session');
+      if (typeof TheVoid !== 'undefined') {
+        TheVoid.enter(MM_MODES[this.mode].label || this.mode + ' Session');
+        TheVoid.syncTimer(this.formatTime(this.remaining));
+      }
     },
 
     pause() {
@@ -3824,7 +3841,8 @@
     tick() {
       this.remaining--;
       const t = this.formatTime(this.remaining);
-      document.getElementById('mm-timer').textContent = t;
+      const primTimer = document.getElementById('mm-timer');
+      if (primTimer) primTimer.textContent = t;
       const secTimer = document.getElementById('mm-timer-sec');
       if (secTimer) secTimer.textContent = t;
       if (typeof TheVoid !== 'undefined') TheVoid.syncTimer(t);
@@ -5684,6 +5702,8 @@
     const client = SupabaseSync._client();
     const me = SupabaseSync.getUser();
     if (!client) { el.innerHTML = ''; return; }
+    // Push latest local progress first so leaderboard reads fresh data
+    await SupabaseSync.pushProgress();
 
     const ri = parseInt(color.slice(1,3),16), gi = parseInt(color.slice(3,5),16), bi = parseInt(color.slice(5,7),16);
     const rgb = `${ri},${gi},${bi}`;
@@ -5727,7 +5747,7 @@
       return `<div class="lb-row${isYou ? ' is-you' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}">
         <span class="lb-rank" style="color:${rank<=3 ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
         <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${r.display_name}</span>` : r.display_name}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${r.hunter_number}</span>` : ''}</span>
-        <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.best_streak}<span style="font-size:11px;opacity:0.5"> days</span></span>
+        <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.best_streak || 0}<span style="font-size:11px;opacity:0.5"> days</span></span>
       </div>`;
     }).join('');
 
@@ -6749,7 +6769,15 @@ ${particles}
       saveProgress(p);
     }
     const portrait = document.getElementById('shadow-portrait');
-    if (portrait) portrait.innerHTML = renderHunterSVG(cls, shadow.avatarTier || 0, 52, 62);
+    if (portrait) {
+      portrait.innerHTML = '';
+      const _tier = shadow.avatarTier || 0;
+      const _img = new Image();
+      _img.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:50%;';
+      _img.onload = () => { portrait.innerHTML = ''; portrait.appendChild(_img); };
+      _img.onerror = () => { portrait.innerHTML = renderHunterSVG(cls, _tier, 52, 62); };
+      _img.src = `assets/avatars/${cls}-t${_tier + 1}.jpeg`;
+    }
     const nameEl = document.getElementById('shadow-name');
     if (nameEl) nameEl.textContent = `SHADOW [${name.toUpperCase()}]`;
     const statsEl = document.getElementById('shadow-stats');
@@ -7494,16 +7522,17 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
         // Update global leaderboard
         const hunterNum = localStorage.getItem('weebji_hunter_num');
-        await client.from('leaderboard').upsert({
+        const lbPayload = {
           user_id:      currentUser.id,
           display_name: localStorage.getItem('weebji_name') || 'Hunter',
           class:        localStorage.getItem('weebji_class') || 'monarch',
           color:        localStorage.getItem('weebji_color') || '#00F5FF',
           hunter_number: hunterNum ? parseInt(hunterNum) : null,
           level:        p.level,
-          best_streak:  p.bestStreak || 0,
           updated_at:   new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        };
+        lbPayload.best_streak = p.bestStreak || 0;
+        await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
       } catch(e) {}
     }
 
@@ -7534,8 +7563,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
         const { data } = await client.from('progress').select('*').eq('user_id', currentUser.id).single();
         if (!data) return;
         const p = loadProgress();
-        // Only restore from cloud if cloud level is higher (or local has no data)
-        if (data.level > p.level || (p.level === 1 && p.xp === 0)) {
+        // Restore from cloud if cloud is higher, or same level with more XP, or local is empty
+        if (data.level > p.level || (data.level === p.level && data.xp > p.xp) || (p.level <= 1 && p.xp <= 0)) {
           p.level = data.level; p.xp = data.xp; p.hp = data.hp;
           p.streak = data.streak; p.bestStreak = data.best_streak;
           p.ghostTokens = data.ghost_tokens;
@@ -7605,7 +7634,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           </div>
           <div id="auth-code-step" style="display:none;">
             <p style="color:#888;font-size:13px;margin-bottom:10px;">Enter the 6-digit code from your email:</p>
-            <input class="gate__input" id="auth-code-input" type="text" inputmode="numeric" placeholder="000000" maxlength="6" autocomplete="one-time-code" style="letter-spacing:0.3em;text-align:center;margin-bottom:10px;" />
+            <input class="gate__input" id="auth-code-input" type="text" inputmode="numeric" placeholder="000000" maxlength="8" autocomplete="one-time-code" style="letter-spacing:0.3em;text-align:center;margin-bottom:10px;" />
             <button class="profile-auth-btn" id="auth-verify-btn">Verify Code</button>
             <p class="gate__msg" id="auth-code-msg" style="margin-top:8px;"></p>
           </div>
@@ -7929,13 +7958,23 @@ DEV.skipSplash()      → go straight to class select (if no session)
     } catch(e) {}
 
     try {
-      const rss  = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
-      const url  = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=1`;
-      const res  = await fetch(url);
-      const json = await res.json();
-      const item = json?.items?.[0];
-      if (!item) return;
-      const data = { ts: Date.now(), title: item.title, thumb: item.thumbnail, link: item.link };
+      const rss   = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rss)}`;
+      const res   = await fetch(proxy);
+      const json  = await res.json();
+      const xml   = new DOMParser().parseFromString(json.contents, 'text/xml');
+      const entry = xml.querySelector('entry');
+      if (!entry) return;
+      const videoId = entry.querySelector('videoId')?.textContent
+        || (entry.querySelector('id')?.textContent || '').split(':').pop();
+      if (!videoId) return;
+      const title = entry.querySelector('title')?.textContent || 'New Video';
+      const data  = {
+        ts:    Date.now(),
+        title,
+        thumb: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+        link:  `https://youtu.be/${videoId}`,
+      };
       localStorage.setItem(YT_CACHE_KEY, JSON.stringify(data));
       renderYTCard(el, data);
     } catch(e) {}
@@ -7956,8 +7995,6 @@ DEV.skipSplash()      → go straight to class select (if no session)
       </div>`;
   }
 
-  // Load after dashboard is shown
-  document.addEventListener('DOMContentLoaded', () => setTimeout(loadYTNoticeBoard, 1200));
 </script>
 
 </body>

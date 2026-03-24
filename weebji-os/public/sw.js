@@ -1,5 +1,5 @@
 // ── WEEBJI OS — Service Worker v7 (icon fix) ─────────────────────────────────
-const CACHE_NAME = 'weebji-os-v25';
+const CACHE_NAME = 'weebji-os-v27';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
@@ -55,7 +55,6 @@ self.addEventListener('push', e => {
     self.registration.showNotification(data.title || 'WEEBJI OS', {
       body:               data.body || 'The System is watching.',
       icon:               BASE + 'icons/icon-192.png',
-      badge:              BASE + 'icons/icon-192.png',
       tag:                cfg.tag,
       renotify:           true,
       vibrate:            cfg.vibrate,

@@ -8013,24 +8013,27 @@ DEV.skipSplash()      → go straight to class select (if no session)
     } catch(e) {}
 
     try {
-      const rss = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
-      const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`;
-      const res  = await fetch(api);
-      const json = await res.json();
-      const item = json.items?.[0];
-      if (!item) return;
-      const videoId = item.link?.split('v=')[1]?.split('&')[0]
-        || item.guid?.split('v=')[1]?.split('&')[0];
+      const rss   = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
+      const proxy = `https://corsproxy.io/?url=${encodeURIComponent(rss)}`;
+      const res   = await fetch(proxy);
+      const text  = await res.text();
+      const xml   = new DOMParser().parseFromString(text, 'text/xml');
+      const entry = xml.querySelector('entry');
+      if (!entry) return;
+      const rawId  = entry.querySelector('id')?.textContent || '';
+      const videoId = rawId.includes('video:') ? rawId.split('video:')[1]
+                    : rawId.includes('v=')      ? rawId.split('v=')[1].split('&')[0]
+                    : '';
       if (!videoId) return;
       const data = {
         ts:    Date.now(),
-        title: item.title || 'New Video',
+        title: entry.querySelector('title')?.textContent || 'New Video',
         thumb: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
         link:  `https://youtu.be/${videoId}`,
       };
       localStorage.setItem(YT_CACHE_KEY, JSON.stringify(data));
       renderYTCard(el, data);
-    } catch(e) {}
+    } catch(e) { console.error('[YT notice board]', e); }
   }
 
   function renderYTCard(el, data) {

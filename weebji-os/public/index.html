@@ -1851,6 +1851,32 @@
   });
 
   /* ══ NOTIFICATION PERMISSION PROMPT ══════════ */
+  function maybeShowSignInNudge() {
+    if (SupabaseSync.getUser()) return; // already signed in
+    const today = new Date().toDateString();
+    if (localStorage.getItem('weebji_signin_nudge_date') === today) return; // shown today
+    const p = loadProgress();
+    if (p.level <= 1 && p.xp <= 0) return; // no progress to lose yet
+    localStorage.setItem('weebji_signin_nudge_date', today);
+    const nudge = document.createElement('div');
+    nudge.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);border-radius:14px;padding:13px 18px;color:rgba(255,255,255,0.9);font-family:Inter,sans-serif;font-size:13px;max-width:320px;width:90%;display:flex;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(255,60,60,0.1);';
+    nudge.innerHTML = `
+      <span style="flex:1;">⚠ Your progress is stored locally only. <strong>Sign in to protect it.</strong></span>
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button id="nudge-signin" style="background:rgba(255,60,60,0.25);border:1px solid rgba(255,60,60,0.5);border-radius:8px;color:#ff6b6b;padding:5px 11px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;">Sign In</button>
+        <button id="nudge-dismiss" style="background:transparent;border:none;color:rgba(255,255,255,0.35);padding:5px;font-size:16px;cursor:pointer;line-height:1;">✕</button>
+      </div>`;
+    document.body.appendChild(nudge);
+    nudge.querySelector('#nudge-signin').addEventListener('click', () => {
+      nudge.remove();
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'profile'));
+      showScreen('profile');
+      renderProfile();
+    });
+    nudge.querySelector('#nudge-dismiss').addEventListener('click', () => nudge.remove());
+    setTimeout(() => nudge.remove(), 8000);
+  }
+
   function maybeShowNotifPrompt() {
     if (Notification.permission !== 'default') return;
     if (localStorage.getItem('weebji_notif_dismissed')) return;
@@ -3096,6 +3122,7 @@
       showInstallPromptWhenReady();
       maybeShowNotifPrompt();
       RitualClock.check();
+      maybeShowSignInNudge();
       // Handle shortcut action (?action=profile from manifest shortcuts)
       if (window._shortcutAction === 'profile') {
         window._shortcutAction = null;

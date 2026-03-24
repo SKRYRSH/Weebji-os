@@ -8013,20 +8013,18 @@ DEV.skipSplash()      → go straight to class select (if no session)
     } catch(e) {}
 
     try {
-      const rss   = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
-      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rss)}`;
-      const res   = await fetch(proxy);
-      const json  = await res.json();
-      const xml   = new DOMParser().parseFromString(json.contents, 'text/xml');
-      const entry = xml.querySelector('entry');
-      if (!entry) return;
-      const videoId = entry.querySelector('videoId')?.textContent
-        || (entry.querySelector('id')?.textContent || '').split(':').pop();
+      const rss = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
+      const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`;
+      const res  = await fetch(api);
+      const json = await res.json();
+      const item = json.items?.[0];
+      if (!item) return;
+      const videoId = item.link?.split('v=')[1]?.split('&')[0]
+        || item.guid?.split('v=')[1]?.split('&')[0];
       if (!videoId) return;
-      const title = entry.querySelector('title')?.textContent || 'New Video';
-      const data  = {
+      const data = {
         ts:    Date.now(),
-        title,
+        title: item.title || 'New Video',
         thumb: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
         link:  `https://youtu.be/${videoId}`,
       };

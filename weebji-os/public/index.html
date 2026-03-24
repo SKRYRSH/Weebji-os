@@ -7510,6 +7510,14 @@ DEV.skipSplash()      → go straight to class select (if no session)
       if (!client || !currentUser) return;
       const p = loadProgress();
       try {
+        const richData = {
+          monkGrid: p.monkGrid, monarchGrid: p.monarchGrid, mmGrid: p.mmGrid,
+          mmDaily: p.mmDaily, prs: p.prs, reflections: p.reflections,
+          titles: p.titles, mmSessions: p.mmSessions, voidSessions: p.voidSessions,
+          prevStreak: p.prevStreak, lastDate: p.lastDate, yesterdayCount: p.yesterdayCount,
+          ghostWhisperEarned: p.ghostWhisperEarned, penanceSurvived: p.penanceSurvived,
+          shadowSlayerEarned: p.shadowSlayerEarned,
+        };
         await client.from('progress').upsert({
           user_id: currentUser.id,
           level: p.level, xp: p.xp, hp: p.hp,
@@ -7517,6 +7525,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           ghost_tokens: p.ghostTokens,
           total_study_mins: p.totalStudyMins || 0,
           total_workout_days: p.totalWorkoutDays || 0,
+          data: richData,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
 
@@ -7563,17 +7572,36 @@ DEV.skipSplash()      → go straight to class select (if no session)
         const { data } = await client.from('progress').select('*').eq('user_id', currentUser.id).single();
         if (!data) return;
         const p = loadProgress();
-        // Restore from cloud if cloud is higher, or same level with more XP, or local is empty
-        if (data.level > p.level || (data.level === p.level && data.xp > p.xp) || (p.level <= 1 && p.xp <= 0)) {
+        // Always take the best stats (cloud or local, whichever is higher)
+        if (data.level > p.level || (data.level === p.level && data.xp >= p.xp) || (p.level <= 1 && p.xp <= 0)) {
           p.level = data.level; p.xp = data.xp; p.hp = data.hp;
           p.streak = data.streak; p.bestStreak = data.best_streak;
           p.ghostTokens = data.ghost_tokens;
           p.totalStudyMins = data.total_study_mins;
           p.totalWorkoutDays = data.total_workout_days;
-          saveProgress(p);
-          if (document.getElementById('dashboard').classList.contains('active')) {
-            initDashboard();
-          }
+        }
+        // Always restore rich data from cloud (grids, reflections, PRs, titles, etc.)
+        // This ensures data survives localStorage clears, new devices, reinstalls
+        if (data.data) {
+          const d = data.data;
+          if (d.monkGrid?.length)    p.monkGrid    = d.monkGrid;
+          if (d.monarchGrid?.length) p.monarchGrid = d.monarchGrid;
+          if (d.mmGrid?.length)      p.mmGrid      = d.mmGrid;
+          if (d.mmDaily && Object.keys(d.mmDaily).length) p.mmDaily = d.mmDaily;
+          if (d.prs)                 p.prs         = d.prs;
+          if (d.reflections?.length) p.reflections = d.reflections;
+          if (d.titles?.length)      p.titles      = d.titles;
+          if (d.mmSessions)          p.mmSessions  = Math.max(p.mmSessions || 0, d.mmSessions);
+          if (d.voidSessions)        p.voidSessions = Math.max(p.voidSessions || 0, d.voidSessions);
+          if (d.prevStreak)          p.prevStreak  = d.prevStreak;
+          if (d.lastDate && !p.lastDate) p.lastDate = d.lastDate;
+          if (d.ghostWhisperEarned)  p.ghostWhisperEarned  = true;
+          if (d.penanceSurvived)     p.penanceSurvived     = true;
+          if (d.shadowSlayerEarned)  p.shadowSlayerEarned  = true;
+        }
+        saveProgress(p);
+        if (document.getElementById('dashboard').classList.contains('active')) {
+          initDashboard();
         }
         // Re-render profile if open (hunter num + stats may have changed)
         if (document.getElementById('profile')?.classList.contains('active')) {

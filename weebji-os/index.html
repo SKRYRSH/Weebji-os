@@ -820,6 +820,16 @@
   .ghost-int__skip { padding: 12px; border: none; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: #333355; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
 
   /* ══ CINEMATIC ENGINE — ARC SHARE CARD ══════ */
+  #mission-briefing { position: absolute; inset: 0; background: rgba(0,0,0,0.96); z-index: 915; display: flex; align-items: center; justify-content: center; padding: 32px 24px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+  #mission-briefing.active { opacity: 1; pointer-events: all; }
+  .mb__inner { width: 100%; max-width: 360px; text-align: center; }
+  .mb__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: rgba(255,255,255,0.3); text-transform: uppercase; margin: 0 0 14px; }
+  .mb__title { font-family: 'Cinzel', serif; font-size: 28px; letter-spacing: 0.12em; color: var(--mb-color, #00F5FF); text-shadow: 0 0 30px var(--mb-glow, rgba(0,245,255,0.5)); margin: 0 0 16px; }
+  .mb__rule { width: 60px; height: 1px; background: var(--mb-color, #00F5FF); opacity: 0.4; margin: 0 auto 20px; }
+  .mb__body { font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.65; color: rgba(255,255,255,0.75); margin: 0 0 18px; }
+  .mb__target { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: var(--mb-color, #00F5FF); opacity: 0.7; text-transform: uppercase; margin: 0 0 32px; }
+  .mb__btn { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; background: transparent; border: 1px solid var(--mb-color, #00F5FF); border-radius: 12px; color: var(--mb-color, #00F5FF); padding: 14px 32px; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; -webkit-tap-highlight-color: transparent; }
+  .mb__btn:active { background: rgba(255,255,255,0.05); transform: scale(0.97); }
   #arc-card-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.94); z-index: 920; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px 20px; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
   #arc-card-overlay.active { opacity: 1; pointer-events: all; }
   .arc-card-wrap { width: 100%; max-width: 320px; border-radius: 20px; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06); flex-shrink: 0; }
@@ -1584,6 +1594,7 @@
         <div id="profile-plus-section"></div>
         <div id="profile-analytics"></div>
         <div id="profile-leaderboard"></div>
+        <div id="profile-friends"></div>
         <div id="profile-guild-section"></div>
         <div style="height:32px"></div>
       </div>
@@ -1631,6 +1642,18 @@
       <div class="smilestone__num"  id="smilestone-num">7</div>
       <p class="smilestone__days">DAYS</p>
       <p class="smilestone__quote" id="smilestone-quote"></p>
+    </div>
+
+    <!-- Mission Briefing overlay (first-time onboarding) -->
+    <div id="mission-briefing">
+      <div class="mb__inner">
+        <p class="mb__eyebrow">DAY 1 — MISSION BRIEFING</p>
+        <h2 class="mb__title" id="mb-title">FIRST MISSION</h2>
+        <div class="mb__rule" id="mb-rule"></div>
+        <p class="mb__body" id="mb-body"></p>
+        <p class="mb__target" id="mb-target"></p>
+        <button class="mb__btn" id="mb-begin-btn">BEGIN MISSION →</button>
+      </div>
     </div>
 
     <!-- Arc Share Card overlay -->
@@ -3213,6 +3236,7 @@
       State.selectedClass = card.dataset.class;
       State.selectedColor = card.dataset.color;
       State.selectedLabel = card.dataset.label;
+      if (typeof posthog !== 'undefined') posthog.capture('onboarding_class_selected', { class: card.dataset.class });
       haptic([40, 20, 120]);
       shakeApp(0.4);
       Sound.play('tap');
@@ -3299,6 +3323,7 @@
     const manifest = document.getElementById('manifest-input').value.trim();
     if (manifest) localStorage.setItem('weebji_manifest', manifest);
     if (!localStorage.getItem('weebji_start_date')) localStorage.setItem('weebji_start_date', new Date().toDateString());
+    if (typeof posthog !== 'undefined') posthog.capture('onboarding_contract_signed', { class: State.selectedClass });
     haptic([80, 40, 80, 60, 300]);
     shakeApp(0.6);
     Sound.play('pillarUnlock');
@@ -3574,6 +3599,8 @@
 
     // Day-1 Welcome Card — only for true first-timers
     renderWelcomeCard(p, cls);
+    // Mission Briefing — fullscreen overlay on very first dashboard visit
+    if (!localStorage.getItem('weebji_mission_done')) setTimeout(() => showMissionBriefing(cls, color), 1200);
     // YouTube Notice Board
     loadYTNoticeBoard();
   }
@@ -3640,6 +3667,30 @@
       const scroll = document.querySelector('.dash-scroll');
       if (scroll) scroll.prepend(card);
     }
+  }
+
+  function showMissionBriefing(cls, color) {
+    const overlay = document.getElementById('mission-briefing');
+    if (!overlay) return;
+    const missions = {
+      monarch:    { title: 'FORGE YOUR BODY',    body: 'Your first mission is physical. Complete one workout today — anything counts. The body is the weapon. Pick it up.', target: 'TARGET: THE FORGE' },
+      mastermind: { title: 'EXPAND YOUR INTELLECT', body: 'Your first mission is knowledge. Start a 25-minute deep work session — study, build, or learn. Intelligence is the sharpest weapon. Sharpen it.', target: 'TARGET: MIND FORGE' },
+      monk:       { title: 'CONTROL YOUR MIND',     body: 'Your first mission is mastery of self. Complete today\'s ritual — meditation, breathwork, or stillness. The mind is the battlefield. Tame it.', target: 'TARGET: SANCTUARY' },
+    };
+    const m = missions[cls] || missions.monarch;
+    const rgb = `${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)}`;
+    overlay.style.setProperty('--mb-color', color);
+    overlay.style.setProperty('--mb-glow', `rgba(${rgb},0.5)`);
+    document.getElementById('mb-title').textContent  = m.title;
+    document.getElementById('mb-body').textContent   = m.body;
+    document.getElementById('mb-target').textContent = m.target;
+    overlay.classList.add('active');
+    document.getElementById('mb-begin-btn').onclick = () => {
+      localStorage.setItem('weebji_mission_done', '1');
+      overlay.classList.remove('active');
+      if (typeof posthog !== 'undefined') posthog.capture('onboarding_completed', { class: cls });
+      Sound.play('tap');
+    };
   }
 
   function markFirstActionDone() {
@@ -6076,6 +6127,8 @@
     renderDeepAnalytics(p, color);
     // Global leaderboard
     renderLeaderboard(color);
+    // Friends section
+    renderFriends(color);
     // Guilds section
     if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(color);
   }
@@ -6150,6 +6203,96 @@
   }
 
   function openShareScreen() { showArcCard(); }
+
+  async function renderFriends(color) {
+    const el = document.getElementById('profile-friends');
+    if (!el) return;
+    if (typeof SupabaseSync === 'undefined') { el.innerHTML = ''; return; }
+    const client = SupabaseSync._client();
+    const me = SupabaseSync.getUser();
+    if (!client || !me) { el.innerHTML = ''; return; }
+
+    const rgb = color.startsWith('#') ? `${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)}` : '0,245,255';
+
+    async function loadFriendCards() {
+      const { data: friendRows } = await client.from('friends').select('friend_user_id').eq('user_id', me.id);
+      if (!friendRows || !friendRows.length) return '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:0.15em;color:rgba(255,255,255,0.2);text-align:center;padding:16px 0;">No hunters added yet.</div>';
+
+      const ids = friendRows.map(r => r.friend_user_id);
+      const { data: lb } = await client.from('leaderboard').select('user_id,display_name,class,color,hunter_number,level,best_streak').in('user_id', ids);
+      if (!lb || !lb.length) return '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:0.15em;color:rgba(255,255,255,0.2);text-align:center;padding:16px 0;">Friends not found on leaderboard yet.</div>';
+
+      // Level-up notification check
+      const cachedKey = 'weebji_friend_lvls';
+      let cached = {};
+      try { cached = JSON.parse(localStorage.getItem(cachedKey) || '{}'); } catch {}
+      lb.forEach(f => {
+        const prev = cached[f.user_id];
+        if (prev !== undefined && f.level > prev) {
+          Notif.local('friend_levelup', '⚔ Squad Level Up', `${f.display_name} reached Level ${f.level}!`);
+        }
+        cached[f.user_id] = f.level;
+      });
+      localStorage.setItem(cachedKey, JSON.stringify(cached));
+
+      return lb.map(f => {
+        const fc = f.color || '#00F5FF';
+        const fri = parseInt(fc.slice(1,3),16), fgi = parseInt(fc.slice(3,5),16), fbi = parseInt(fc.slice(5,7),16);
+        const frgb = `${fri},${fgi},${fbi}`;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(${frgb},0.04);border:1px solid rgba(${frgb},0.14);border-radius:12px;margin-bottom:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:${fc};box-shadow:0 0 8px ${fc};flex-shrink:0"></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Cinzel',serif;font-size:12px;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.display_name}${f.hunter_number ? `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);margin-left:6px">#${f.hunter_number}</span>` : ''}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(${frgb},0.6);margin-top:2px;">${(f.class||'hunter').toUpperCase()} · LV ${f.level||1}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:rgba(${frgb},0.9);font-weight:600;">${f.best_streak||0}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.1em;">STREAK</div>
+          </div>
+          <button onclick="removeFriend('${f.user_id}')" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:14px;cursor:pointer;padding:4px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
+        </div>`;
+      }).join('');
+    }
+
+    async function refresh() {
+      el.querySelector('#friend-list-inner').innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:16px 0;">Loading...</div>';
+      el.querySelector('#friend-list-inner').innerHTML = await loadFriendCards();
+    }
+
+    el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2);margin-top:14px;">
+      <div class="lb-card__header" style="color:${color}">◈ SQUAD</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <input id="friend-num-input" type="number" placeholder="Hunter #" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#fff;outline:none;-webkit-appearance:none;" />
+        <button id="friend-add-btn" style="background:rgba(${rgb},0.1);border:1px solid rgba(${rgb},0.35);border-radius:10px;padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;color:${color};cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;">ADD</button>
+      </div>
+      <div id="friend-list-inner"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:16px 0;">Loading...</div></div>
+    </div>`;
+
+    loadFriendCards().then(html => { const inner = el.querySelector('#friend-list-inner'); if (inner) inner.innerHTML = html; });
+
+    el.querySelector('#friend-add-btn').onclick = async () => {
+      const numInput = el.querySelector('#friend-num-input');
+      const num = parseInt(numInput.value);
+      if (!num) return;
+      const btn = el.querySelector('#friend-add-btn');
+      btn.textContent = '...';
+      const { data: match } = await client.from('leaderboard').select('user_id,display_name').eq('hunter_number', num).maybeSingle();
+      if (!match) { btn.textContent = 'ADD'; speak('Hunter not found.'); return; }
+      if (match.user_id === me.id) { btn.textContent = 'ADD'; speak('You cannot add yourself.'); return; }
+      const { error } = await client.from('friends').insert({ user_id: me.id, friend_user_id: match.user_id });
+      btn.textContent = 'ADD';
+      numInput.value = '';
+      if (!error) { if (typeof posthog !== 'undefined') posthog.capture('friend_added'); speak(`${match.display_name} added to your squad.`); refresh(); }
+      else if (error.code === '23505') speak('Already in your squad.');
+    };
+
+    window.removeFriend = async (fuid) => {
+      if (!client || !me) return;
+      await client.from('friends').delete().eq('user_id', me.id).eq('friend_user_id', fuid);
+      if (typeof posthog !== 'undefined') posthog.capture('friend_removed');
+      refresh();
+    };
+  }
 
   function renderCustomWorkouts(cls, color, p) {
     const el = document.getElementById('profile-custom-workouts');
@@ -6572,7 +6715,7 @@
     ctx.fillText(String(streakNum), W/2, streakNumY); ctx.shadowBlur = 0;
     ctx.font = '700 48px "JetBrains Mono", monospace';
     ctx.fillStyle = color;
-    ctx.fillText('DAYS', W/2, streakNumY + 64);
+    ctx.fillText(streakNum === 1 ? 'DAY' : 'DAYS', W/2, streakNumY + 64);
 
     // Global rank badge
     const lbRank = localStorage.getItem('weebji_lb_rank');
@@ -7967,6 +8110,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
           localStorage.setItem('weebji_hunter_num', String(hn.number));
           const badge = document.getElementById('dash-hunter');
           if (badge) badge.textContent = '#' + hn.number;
+          // Always keep leaderboard hunter_number in sync with the canonical sequential number
+          client.from('leaderboard').update({ hunter_number: hn.number }).eq('user_id', currentUser.id).then(() => {});
         }
 
         // Restore progress

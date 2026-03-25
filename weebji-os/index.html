@@ -366,8 +366,8 @@
   .bottom-nav { flex-shrink: 0; display: grid; grid-template-columns: repeat(4,1fr); height: 68px; background: rgba(8,8,12,0.97); border-top: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 0 4px; padding-bottom: env(safe-area-inset-bottom, 0); }
   .nav-btn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: none; border: none; cursor: pointer; padding: 8px 4px; border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); -webkit-tap-highlight-color: transparent; }
   .nav-btn:active { transform: scale(0.88); }
-  .nav-btn svg    { width: 22px; height: 22px; color: #2A2A44; transition: color 0.3s ease, filter 0.3s ease; }
-  .nav-btn span   { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.08em; color: #2A2A44; transition: color 0.3s ease; }
+  .nav-btn svg    { width: 22px; height: 22px; color: #484868; transition: color 0.3s ease, filter 0.3s ease; }
+  .nav-btn span   { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.08em; color: #484868; transition: color 0.3s ease; }
   .nav-btn.active svg  { color: var(--cls-color, #00F5FF); filter: drop-shadow(0 0 4px var(--cls-color, #00F5FF)) drop-shadow(0 0 8px var(--cls-glow, rgba(0,245,255,0.35))); }
   .nav-btn.active span { color: var(--cls-color, #00F5FF); }
   .nav-btn.active::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 18px; height: 2px; background: var(--cls-color, #00F5FF); box-shadow: 0 0 6px var(--cls-color, #00F5FF), 0 0 14px var(--cls-glow, rgba(0,245,255,0.4)); border-radius: 1px; }
@@ -7615,7 +7615,20 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
         // Restore progress
         const { data } = await client.from('progress').select('*').eq('user_id', currentUser.id).single();
-        if (!data) return;
+        if (!data) {
+          // First sign-in — no cloud record yet. Back up whatever the user has locally right now.
+          await pushProgress();
+          // Add to Brevo onboarding sequence (fire-and-forget)
+          client.functions.invoke('brevo-signup', {
+            body: {
+              email: currentUser.email,
+              hunter_name: localStorage.getItem('weebji_name') || 'Hunter',
+              class: localStorage.getItem('weebji_class') || 'monarch',
+              signup_date: new Date().toISOString(),
+            },
+          }).catch(() => {});
+          return;
+        }
         const p = loadProgress();
         // Always take the best stats (cloud or local, whichever is higher)
         if (data.level > p.level || (data.level === p.level && data.xp >= p.xp) || (p.level <= 1 && p.xp <= 0)) {
@@ -7657,7 +7670,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
     async function signInWithEmail(email) {
       if (!client) return { error: 'Supabase not configured' };
-      const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: 'https://skryrsh.github.io/Weebji-os/' } });
+      const { error } = await client.auth.signInWithOtp({ email });
       return { error };
     }
 

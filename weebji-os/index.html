@@ -6016,12 +6016,20 @@
     // Phase 5: Voice toggle render
     const voiceBtn = document.getElementById('voice-toggle-btn');
     if (voiceBtn) {
-      const on = SystemVoice.isEnabled();
       const toggleEl = document.getElementById('voice-toggle-state');
       const subEl    = document.getElementById('voice-toggle-sub');
-      if (toggleEl) { toggleEl.textContent = on ? 'ON' : 'OFF'; toggleEl.className = `profile-voice__toggle ${on ? 'on' : 'off'}`; }
-      if (subEl)    subEl.textContent = on ? 'Active — Web Speech API' : 'Tap to Activate';
-      voiceBtn.style.borderColor = hexRgba(color, on ? 0.25 : 0.07);
+      if (!isWeebjiPlus()) {
+        if (toggleEl) { toggleEl.textContent = 'PLUS'; toggleEl.className = 'profile-voice__toggle off'; }
+        if (subEl)    subEl.textContent = 'WEEBJI+ Exclusive — Upgrade to unlock';
+        voiceBtn.style.borderColor = hexRgba(color, 0.07);
+        voiceBtn.style.opacity = '0.55';
+      } else {
+        const on = SystemVoice.isEnabled();
+        if (toggleEl) { toggleEl.textContent = on ? 'ON' : 'OFF'; toggleEl.className = `profile-voice__toggle ${on ? 'on' : 'off'}`; }
+        if (subEl)    subEl.textContent = on ? 'Active — Web Speech API' : 'Tap to Activate';
+        voiceBtn.style.borderColor = hexRgba(color, on ? 0.25 : 0.07);
+        voiceBtn.style.opacity = '1';
+      }
     }
 
     // Custom workouts (Forge users only)
@@ -6087,7 +6095,7 @@
 
     const { data: rows } = await client
       .from('leaderboard')
-      .select('user_id,display_name,class,color,hunter_number,level,best_streak')
+      .select('user_id,display_name,class,color,hunter_number,level,best_streak,dungeon_title')
       .order('best_streak', { ascending: false })
       .order('level', { ascending: false })
       .limit(20);
@@ -6122,7 +6130,7 @@
       const rrb = `${rri},${rgi},${rbi}`;
       return `<div class="lb-row${isYou ? ' is-you' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}">
         <span class="lb-rank" style="color:${rank<=3 ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
-        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${r.display_name}</span>` : r.display_name}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${r.hunter_number}</span>` : ''}</span>
+        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${r.display_name}</span>` : r.display_name}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${r.hunter_number}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${r.dungeon_title}</span>` : ''}</span>
         <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.best_streak || 0}<span style="font-size:11px;opacity:0.5"> days</span></span>
       </div>`;
     }).join('');
@@ -6715,6 +6723,10 @@
   });
 
   document.getElementById('voice-toggle-btn').addEventListener('click', () => {
+    if (!isWeebjiPlus()) {
+      spawnDropBanner('◈  SYSTEM VOICE — WEEBJI+ EXCLUSIVE');
+      return;
+    }
     const on = SystemVoice.toggle();
     if (on) {
       // Test line on enable so user knows voice is working
@@ -7319,6 +7331,7 @@ ${particles}
     function _pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
     function speak(text, tier = 0) {
+      if (!isWeebjiPlus()) return;
       if (!isEnabled()) return;
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
@@ -7917,6 +7930,17 @@ DEV.skipSplash()      → go straight to class select (if no session)
           updated_at:   new Date().toISOString(),
         };
         lbPayload.best_streak = p.bestStreak || 0;
+        // Best dungeon title earned
+        if (p.titles && p.titles.length) {
+          const dungeonTitles = p.titles.filter(t => t.startsWith('dungeon_'));
+          if (dungeonTitles.length) {
+            const best = dungeonTitles.reduce((a, b) => {
+              const ai = parseInt(a.split('_')[1]) || 0, bi = parseInt(b.split('_')[1]) || 0;
+              return (DUNGEONS[bi]?.xp || 0) > (DUNGEONS[ai]?.xp || 0) ? b : a;
+            });
+            lbPayload.dungeon_title = DUNGEONS[parseInt(best.split('_')[1])]?.title || null;
+          }
+        }
         await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
       } catch(e) {}
     }

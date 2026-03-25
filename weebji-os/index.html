@@ -2123,7 +2123,7 @@
       hp             : parseInt(localStorage.getItem('weebji_hp')         || '5'),
       streak         : parseInt(localStorage.getItem('weebji_streak')     || '0'),
       bestStreak     : parseInt(localStorage.getItem('weebji_best_streak') || '0'),
-      ghostTokens    : parseInt(localStorage.getItem('weebji_ghost_tokens')|| '3'),
+      ghostTokens    : parseInt(localStorage.getItem('weebji_ghost_tokens')|| '1'),
       prevStreak     : parseInt(localStorage.getItem('weebji_prev_streak') || '0'),
       totalStudyMins : parseInt(localStorage.getItem('weebji_total_study_mins') || '0'),
       totalWorkoutDays: parseInt(localStorage.getItem('weebji_total_workout_days') || '0'),
@@ -2211,13 +2211,16 @@
       localStorage.setItem('weebji_best_streak', p.bestStreak);
     }
 
-    // Monthly ghost token refill (free: 1/month; WEEBJI+: 5/month)
+    // Monthly ghost token refill (free: top up to 1 if empty; WEEBJI+: +3/month, cap 5)
     const _d = new Date();
     const thisMonth = `${_d.getFullYear()}-${_d.getMonth()}`;
     const lastRefillMonth = localStorage.getItem('weebji_ghost_reset_month') || '';
     if (lastRefillMonth !== thisMonth) {
-      const addTokens = isWeebjiPlus() ? 5 : 1;
-      p.ghostTokens = Math.min((p.ghostTokens || 0) + addTokens, isWeebjiPlus() ? 10 : 3);
+      if (isWeebjiPlus()) {
+        p.ghostTokens = Math.min((p.ghostTokens || 0) + 3, 5);
+      } else {
+        if ((p.ghostTokens || 0) === 0) p.ghostTokens = 1;
+      }
       localStorage.setItem('weebji_ghost_reset_month', thisMonth);
       saveProgress(p);
     }
@@ -3003,7 +3006,7 @@
     // Consistency checks — catch impossible values even if hash passes
     const maxPossibleXP = xpForLevel(p.level) * 3; // generous ceiling
     const isSuspicious = p.xp > maxPossibleXP || p.level > 100 || p.hp > 5 || p.hp < 0
-      || p.streak > 3650 || p.ghostTokens > 10 || p.bestStreak < p.streak;
+      || p.streak > 3650 || p.ghostTokens > 5 || p.bestStreak < p.streak;
 
     if (stored !== expected || isSuspicious) {
       // Silently soft-reset — no warning that tips off the cheater
@@ -3012,7 +3015,7 @@
       if (p.level  > 100)           localStorage.setItem('weebji_level', '1');
       if (p.streak > 3650)          localStorage.setItem('weebji_streak','0');
       if (p.hp > 5 || p.hp < 0)    localStorage.setItem('weebji_hp',    '3');
-      if (p.ghostTokens > 10)       localStorage.setItem('weebji_ghost_tokens', '3');
+      if (p.ghostTokens > 5)        localStorage.setItem('weebji_ghost_tokens', '1');
       _writeHash({ xp: 0, level: lvl, streak: 0, hp: 3, bestStreak: 0, ghostTokens: 3 });
       return false;
     }
@@ -3067,8 +3070,8 @@
 
   /* ══ VARIABLE REWARDS — RNG DROP ENGINE ══════ */
   const RARE_DROPS = [
-    { id: 'ghost_token',    label: '👻  GHOST TOKEN ACQUIRED',      apply: p => { p.ghostTokens = (p.ghostTokens || 0) + 1; } },
-    { id: 'critical_surge', label: '⚡  CRITICAL SURGE — 1.5× XP',  apply: null },
+    { id: 'critical_surge', label: '⚡  CRITICAL SURGE — 2× XP',      apply: null, multiplier: 2 },
+    { id: 'void_echo',      label: '◈  VOID ECHO — XP SURGE +50',     apply: null, bonus: 50 },
     { id: 'title_unbroken', label: '🔱  TITLE UNLOCKED: THE UNBROKEN', apply: p => { if (!p.titles.includes('the_unbroken')) p.titles.push('the_unbroken'); } },
   ];
 
@@ -3083,9 +3086,11 @@
     }
     const drop   = RARE_DROPS[Math.floor(Math.random() * RARE_DROPS.length)];
     let finalXP  = baseXP;
-    if (drop.id === 'critical_surge') {
-      finalXP = Math.round(baseXP * 1.5);
-    } else {
+    if (drop.multiplier) {
+      finalXP = Math.round(baseXP * drop.multiplier);
+    } else if (drop.bonus) {
+      finalXP = baseXP + drop.bonus;
+    } else if (drop.apply) {
       drop.apply(p);
       saveProgress(p);
     }

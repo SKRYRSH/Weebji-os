@@ -740,6 +740,45 @@
   .profile-arc-btn { width: 100%; padding: 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.07); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: #444466; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
   .profile-arc-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 
+  /* ══ WEEKLY DUNGEON ══════════════════════════ */
+  .dungeon-card { position:relative; background:rgba(4,4,14,0.97); border:1px solid rgba(139,0,255,0.3); border-radius:20px; padding:20px 18px; margin-bottom:14px; overflow:hidden; }
+  .dungeon-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(139,0,255,0.12) 0%, transparent 65%); pointer-events:none; }
+  .dungeon-card__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(139,0,255,0.6); text-transform:uppercase; margin-bottom:6px; }
+  .dungeon-card__boss { font-family:'Cinzel',serif; font-size:18px; font-weight:900; letter-spacing:0.1em; color:#fff; text-shadow:0 0 20px rgba(139,0,255,0.7), 0 0 40px rgba(139,0,255,0.3); margin-bottom:4px; }
+  .dungeon-card__quote { font-family:'Inter',sans-serif; font-size:11px; font-style:italic; color:rgba(255,255,255,0.3); margin-bottom:16px; line-height:1.5; }
+  .dungeon-boss-hp { margin-bottom:18px; }
+  .dungeon-boss-hp__label { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.25em; color:rgba(139,0,255,0.5); text-transform:uppercase; margin-bottom:5px; display:flex; justify-content:space-between; }
+  .dungeon-boss-hp__track { width:100%; height:6px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; }
+  .dungeon-boss-hp__fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#8B00FF,#CC44FF); box-shadow:0 0 10px rgba(139,0,255,0.6); transition:width 1s cubic-bezier(0.16,1,0.3,1); }
+  .dungeon-gates { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .dungeon-gate { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px; border:1px solid rgba(139,0,255,0.15); background:rgba(139,0,255,0.04); }
+  .dungeon-gate.unlocked { border-color:rgba(139,0,255,0.3); background:rgba(139,0,255,0.08); }
+  .dungeon-gate.claimed { border-color:rgba(139,0,255,0.5); background:rgba(139,0,255,0.12); }
+  .dungeon-gate.locked { opacity:0.4; }
+  .dungeon-gate__icon { font-size:16px; flex-shrink:0; }
+  .dungeon-gate__info { flex:1; }
+  .dungeon-gate__day { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; color:rgba(139,0,255,0.5); text-transform:uppercase; margin-bottom:2px; }
+  .dungeon-gate__task { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.75); line-height:1.4; }
+  .dungeon-gate__btn { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; padding:6px 12px; border-radius:8px; border:1px solid rgba(139,0,255,0.4); background:rgba(139,0,255,0.12); color:#CC44FF; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; white-space:nowrap; }
+  .dungeon-gate__btn:active { transform:scale(0.95); }
+  .dungeon-gate__done { font-size:14px; }
+  .dungeon-boss-fight { padding:14px; border-radius:12px; border:1px solid rgba(255,30,30,0.3); background:rgba(255,30,30,0.06); text-align:center; }
+  .dungeon-boss-fight__label { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.3em; color:rgba(255,80,80,0.7); text-transform:uppercase; margin-bottom:6px; }
+  .dungeon-boss-fight__task { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.7); line-height:1.5; margin-bottom:12px; }
+  .dungeon-boss-fight__btn { width:100%; padding:13px; border-radius:10px; border:1px solid rgba(255,30,30,0.5); background:rgba(255,30,30,0.1); font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.15em; color:#FF4444; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  .dungeon-boss-fight__btn:active { transform:scale(0.97); }
+  .dungeon-timer { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(139,0,255,0.45); letter-spacing:0.15em; text-align:center; margin-top:12px; }
+  .dungeon-reward { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; background:rgba(255,215,0,0.04); border:1px solid rgba(255,215,0,0.12); margin-bottom:14px; }
+  .dungeon-reward__xp { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#FFD700; text-shadow:0 0 10px rgba(255,215,0,0.5); }
+  .dungeon-reward__title { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,215,0,0.5); letter-spacing:0.1em; }
+  .dungeon-locked-overlay { text-align:center; padding:8px 0 4px; }
+  .dungeon-locked-overlay__label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:rgba(139,0,255,0.45); text-transform:uppercase; margin-bottom:8px; }
+  .dungeon-locked-overlay__btn { display:inline-block; padding:10px 22px; border-radius:10px; border:1px solid rgba(139,0,255,0.35); background:rgba(139,0,255,0.08); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em; color:#CC44FF; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  .dungeon-defeated { text-align:center; padding:16px 0 8px; }
+  .dungeon-defeated__glyph { font-size:32px; margin-bottom:8px; }
+  .dungeon-defeated__title { font-family:'Cinzel',serif; font-size:14px; font-weight:900; color:#CC44FF; text-shadow:0 0 16px rgba(139,0,255,0.6); letter-spacing:0.12em; margin-bottom:4px; }
+  .dungeon-defeated__sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(139,0,255,0.45); letter-spacing:0.15em; }
+
   /* ══ CUSTOM WORKOUTS — PROFILE SECTION ══════ */
   .cw-card { margin-bottom: 12px; padding: 14px 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; }
   .cw-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -1390,6 +1429,9 @@
           <div id="quest-list"></div>
           <div id="custom-task-list"></div>
         </div>
+
+        <!-- Weekly Dungeon -->
+        <div id="dungeon-card" style="display:none;"></div>
 
         <!-- YouTube Notice Board -->
         <div id="yt-notice-board" style="margin:0 0 14px;display:none;"></div>
@@ -2370,6 +2412,293 @@
     }
   }
 
+  /* ══ WEEKLY DUNGEON ══════════════════════════════ */
+  const DUNGEONS = [
+    {
+      boss:'THE IRON WARDEN', quote:'"Order. Discipline. Collapse."',
+      gates:[
+        { day:'Monday',   task:'Complete your full workout — zero exercises skipped.',        check: p => (p.workoutChecked||[]).length >= 3 || p.workoutDone },
+        { day:'Wednesday',task:'Log a single unbroken 45-minute focus session.',              check: p => Object.values(p.mmDaily||{}).some(v=>v>=45) },
+        { day:'Friday',   task:'Complete all 3 daily quests and the daily challenge.',        check: p => (p.questsChecked||[]).length >= 3 && !!p.dailyChallengeDone },
+      ],
+      boss_task:'Complete a full workout AND a 60-min focus session in the same day.',
+      boss_check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && Object.values(p.mmDaily||{}).some(v=>v>=60),
+      xp:500, title:'⚔ Iron Warden Slayer', glyph:'🔱',
+    },
+    {
+      boss:'THE VOID ARCHITECT', quote:'"You cannot build what you fear to imagine."',
+      gates:[
+        { day:'Monday',   task:'Complete all 3 daily quests without skipping a single one.',  check: p => (p.questsChecked||[]).length >= 3 },
+        { day:'Wednesday',task:'Achieve a 7-day active streak — no breaks.',                  check: p => (p.streak||0) >= 7 },
+        { day:'Friday',   task:'Complete your workout + daily challenge today.',              check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && !!p.dailyChallengeDone },
+      ],
+      boss_task:'Perfect day — full workout, all 3 quests, daily challenge. No excuses.',
+      boss_check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && (p.questsChecked||[]).length >= 3 && !!p.dailyChallengeDone,
+      xp:500, title:'◆ Void Architect\'s Pupil', glyph:'🌀',
+    },
+    {
+      boss:'THE HOLLOW KING', quote:'"An empire built on weak days crumbles."',
+      gates:[
+        { day:'Monday',   task:'Start your streak — or extend it. Log any activity today.',  check: p => (p.streak||0) >= 1 },
+        { day:'Wednesday',task:'Complete full workout in gym mode.',                          check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
+        { day:'Friday',   task:'Log 90 minutes of total focus time this week.',              check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0) >= 90 },
+      ],
+      boss_task:'Hit 10 days streak. The Hollow King respects nothing less.',
+      boss_check: p => (p.streak||0) >= 10,
+      xp:600, title:'👑 Hollow King\'s Bane', glyph:'💀',
+    },
+    {
+      boss:'THE SILENT SOVEREIGN', quote:'"Silence is not weakness. It is the calm before annihilation."',
+      gates:[
+        { day:'Monday',   task:'Complete all monk rituals today — every single one.',        check: p => (p.monkChecked||[]).length >= 5 },
+        { day:'Wednesday',task:'Complete daily quests + a full workout back to back.',       check: p => (p.questsChecked||[]).length >= 3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
+        { day:'Friday',   task:'Log any focus session — 30 minutes minimum.',               check: p => Object.values(p.mmDaily||{}).some(v=>v>=30) },
+      ],
+      boss_task:'Complete rituals, workout, quests, and focus — all in one day.',
+      boss_check: p => (p.monkChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3,
+      xp:550, title:'🤫 The Sovereign\'s Echo', glyph:'⚪',
+    },
+    {
+      boss:'THE CRIMSON BEAST', quote:'"It does not think. It does not stop. It does not forgive."',
+      gates:[
+        { day:'Monday',   task:'Complete your workout — every rep counts.',                  check: p => (p.workoutChecked||[]).length>=3||p.workoutDone },
+        { day:'Wednesday',task:'Hit a best streak of 5 days or more.',                      check: p => (p.bestStreak||0) >= 5 },
+        { day:'Friday',   task:'Complete the daily challenge — no substitutions.',           check: p => !!p.dailyChallengeDone },
+      ],
+      boss_task:'Full workout + all quests + daily challenge. The Crimson Beast demands proof.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone,
+      xp:500, title:'🔴 Crimson Beast Tamer', glyph:'🦁',
+    },
+    {
+      boss:'THE OBSIDIAN MONK', quote:'"Stillness is a weapon. Master it."',
+      gates:[
+        { day:'Monday',   task:'Log a 30-minute focus session — no distractions.',          check: p => Object.values(p.mmDaily||{}).some(v=>v>=30) },
+        { day:'Wednesday',task:'Complete all daily quests before noon.',                     check: p => (p.questsChecked||[]).length>=3 },
+        { day:'Friday',   task:'Achieve 14-day best streak.',                               check: p => (p.bestStreak||0)>=14 },
+      ],
+      boss_task:'Log 2 hours total focus time this week. Mind over everything.',
+      boss_check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=120,
+      xp:600, title:'🖤 Obsidian Monk\'s Disciple', glyph:'🧘',
+    },
+    {
+      boss:'THE PLAGUE DOCTOR', quote:'"I cure nothing. I only reveal what was always there."',
+      gates:[
+        { day:'Monday',   task:'Complete full workout — no rest day swaps.',                check: p => (p.workoutChecked||[]).length>=3||p.workoutDone },
+        { day:'Wednesday',task:'Complete quests + log any focus session today.',            check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=1) },
+        { day:'Friday',   task:'5+ day streak active right now.',                           check: p => (p.streak||0)>=5 },
+      ],
+      boss_task:'Perfect streak week — active every single day this week.',
+      boss_check: p => (p.streak||0)>=7,
+      xp:550, title:'🎭 The Doctor\'s Patient Zero', glyph:'🧪',
+    },
+    {
+      boss:'THE ASHEN TITAN', quote:'"From the ash of who you were rises what you will become."',
+      gates:[
+        { day:'Monday',   task:'Complete workout in gym mode — titans train heavy.',        check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
+        { day:'Wednesday',task:'Complete all 3 quests and the daily challenge.',            check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
+        { day:'Friday',   task:'Log 60 minutes of focus this week.',                       check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=60 },
+      ],
+      boss_task:'Workout + 90-min focus + all quests. Titans do not half-effort.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=90 && (p.questsChecked||[]).length>=3,
+      xp:600, title:'🪨 Ashen Titan\'s Heir', glyph:'🔥',
+    },
+    {
+      boss:'THE FRACTURED MIRROR', quote:'"The only enemy you have ever faced is the one looking back."',
+      gates:[
+        { day:'Monday',   task:'Complete all daily quests — face yourself.',                check: p => (p.questsChecked||[]).length>=3 },
+        { day:'Wednesday',task:'Complete workout AND monk rituals today.',                   check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.monkChecked||[]).length>=3 },
+        { day:'Friday',   task:'Best streak of 7+ days — proof you\'ve changed.',          check: p => (p.bestStreak||0)>=7 },
+      ],
+      boss_task:'Perfect day — every system active. Workout, quests, focus, challenge.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone,
+      xp:650, title:'🪞 Mirror Breaker', glyph:'💎',
+    },
+    {
+      boss:'THE ETERNAL HUNTER', quote:'"There is no finish line. There is only the next gate."',
+      gates:[
+        { day:'Monday',   task:'Log any workout — the hunt begins.',                       check: p => (p.workoutChecked||[]).length>=3||p.workoutDone },
+        { day:'Wednesday',task:'Complete quests + 45-min focus session today.',            check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=45) },
+        { day:'Friday',   task:'Active streak of 3+ days minimum.',                        check: p => (p.streak||0)>=3 },
+      ],
+      boss_task:'The eternal test — workout, all quests, focus, challenge. All of it. Today.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=30),
+      xp:700, title:'🏹 The Eternal Hunter', glyph:'⭐',
+    },
+  ];
+
+  function getDungeonWeekInfo() {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const weekNum = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+    const yearWeek = `${now.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+    const dungeonIndex = (weekNum - 1) % DUNGEONS.length;
+    const dayOfWeek = now.getDay(); // 0=Sun,1=Mon...6=Sat
+    // Gates unlock: gate1=Mon(1), gate2=Wed(3), gate3=Fri(5), boss=Sun(0) next week
+    const gatesUnlocked = dayOfWeek >= 5 ? 3 : dayOfWeek >= 3 ? 2 : dayOfWeek >= 1 ? 1 : 0;
+    const bossUnlocked = dayOfWeek === 0 && weekNum > 1; // Sunday
+    // Time until next Monday midnight
+    const nextMon = new Date(now);
+    nextMon.setDate(now.getDate() + ((8 - now.getDay()) % 7 || 7));
+    nextMon.setHours(0,0,0,0);
+    const msLeft = nextMon - now;
+    const daysLeft = Math.floor(msLeft/86400000);
+    const hoursLeft = Math.floor((msLeft%86400000)/3600000);
+    return { yearWeek, dungeonIndex, gatesUnlocked, bossUnlocked, daysLeft, hoursLeft };
+  }
+
+  async function loadDungeonProgress(yearWeek) {
+    const supaClient = typeof SupabaseSync !== 'undefined' ? SupabaseSync._client() : null;
+    const user = typeof SupabaseSync !== 'undefined' ? SupabaseSync.getUser() : null;
+    if (!supaClient || !user) return null;
+    const { data } = await supaClient.from('dungeon_completions').select('*').eq('user_id', user.id).eq('year_week', yearWeek).maybeSingle();
+    return data;
+  }
+
+  async function saveDungeonGate(yearWeek, dungeonIndex, gateNum, isBoss) {
+    const supaClient = typeof SupabaseSync !== 'undefined' ? SupabaseSync._client() : null;
+    const user = typeof SupabaseSync !== 'undefined' ? SupabaseSync.getUser() : null;
+    if (!supaClient || !user) return;
+    const now = new Date().toISOString();
+    const existing = await loadDungeonProgress(yearWeek);
+    if (existing) {
+      const patch = { gates_completed: Math.max(existing.gates_completed||0, isBoss ? existing.gates_completed : gateNum) };
+      if (isBoss) patch.boss_defeated = true;
+      if (gateNum===1 && !existing.gate1_at) patch.gate1_at = now;
+      if (gateNum===2 && !existing.gate2_at) patch.gate2_at = now;
+      if (gateNum===3 && !existing.gate3_at) patch.gate3_at = now;
+      if (isBoss) patch.boss_at = now;
+      await supaClient.from('dungeon_completions').update(patch).eq('user_id', user.id).eq('year_week', yearWeek);
+    } else {
+      const row = { user_id: user.id, year_week: yearWeek, dungeon_index: dungeonIndex, gates_completed: isBoss ? 0 : gateNum, boss_defeated: !!isBoss };
+      if (gateNum===1) row.gate1_at = now;
+      if (gateNum===2) row.gate2_at = now;
+      if (gateNum===3) row.gate3_at = now;
+      if (isBoss) row.boss_at = now;
+      await supaClient.from('dungeon_completions').insert(row);
+    }
+  }
+
+  async function renderDungeonCard() {
+    const el = document.getElementById('dungeon-card');
+    if (!el) return;
+    const plus = isWeebjiPlus();
+    const { yearWeek, dungeonIndex, gatesUnlocked, bossUnlocked, daysLeft, hoursLeft } = getDungeonWeekInfo();
+    const dungeon = DUNGEONS[dungeonIndex];
+    const progress = plus ? await loadDungeonProgress(yearWeek) : null;
+    const gatesDone = progress?.gates_completed || 0;
+    const bossDone = progress?.boss_defeated || false;
+    const hpPct = bossDone ? 0 : Math.max(0, 100 - (gatesDone * 25) - (bossUnlocked ? 10 : 0));
+    const timerTxt = daysLeft > 0 ? `Dungeon closes in ${daysLeft}d ${hoursLeft}h` : `Closes in ${hoursLeft}h`;
+
+    const gatesHtml = dungeon.gates.map((g, i) => {
+      const gNum = i + 1;
+      const isUnlocked = gatesUnlocked >= gNum;
+      const isClaimed = gatesDone >= gNum;
+      let stateClass = 'locked';
+      if (isClaimed) stateClass = 'claimed';
+      else if (isUnlocked) stateClass = 'unlocked';
+      const actionHtml = !plus ? '' : isClaimed
+        ? `<span class="dungeon-gate__done">✓</span>`
+        : isUnlocked
+          ? `<button class="dungeon-gate__btn" data-gate="${gNum}">Claim</button>`
+          : `<span style="font-size:11px;opacity:0.3">🔒</span>`;
+      return `<div class="dungeon-gate ${stateClass}">
+        <span class="dungeon-gate__icon">${isClaimed?'✅':'🚪'}</span>
+        <div class="dungeon-gate__info">
+          <div class="dungeon-gate__day">Gate ${gNum} — Unlocks ${g.day}</div>
+          <div class="dungeon-gate__task">${g.task}</div>
+        </div>
+        ${actionHtml}
+      </div>`;
+    }).join('');
+
+    const bossHtml = (bossUnlocked || gatesDone >= 3) && plus ? bossDone ? '' : `
+      <div class="dungeon-boss-fight">
+        <div class="dungeon-boss-fight__label">⚔ Final Confrontation — Boss Fight</div>
+        <div class="dungeon-boss-fight__task">${dungeon.boss_task}</div>
+        <button class="dungeon-boss-fight__btn" id="dungeon-boss-btn">Defeat The Boss</button>
+      </div>` : '';
+
+    const lockedHtml = !plus ? `
+      <div class="dungeon-locked-overlay">
+        <div class="dungeon-locked-overlay__label">◆ WEEBJI+ Required to Enter</div>
+        <div class="dungeon-locked-overlay__btn" onclick="document.querySelector('.profile-scroll')&&document.getElementById('profile-plus-section').scrollIntoView({behavior:'smooth'});Sound.play('tap');showScreen('profile');renderProfile();">Unlock WEEBJI+ →</div>
+      </div>` : '';
+
+    const defeatedHtml = bossDone ? `
+      <div class="dungeon-defeated">
+        <div class="dungeon-defeated__glyph">${dungeon.glyph}</div>
+        <div class="dungeon-defeated__title">BOSS DEFEATED</div>
+        <div class="dungeon-defeated__sub">${dungeon.title}</div>
+      </div>` : '';
+
+    el.style.display = 'block';
+    el.innerHTML = `<div class="dungeon-card">
+      <div class="dungeon-card__eyebrow">⚔ Weekly Dungeon ${plus?'':'— WEEBJI+'}</div>
+      <div class="dungeon-card__boss">${dungeon.boss}</div>
+      <div class="dungeon-card__quote">${dungeon.quote}</div>
+      <div class="dungeon-reward">
+        <div>
+          <div class="dungeon-reward__xp">+${dungeon.xp} XP</div>
+          <div class="dungeon-reward__title">${dungeon.title}</div>
+        </div>
+      </div>
+      <div class="dungeon-boss-hp">
+        <div class="dungeon-boss-hp__label"><span>BOSS HP</span><span>${hpPct}%</span></div>
+        <div class="dungeon-boss-hp__track"><div class="dungeon-boss-hp__fill" style="width:${hpPct}%"></div></div>
+      </div>
+      <div class="dungeon-gates">${gatesHtml}</div>
+      ${bossHtml}
+      ${defeatedHtml}
+      ${lockedHtml}
+      <div class="dungeon-timer">${timerTxt}</div>
+    </div>`;
+
+    // Gate claim buttons
+    el.querySelectorAll('.dungeon-gate__btn[data-gate]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const gNum = parseInt(btn.dataset.gate);
+        const p = loadProgress();
+        const gate = dungeon.gates[gNum - 1];
+        if (!gate.check(p)) {
+          SystemVoice.speak(`Gate ${gNum} is sealed. Complete the task first, Hunter.`);
+          return;
+        }
+        btn.textContent = '...'; btn.disabled = true;
+        await saveDungeonGate(yearWeek, dungeonIndex, gNum, false);
+        Sound.play('levelUp');
+        SystemVoice.speak(`Gate ${gNum} falls. The boss grows closer.`);
+        renderDungeonCard();
+      });
+    });
+
+    // Boss fight button
+    const bossBtn = document.getElementById('dungeon-boss-btn');
+    if (bossBtn) {
+      bossBtn.addEventListener('click', async () => {
+        const p = loadProgress();
+        if (!dungeon.boss_check(p)) {
+          SystemVoice.speak(`The boss does not accept weakness. Complete the final trial first.`);
+          return;
+        }
+        bossBtn.textContent = '...'; bossBtn.disabled = true;
+        await saveDungeonGate(yearWeek, dungeonIndex, 0, true);
+        // Grant XP and title
+        p.xp += dungeon.xp;
+        const titleId = `dungeon_${dungeonIndex}`;
+        if (!p.titles) p.titles = [];
+        if (!p.titles.includes(titleId)) p.titles.push(titleId);
+        const leveled = checkLevelUp(p);
+        saveProgress(p);
+        if (leveled) triggerLevelUp(p.level);
+        Sound.play('levelUp');
+        SystemVoice.speak(`${dungeon.boss} has fallen. The System records your name, Hunter.`);
+        renderDungeonCard();
+        updateXPBar(p);
+      });
+    }
+  }
+
   /* ══ RITUAL CLOCK ════════════════════════════════ */
   const RitualClock = (() => {
     const HOURS = Array.from({length:24},(_,i)=>{
@@ -3209,6 +3538,8 @@
     applyDashboardEvolution(p.level);
     // Daily Challenge
     renderDailyChallenge(cls, color);
+    // Weekly Dungeon (premium)
+    renderDungeonCard();
 
     // Best streak: gold pulse if new best was set this session
     if (p.streak > 0 && p.streak >= p.bestStreak) {

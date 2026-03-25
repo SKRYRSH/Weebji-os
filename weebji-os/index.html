@@ -6395,7 +6395,10 @@
     const el = document.createElement('div');
     el.className = 'ink-wash';
     document.getElementById('app').appendChild(el);
-    el.addEventListener('animationend', () => { el.remove(); if (onDone) onDone(); }, { once: true });
+    let fired = false;
+    const done = () => { if (fired) return; fired = true; el.remove(); if (onDone) onDone(); };
+    el.addEventListener('animationend', done, { once: true });
+    setTimeout(done, 1400);
   }
 
   // 1b. GLITCH REVEAL — System data-transmit text effect

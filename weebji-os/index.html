@@ -2253,7 +2253,7 @@
     const lastRefillMonth = localStorage.getItem('weebji_ghost_reset_month') || '';
     if (lastRefillMonth !== thisMonth) {
       if (isWeebjiPlus()) {
-        p.ghostTokens = Math.min((p.ghostTokens || 0) + 3, 5);
+        p.ghostTokens = Math.min((p.ghostTokens || 0) + 3, 30);
       } else {
         if ((p.ghostTokens || 0) === 0) p.ghostTokens = 1;
       }
@@ -2300,8 +2300,10 @@
     // Phase 4: save daily shadow snapshot
     saveShadowSnapshot(p);
     // Session D: Supabase cloud backup (fire-and-forget, offline-safe)
-    if (typeof SupabaseSync !== 'undefined') SupabaseSync.pushProgress();
-    if (typeof GuildSystem !== 'undefined') GuildSystem.syncMemberStats();
+    // Skip if anticheat just fired — never upload reset data to cloud
+    if (typeof SupabaseSync !== 'undefined' && !_anticheatTriggered) SupabaseSync.pushProgress();
+    if (typeof GuildSystem !== 'undefined' && !_anticheatTriggered) GuildSystem.syncMemberStats();
+    _anticheatTriggered = false; // reset flag after save cycle
   }
 
   /* ══ WEEBJI+ ═════════════════════════════════ */
@@ -3014,6 +3016,7 @@
   const _LEVEL_MAX_JUMP    = 1;   // can't gain more than 1 level per action
   let   _lastActionTime    = 0;
   const _MIN_ACTION_MS     = 300; // 300ms min between XP-awarding actions
+  let   _anticheatTriggered = false;
 
   function _djb2(str) {
     let h = 5381;
@@ -3044,18 +3047,21 @@
     const expected = _progressHash(p);
     // Consistency checks — catch impossible values even if hash passes
     const maxPossibleXP = xpForLevel(p.level) * 3; // generous ceiling
+    // bestStreak < streak is a valid transient state (streak just updated, bestStreak not yet) — not suspicious
     const isSuspicious = p.xp > maxPossibleXP || p.level > 100 || p.hp > 5 || p.hp < 0
-      || p.streak > 3650 || p.ghostTokens > 60 || p.bestStreak < p.streak;
+      || p.streak > 3650 || p.ghostTokens > 60;
 
     if (stored !== expected || isSuspicious) {
       // Silently soft-reset — no warning that tips off the cheater
+      _anticheatTriggered = true;
       const lvl = Math.min(Math.max(p.level, 1), 100);
-      if (p.xp     > maxPossibleXP) localStorage.setItem('weebji_xp',    '0');
-      if (p.level  > 100)           localStorage.setItem('weebji_level', '1');
-      if (p.streak > 3650)          localStorage.setItem('weebji_streak','0');
-      if (p.hp > 5 || p.hp < 0)    localStorage.setItem('weebji_hp',    '3');
-      if (p.ghostTokens > 60)       localStorage.setItem('weebji_ghost_tokens', '3');
-      _writeHash({ xp: 0, level: lvl, streak: 0, hp: 3, bestStreak: 0, ghostTokens: 3 });
+      if (p.xp     > maxPossibleXP) { p.xp = 0;           localStorage.setItem('weebji_xp',           '0'); }
+      if (p.level  > 100)           { p.level = lvl;       localStorage.setItem('weebji_level',        String(lvl)); }
+      if (p.streak > 3650)          { p.streak = 0;        localStorage.setItem('weebji_streak',       '0'); }
+      if (p.hp > 5 || p.hp < 0)    { p.hp = 3;            localStorage.setItem('weebji_hp',           '3'); }
+      if (p.ghostTokens > 60)       { p.ghostTokens = 3;   localStorage.setItem('weebji_ghost_tokens', '3'); }
+      // Write hash for actual post-reset values — prevents permanent mismatch loop
+      _writeHash(p);
       return false;
     }
     return true;
@@ -8216,7 +8222,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         }
         const p = loadProgress();
         // Always take the best stats (cloud or local, whichever is higher)
-        if (data.level > p.level || (data.level === p.level && data.xp >= p.xp) || (p.level <= 1 && p.xp <= 0)) {
+        if (data.level > p.level || (data.level === p.level && data.xp >= p.xp) || (p.level <= 1 && p.xp <= 0) || data.level > 1) {
           p.level = data.level; p.xp = data.xp; p.hp = data.hp;
           p.streak = data.streak; p.bestStreak = data.best_streak;
           p.ghostTokens = data.ghost_tokens;

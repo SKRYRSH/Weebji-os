@@ -6193,7 +6193,8 @@
 
     const { data: rows } = await client
       .from('leaderboard')
-      .select('user_id,display_name,class,color,hunter_number,level,best_streak,dungeon_title')
+      .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title')
+      .order('streak', { ascending: false })
       .order('best_streak', { ascending: false })
       .order('level', { ascending: false })
       .limit(20);
@@ -6213,7 +6214,7 @@
         const { count } = await client
           .from('leaderboard')
           .select('*', { count: 'exact', head: true })
-          .or(`best_streak.gt.${p.bestStreak || 0},and(best_streak.eq.${p.bestStreak || 0},level.gt.${p.level || 1})`);
+          .or(`streak.gt.${p.streak || 0},and(streak.eq.${p.streak || 0},best_streak.gt.${p.bestStreak || 0})`);
         myRank = (count || 0) + 1;
       }
       if (myRank) localStorage.setItem('weebji_lb_rank', String(myRank));
@@ -6229,7 +6230,7 @@
       return `<div class="lb-row${isYou ? ' is-you' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}">
         <span class="lb-rank" style="color:${rank<=3 ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
         <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${r.display_name}</span>` : r.display_name}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${r.hunter_number}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${r.dungeon_title}</span>` : ''}</span>
-        <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.best_streak || 0}<span style="font-size:11px;opacity:0.5"> days</span></span>
+        <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.streak || 0}<span style="font-size:11px;opacity:0.5"> days</span>${r.best_streak > (r.streak||0) ? `<span style="display:block;font-size:9px;opacity:0.4;letter-spacing:0.08em">best ${r.best_streak}</span>` : ''}</span>
       </div>`;
     }).join('');
 
@@ -8155,6 +8156,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           level:        p.level,
           updated_at:   new Date().toISOString(),
         };
+        lbPayload.streak = p.streak || 0;
         lbPayload.best_streak = p.bestStreak || 0;
         // Best dungeon title earned
         if (p.titles && p.titles.length) {

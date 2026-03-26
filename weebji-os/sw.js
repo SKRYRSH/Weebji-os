@@ -1,11 +1,11 @@
-// ── WEEBJI OS — Service Worker v10 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v29';
+// ── WEEBJI OS — Service Worker v11 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v30';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
-  // Do NOT skipWaiting here — banner in app lets user choose when to update
+  self.skipWaiting(); // Take control immediately so network-first HTML kicks in ASAP
 });
 
 self.addEventListener('message', e => {
@@ -23,6 +23,28 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  const isHTML = e.request.headers.get('Accept')?.includes('text/html')
+    || url.pathname.endsWith('/')
+    || url.pathname.endsWith('.html');
+
+  if (isHTML) {
+    // Network-first for HTML — always serve fresh app code when online
+    e.respondWith(
+      fetch(e.request, { cache: 'no-store' })
+        .then(res => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request).then(r => r || caches.match(BASE)))
+    );
+    return;
+  }
+
+  // Cache-first for all other assets
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;

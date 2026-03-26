@@ -1778,15 +1778,22 @@
   <script>
   /* ══ SERVICE WORKER ══════════════════════════ */
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    // Auto-reload when new SW takes control — no user action needed
+    let _swRefreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!_swRefreshing) { _swRefreshing = true; window.location.reload(); }
+    });
+
     navigator.serviceWorker.register('sw.js').then(reg => {
       reg.addEventListener('updatefound', () => {
         const newSW = reg.installing;
         newSW.addEventListener('statechange', () => {
           if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            // Show brief "updating" notice — page will auto-reload via controllerchange
             const banner = document.createElement('div');
             banner.id = 'sw-update-banner';
             banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(0,245,255,0.12);border:1px solid rgba(0,245,255,0.35);border-radius:12px;padding:12px 20px;color:#00F5FF;font-family:Inter,sans-serif;font-size:13px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);box-shadow:0 0 24px rgba(0,245,255,0.15);';
-            banner.innerHTML = '<span>⬆ New update available</span><button onclick="navigator.serviceWorker.controller.postMessage({type:\'SKIP_WAITING\'});location.reload();" style="background:rgba(0,245,255,0.2);border:1px solid rgba(0,245,255,0.4);border-radius:8px;color:#00F5FF;padding:5px 12px;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;">Update</button>';
+            banner.innerHTML = '<span>⬆ Updating WEEBJI OS…</span>';
             document.body.appendChild(banner);
           }
         });
@@ -1860,6 +1867,11 @@
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
+  // Suppress install prompt permanently if already running as installed PWA
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    localStorage.setItem('weebji_install_dismissed', '1');
+  }
+
   let deferredInstallEvent = null;
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();

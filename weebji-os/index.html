@@ -3729,6 +3729,7 @@
   }
 
   function showMissionBriefing(cls, color) {
+    if (localStorage.getItem('weebji_mission_done')) return;
     const overlay = document.getElementById('mission-briefing');
     if (!overlay) return;
     const missions = {

@@ -3045,7 +3045,7 @@
     // Consistency checks — catch impossible values even if hash passes
     const maxPossibleXP = xpForLevel(p.level) * 3; // generous ceiling
     const isSuspicious = p.xp > maxPossibleXP || p.level > 100 || p.hp > 5 || p.hp < 0
-      || p.streak > 3650 || p.ghostTokens > 5 || p.bestStreak < p.streak;
+      || p.streak > 3650 || p.ghostTokens > 60 || p.bestStreak < p.streak;
 
     if (stored !== expected || isSuspicious) {
       // Silently soft-reset — no warning that tips off the cheater
@@ -3054,7 +3054,7 @@
       if (p.level  > 100)           localStorage.setItem('weebji_level', '1');
       if (p.streak > 3650)          localStorage.setItem('weebji_streak','0');
       if (p.hp > 5 || p.hp < 0)    localStorage.setItem('weebji_hp',    '3');
-      if (p.ghostTokens > 5)        localStorage.setItem('weebji_ghost_tokens', '1');
+      if (p.ghostTokens > 60)       localStorage.setItem('weebji_ghost_tokens', '3');
       _writeHash({ xp: 0, level: lvl, streak: 0, hp: 3, bestStreak: 0, ghostTokens: 3 });
       return false;
     }
@@ -8243,10 +8243,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.shadowSlayerEarned)  p.shadowSlayerEarned  = true;
         }
         saveProgress(p);
+        // Always refresh visible stats immediately — user may be on any screen
+        if (typeof updateStats === 'function') updateStats(p);
+        if (typeof updateXPBar === 'function') updateXPBar(p);
         if (document.getElementById('dashboard').classList.contains('active')) {
           initDashboard();
         }
-        // Re-render profile if open (hunter num + stats may have changed)
         if (document.getElementById('profile')?.classList.contains('active')) {
           if (typeof renderProfile === 'function') renderProfile();
         }

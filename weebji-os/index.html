@@ -1778,26 +1778,50 @@
   <script>
   /* ══ SERVICE WORKER ══════════════════════════ */
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    // Auto-reload when new SW takes control — no user action needed
+    // When new SW takes control → auto-reload to pick up fresh code
     let _swRefreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!_swRefreshing) { _swRefreshing = true; window.location.reload(); }
     });
 
-    navigator.serviceWorker.register('sw.js').then(reg => {
+    function _showUpdateBanner(reg) {
+      if (document.getElementById('sw-update-banner')) return;
+      const color = localStorage.getItem('weebji_color') || '#00F5FF';
+      const banner = document.createElement('div');
+      banner.id = 'sw-update-banner';
+      banner.style.cssText = `position:fixed;bottom:80px;left:16px;right:16px;z-index:99999;background:rgba(4,4,14,0.97);border:1px solid ${color}44;border-radius:16px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(20px);box-shadow:0 0 32px ${color}22;`;
+      banner.innerHTML = `
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.35em;color:${color}99;text-transform:uppercase;margin-bottom:3px;">System Update</div>
+          <div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;letter-spacing:0.08em;">New Version Available</div>
+        </div>
+        <button id="sw-update-btn" style="background:${color}18;border:1px solid ${color}55;border-radius:10px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;color:${color};cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;text-transform:uppercase;">Update</button>`;
+      document.body.appendChild(banner);
+      document.getElementById('sw-update-btn').addEventListener('click', () => {
+        banner.querySelector('#sw-update-btn').textContent = 'Installing…';
+        // Tell waiting SW to take over → triggers controllerchange → auto-reload
+        const waitingSW = reg.waiting;
+        if (waitingSW) waitingSW.postMessage({ type: 'SKIP_WAITING' });
+        else window.location.reload();
+      });
+    }
+
+    // updateViaCache:'none' bypasses HTTP cache for sw.js — critical for GitHub Pages
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+      // If a new SW is already waiting (app was open in background), show banner immediately
+      if (reg.waiting) _showUpdateBanner(reg);
+
       reg.addEventListener('updatefound', () => {
         const newSW = reg.installing;
         newSW.addEventListener('statechange', () => {
           if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            // Show brief "updating" notice — page will auto-reload via controllerchange
-            const banner = document.createElement('div');
-            banner.id = 'sw-update-banner';
-            banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(0,245,255,0.12);border:1px solid rgba(0,245,255,0.35);border-radius:12px;padding:12px 20px;color:#00F5FF;font-family:Inter,sans-serif;font-size:13px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);box-shadow:0 0 24px rgba(0,245,255,0.15);';
-            banner.innerHTML = '<span>⬆ Updating WEEBJI OS…</span>';
-            document.body.appendChild(banner);
+            _showUpdateBanner(reg);
           }
         });
       });
+
+      // Force check for updates every time app opens (bypass 24h browser throttle)
+      reg.update().catch(() => {});
     }).catch(e => console.warn('[SW] failed', e));
   }
 

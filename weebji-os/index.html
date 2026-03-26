@@ -3051,18 +3051,23 @@
     const isSuspicious = p.xp > maxPossibleXP || p.level > 100 || p.hp > 5 || p.hp < 0
       || p.streak > 3650 || p.ghostTokens > 60;
 
-    if (stored !== expected || isSuspicious) {
-      // Silently soft-reset — no warning that tips off the cheater
+    if (isSuspicious) {
+      // Values are genuinely impossible — reset only the offending fields
       _anticheatTriggered = true;
-      const lvl = Math.min(Math.max(p.level, 1), 100);
-      if (p.xp     > maxPossibleXP) { p.xp = 0;           localStorage.setItem('weebji_xp',           '0'); }
-      if (p.level  > 100)           { p.level = lvl;       localStorage.setItem('weebji_level',        String(lvl)); }
-      if (p.streak > 3650)          { p.streak = 0;        localStorage.setItem('weebji_streak',       '0'); }
-      if (p.hp > 5 || p.hp < 0)    { p.hp = 3;            localStorage.setItem('weebji_hp',           '3'); }
-      if (p.ghostTokens > 60)       { p.ghostTokens = 3;   localStorage.setItem('weebji_ghost_tokens', '3'); }
-      // Write hash for actual post-reset values — prevents permanent mismatch loop
+      if (p.xp     > maxPossibleXP) { p.xp = 0;         localStorage.setItem('weebji_xp',           '0'); }
+      if (p.level  > 100)           { p.level = 100;     localStorage.setItem('weebji_level',        '100'); }
+      if (p.streak > 3650)          { p.streak = 0;      localStorage.setItem('weebji_streak',       '0'); }
+      if (p.hp > 5 || p.hp < 0)    { p.hp = 3;          localStorage.setItem('weebji_hp',           '3'); }
+      if (p.ghostTokens > 60)       { p.ghostTokens = 3; localStorage.setItem('weebji_ghost_tokens', '3'); }
       _writeHash(p);
       return false;
+    }
+
+    if (stored !== expected) {
+      // Hash mismatch but values look legitimate (salt change, device switch, code update).
+      // Trust the data — just rewrite the hash. Never nuke real progress over a stale hash.
+      _writeHash(p);
+      return true;
     }
     return true;
   }

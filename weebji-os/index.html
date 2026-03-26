@@ -5512,11 +5512,15 @@
 
   /* ══ XP / LEVEL / STATS ══════════════════════ */
   function xpForLevel(level) {
-    if (level <= 10) return 150;
-    if (level <= 20) return 250;
-    if (level <= 35) return 400;
-    if (level <= 50) return 600;
-    return 900;
+    if (level <= 5)  return 100;
+    if (level <= 10) return 175;
+    if (level <= 20) return 300;
+    if (level <= 35) return 500;
+    if (level <= 50) return 750;
+    if (level <= 65) return 1100;
+    if (level <= 80) return 1600;
+    if (level <= 90) return 2200;
+    return 3000;
   }
 
   function checkLevelUp(p) {
@@ -8145,31 +8149,18 @@ DEV.skipSplash()      → go straight to class select (if no session)
           ghostWhisperEarned: p.ghostWhisperEarned, penanceSurvived: p.penanceSurvived,
           shadowSlayerEarned: p.shadowSlayerEarned,
         };
-        await client.from('progress').upsert({
-          user_id: currentUser.id,
-          level: p.level, xp: p.xp, hp: p.hp,
-          streak: p.streak, best_streak: p.bestStreak,
-          ghost_tokens: p.ghostTokens,
-          total_study_mins: p.totalStudyMins || 0,
-          total_workout_days: p.totalWorkoutDays || 0,
-          data: richData,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
-
-        // Update global leaderboard
+        // Build leaderboard payload
         const hunterNum = localStorage.getItem('weebji_hunter_num');
         const lbPayload = {
-          user_id:      currentUser.id,
-          display_name: localStorage.getItem('weebji_name') || 'Hunter',
-          class:        localStorage.getItem('weebji_class') || 'monarch',
-          color:        localStorage.getItem('weebji_color') || '#00F5FF',
+          user_id:       currentUser.id,
+          display_name:  localStorage.getItem('weebji_name') || 'Hunter',
+          class:         localStorage.getItem('weebji_class') || 'monarch',
+          color:         localStorage.getItem('weebji_color') || '#00F5FF',
           hunter_number: hunterNum ? parseInt(hunterNum) : null,
-          level:        p.level,
-          updated_at:   new Date().toISOString(),
+          level:         p.level,
+          streak:        p.streak || 0,
+          best_streak:   p.bestStreak || 0,
         };
-        lbPayload.streak = p.streak || 0;
-        lbPayload.best_streak = p.bestStreak || 0;
-        // Best dungeon title earned
         if (p.titles && p.titles.length) {
           const dungeonTitles = p.titles.filter(t => t.startsWith('dungeon_'));
           if (dungeonTitles.length) {
@@ -8180,7 +8171,21 @@ DEV.skipSplash()      → go straight to class select (if no session)
             lbPayload.dungeon_title = DUNGEONS[parseInt(best.split('_')[1])]?.title || null;
           }
         }
-        await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
+
+        // Route through server-side validation edge function
+        await client.functions.invoke('validate-progress', {
+          body: {
+            progress: {
+              level: p.level, xp: p.xp, hp: p.hp,
+              streak: p.streak, best_streak: p.bestStreak,
+              ghost_tokens: p.ghostTokens,
+              total_study_mins: p.totalStudyMins || 0,
+              total_workout_days: p.totalWorkoutDays || 0,
+              data: richData,
+            },
+            leaderboard: lbPayload,
+          },
+        });
       } catch(e) {}
     }
 

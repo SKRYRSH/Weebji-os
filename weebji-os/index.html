@@ -2038,26 +2038,26 @@
 
   const WORKOUTS = {
     PUSH: [
-      { name: 'Push-ups',          sets: 3, reps: 15,    xp: 8  },
-      { name: 'Wide Push-ups',     sets: 3, reps: 12,    xp: 8  },
-      { name: 'Diamond Push-ups',  sets: 3, reps: 10,    xp: 10 },
-      { name: 'Pike Push-ups',     sets: 3, reps: 12,    xp: 10 },
-      { name: 'Tricep Dips',       sets: 3, reps: 15,    xp: 8  },
+      { name: 'Push-ups',          sets: 3, reps: 15,    xp: 4 },
+      { name: 'Wide Push-ups',     sets: 3, reps: 12,    xp: 4 },
+      { name: 'Diamond Push-ups',  sets: 3, reps: 10,    xp: 5 },
+      { name: 'Pike Push-ups',     sets: 3, reps: 12,    xp: 5 },
+      { name: 'Tricep Dips',       sets: 3, reps: 15,    xp: 4 },
     ],
     PULL: [
-      { name: 'Table Rows',          sets: 3, reps: 12,    xp: 10 },
-      { name: 'Superman Holds',      sets: 3, reps: 15,    xp: 8  },
-      { name: 'Towel Bicep Curls',   sets: 3, reps: 12,    xp: 8  },
-      { name: 'Reverse Snow Angels', sets: 3, reps: 15,    xp: 8  },
-      { name: 'Wall Pulls',          sets: 3, reps: '30s', xp: 10 },
+      { name: 'Table Rows',          sets: 3, reps: 12,    xp: 5 },
+      { name: 'Superman Holds',      sets: 3, reps: 15,    xp: 4 },
+      { name: 'Towel Bicep Curls',   sets: 3, reps: 12,    xp: 4 },
+      { name: 'Reverse Snow Angels', sets: 3, reps: 15,    xp: 4 },
+      { name: 'Wall Pulls',          sets: 3, reps: '30s', xp: 5 },
     ],
     LEGS: [
-      { name: 'Bodyweight Squats',      sets: 3, reps: 20,    xp: 8  },
-      { name: 'Jump Squats',            sets: 3, reps: 15,    xp: 10 },
-      { name: 'Bulgarian Split Squats', sets: 3, reps: 12,    xp: 12 },
-      { name: 'Glute Bridges',          sets: 3, reps: 20,    xp: 8  },
-      { name: 'Wall Sit',               sets: 3, reps: '45s', xp: 10 },
-      { name: 'Calf Raises',            sets: 3, reps: 25,    xp: 6  },
+      { name: 'Bodyweight Squats',      sets: 3, reps: 20,    xp: 4 },
+      { name: 'Jump Squats',            sets: 3, reps: 15,    xp: 5 },
+      { name: 'Bulgarian Split Squats', sets: 3, reps: 12,    xp: 6 },
+      { name: 'Glute Bridges',          sets: 3, reps: 20,    xp: 4 },
+      { name: 'Wall Sit',               sets: 3, reps: '45s', xp: 5 },
+      { name: 'Calf Raises',            sets: 3, reps: 25,    xp: 3 },
     ],
   };
 
@@ -2088,37 +2088,37 @@
   // Class-specific daily quests
   const CLASS_QUESTS = {
     monarch: [
-      { name: 'Complete workout before 9 AM', xp: 25 },
-      { name: 'Drink 3 litres of water',      xp: 15 },
-      { name: 'Take a cold shower',           xp: 20 },
+      { name: 'Complete workout before 9 AM', xp: 10 },
+      { name: 'Drink 3 litres of water',      xp: 6  },
+      { name: 'Take a cold shower',           xp: 8  },
     ],
     mastermind: [
-      { name: 'Complete 3 Pomodoro sessions', xp: 35 },
-      { name: 'Study session before 8 AM',    xp: 30 },
-      { name: 'No social media before 12 PM', xp: 20 },
+      { name: 'Complete 3 Pomodoro sessions', xp: 14 },
+      { name: 'Study session before 8 AM',    xp: 12 },
+      { name: 'No social media before 12 PM', xp: 8  },
     ],
     monk: [
-      { name: 'Cold shower taken',         xp: 15 },
-      { name: 'No phone first hour',       xp: 15 },
-      { name: '10 min meditation',         xp: 20 },
+      { name: 'Cold shower taken',         xp: 6  },
+      { name: 'No phone first hour',       xp: 6  },
+      { name: '10 min meditation',         xp: 8  },
     ],
   };
 
   const MONK_RITUALS = [
-    { name: '20 min morning meditation',     xp: 25 },
-    { name: 'No phone first hour',           xp: 15 },
-    { name: 'Breathwork — 5 min',           xp: 20 },
-    { name: 'Mindful journaling',            xp: 15 },
-    { name: 'Gratitude — 3 things',          xp: 15 },
-    { name: 'Digital silence after 9 PM',    xp: 15 },
-    { name: 'Drink 3L water mindfully',      xp: 10 },
-    { name: 'Evening body scan — 10 min',   xp: 20 },
+    { name: '20 min morning meditation',     xp: 10 },
+    { name: 'No phone first hour',           xp: 6  },
+    { name: 'Breathwork — 5 min',           xp: 8  },
+    { name: 'Mindful journaling',            xp: 6  },
+    { name: 'Gratitude — 3 things',          xp: 6  },
+    { name: 'Digital silence after 9 PM',    xp: 6  },
+    { name: 'Drink 3L water mindfully',      xp: 4  },
+    { name: 'Evening body scan — 10 min',   xp: 8  },
   ];
 
   const MM_MODES = {
-    standard:  { label: 'Standard',   mins: 25, xp: 30  },
-    deep:      { label: 'Deep Work',  mins: 50, xp: 65  },
-    whiteroom: { label: 'White Room', mins: 90, xp: 120 },
+    standard:  { label: 'Standard',   mins: 25, xp: 14 },
+    deep:      { label: 'Deep Work',  mins: 50, xp: 30 },
+    whiteroom: { label: 'White Room', mins: 90, xp: 55 },
   };
 
   const CLASS_META = {
@@ -2940,31 +2940,31 @@
   /* ══ DAILY CHALLENGE SYSTEM ══════════════════ */
   const DAILY_CHALLENGES = {
     monarch: [
-      { text: 'Complete your full workout before noon',           xp: 40, key: 'before_noon'     },
-      { text: 'Do 50 push-ups in a single session',              xp: 35, key: 'fifty_pushups'   },
-      { text: 'Rest day: stretch for 10 minutes',                xp: 20, key: 'stretch_rest'    },
-      { text: 'Complete workout + 1 quest today',                xp: 45, key: 'wk_plus_quest'   },
-      { text: 'Set a new push-up PR',                            xp: 50, key: 'pushup_pr'       },
-      { text: 'Train without music — pure focus',                xp: 30, key: 'no_music'        },
-      { text: 'Log all exercises before 8 AM',                   xp: 45, key: 'early_bird'      },
+      { text: 'Complete your full workout before noon',           xp: 18, key: 'before_noon'     },
+      { text: 'Do 50 push-ups in a single session',              xp: 15, key: 'fifty_pushups'   },
+      { text: 'Rest day: stretch for 10 minutes',                xp: 8,  key: 'stretch_rest'    },
+      { text: 'Complete workout + 1 quest today',                xp: 20, key: 'wk_plus_quest'   },
+      { text: 'Set a new push-up PR',                            xp: 22, key: 'pushup_pr'       },
+      { text: 'Train without music — pure focus',                xp: 12, key: 'no_music'        },
+      { text: 'Log all exercises before 8 AM',                   xp: 20, key: 'early_bird'      },
     ],
     mastermind: [
-      { text: 'Complete 2 Pomodoro sessions today',              xp: 40, key: 'two_sessions'    },
-      { text: 'Enter The Void for a 90-min session',             xp: 60, key: 'white_room'      },
-      { text: 'No social media during your session',             xp: 35, key: 'no_socials'      },
-      { text: 'Study before breakfast — train your will',        xp: 40, key: 'pre_breakfast'   },
-      { text: 'Write one insight from today\'s session',         xp: 30, key: 'write_insight'   },
-      { text: 'Complete a deep work session (50+ min)',          xp: 50, key: 'deep_work'       },
-      { text: 'Finish all quests before evening',                xp: 45, key: 'all_quests'      },
+      { text: 'Complete 2 Pomodoro sessions today',              xp: 18, key: 'two_sessions'    },
+      { text: 'Enter The Void for a 90-min session',             xp: 28, key: 'white_room'      },
+      { text: 'No social media during your session',             xp: 15, key: 'no_socials'      },
+      { text: 'Study before breakfast — train your will',        xp: 18, key: 'pre_breakfast'   },
+      { text: 'Write one insight from today\'s session',         xp: 12, key: 'write_insight'   },
+      { text: 'Complete a deep work session (50+ min)',          xp: 22, key: 'deep_work'       },
+      { text: 'Finish all quests before evening',                xp: 20, key: 'all_quests'      },
     ],
     monk: [
-      { text: 'Complete all 8 rituals before 10 AM',             xp: 50, key: 'all_early'       },
-      { text: 'Meditate for 10 minutes — no timer, just be',     xp: 35, key: 'meditate_long'   },
-      { text: 'Add one new good habit to your ritual list',      xp: 25, key: 'new_habit'       },
-      { text: 'Journal your reflection for today',               xp: 30, key: 'journal_today'   },
-      { text: 'Cold shower — no hesitation',                     xp: 40, key: 'cold_shower'     },
-      { text: 'Complete all rituals + all quests',               xp: 55, key: 'full_day'        },
-      { text: 'Do your rituals in silence',                      xp: 35, key: 'ritual_silence'  },
+      { text: 'Complete all 8 rituals before 10 AM',             xp: 22, key: 'all_early'       },
+      { text: 'Meditate for 10 minutes — no timer, just be',     xp: 15, key: 'meditate_long'   },
+      { text: 'Add one new good habit to your ritual list',      xp: 10, key: 'new_habit'       },
+      { text: 'Journal your reflection for today',               xp: 12, key: 'journal_today'   },
+      { text: 'Cold shower — no hesitation',                     xp: 18, key: 'cold_shower'     },
+      { text: 'Complete all rituals + all quests',               xp: 25, key: 'full_day'        },
+      { text: 'Do your rituals in silence',                      xp: 15, key: 'ritual_silence'  },
     ],
   };
 
@@ -4195,7 +4195,7 @@
 
       // Perfect set
       if (p.workoutChecked.length === exercises.length && !p.workoutBonus) {
-        p.workoutBonus = true; p.xp += 25;
+        p.workoutBonus = true; p.xp += 10;
         Sound.play('workoutComplete');
         haptic([80, 40, 80, 40, 200]);
         WeebjPush.local('workout_complete', 'MISSION ACCOMPLISHED', 'Full protocol executed. +25 XP bonus recorded by the System.');
@@ -4415,9 +4415,9 @@
 
   /* ══ THE SANCTUARY — MEDITATION ENGINE ══════ */
   const SANCTUARY_MODES = {
-    focused:      { label: 'Focused',      mins: 10, xp: 35  },
-    deep:         { label: 'Deep',          mins: 20, xp: 60  },
-    transcendent: { label: 'Transcendent',  mins: 45, xp: 110 },
+    focused:      { label: 'Focused',      mins: 10, xp: 15 },
+    deep:         { label: 'Deep',          mins: 20, xp: 28 },
+    transcendent: { label: 'Transcendent',  mins: 45, xp: 50 },
   };
 
   const Sanctuary = (() => {
@@ -4605,7 +4605,7 @@
       p.xp += rollCriticalDrop(MONK_RITUALS[index].xp, row.querySelector('.monk-ritual-xp'), p);
       Sound.play('check');
       if (p.monkChecked.length === MONK_RITUALS.length && !p.monkBonus) {
-        p.monkBonus = true; p.xp += 25;
+        p.monkBonus = true; p.xp += 10;
         Sound.play('workoutComplete');
         triggerFlash('flash-white', '#FFFFFF', null);
         shakeApp(0.5);
@@ -4878,9 +4878,9 @@
     const isNewPR = val > cur;
     p.prs[key] = Math.max(cur, val);
     if (isNewPR) {
-      p.xp += 20;
+      p.xp += 10;
       Sound.play('milestone');
-      spawnXPFloat(20, btn);
+      spawnXPFloat(10, btn);
       triggerFlash('flash-class', State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF', null);
     }
     const leveled = checkLevelUp(p);

@@ -3529,6 +3529,10 @@
     showScreen('dashboard');
     Sound.play('appOpen');
     if (typeof posthog !== 'undefined') posthog.capture('dashboard_opened', { from_onboarding: fromOnboarding, class: localStorage.getItem('weebji_class') });
+    // Pull cloud data immediately if signed in — reduces level-1 flash to near zero
+    if (typeof SupabaseSync !== 'undefined' && SupabaseSync.getUser()) {
+      SupabaseSync.pullProgress();
+    }
     initDashboard();
     // Phase 5: System Voice greeting (slight delay so dashboard is visible)
     setTimeout(() => SystemVoice.greet(), 900);
@@ -8687,7 +8691,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
      Get it from: youtube.com/playlist?list=XXXXX → the XXXXX part.
   ════════════════════════════════════════════ */
   const YT_PLAYLIST_ID = 'PLQ2XV45qE1jMUA7BT0S0jR_6pxR4bipJ_';
-  const YT_CACHE_KEY   = 'weebji_yt_cache';
+  const YT_CACHE_KEY   = 'weebji_yt_cache_v2'; // v2 — forces re-fetch with date-sort fix
   const YT_CACHE_TTL   = 2 * 60 * 60 * 1000; // 2 hours
 
   async function loadYTNoticeBoard() {
@@ -8706,8 +8710,15 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const res   = await fetch(proxy);
       const text  = await res.text();
       const xml   = new DOMParser().parseFromString(text, 'text/xml');
-      const entry = xml.querySelector('entry');
-      if (!entry) return;
+      const entries = [...xml.querySelectorAll('entry')];
+      if (!entries.length) return;
+      // Sort by published date descending — pick most recently uploaded
+      entries.sort((a, b) => {
+        const da = new Date(a.querySelector('published')?.textContent || 0);
+        const db = new Date(b.querySelector('published')?.textContent || 0);
+        return db - da;
+      });
+      const entry = entries[0];
       const rawId  = entry.querySelector('id')?.textContent || '';
       const videoId = rawId.includes('video:') ? rawId.split('video:')[1]
                     : rawId.includes('v=')      ? rawId.split('v=')[1].split('&')[0]

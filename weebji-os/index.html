@@ -8627,6 +8627,60 @@ DEV.skipSplash()      → go straight to class select (if no session)
   // Validate WEEBJI+ purchase token from URL (must run after Supabase client is ready)
   checkUrlPlusActivation();
 
+  /* ══ REALTIME ════════════════════════════════
+     - Live leaderboard refresh when any hunter's stats change
+     - Activity feed toasts when someone levels up
+  ════════════════════════════════════════════ */
+  (function initRealtime() {
+    const client = SupabaseSync._client();
+    if (!client) return;
+
+    // ── Activity toast ────────────────────────────────────────────────────────
+    function showActivityToast(ev) {
+      const color  = ev.color || '#00F5FF';
+      const name   = ev.display_name || 'A Hunter';
+      const num    = ev.hunter_number ? ` #${ev.hunter_number}` : '';
+      const cls    = (ev.class || 'hunter').toUpperCase();
+      const lvl    = ev.detail;
+      const toast  = document.createElement('div');
+      toast.style.cssText = `position:fixed;top:72px;left:50%;transform:translateX(-50%);z-index:99998;background:rgba(4,4,14,0.96);border:1px solid ${color}44;border-radius:14px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;color:rgba(255,255,255,0.85);white-space:nowrap;pointer-events:none;backdrop-filter:blur(20px);box-shadow:0 0 24px ${color}22;opacity:0;transition:opacity 0.3s;`;
+      toast.innerHTML = `<span style="color:${color}">▲ ${name}${num}</span> <span style="color:rgba(255,255,255,0.4)">[${cls}]</span> reached <span style="color:${color}">Level ${lvl}</span>`;
+      document.body.appendChild(toast);
+      requestAnimationFrame(() => { toast.style.opacity = '1'; });
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 4000);
+    }
+
+    // ── Subscribe to events table (level-up feed) ─────────────────────────────
+    client.channel('weebji-activity')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events', filter: 'event_type=eq.level_up' },
+        (payload) => {
+          const me = SupabaseSync.getUser();
+          if (payload.new && payload.new.user_id !== me?.id) {
+            showActivityToast(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    // ── Subscribe to leaderboard (live refresh) ───────────────────────────────
+    let _lbRefreshTimer = null;
+    client.channel('weebji-leaderboard')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leaderboard' },
+        () => {
+          // Debounce — avoid spamming re-renders on rapid updates
+          clearTimeout(_lbRefreshTimer);
+          _lbRefreshTimer = setTimeout(() => {
+            const profileScreen = document.getElementById('profile');
+            if (profileScreen && profileScreen.classList.contains('active')) {
+              const color = localStorage.getItem('weebji_color') || '#00F5FF';
+              renderLeaderboard(color);
+            }
+          }, 2000);
+        }
+      )
+      .subscribe();
+  })();
+
   /* ══ YOUTUBE NOTICE BOARD ════════════════════
      Fetches latest long-form video from your channel.
      To update: change YT_PLAYLIST_ID to your long-form playlist ID.

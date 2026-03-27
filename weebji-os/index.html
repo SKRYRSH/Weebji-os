@@ -1224,7 +1224,10 @@
   /* Monetization overhaul */
   .plus-paywall { background:rgba(255,200,40,0.03); border:1px solid rgba(255,210,60,0.12); border-radius:16px; padding:18px 16px; margin-bottom:12px; }
   .plus-paywall__header { font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:0.2em; color:rgba(255,210,60,0.5); text-transform:uppercase; margin-bottom:4px; }
-  .plus-paywall__pitch { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.2); line-height:1.6; margin-bottom:14px; }
+  .plus-paywall__pitch { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.35); line-height:1.6; margin-bottom:10px; font-style:italic; }
+  .plus-paywall__trial-notice { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(0,245,255,0.7); background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.15); border-radius:6px; padding:7px 10px; margin-bottom:10px; }
+  .plus-paywall__trial-expired { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(255,100,100,0.5); margin-bottom:10px; }
+  .plus-social-proof { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; color:rgba(255,210,60,0.4); text-align:center; margin-bottom:12px; }
   .plus-paywall__missing { list-style:none; padding:0; margin:0 0 16px; display:flex; flex-direction:column; gap:6px; }
   .plus-paywall__missing li { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; color:rgba(255,210,60,0.35); display:flex; align-items:center; gap:8px; }
   .plus-paywall__missing li::before { content:'◆'; font-size:7px; flex-shrink:0; }
@@ -2368,6 +2371,19 @@
     return SupabaseSync.isPremium();
   }
 
+  // Returns days remaining in voice trial (0 = expired/no trial)
+  function voiceTrialDaysLeft() {
+    const start = localStorage.getItem('weebji_start_date');
+    if (!start) return 0;
+    const ms = Date.now() - new Date(start).getTime();
+    const daysElapsed = ms / 86400000;
+    return Math.max(0, Math.ceil(3 - daysElapsed));
+  }
+
+  function isInVoiceTrial() {
+    return !isWeebjiPlus() && voiceTrialDaysLeft() > 0;
+  }
+
   function activateWeebjiPlus() {
     SupabaseSync.checkPremiumFromSupabase();
   }
@@ -2499,12 +2515,21 @@
         <div class="profile-plus-active">WEEBJI+ ACTIVE</div>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');window.open('${WEEBJI_GHOST_TOKEN_URL}','_blank')">👻 Buy Ghost Tokens — $0.99 each</button>`;
     } else {
+      const trialActive = isInVoiceTrial();
+      const dLeft = voiceTrialDaysLeft();
+      const trialBanner = trialActive
+        ? `<div class="plus-paywall__trial-notice">◈ System Voice trial active — ${dLeft} day${dLeft === 1 ? '' : 's'} left. Upgrade to keep it forever.</div>`
+        : `<div class="plus-paywall__trial-expired">◈ Your System Voice trial ended. You know what it sounds like now.</div>`;
+      const pitch = trialActive
+        ? `Your arc is incomplete. You've heard the System Voice — now it's about to go silent. Don't let that happen.`
+        : `Most hunters stop here. The ones who don't — they're the ones you'll never catch up to.`;
       el.innerHTML = `
         <div class="plus-paywall">
           <div class="plus-paywall__header">◆ WEEBJI+</div>
-          <p class="plus-paywall__pitch">You're leaving power on the table. Here's what's locked:</p>
+          ${trialBanner}
+          <p class="plus-paywall__pitch">${pitch}</p>
           <ul class="plus-paywall__missing">
-            <li>◈ System Voice — the AI narrator speaks to you</li>
+            <li>◈ System Voice — the AI narrator speaks your progress aloud</li>
             <li>⚔ Weekly Dungeon — 10 rotating boss fights, exclusive titles</li>
             <li>⚡ Friend Battles — 7-day XP wars, winner earns exclusive title</li>
             <li>👻 10 Ghost Tokens/month (free gets 3)</li>
@@ -2512,6 +2537,7 @@
             <li>🏋 20 Custom Exercises (free gets 5)</li>
             <li>🏰 Guild Creation — lead your own faction</li>
           </ul>
+          <div class="plus-social-proof" id="plus-social-proof">◆ hunters upgraded this week</div>
           <div class="plus-plans">
             <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('${WEEBJI_PLUS_STRIPE_URL}')">
               <div class="plus-plan__period">Monthly</div>
@@ -2527,7 +2553,19 @@
           </div>
         </div>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('${WEEBJI_GHOST_TOKEN_URL}')">👻 Need a Ghost Token? — $0.99</button>`;
+      // Async: fill social proof with real premium count
+      _fetchPremiumCount();
     }
+  }
+
+  async function _fetchPremiumCount() {
+    try {
+      const client = SupabaseSync._client ? SupabaseSync._client() : null;
+      if (!client) return;
+      const { count } = await client.from('user_plans').select('*', { count: 'exact', head: true }).eq('plan', 'plus').gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString());
+      const el = document.getElementById('plus-social-proof');
+      if (el && count != null) el.textContent = `◆ ${count > 0 ? count : '—'} hunter${count !== 1 ? 's' : ''} upgraded this week`;
+    } catch (_) { /* silent fail */ }
   }
 
   /* ══ WEEKLY DUNGEON ══════════════════════════════ */
@@ -6481,11 +6519,18 @@
     if (voiceBtn) {
       const toggleEl = document.getElementById('voice-toggle-state');
       const subEl    = document.getElementById('voice-toggle-sub');
-      if (!isWeebjiPlus()) {
+      if (!isWeebjiPlus() && !isInVoiceTrial()) {
         if (toggleEl) { toggleEl.textContent = 'PLUS'; toggleEl.className = 'profile-voice__toggle off'; }
         if (subEl)    subEl.textContent = 'WEEBJI+ Exclusive — Upgrade to unlock';
         voiceBtn.style.borderColor = hexRgba(color, 0.07);
         voiceBtn.style.opacity = '0.55';
+      } else if (isInVoiceTrial()) {
+        const d = voiceTrialDaysLeft();
+        const on = SystemVoice.isEnabled();
+        if (toggleEl) { toggleEl.textContent = on ? 'ON' : 'OFF'; toggleEl.className = `profile-voice__toggle ${on ? 'on' : 'off'}`; }
+        if (subEl)    subEl.textContent = `Trial active — ${d} day${d === 1 ? '' : 's'} left`;
+        voiceBtn.style.borderColor = hexRgba(color, on ? 0.25 : 0.12);
+        voiceBtn.style.opacity = '1';
       } else {
         const on = SystemVoice.isEnabled();
         if (toggleEl) { toggleEl.textContent = on ? 'ON' : 'OFF'; toggleEl.className = `profile-voice__toggle ${on ? 'on' : 'off'}`; }
@@ -7348,9 +7393,13 @@
   });
 
   document.getElementById('voice-toggle-btn').addEventListener('click', () => {
-    if (!isWeebjiPlus()) {
+    if (!isWeebjiPlus() && !isInVoiceTrial()) {
       spawnDropBanner('◈  SYSTEM VOICE — WEEBJI+ EXCLUSIVE');
       return;
+    }
+    if (isInVoiceTrial()) {
+      const d = voiceTrialDaysLeft();
+      spawnDropBanner(`◈  VOICE TRIAL — ${d} day${d === 1 ? '' : 's'} left — Upgrade to keep it`);
     }
     const on = SystemVoice.toggle();
     if (on) {
@@ -7961,7 +8010,7 @@ ${particles}
     function _pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
     function speak(text, tier = 0) {
-      if (!isWeebjiPlus()) return;
+      if (!isWeebjiPlus() && !isInVoiceTrial()) return;
       if (!isEnabled()) return;
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();

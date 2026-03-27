@@ -2957,7 +2957,7 @@
             </div>
             <div class="battle-versus__vs">VS</div>
             <div class="battle-versus__side">
-              <div class="battle-versus__name" style="color:${oppColor||'#FF4444'}">${oppName||'Opponent'}</div>
+              <div class="battle-versus__name" style="color:${oppColor||'#FF4444'}">${_esc(oppName)||'Opponent'}</div>
               <div class="battle-versus__xp" style="color:${oppColor||'#FF4444'}">+${oppGained}</div>
               <div class="battle-versus__class">${(oppClass||'hunter').toUpperCase()}</div>
             </div>
@@ -2976,8 +2976,8 @@
         const cClass = pendingReceived.challenger_class || 'hunter';
         html = `<div class="battle-card">
           <div class="battle-card__eyebrow">⚡ Challenge Received</div>
-          <div class="battle-card__title" style="color:${cColor};font-size:16px;">${cName}</div>
-          <div class="battle-card__pitch">${cClass.toUpperCase()} — has challenged you to a 7-day XP war. Do you accept?</div>
+          <div class="battle-card__title" style="color:${cColor};font-size:16px;">${_esc(cName)}</div>
+          <div class="battle-card__pitch">${_esc(cClass).toUpperCase()} — has challenged you to a 7-day XP war. Do you accept?</div>
           <div class="battle-actions">
             <button class="battle-btn battle-btn--accept" data-id="${pendingReceived.id}">ACCEPT</button>
             <button class="battle-btn battle-btn--decline" data-id="${pendingReceived.id}">DECLINE</button>
@@ -2988,7 +2988,7 @@
         const tName = pendingSent.challenged_display_name || 'your opponent';
         html = `<div class="battle-card">
           <div class="battle-card__eyebrow">⚡ Challenge Sent</div>
-          <div class="battle-card__pitch">Waiting for <span style="color:#FFD700;">${tName}</span> to respond.<br>Challenge expires if ignored for 48h.</div>
+          <div class="battle-card__pitch">Waiting for <span style="color:#FFD700;">${_esc(tName)}</span> to respond.<br>Challenge expires if ignored for 48h.</div>
         </div>`;
 
       } else if (recentDone) {
@@ -2998,7 +2998,7 @@
         html = `<div class="battle-card">
           <div class="battle-card__eyebrow">⚡ Battle Complete</div>
           <div class="battle-card__title" style="color:${iWon?'#FFD700':'rgba(255,255,255,0.35)'};">${iWon ? '◆ VICTORY' : '◈ DEFEATED'}</div>
-          <div class="battle-card__pitch">${iWon ? `You defeated ${oppName||'your opponent'}. The System records your name.` : `${oppName||'Your opponent'} ground harder. Challenge them again.`}</div>
+          <div class="battle-card__pitch">${iWon ? `You defeated ${_esc(oppName)||'your opponent'}. The System records your name.` : `${_esc(oppName)||'Your opponent'} ground harder. Challenge them again.`}</div>
           <div class="battle-reward-hint">${iWon ? '✓ +200 XP + "Defeated Their Shadow" title earned' : 'Grind more. Challenge again from your Squad.'}</div>
         </div>`;
 
@@ -3828,7 +3828,7 @@
 
   document.getElementById('name-input').addEventListener('input', e => {
     const v = e.target.value.trim() || '___';
-    document.getElementById('pledge-text').innerHTML = `I, <em>${v}</em>, accept my Awakening.<br>From this moment, I am no longer ordinary.`;
+    document.getElementById('pledge-text').innerHTML = `I, <em>${_esc(v)}</em>, accept my Awakening.<br>From this moment, I am no longer ordinary.`;
     // Reveal enemy field after 2+ chars with 600ms delay
     const ew = document.getElementById('enemy-wrap');
     if (e.target.value.trim().length >= 2) {
@@ -6776,7 +6776,7 @@
       const rrb = `${rri},${rgi},${rbi}`;
       return `<div class="lb-row${isYou ? ' is-you' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}">
         <span class="lb-rank" style="color:${rank<=3 ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
-        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${r.display_name}</span>` : r.display_name}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${r.hunter_number}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${r.dungeon_title}</span>` : ''}</span>
+        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${_esc(r.display_name)}</span>` : _esc(r.display_name)}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${parseInt(r.hunter_number)||''}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${_esc(r.dungeon_title)}</span>` : ''}</span>
         <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.streak || 0}<span style="font-size:11px;opacity:0.5"> days</span>${r.best_streak > (r.streak||0) ? `<span style="display:block;font-size:9px;opacity:0.4;letter-spacing:0.08em">best ${r.best_streak}</span>` : ''}</span>
       </div>`;
     }).join('');
@@ -8760,6 +8760,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         }
 
         // Route through server-side validation edge function
+        // Only the edge function writes progress + leaderboard — no direct client upsert on success
         await client.functions.invoke('validate-progress', {
           body: {
             progress: {
@@ -8773,11 +8774,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
             leaderboard: lbPayload,
           },
         });
-        // Direct fallback upsert — ensures leaderboard always reflects latest state
-        // even if edge function is slow or unavailable
-        await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' }).catch(() => {});
       } catch(e) {
-        // Edge function failed — still push leaderboard directly so hunter can be found
+        // Edge function failed — push leaderboard directly as fallback only
         try {
           await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' }).catch(() => {});
         } catch(_) {}
@@ -9136,13 +9134,13 @@ DEV.skipSplash()      → go straight to class select (if no session)
           resultsEl.innerHTML = guilds.map(g => `
             <div class="guild-lb-row" style="justify-content:space-between;padding:10px 12px">
               <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-                <div class="guild-tag" style="color:${hexC};border-color:${hexRgba(hexC,0.3)};background:${hexRgba(hexC,0.06)};font-size:9px;padding:3px 7px;flex-shrink:0">[${g.tag}]</div>
+                <div class="guild-tag" style="color:${hexC};border-color:${hexRgba(hexC,0.3)};background:${hexRgba(hexC,0.06)};font-size:9px;padding:3px 7px;flex-shrink:0">[${_esc(g.tag)}]</div>
                 <div style="min-width:0">
                   <div class="guild-lb-name" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esc(g.name)}</div>
                   <div class="guild-meta">${g.memberCount} / ${g.max_members || 30} members</div>
                 </div>
               </div>
-              <button class="guild-btn primary" data-guild-id="${g.id}" data-guild-name="${g.name}" style="flex-shrink:0;margin-left:8px;font-size:9px;padding:8px 12px">Join</button>
+              <button class="guild-btn primary" data-guild-id="${g.id}" data-guild-name="${_esc(g.name)}" style="flex-shrink:0;margin-left:8px;font-size:9px;padding:8px 12px">Join</button>
             </div>`).join('');
           resultsEl.querySelectorAll('[data-guild-id]').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -9151,7 +9149,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
               btn.textContent = '...';
               btn.disabled = true;
               const { error } = await joinGuild(gid);
-              if (error) { btn.textContent = 'Join'; btn.disabled = false; resultsEl.insertAdjacentHTML('afterbegin', `<div class="guild-msg" style="color:rgba(255,80,80,0.7);margin-bottom:6px">${error}</div>`); return; }
+              if (error) { btn.textContent = 'Join'; btn.disabled = false; const errDiv = document.createElement('div'); errDiv.className = 'guild-msg'; errDiv.style.cssText = 'color:rgba(255,80,80,0.7);margin-bottom:6px'; errDiv.textContent = error; resultsEl.prepend(errDiv); return; }
               setTimeout(() => renderGuildSection(color), 600);
             });
           });
@@ -9194,7 +9192,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         const rankLabel = rank === 1 ? '👑' : rank === 2 ? '②' : rank === 3 ? '③' : `${rank}`;
         return `<div class="guild-lb-row${isMe ? ' is-you' : ''}">
           <div class="guild-lb-rank${rank <= 3 ? ' top' : ''}">${rankLabel}</div>
-          <div class="guild-lb-name">${m.display_name || 'Hunter'}${isMe ? ' <span style="opacity:0.4;font-size:8px">(you)</span>' : ''}
+          <div class="guild-lb-name">${_esc(m.display_name || 'Hunter')}${isMe ? ' <span style="opacity:0.4;font-size:8px">(you)</span>' : ''}
             <small>${CLASS_GLYPH[m.class] || '·'} LV.${m.level} · ${m.streak}🔥 streak</small>
           </div>
           <div class="guild-lb-xp">${(m.xp||0).toLocaleString()} XP</div>
@@ -9205,9 +9203,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
         <div class="guild-card" style="border-color:${hexRgba(hexC, 0.12)}">
           <div class="guild-card__header">◆ GUILD</div>
           <div class="guild-banner">
-            <div class="guild-tag" style="color:${hexC};border-color:${hexRgba(hexC,0.3)};background:${hexRgba(hexC,0.06)}">[${guild.tag}]</div>
+            <div class="guild-tag" style="color:${hexC};border-color:${hexRgba(hexC,0.3)};background:${hexRgba(hexC,0.06)}">[${_esc(guild.tag)}]</div>
             <div>
-              <div class="guild-name-text">${guild.name}</div>
+              <div class="guild-name-text">${_esc(guild.name)}</div>
               <div class="guild-meta">${members.length} / ${guild.max_members || 30} members</div>
             </div>
           </div>

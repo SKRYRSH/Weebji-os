@@ -3424,7 +3424,7 @@
           Personal Challenge
           <span>${customDone ? 'COMPLETE' : '+12 XP'}</span>
         </div>
-        <div class="daily-challenge__text" style="font-size:13px;color:rgba(255,255,255,0.6)">${custom.text}</div>
+        <div class="daily-challenge__text" style="font-size:13px;color:rgba(255,255,255,0.6)">${_esc(custom.text)}</div>
         ${!customDone ? `<div class="daily-challenge__reward" style="color:rgba(255,255,255,0.3)">+12 XP — Tap when done</div>` : ''}
         <div class="daily-challenge__done">✓</div>
       </div>` : ''}
@@ -3580,6 +3580,17 @@
   }
 
   /* ══ UTILS ═══════════════════════════════════ */
+  // HTML-escape user-controlled strings before inserting into innerHTML
+  function _esc(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function hexRgba(hex, a) {
     const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
     return `rgba(${r},${g},${b},${a})`;
@@ -6837,12 +6848,12 @@
         const activeToday = (f.updated_at||'').slice(0,10) === todayStr;
         const dotColor = activeToday ? '#00FF88' : 'rgba(255,255,255,0.15)';
         const dotGlow = activeToday ? '0 0 6px rgba(0,255,136,0.7)' : 'none';
-        const titleHtml = f.dungeon_title ? `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:rgba(255,215,0,0.5);margin-top:2px;">${f.dungeon_title}</div>` : '';
+        const titleHtml = f.dungeon_title ? `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:rgba(255,215,0,0.5);margin-top:2px;">${_esc(f.dungeon_title)}</div>` : '';
         return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(${frgb},0.04);border:1px solid rgba(${frgb},${activeToday?'0.22':'0.12'});border-radius:12px;margin-bottom:8px;">
           <div style="width:8px;height:8px;border-radius:50%;background:${dotColor};box-shadow:${dotGlow};flex-shrink:0"></div>
           <div style="flex:1;min-width:0;">
-            <div style="font-family:'Cinzel',serif;font-size:12px;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.display_name}${f.hunter_number ? `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);margin-left:6px">#${f.hunter_number}</span>` : ''}</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(${frgb},0.6);margin-top:2px;">${(f.class||'hunter').toUpperCase()} · LV ${f.level||1}${activeToday ? ' · <span style="color:rgba(0,255,136,0.6)">ACTIVE</span>' : ''}</div>
+            <div style="font-family:'Cinzel',serif;font-size:12px;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_esc(f.display_name)}${f.hunter_number ? `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);margin-left:6px">#${_esc(String(f.hunter_number))}</span>` : ''}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(${frgb},0.6);margin-top:2px;">${_esc((f.class||'hunter').toUpperCase())} · LV ${f.level||1}${activeToday ? ' · <span style="color:rgba(0,255,136,0.6)">ACTIVE</span>' : ''}</div>
             ${titleHtml}
           </div>
           <div style="text-align:right;flex-shrink:0;">
@@ -6850,8 +6861,8 @@
             <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.1em;">BEST</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-            ${isWeebjiPlus() ? `<button class="battle-challenge-btn" onclick="Sound.play('tap');issueBattle('${f.user_id}','${f.display_name}','${f.class||'hunter'}','${f.color||'#FF4444'}')">⚔</button>` : ''}
-            <button onclick="removeFriend('${f.user_id}')" style="background:none;border:none;color:rgba(255,255,255,0.15);font-size:14px;cursor:pointer;padding:4px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
+            ${isWeebjiPlus() ? `<button class="battle-challenge-btn" data-fid="${_esc(f.user_id)}" data-fname="${_esc(f.display_name)}" data-fcls="${_esc(f.class||'hunter')}" data-fcol="${_esc(f.color||'#FF4444')}">⚔</button>` : ''}
+            <button data-remove-fid="${_esc(f.user_id)}" style="background:none;border:none;color:rgba(255,255,255,0.15);font-size:14px;cursor:pointer;padding:4px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
           </div>
         </div>`;
       }).join('');
@@ -6863,6 +6874,16 @@
       inner.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:16px 0;">Loading...</div>';
       const html = await loadFriendCards();
       inner.innerHTML = html;
+      // Wire battle + remove buttons via data attributes (avoids inline onclick XSS)
+      inner.querySelectorAll('.battle-challenge-btn[data-fid]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          Sound.play('tap');
+          issueBattle(btn.dataset.fid, btn.dataset.fname, btn.dataset.fcls, btn.dataset.fcol);
+        });
+      });
+      inner.querySelectorAll('[data-remove-fid]').forEach(btn => {
+        btn.addEventListener('click', () => removeFriend(btn.dataset.removeFid));
+      });
       // Update count badge
       const { data: fr2 } = await client.from('friends').select('friend_user_id',{count:'exact'}).eq('user_id', me.id);
       const countEl = el.querySelector('#friend-count');
@@ -9117,7 +9138,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
               <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
                 <div class="guild-tag" style="color:${hexC};border-color:${hexRgba(hexC,0.3)};background:${hexRgba(hexC,0.06)};font-size:9px;padding:3px 7px;flex-shrink:0">[${g.tag}]</div>
                 <div style="min-width:0">
-                  <div class="guild-lb-name" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name}</div>
+                  <div class="guild-lb-name" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esc(g.name)}</div>
                   <div class="guild-meta">${g.memberCount} / ${g.max_members || 30} members</div>
                 </div>
               </div>
@@ -9227,7 +9248,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const lvl    = ev.detail;
       const toast  = document.createElement('div');
       toast.style.cssText = `position:fixed;top:72px;left:50%;transform:translateX(-50%);z-index:99998;background:rgba(4,4,14,0.96);border:1px solid ${color}44;border-radius:14px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;color:rgba(255,255,255,0.85);white-space:nowrap;pointer-events:none;backdrop-filter:blur(20px);box-shadow:0 0 24px ${color}22;opacity:0;transition:opacity 0.3s;`;
-      toast.innerHTML = `<span style="color:${color}">▲ ${name}${num}</span> <span style="color:rgba(255,255,255,0.4)">[${cls}]</span> reached <span style="color:${color}">Level ${lvl}</span>`;
+      toast.innerHTML = `<span style="color:${color}">▲ ${_esc(name)}${_esc(num)}</span> <span style="color:rgba(255,255,255,0.4)">[${_esc(cls)}]</span> reached <span style="color:${color}">Level ${parseInt(lvl)||1}</span>`;
       document.body.appendChild(toast);
       requestAnimationFrame(() => { toast.style.opacity = '1'; });
       setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 4000);

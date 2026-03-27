@@ -8683,6 +8683,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
       if (!window.supabase || !SUPABASE_URL || SUPABASE_URL.includes('YOUR_PROJECT')) return;
       try {
         client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: 'implicit', detectSessionInUrl: true } });
+        // L-1: clear magic-link hash from URL after Supabase reads it — prevents token lingering in browser history
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
         client.auth.onAuthStateChange((event, session) => {
           currentUser = session?.user || null;
           const onProfile = document.getElementById('profile').classList.contains('active');

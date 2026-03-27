@@ -8362,7 +8362,7 @@ ${particles}
   if (_IS_PROD) {
     // Silence console in production — don't leak internals or invite attacks
     const _noop = () => {};
-    console.log = console.warn = console.info = console.debug = _noop;
+    console.log = console.warn = console.info = console.debug = console.error = _noop;
     // Remove DEV panel HTML entirely so it can't be re-shown
     const _dp = document.getElementById('dev-panel');
     if (_dp) _dp.remove();

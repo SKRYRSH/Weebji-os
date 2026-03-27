@@ -3328,6 +3328,13 @@
       { text: 'Set a new push-up PR',                            xp: 22, key: 'pushup_pr'       },
       { text: 'Train without music — pure focus',                xp: 12, key: 'no_music'        },
       { text: 'Log all exercises before 8 AM',                   xp: 20, key: 'early_bird'      },
+      { text: 'Do 100 reps total across any exercises',          xp: 20, key: 'hundred_reps'    },
+      { text: 'Complete workout with zero rest between sets',    xp: 22, key: 'no_rest'         },
+      { text: 'Train outdoors — change the environment',         xp: 14, key: 'outdoors'        },
+      { text: 'Log a workout AND complete all 3 quests',         xp: 25, key: 'wk_all_quests'   },
+      { text: 'Do a 5-minute warm-up before training',           xp: 10, key: 'warmup'          },
+      { text: 'Finish your workout faster than yesterday',       xp: 18, key: 'faster'          },
+      { text: 'Complete full workout — no skipped exercises',    xp: 22, key: 'no_skip'         },
     ],
     mastermind: [
       { text: 'Complete 2 Pomodoro sessions today',              xp: 18, key: 'two_sessions'    },
@@ -3337,15 +3344,29 @@
       { text: 'Write one insight from today\'s session',         xp: 12, key: 'write_insight'   },
       { text: 'Complete a deep work session (50+ min)',          xp: 22, key: 'deep_work'       },
       { text: 'Finish all quests before evening',                xp: 20, key: 'all_quests'      },
+      { text: 'Phone face-down for your entire session',         xp: 15, key: 'phone_down'      },
+      { text: 'Work on one thing only — no task-switching',      xp: 18, key: 'single_task'     },
+      { text: 'Start your session within 5 min of waking',       xp: 20, key: 'instant_start'   },
+      { text: 'Log 3+ hours of total focus today',               xp: 28, key: 'three_hours'     },
+      { text: 'Review your goals before beginning',              xp: 10, key: 'review_goals'    },
+      { text: 'Complete a session with zero interruptions',      xp: 22, key: 'zero_interr'     },
+      { text: 'End your session with a written summary',         xp: 14, key: 'written_summary' },
     ],
     monk: [
-      { text: 'Complete all 8 rituals before 10 AM',             xp: 22, key: 'all_early'       },
+      { text: 'Complete all rituals before 10 AM',               xp: 22, key: 'all_early'       },
       { text: 'Meditate for 10 minutes — no timer, just be',     xp: 15, key: 'meditate_long'   },
       { text: 'Add one new good habit to your ritual list',      xp: 10, key: 'new_habit'       },
       { text: 'Journal your reflection for today',               xp: 12, key: 'journal_today'   },
       { text: 'Cold shower — no hesitation',                     xp: 18, key: 'cold_shower'     },
       { text: 'Complete all rituals + all quests',               xp: 25, key: 'full_day'        },
-      { text: 'Do your rituals in silence',                      xp: 15, key: 'ritual_silence'  },
+      { text: 'Do your rituals in complete silence',             xp: 15, key: 'ritual_silence'  },
+      { text: 'No phone for the first hour after waking',        xp: 18, key: 'no_phone_am'     },
+      { text: 'Drink only water today — no exceptions',          xp: 14, key: 'water_only'      },
+      { text: 'Complete a sanctuary breathing session',          xp: 16, key: 'sanctuary_done'  },
+      { text: 'Write 3 things you\'re grateful for',             xp: 10, key: 'gratitude'       },
+      { text: 'Spend 20 minutes in nature — no earphones',       xp: 14, key: 'nature_walk'     },
+      { text: 'Complete all rituals two days in a row',          xp: 22, key: 'two_day_streak'  },
+      { text: 'Eat clean — no junk food today',                  xp: 16, key: 'eat_clean'       },
     ],
   };
 
@@ -6631,7 +6652,7 @@
       .limit(20);
 
     if (!rows || rows.length === 0) {
-      el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;font-size:13px">No hunters yet. Be the first.</div></div>`;
+      el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px 16px;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;line-height:2;">No hunters ranked yet.<br><span style="color:rgba(255,255,255,0.12);font-size:9px;">Complete a workout or quest to claim your spot.<br>Sign in to sync your progress.</span></div></div>`;
       return;
     }
 
@@ -6695,7 +6716,10 @@
 
     async function loadFriendCards() {
       const { data: friendRows } = await client.from('friends').select('friend_user_id').eq('user_id', me.id);
-      if (!friendRows || !friendRows.length) return `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:rgba(255,255,255,0.2);text-align:center;padding:20px 0;line-height:1.8;">No hunters in your squad yet.<br><span style="color:rgba(255,255,255,0.1);">Add by Hunter # — find yours in your profile.</span></div>`;
+      if (!friendRows || !friendRows.length) {
+        const myNum = localStorage.getItem('weebji_hunter_num') || '----';
+        return `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:rgba(255,255,255,0.25);text-align:center;padding:20px 0;line-height:2;">No hunters in your squad yet.<br><span style="font-size:9px;color:rgba(255,255,255,0.12);">Your Hunter # to share:</span><br><span style="font-size:16px;font-weight:700;color:${color};letter-spacing:0.18em;">#${myNum}</span><br><span style="font-size:9px;color:rgba(255,255,255,0.1);">Send it to a friend — they add you, you add them back.</span></div>`;
+      }
 
       const ids = friendRows.map(r => r.friend_user_id);
       const { data: lb } = await client.from('leaderboard').select('user_id,display_name,class,color,hunter_number,level,best_streak,dungeon_title,updated_at').in('user_id', ids);
@@ -7325,11 +7349,11 @@
     if (plus) {
       ctx.fillStyle = 'rgba(255,200,60,0.45)';
       ctx.shadowColor = 'rgba(255,180,0,0.3)'; ctx.shadowBlur = 12;
-      ctx.fillText('WEEBJI+ ◆  weebji.app', W/2, arcY + 56);
+      ctx.fillText('WEEBJI+ ◆  weebji.netlify.app', W/2, arcY + 56);
       ctx.shadowBlur = 0;
     } else {
       ctx.fillStyle = 'rgba(255,255,255,0.12)';
-      ctx.fillText('weebji.app', W/2, arcY + 56);
+      ctx.fillText('weebji.netlify.app', W/2, arcY + 56);
     }
   }
 
@@ -7359,7 +7383,9 @@
     canvas.toBlob(blob => {
       const file = new File([blob], `weebji-arc-${num}.png`, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'WEEBJI OS — My Arc', text: `Hunter #${num} · ${name} · Level ${p.level}` }).catch(()=>{});
+        const streakTxt = (p.streak || 0) > 0 ? `${p.streak}-day streak. ` : '';
+      const shareText = `${streakTxt}Level ${p.level} Hunter. This is my arc.\n\nweebji.netlify.app`;
+      navigator.share({ files: [file], title: 'WEEBJI OS — My Arc', text: shareText }).catch(()=>{});
       } else {
         // Fallback: download + copy text
         const a = document.createElement('a');

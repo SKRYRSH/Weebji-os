@@ -2371,9 +2371,11 @@
 
   /* ══ WEEBJI+ ═════════════════════════════════ */
   // WEEBJI+ Lemon Squeezy Payment Links
-  const WEEBJI_PLUS_STRIPE_URL  = 'https://weebji.lemonsqueezy.com/checkout/buy/ba33bee0-006d-427d-87b5-e4bccfd9757b';
-  const WEEBJI_PLUS_ANNUAL_URL  = 'https://weebji.lemonsqueezy.com/checkout/buy/bd9d58ed-7024-48b3-9896-0b829d3dbbcb';
-  const WEEBJI_GHOST_TOKEN_URL  = 'https://weebji.lemonsqueezy.com/checkout/buy/0992fda8-8640-4d7f-a48c-f25e1b7e07aa';
+  // Payment gateway — Razorpay integration pending approval
+  // These will be replaced with live Razorpay checkout links when approved
+  const WEEBJI_PLUS_STRIPE_URL  = null;
+  const WEEBJI_PLUS_ANNUAL_URL  = null;
+  const WEEBJI_GHOST_TOKEN_URL  = null;
 
   function isWeebjiPlus() {
     return SupabaseSync.isPremium();
@@ -2502,17 +2504,12 @@
       </div>`;
   }
 
-  // Opens checkout — go straight to Lemon Squeezy, pre-fill email if signed in
-  function _openCheckout(baseUrl) {
-    const user = SupabaseSync.getUser();
-    const successUrl = encodeURIComponent(window.location.href.split('?')[0]);
-    let url = `${baseUrl}?checkout[success_url]=${successUrl}`;
-    if (user?.email) url += `&checkout[email]=${encodeURIComponent(user.email)}`;
-    const plan = baseUrl === WEEBJI_PLUS_ANNUAL_URL ? 'annual' : baseUrl === WEEBJI_GHOST_TOKEN_URL ? 'ghost_token' : 'monthly';
+  // Payment gateway — Razorpay integration pending approval
+  // Wires in here when live: replace body with Razorpay checkout call
+  function _openCheckout(planRef) {
+    const plan = planRef === WEEBJI_PLUS_ANNUAL_URL ? 'annual' : planRef === WEEBJI_GHOST_TOKEN_URL ? 'ghost_token' : 'monthly';
     if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, class: localStorage.getItem('weebji_class') });
-    const a = document.createElement('a');
-    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-    document.body.appendChild(a); a.click(); a.remove();
+    spawnDropBanner('◆  PAYMENTS LAUNCHING SOON — Stay tuned');
   }
 
   function renderWeebjiPlusSection(color) {

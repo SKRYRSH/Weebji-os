@@ -323,8 +323,11 @@
     /* ── FEATURES ── */
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
+    }
+    .features-grid--2col {
+      grid-template-columns: repeat(2, 1fr);
     }
     .feat-card {
       background: var(--glass);
@@ -609,6 +612,7 @@
 
       .class-grid { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr 1fr; }
+      .features-grid--2col { grid-template-columns: 1fr; }
       .install-grid { grid-template-columns: 1fr; }
 
       .screens-track { padding: 0 20px; }
@@ -835,7 +839,7 @@
     <div class="section-eyebrow reveal">WEEBJI+</div>
     <h2 class="section-title reveal">For Hunters Who Want Everything.</h2>
     <p style="font-family:'Inter',sans-serif;font-size:15px;color:rgba(255,255,255,0.4);text-align:center;max-width:480px;margin:0 auto 48px;line-height:1.7;" class="reveal">The free tier is real. But WEEBJI+ is where the System shows its true face.</p>
-    <div class="features-grid">
+    <div class="features-grid features-grid--2col">
       <div class="feat-card reveal reveal-delay-1" style="border-color:rgba(139,0,255,0.3);background:rgba(139,0,255,0.04);">
         <span class="feat-icon">⚔</span>
         <div class="feat-title" style="color:#CC44FF;">Weekly Dungeon</div>

@@ -779,6 +779,37 @@
   .dungeon-defeated__title { font-family:'Cinzel',serif; font-size:14px; font-weight:900; color:#CC44FF; text-shadow:0 0 16px rgba(139,0,255,0.6); letter-spacing:0.12em; margin-bottom:4px; }
   .dungeon-defeated__sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(139,0,255,0.45); letter-spacing:0.15em; }
 
+  /* ══ FRIEND BATTLES ══════════════════════════ */
+  .battle-card { position:relative; background:rgba(4,4,14,0.97); border:1px solid rgba(255,60,60,0.25); border-radius:20px; padding:20px 18px; margin-bottom:14px; overflow:hidden; }
+  .battle-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(255,60,60,0.08) 0%, transparent 65%); pointer-events:none; }
+  .battle-card__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(255,80,80,0.6); text-transform:uppercase; margin-bottom:8px; }
+  .battle-card__title { font-family:'Cinzel',serif; font-size:18px; font-weight:900; letter-spacing:0.12em; color:#fff; text-shadow:0 0 20px rgba(255,60,60,0.6); margin-bottom:6px; }
+  .battle-card__pitch { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.35); line-height:1.6; margin-bottom:14px; }
+  .battle-card__pitch em { font-style:normal; color:rgba(255,215,0,0.7); }
+  .battle-card__empty { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.2); text-align:center; line-height:2; padding:8px 0; letter-spacing:0.1em; }
+  .battle-card__empty span { color:rgba(255,255,255,0.1); display:block; font-size:9px; }
+  .battle-versus { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .battle-versus__side { flex:1; text-align:center; overflow:hidden; }
+  .battle-versus__name { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.06em; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .battle-versus__xp { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; letter-spacing:0.05em; }
+  .battle-versus__class { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; color:rgba(255,255,255,0.2); margin-top:3px; }
+  .battle-versus__vs { font-family:'Cinzel',serif; font-size:11px; font-weight:900; color:rgba(255,255,255,0.2); letter-spacing:0.2em; flex-shrink:0; }
+  .battle-bar { width:100%; height:8px; border-radius:99px; overflow:hidden; display:flex; background:rgba(255,255,255,0.05); margin-bottom:10px; }
+  .battle-bar__fill { height:100%; transition:width 1s cubic-bezier(0.16,1,0.3,1); }
+  .battle-bar__fill--you { border-radius:99px 0 0 99px; }
+  .battle-bar__fill--opp { border-radius:0 99px 99px 0; }
+  .battle-status { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-align:center; margin-bottom:8px; }
+  .battle-reward-hint { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(255,215,0,0.3); text-align:center; }
+  .battle-reward-hint span { color:rgba(255,215,0,0.6); }
+  .battle-actions { display:flex; gap:8px; margin-top:4px; }
+  .battle-btn { flex:1; padding:13px; border-radius:10px; font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:0.15em; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:transform 0.1s; }
+  .battle-btn:active { transform:scale(0.96); }
+  .battle-btn--accept { border:1px solid rgba(0,255,136,0.35); background:rgba(0,255,136,0.08); color:#00FF88; }
+  .battle-btn--decline { border:1px solid rgba(255,255,255,0.1); background:transparent; color:rgba(255,255,255,0.3); }
+  .battle-locked-btn { display:inline-block; padding:10px 22px; border-radius:10px; border:1px solid rgba(255,60,60,0.3); background:rgba(255,60,60,0.06); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em; color:rgba(255,100,100,0.8); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  .battle-challenge-btn { background:none; border:1px solid rgba(255,60,60,0.25); border-radius:8px; color:rgba(255,80,80,0.6); font-size:12px; cursor:pointer; padding:4px 8px; line-height:1; -webkit-tap-highlight-color:transparent; transition:border-color 0.15s,color 0.15s; }
+  .battle-challenge-btn:active { transform:scale(0.92); }
+
   /* ══ CUSTOM WORKOUTS — PROFILE SECTION ══════ */
   .cw-card { margin-bottom: 12px; padding: 14px 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; }
   .cw-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -1442,6 +1473,9 @@
 
         <!-- Weekly Dungeon -->
         <div id="dungeon-card" style="display:none;"></div>
+
+        <!-- Friend Battles -->
+        <div id="battle-card" style="display:none;"></div>
 
         <!-- YouTube Notice Board -->
         <div id="yt-notice-board" style="margin:0 0 14px;display:none;"></div>
@@ -2454,6 +2488,7 @@
           <ul class="plus-paywall__missing">
             <li>◈ System Voice — the AI narrator speaks to you</li>
             <li>⚔ Weekly Dungeon — 10 rotating boss fights, exclusive titles</li>
+            <li>⚡ Friend Battles — 7-day XP wars, winner earns exclusive title</li>
             <li>👻 10 Ghost Tokens/month (free gets 3)</li>
             <li>📊 Deep Analytics — streak history, HP charts</li>
             <li>🏋 20 Custom Exercises (free gets 5)</li>
@@ -2765,6 +2800,267 @@
       });
     }
     } catch(e) { console.warn('dungeon render error', e); }
+  }
+
+  /* ══ FRIEND BATTLES ══════════════════════════════ */
+
+  async function renderBattleCard() {
+    const el = document.getElementById('battle-card');
+    if (!el) return;
+    el.style.display = 'block';
+    const plus = isWeebjiPlus();
+
+    if (!plus) {
+      el.innerHTML = `<div class="battle-card">
+        <div class="battle-card__eyebrow">⚡ Friend Battles — WEEBJI+</div>
+        <div class="battle-card__title">SHADOW WAR</div>
+        <div class="battle-card__pitch">Challenge a friend to a 7-day XP war. The hunter who earns the most wins XP and the <em>Defeated Their Shadow</em> title.</div>
+        <div class="battle-locked-btn" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ →</div>
+      </div>`;
+      return;
+    }
+
+    const client = SupabaseSync._client();
+    const me = SupabaseSync.getUser();
+    if (!client || !me) { el.style.display = 'none'; return; }
+
+    try {
+      const { data: battles } = await client.from('battles')
+        .select('*')
+        .or(`challenger_id.eq.${me.id},challenged_id.eq.${me.id}`)
+        .neq('status', 'declined')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      const now = new Date();
+
+      // Resolve any expired active battles client-side
+      for (const b of (battles || [])) {
+        if (b.status === 'active' && b.end_date && new Date(b.end_date) <= now) {
+          await resolveBattle(b, client, me.id);
+        }
+      }
+
+      // Re-fetch after resolution
+      const { data: fresh } = await client.from('battles')
+        .select('*')
+        .or(`challenger_id.eq.${me.id},challenged_id.eq.${me.id}`)
+        .neq('status', 'declined')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      const all = fresh || battles || [];
+      const active          = all.find(b => b.status === 'active');
+      const pendingReceived = all.find(b => b.status === 'pending' && b.challenged_id === me.id);
+      const pendingSent     = all.find(b => b.status === 'pending' && b.challenger_id === me.id);
+      const recentDone      = all.find(b => b.status === 'completed');
+
+      let html = '';
+
+      if (active) {
+        // Sync my current XP into the battle row
+        const p = loadProgress();
+        const iAm     = active.challenger_id === me.id;
+        const myField = iAm ? 'challenger_xp_current' : 'challenged_xp_current';
+        const myStart = iAm ? active.challenger_xp_start : active.challenged_xp_start;
+        const oppStart   = iAm ? active.challenged_xp_start  : active.challenger_xp_start;
+        const oppCurrent = iAm ? active.challenged_xp_current : active.challenger_xp_current;
+        await client.from('battles').update({ [myField]: p.xp, updated_at: now.toISOString() }).eq('id', active.id);
+
+        const myGained  = Math.max(0, p.xp - myStart);
+        const oppGained = Math.max(0, oppCurrent - oppStart);
+        const oppName   = iAm ? active.challenged_display_name : active.challenger_display_name;
+        const oppClass  = iAm ? active.challenged_class : active.challenger_class;
+        const oppColor  = iAm ? active.challenged_color  : active.challenger_color;
+        const myColor   = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+        const myName    = State.playerName || localStorage.getItem('weebji_name') || 'You';
+        const myCls     = State.selectedClass || localStorage.getItem('weebji_class') || 'hunter';
+
+        const endDate   = new Date(active.end_date);
+        const msLeft    = endDate - now;
+        const daysLeft  = Math.max(0, Math.floor(msLeft / (1000 * 60 * 60 * 24)));
+        const hoursLeft = Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60)));
+        const timerTxt  = daysLeft > 1 ? `${daysLeft}d left` : daysLeft === 1 ? `${hoursLeft}h left` : 'Ends today';
+
+        const total  = myGained + oppGained;
+        const myPct  = total > 0 ? Math.max(4, Math.min(96, Math.round((myGained / total) * 100))) : 50;
+        const oppPct = 100 - myPct;
+
+        html = `<div class="battle-card">
+          <div class="battle-card__eyebrow">⚡ Active Battle — ${timerTxt}</div>
+          <div class="battle-versus">
+            <div class="battle-versus__side">
+              <div class="battle-versus__name" style="color:${myColor}">${myName}</div>
+              <div class="battle-versus__xp" style="color:${myColor}">+${myGained}</div>
+              <div class="battle-versus__class">${myCls.toUpperCase()}</div>
+            </div>
+            <div class="battle-versus__vs">VS</div>
+            <div class="battle-versus__side">
+              <div class="battle-versus__name" style="color:${oppColor||'#FF4444'}">${oppName||'Opponent'}</div>
+              <div class="battle-versus__xp" style="color:${oppColor||'#FF4444'}">+${oppGained}</div>
+              <div class="battle-versus__class">${(oppClass||'hunter').toUpperCase()}</div>
+            </div>
+          </div>
+          <div class="battle-bar">
+            <div class="battle-bar__fill battle-bar__fill--you" style="width:${myPct}%;background:${myColor};box-shadow:0 0 8px ${myColor}88;"></div>
+            <div class="battle-bar__fill battle-bar__fill--opp" style="width:${oppPct}%;background:${oppColor||'#FF4444'};box-shadow:0 0 8px ${(oppColor||'#FF4444')}88;"></div>
+          </div>
+          <div class="battle-status">${myGained >= oppGained ? '◈ You are leading — keep grinding' : '◈ You are behind — push harder'}</div>
+          <div class="battle-reward-hint">Winner earns <span>+200 XP</span> + "Defeated Their Shadow"</div>
+        </div>`;
+
+      } else if (pendingReceived) {
+        const cName  = pendingReceived.challenger_display_name || 'A hunter';
+        const cColor = pendingReceived.challenger_color || '#FF4444';
+        const cClass = pendingReceived.challenger_class || 'hunter';
+        html = `<div class="battle-card">
+          <div class="battle-card__eyebrow">⚡ Challenge Received</div>
+          <div class="battle-card__title" style="color:${cColor};font-size:16px;">${cName}</div>
+          <div class="battle-card__pitch">${cClass.toUpperCase()} — has challenged you to a 7-day XP war. Do you accept?</div>
+          <div class="battle-actions">
+            <button class="battle-btn battle-btn--accept" data-id="${pendingReceived.id}">ACCEPT</button>
+            <button class="battle-btn battle-btn--decline" data-id="${pendingReceived.id}">DECLINE</button>
+          </div>
+        </div>`;
+
+      } else if (pendingSent) {
+        const tName = pendingSent.challenged_display_name || 'your opponent';
+        html = `<div class="battle-card">
+          <div class="battle-card__eyebrow">⚡ Challenge Sent</div>
+          <div class="battle-card__pitch">Waiting for <span style="color:#FFD700;">${tName}</span> to respond.<br>Challenge expires if ignored for 48h.</div>
+        </div>`;
+
+      } else if (recentDone) {
+        const iAm   = recentDone.challenger_id === me.id;
+        const iWon  = recentDone.winner_id === me.id;
+        const oppName = iAm ? recentDone.challenged_display_name : recentDone.challenger_display_name;
+        html = `<div class="battle-card">
+          <div class="battle-card__eyebrow">⚡ Battle Complete</div>
+          <div class="battle-card__title" style="color:${iWon?'#FFD700':'rgba(255,255,255,0.35)'};">${iWon ? '◆ VICTORY' : '◈ DEFEATED'}</div>
+          <div class="battle-card__pitch">${iWon ? `You defeated ${oppName||'your opponent'}. The System records your name.` : `${oppName||'Your opponent'} ground harder. Challenge them again.`}</div>
+          <div class="battle-reward-hint">${iWon ? '✓ +200 XP + "Defeated Their Shadow" title earned' : 'Grind more. Challenge again from your Squad.'}</div>
+        </div>`;
+
+      } else {
+        html = `<div class="battle-card">
+          <div class="battle-card__eyebrow">⚡ Friend Battles</div>
+          <div class="battle-card__empty">No active battles.<br><span>Tap ⚔ on a Squad member to challenge them.</span></div>
+        </div>`;
+      }
+
+      el.innerHTML = html;
+
+      el.querySelector('.battle-btn--accept')?.addEventListener('click', async function() {
+        this.textContent = '...'; this.disabled = true;
+        await acceptBattle(this.dataset.id, client, me.id);
+        renderBattleCard();
+      });
+      el.querySelector('.battle-btn--decline')?.addEventListener('click', async function() {
+        this.textContent = '...'; this.disabled = true;
+        await client.from('battles').update({ status: 'declined', updated_at: new Date().toISOString() }).eq('id', this.dataset.id);
+        SystemVoice.say('Challenge declined.');
+        renderBattleCard();
+      });
+
+    } catch(e) { console.warn('battle render error', e); }
+  }
+
+  async function issueBattle(friendId, friendName, friendClass, friendColor) {
+    if (!isWeebjiPlus()) {
+      SystemVoice.say('Friend Battles are WEEBJI+ exclusive. Upgrade to unlock.');
+      return;
+    }
+    const client = SupabaseSync._client();
+    const me = SupabaseSync.getUser();
+    if (!client || !me) return;
+
+    // Check for existing active/pending battle between these two specific users
+    const { data: existing } = await client.from('battles')
+      .select('id')
+      .in('status', ['pending', 'active'])
+      .or(`and(challenger_id.eq.${me.id},challenged_id.eq.${friendId}),and(challenger_id.eq.${friendId},challenged_id.eq.${me.id})`)
+      .limit(1);
+    if (existing && existing.length) {
+      SystemVoice.say('You already have an active battle or pending challenge with this hunter.');
+      return;
+    }
+
+    const p       = loadProgress();
+    const myName  = State.playerName || localStorage.getItem('weebji_name') || 'Hunter';
+    const myClass = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
+    const myColor = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+
+    const { error } = await client.from('battles').insert({
+      challenger_id:           me.id,
+      challenged_id:           friendId,
+      status:                  'pending',
+      challenger_xp_start:     p.xp,
+      challenger_xp_current:   p.xp,
+      challenger_display_name: myName,
+      challenged_display_name: friendName,
+      challenger_class:        myClass,
+      challenged_class:        friendClass || 'hunter',
+      challenger_color:        myColor,
+      challenged_color:        friendColor || '#FF4444',
+    });
+
+    if (!error) {
+      Sound.play('levelUp');
+      SystemVoice.say(`Challenge sent to ${friendName}. The war begins when they accept.`);
+      if (typeof posthog !== 'undefined') posthog.capture('battle_challenged', { friend: friendName });
+      renderBattleCard();
+    } else if (error.code === '23505') {
+      SystemVoice.say('You already have an active battle with this hunter.');
+    } else {
+      console.warn('issueBattle error', error);
+      SystemVoice.say('Could not send challenge. Try again.');
+    }
+  }
+
+  async function acceptBattle(battleId, client, myId) {
+    const p   = loadProgress();
+    const now = new Date();
+    const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    await client.from('battles').update({
+      status:                'active',
+      start_date:            now.toISOString(),
+      end_date:              end.toISOString(),
+      challenged_xp_start:   p.xp,
+      challenged_xp_current: p.xp,
+      updated_at:            now.toISOString(),
+    }).eq('id', battleId);
+    Sound.play('levelUp');
+    SystemVoice.say('Battle accepted. Seven days. One winner. Grind harder than you ever have.');
+    if (typeof posthog !== 'undefined') posthog.capture('battle_accepted');
+  }
+
+  async function resolveBattle(battle, client, myId) {
+    const iAm       = battle.challenger_id === myId;
+    const myGained  = Math.max(0, (iAm ? battle.challenger_xp_current : battle.challenged_xp_current) - (iAm ? battle.challenger_xp_start : battle.challenged_xp_start));
+    const oppGained = Math.max(0, (iAm ? battle.challenged_xp_current : battle.challenger_xp_current) - (iAm ? battle.challenged_xp_start : battle.challenger_xp_start));
+    const winnerId  = myGained >= oppGained ? myId : (iAm ? battle.challenged_id : battle.challenger_id);
+
+    await client.from('battles').update({
+      status:     'completed',
+      winner_id:  winnerId,
+      updated_at: new Date().toISOString(),
+    }).eq('id', battle.id);
+
+    if (winnerId === myId) {
+      const p = loadProgress();
+      p.xp += 200;
+      p.shadowSlayerEarned = true;
+      if (!p.titles) p.titles = [];
+      if (!p.titles.includes('shadow_slayer')) p.titles.push('shadow_slayer');
+      const leveled = checkLevelUp(p);
+      saveProgress(p);
+      if (leveled) triggerLevelUp(p.level);
+      updateXPBar(p);
+      spawnDropBanner('⚔ SHADOW DEFEATED — +200 XP');
+      Sound.play('levelUp');
+      SystemVoice.say('You defeated your shadow. The System records your name, Hunter.');
+      if (typeof posthog !== 'undefined') posthog.capture('battle_won');
+    }
   }
 
   /* ══ RITUAL CLOCK ════════════════════════════════ */
@@ -3625,6 +3921,8 @@
     renderDailyChallenge(cls, color);
     // Weekly Dungeon (premium)
     renderDungeonCard();
+    // Friend Battles (premium)
+    renderBattleCard();
 
     // Best streak: gold pulse if new best was set this session
     if (p.streak > 0 && p.streak >= p.bestStreak) {
@@ -6330,7 +6628,10 @@
             <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:rgba(${frgb},0.9);font-weight:600;">${f.best_streak||0}</div>
             <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.1em;">BEST</div>
           </div>
-          <button onclick="removeFriend('${f.user_id}')" style="background:none;border:none;color:rgba(255,255,255,0.15);font-size:14px;cursor:pointer;padding:4px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+            ${isWeebjiPlus() ? `<button class="battle-challenge-btn" onclick="Sound.play('tap');issueBattle('${f.user_id}','${f.display_name}','${f.class||'hunter'}','${f.color||'#FF4444'}')">⚔</button>` : ''}
+            <button onclick="removeFriend('${f.user_id}')" style="background:none;border:none;color:rgba(255,255,255,0.15);font-size:14px;cursor:pointer;padding:4px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
+          </div>
         </div>`;
       }).join('');
     }

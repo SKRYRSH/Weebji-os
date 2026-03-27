@@ -3242,11 +3242,13 @@
   const TheVoid = (() => {
     let _active = false;
     let _breachCount = 0;
+    let _lastBreachAt = 0; // cooldown — prevent auto-lock from spamming HP drain
 
     function enter(modeLabel) {
       if (_active) return;
       _active = true;
       _breachCount = 0;
+      _lastBreachAt = 0;
       const overlay = document.getElementById('void-overlay');
       const modeLbl = document.getElementById('void-mode-label');
       if (modeLbl) modeLbl.textContent = modeLabel || 'Session Active';
@@ -3269,9 +3271,14 @@
     function onBreach() {
       if (!_active) return;
       _breachCount++;
-      // HP damage
-      const p = loadProgress();
-      if (p.hp > 0) { p.hp = Math.max(0, p.hp - 1); saveProgress(p); updateStats(p); }
+      // Cooldown: minimum 3 minutes between HP drains (phone auto-lock fires this constantly)
+      const now = Date.now();
+      const drain = (now - _lastBreachAt) > 180000;
+      if (drain) {
+        _lastBreachAt = now;
+        const p = loadProgress();
+        if (p.hp > 1) { p.hp = Math.max(1, p.hp - 1); saveProgress(p); updateStats(p); }
+      }
       // Flash
       const flash = document.getElementById('void-penalty-flash');
       if (flash) { flash.classList.add('flash'); setTimeout(() => flash.classList.remove('flash'), 300); }
@@ -3327,7 +3334,7 @@
       { text: 'Complete workout + 1 quest today',                xp: 20, key: 'wk_plus_quest'   },
       { text: 'Set a new push-up PR',                            xp: 22, key: 'pushup_pr'       },
       { text: 'Train without music — pure focus',                xp: 12, key: 'no_music'        },
-      { text: 'Log all exercises before 8 AM',                   xp: 20, key: 'early_bird'      },
+      { text: 'Log all exercises before 11 AM',                  xp: 18, key: 'early_bird'      },
       { text: 'Do 100 reps total across any exercises',          xp: 20, key: 'hundred_reps'    },
       { text: 'Complete workout with zero rest between sets',    xp: 22, key: 'no_rest'         },
       { text: 'Train outdoors — change the environment',         xp: 14, key: 'outdoors'        },
@@ -3340,13 +3347,13 @@
       { text: 'Complete 2 Pomodoro sessions today',              xp: 18, key: 'two_sessions'    },
       { text: 'Enter The Void for a 90-min session',             xp: 28, key: 'white_room'      },
       { text: 'No social media during your session',             xp: 15, key: 'no_socials'      },
-      { text: 'Study before breakfast — train your will',        xp: 18, key: 'pre_breakfast'   },
+      { text: 'Study before noon — get it done early',           xp: 15, key: 'pre_noon'        },
       { text: 'Write one insight from today\'s session',         xp: 12, key: 'write_insight'   },
       { text: 'Complete a deep work session (50+ min)',          xp: 22, key: 'deep_work'       },
       { text: 'Finish all quests before evening',                xp: 20, key: 'all_quests'      },
       { text: 'Phone face-down for your entire session',         xp: 15, key: 'phone_down'      },
       { text: 'Work on one thing only — no task-switching',      xp: 18, key: 'single_task'     },
-      { text: 'Start your session within 5 min of waking',       xp: 20, key: 'instant_start'   },
+      { text: 'Start your first session before noon',            xp: 16, key: 'instant_start'   },
       { text: 'Log 3+ hours of total focus today',               xp: 28, key: 'three_hours'     },
       { text: 'Review your goals before beginning',              xp: 10, key: 'review_goals'    },
       { text: 'Complete a session with zero interruptions',      xp: 22, key: 'zero_interr'     },

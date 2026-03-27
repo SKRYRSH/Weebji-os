@@ -1956,8 +1956,10 @@
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
-  // Suppress install prompt permanently if already running as installed PWA
-  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  // Android WebView UA always contains "; wv)" — suppress install prompt inside native APK
+  const _isWebView = /; wv\)/.test(navigator.userAgent);
+  // Suppress install prompt if already installed PWA or running inside native APK WebView
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || _isWebView) {
     localStorage.setItem('weebji_install_dismissed', '1');
   }
 
@@ -1971,8 +1973,8 @@
   });
 
   function showInstallPromptWhenReady() {
-    // Already running as installed PWA — never show
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    // Already installed PWA or native APK WebView — never show
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone || _isWebView;
     if (isStandalone) { localStorage.setItem('weebji_install_dismissed', '1'); return; }
     const dismissed = localStorage.getItem('weebji_install_dismissed');
     if (dismissed) return;

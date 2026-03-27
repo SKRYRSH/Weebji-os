@@ -810,6 +810,21 @@
   .battle-challenge-btn { background:none; border:1px solid rgba(255,60,60,0.25); border-radius:8px; color:rgba(255,80,80,0.6); font-size:12px; cursor:pointer; padding:4px 8px; line-height:1; -webkit-tap-highlight-color:transparent; transition:border-color 0.15s,color 0.15s; }
   .battle-challenge-btn:active { transform:scale(0.92); }
 
+  /* ══ PREMIUM HYPE CARD ════════════════════════ */
+  .premium-hype { position:relative; background:rgba(4,4,14,0.97); border:1px solid rgba(255,215,0,0.15); border-radius:20px; padding:20px 18px; margin-bottom:14px; overflow:hidden; }
+  .premium-hype::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 100%, rgba(255,215,0,0.06) 0%, transparent 65%); pointer-events:none; }
+  .premium-hype__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(255,215,0,0.45); text-transform:uppercase; margin-bottom:8px; }
+  .premium-hype__title { font-family:'Cinzel',serif; font-size:15px; font-weight:900; letter-spacing:0.1em; color:rgba(255,255,255,0.85); margin-bottom:4px; }
+  .premium-hype__sub { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.25); line-height:1.5; margin-bottom:16px; }
+  .premium-hype__features { display:flex; flex-direction:column; gap:7px; margin-bottom:18px; }
+  .premium-hype__feature { display:flex; align-items:flex-start; gap:10px; }
+  .premium-hype__feature-icon { font-size:13px; flex-shrink:0; margin-top:1px; }
+  .premium-hype__feature-text { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.55); line-height:1.4; }
+  .premium-hype__feature-text strong { color:rgba(255,255,255,0.8); font-weight:600; }
+  .premium-hype__cta { width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,215,0,0.3); background:rgba(255,215,0,0.06); font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.18em; color:#FFD700; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  .premium-hype__cta:active { transform:scale(0.97); }
+  .premium-hype__price { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(255,215,0,0.35); text-align:center; margin-top:8px; }
+
   /* ══ CUSTOM WORKOUTS — PROFILE SECTION ══════ */
   .cw-card { margin-bottom: 12px; padding: 14px 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; }
   .cw-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -1476,6 +1491,9 @@
 
         <!-- Friend Battles -->
         <div id="battle-card" style="display:none;"></div>
+
+        <!-- Premium hype (free users only) -->
+        <div id="premium-hype-card"></div>
 
         <!-- YouTube Notice Board -->
         <div id="yt-notice-board" style="margin:0 0 14px;display:none;"></div>
@@ -2965,6 +2983,35 @@
     } catch(e) { console.warn('battle render error', e); }
   }
 
+  function renderPremiumHypeCard() {
+    const el = document.getElementById('premium-hype-card');
+    if (!el) return;
+    if (isWeebjiPlus()) { el.innerHTML = ''; return; }
+
+    const features = [
+      { icon: '⚔', title: 'Weekly Dungeon', desc: 'Mon→Sun boss fights. Defeat them to earn exclusive titles no one else can get.' },
+      { icon: '⚡', title: 'Friend Battles', desc: '7-day head-to-head XP wars. Winner earns XP + "Defeated Their Shadow" title.' },
+      { icon: '🗣', title: 'System Voice', desc: 'The AI narrator speaks to you by name. References your streak, class, enemy.' },
+      { icon: '👻', title: '10 Ghost Tokens/month', desc: 'Save your streak on days you can\'t. Free tier gets 3. Plus gets 10.' },
+      { icon: '📊', title: 'Deep Analytics', desc: '90-day streak heatmap. See your arc. Know when you peak and when you fall.' },
+      { icon: '🏰', title: 'Guild Creation', desc: 'Build your own faction. Lead a squad. Free hunters can join — only Plus can lead.' },
+    ];
+
+    el.innerHTML = `<div class="premium-hype">
+      <div class="premium-hype__eyebrow">◈ System Restrictions Active</div>
+      <div class="premium-hype__title">6 Features Sealed From You</div>
+      <div class="premium-hype__sub">Every day you wait, other hunters are pulling ahead using tools you don't have access to.</div>
+      <div class="premium-hype__features">
+        ${features.map(f => `<div class="premium-hype__feature">
+          <div class="premium-hype__feature-icon">${f.icon}</div>
+          <div class="premium-hype__feature-text"><strong>${f.title}</strong> — ${f.desc}</div>
+        </div>`).join('')}
+      </div>
+      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — $4.99/mo</button>
+      <div class="premium-hype__price">or $29.99/yr — save 50% · cancel anytime</div>
+    </div>`;
+  }
+
   async function issueBattle(friendId, friendName, friendClass, friendColor) {
     if (!isWeebjiPlus()) {
       SystemVoice.say('Friend Battles are WEEBJI+ exclusive. Upgrade to unlock.');
@@ -3923,6 +3970,8 @@
     renderDungeonCard();
     // Friend Battles (premium)
     renderBattleCard();
+    // Premium hype card (free users only)
+    renderPremiumHypeCard();
 
     // Best streak: gold pulse if new best was set this session
     if (p.streak > 0 && p.streak >= p.bestStreak) {
@@ -6653,33 +6702,66 @@
         <span>◈ SQUAD</span>
         <span id="friend-count" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:rgba(255,255,255,0.25);">—/${MAX_FRIENDS}</span>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <input id="friend-num-input" type="number" placeholder="Hunter #" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#fff;outline:none;-webkit-appearance:none;" />
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.18);margin-bottom:10px;line-height:1.7;">
+        Add hunters by their <span style="color:rgba(${rgb},0.6)">Hunter #</span>. Your # is shown at the top of this profile.<br>
+        Free: view squad streaks &amp; levels. <span style="color:rgba(${rgb},0.5)">WEEBJI+: challenge them to 7-day XP battles.</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;">
+        <input id="friend-num-input" type="number" placeholder="Enter Hunter #" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#fff;outline:none;-webkit-appearance:none;" />
         <button id="friend-add-btn" style="background:rgba(${rgb},0.1);border:1px solid rgba(${rgb},0.35);border-radius:10px;padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;color:${color};cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;">ADD</button>
       </div>
+      <div id="friend-status" style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;min-height:14px;margin-bottom:10px;padding:0 2px;transition:opacity 0.3s;"></div>
       <div id="friend-list-inner"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:16px 0;">Loading...</div></div>
     </div>`;
 
     refresh();
 
+    function setFriendStatus(msg, isOk) {
+      const s = el.querySelector('#friend-status');
+      if (!s) return;
+      s.textContent = msg;
+      s.style.color = isOk ? 'rgba(0,255,136,0.7)' : 'rgba(255,80,80,0.7)';
+      clearTimeout(s._t);
+      s._t = setTimeout(() => { s.textContent = ''; }, 4000);
+    }
+
     el.querySelector('#friend-add-btn').onclick = async () => {
       const numInput = el.querySelector('#friend-num-input');
       const num = parseInt(numInput.value);
-      if (!num) return;
+      if (!num) { setFriendStatus('Enter a Hunter # first.', false); return; }
       const btn = el.querySelector('#friend-add-btn');
-      btn.textContent = '...';
-      // Check friend count first
+      btn.textContent = '...'; btn.disabled = true;
+
       const { data: existing } = await client.from('friends').select('friend_user_id').eq('user_id', me.id);
-      if ((existing||[]).length >= MAX_FRIENDS) { btn.textContent = 'ADD'; SystemVoice.say(`Squad is full. Max ${MAX_FRIENDS} hunters.`); return; }
+      if ((existing||[]).length >= MAX_FRIENDS) {
+        btn.textContent = 'ADD'; btn.disabled = false;
+        setFriendStatus(`Squad full — max ${MAX_FRIENDS} hunters.`, false);
+        return;
+      }
       const { data: match } = await client.from('leaderboard').select('user_id,display_name').eq('hunter_number', num).maybeSingle();
-      if (!match) { btn.textContent = 'ADD'; SystemVoice.say('Hunter not found.'); return; }
-      if (match.user_id === me.id) { btn.textContent = 'ADD'; SystemVoice.say('You cannot add yourself.'); return; }
+      if (!match) {
+        btn.textContent = 'ADD'; btn.disabled = false;
+        setFriendStatus(`Hunter #${num} not found. They need to sign in first.`, false);
+        return;
+      }
+      if (match.user_id === me.id) {
+        btn.textContent = 'ADD'; btn.disabled = false;
+        setFriendStatus('You cannot add yourself.', false);
+        return;
+      }
       const { error } = await client.from('friends').insert({ user_id: me.id, friend_user_id: match.user_id });
-      btn.textContent = 'ADD';
+      btn.textContent = 'ADD'; btn.disabled = false;
       numInput.value = '';
-      if (!error) { if (typeof posthog !== 'undefined') posthog.capture('friend_added'); SystemVoice.say(`${match.display_name} added to your squad.`); refresh(); }
-      else if (error.code === '23505') SystemVoice.say('Already in your squad.');
-      else SystemVoice.say('Could not add hunter. Try again.');
+      if (!error) {
+        if (typeof posthog !== 'undefined') posthog.capture('friend_added');
+        setFriendStatus(`${match.display_name} added to your squad.`, true);
+        SystemVoice.say(`${match.display_name} added to your squad.`);
+        refresh();
+      } else if (error.code === '23505') {
+        setFriendStatus('Already in your squad.', false);
+      } else {
+        setFriendStatus('Could not add hunter. Try again.', false);
+      }
     };
 
     window.removeFriend = async (fuid) => {
@@ -8492,7 +8574,15 @@ DEV.skipSplash()      → go straight to class select (if no session)
             leaderboard: lbPayload,
           },
         });
-      } catch(e) {}
+        // Direct fallback upsert — ensures leaderboard always reflects latest state
+        // even if edge function is slow or unavailable
+        await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' }).catch(() => {});
+      } catch(e) {
+        // Edge function failed — still push leaderboard directly so hunter can be found
+        try {
+          await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' }).catch(() => {});
+        } catch(_) {}
+      }
     }
 
     async function pullProgress() {
@@ -8516,8 +8606,15 @@ DEV.skipSplash()      → go straight to class select (if no session)
           localStorage.setItem('weebji_hunter_num', String(hn.number));
           const badge = document.getElementById('dash-hunter');
           if (badge) badge.textContent = '#' + hn.number;
-          // Always keep leaderboard hunter_number in sync with the canonical sequential number
-          client.from('leaderboard').update({ hunter_number: hn.number }).eq('user_id', currentUser.id).then(() => {});
+          // Upsert so this creates the row if it doesn't exist yet,
+          // and always keeps hunter_number in sync with the canonical sequential number
+          client.from('leaderboard').upsert({
+            user_id:       currentUser.id,
+            hunter_number: hn.number,
+            display_name:  localStorage.getItem('weebji_name') || 'Hunter',
+            class:         localStorage.getItem('weebji_class') || 'monarch',
+            color:         localStorage.getItem('weebji_color') || '#00F5FF',
+          }, { onConflict: 'user_id' }).then(() => {});
         }
 
         // Restore progress
@@ -8742,7 +8839,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const p = loadProgress();
       const { error } = await client.from('guild_members').insert({
         guild_id: guild.id, user_id: user.id,
-        display_name: p.name || 'Hunter',
+        display_name: localStorage.getItem('weebji_name') || 'Hunter',
         class: localStorage.getItem('weebji_class') || 'monarch',
         level: p.level || 1, xp: p.xp || 0, streak: p.streak || 0,
       });
@@ -8773,7 +8870,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const p = loadProgress();
       await client.from('guild_members').insert({
         guild_id: guild.id, user_id: user.id,
-        display_name: p.name || 'Hunter',
+        display_name: localStorage.getItem('weebji_name') || 'Hunter',
         class: localStorage.getItem('weebji_class') || 'monarch',
         level: p.level || 1, xp: p.xp || 0, streak: p.streak || 0,
       });

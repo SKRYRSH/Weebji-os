@@ -8817,7 +8817,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
         const p = loadProgress();
         // Always take the best stats (cloud or local, whichever is higher)
         if (data.level > p.level || (data.level === p.level && data.xp >= p.xp) || (p.level <= 1 && p.xp <= 0) || data.level > 1) {
-          p.level = data.level; p.xp = data.xp; p.hp = data.hp;
+          p.level = data.level; p.xp = data.xp;
+          // Clamp hp to valid 0-5 range (DB may store legacy 0-100 values)
+          p.hp = Math.min(5, Math.max(1, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
           p.streak = data.streak; p.bestStreak = data.best_streak;
           p.ghostTokens = data.ghost_tokens;
           p.totalStudyMins = data.total_study_mins;

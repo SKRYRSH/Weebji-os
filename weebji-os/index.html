@@ -4819,6 +4819,7 @@
     let _breathTick  = 0;
     const BREATH_DUR  = 4; // seconds per phase (box breathing: 4-4-4-4)
     const PHASE_LABELS = ['Breathe In', 'Hold', 'Breathe Out', 'Hold'];
+    const PHASE_VOICE  = ['Breathe in.', 'Hold.', 'Breathe out.', 'Hold.'];
 
     function selectMode(m) {
       if (_running) return;
@@ -4836,6 +4837,8 @@
       _syncUI();
       Sound.play('tap');
       MusicEngine.play('sanctuary');
+      // Announce first phase immediately
+      setTimeout(() => SystemVoice.speak(PHASE_VOICE[_breathPhase], 0), 600);
     }
 
     function _pause() {
@@ -4848,7 +4851,11 @@
     function _tick() {
       _remaining--;
       _breathTick++;
-      if (_breathTick >= BREATH_DUR) { _breathTick = 0; _breathPhase = (_breathPhase + 1) % 4; }
+      if (_breathTick >= BREATH_DUR) {
+        _breathTick = 0;
+        _breathPhase = (_breathPhase + 1) % 4;
+        SystemVoice.speak(PHASE_VOICE[_breathPhase], 0);
+      }
       _syncUI();
       if (_remaining <= 0) _onComplete();
     }

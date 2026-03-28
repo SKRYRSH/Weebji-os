@@ -8845,6 +8845,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
         // Route through server-side validation edge function
         // Only the edge function writes progress + leaderboard — no direct client upsert on success
+        const { data: { session: vpSess } } = await client.auth.getSession();
         await client.functions.invoke('validate-progress', {
           body: {
             progress: {
@@ -8857,6 +8858,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             },
             leaderboard: lbPayload,
           },
+          ...(vpSess?.access_token ? { headers: { Authorization: `Bearer ${vpSess.access_token}` } } : {}),
         });
       } catch(e) {
         // Edge function failed — push leaderboard directly as fallback only

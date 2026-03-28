@@ -54,6 +54,7 @@ Deno.serve(async (req) => {
       user_id:    user.id,
       email:      user.email,
       plan:       planLabel,
+      status:     'active',
       order_id:   razorpay_order_id,
       payment_id: razorpay_payment_id,
     });

@@ -365,7 +365,7 @@
   .streak-ping { animation: kf-streak-ping 0.85s cubic-bezier(0.16,1,0.3,1); }
 
   /* Bottom nav */
-  .bottom-nav { flex-shrink: 0; display: grid; grid-template-columns: repeat(4,1fr); height: 68px; background: rgba(8,8,12,0.97); border-top: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 0 4px; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .bottom-nav { position: relative; z-index: 10; flex-shrink: 0; display: grid; grid-template-columns: repeat(4,1fr); height: 68px; background: rgba(8,8,12,0.97); border-top: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 0 4px; padding-bottom: env(safe-area-inset-bottom, 0); }
   .nav-btn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: none; border: none; cursor: pointer; padding: 8px 4px; border-radius: 12px; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); -webkit-tap-highlight-color: transparent; }
   .nav-btn:active { transform: scale(0.88); }
   .nav-btn svg    { width: 22px; height: 22px; color: #484868; transition: color 0.3s ease, filter 0.3s ease; }
@@ -8752,7 +8752,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
   const SupabaseSync = (() => {
     // ── CONFIG — replace these with your project values ──────────────────
     const SUPABASE_URL      = 'https://qpcqbiicomlpsmkgqhsm.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_mn4VVnBOgUzwSoB6msiFYA_AleeHLa2';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwY3FiaWljb21scHNta2dxaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTU0NjYsImV4cCI6MjA4OTQzMTQ2Nn0.RGHdyTDAea-85XNU5gOJ-lmwVTbGzkeadFXQH5w37aE';
     // ─────────────────────────────────────────────────────────────────────
 
     let client = null;

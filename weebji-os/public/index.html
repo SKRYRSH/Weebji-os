@@ -1993,6 +1993,7 @@
       if (localStorage.getItem('weebji_install_dismissed')) return;
       if (_isInstalled) return;
       if (!deferredInstallEvent && !isIOS) return;
+      localStorage.setItem('weebji_install_dismissed', '1'); // Set immediately — never show again after this
       document.getElementById('install-prompt').classList.add('visible');
     }, delay);
   }

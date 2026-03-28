@@ -2564,6 +2564,7 @@
         modal:   { backdropclose: false },
       };
 
+      if (typeof Razorpay === 'undefined') throw new Error('Payment SDK not loaded — please refresh and try again');
       const rzp = new Razorpay(options);
       rzp.on('payment.failed', function(resp) {
         spawnDropBanner('◆  Payment failed — ' + (resp.error?.description || 'Try again'));

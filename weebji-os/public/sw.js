@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v17 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v55';
+// ── WEEBJI OS — Service Worker v18 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v56';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
@@ -16,8 +16,6 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
-      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
-      .then(clients => Promise.all(clients.map(c => c.navigate(c.url))))
   );
   self.clients.claim();
 });
@@ -31,8 +29,10 @@ self.addEventListener('fetch', e => {
 
   if (isHTML) {
     // Network-first for HTML — always serve fresh app code when online
+    // NOTE: Cannot use new Request(navigate-mode-request, ...) — throws TypeError.
+    // Fetch by URL string with cache-busting headers instead.
     e.respondWith(
-      fetch(new Request(e.request, { cache: 'no-store', headers: { ...Object.fromEntries(e.request.headers), 'Cache-Control': 'no-cache' } }))
+      fetch(url.href, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } })
         .then(res => {
           if (res.ok) {
             const clone = res.clone();

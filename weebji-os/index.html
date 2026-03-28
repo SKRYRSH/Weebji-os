@@ -1985,9 +1985,9 @@
     const firstActionDone = localStorage.getItem('weebji_first_action_done');
     const delay = firstActionDone ? 5000 : 30000;
     setTimeout(() => {
-      if (!deferredInstallEvent) return;
       if (localStorage.getItem('weebji_install_dismissed')) return;
-      if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) return;
+      if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone || _isWebView) return;
+      if (!deferredInstallEvent && !isIOS) return;
       document.getElementById('install-prompt').classList.add('visible');
     }, delay);
   }
@@ -2001,13 +2001,17 @@
         deferredInstallEvent = null;
       }).catch(() => { deferredInstallEvent = null; });
     } else {
-      // iOS or no native prompt — show manual instructions
+      // iOS only — show Safari manual instructions
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (!isIOS) {
+        // Android without native prompt = inside APK/TWA — just dismiss
+        document.getElementById('install-prompt').classList.remove('visible');
+        localStorage.setItem('weebji_install_dismissed', '1');
+        return;
+      }
       const sub = document.querySelector('#install-prompt .install__sub');
       const btn = document.getElementById('install-yes-btn');
-      if (sub) sub.textContent = isIOS
-        ? 'Tap the Share button (□↑) at the bottom of Safari, then tap "Add to Home Screen".'
-        : 'Tap the menu (⋮) in your browser, then select "Add to Home Screen" or "Install App".';
+      if (sub) sub.textContent = 'Tap the Share button (□↑) at the bottom of Safari, then tap "Add to Home Screen".';
       if (btn) btn.textContent = 'Got it';
       btn.onclick = () => {
         document.getElementById('install-prompt').classList.remove('visible');

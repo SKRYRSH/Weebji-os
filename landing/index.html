@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -141,61 +140,6 @@
     }
     .hero-sub strong { color: rgba(255,255,255,0.65); font-weight: 500; }
 
-    /* ── WAITLIST FORM ── */
-    .waitlist-wrap {
-      animation: fadeUp 1s 0.45s ease both;
-      width: 100%;
-      max-width: 420px;
-      margin: 0 auto;
-    }
-    .waitlist-form {
-      display: flex;
-      gap: 8px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 14px;
-      padding: 6px 6px 6px 16px;
-    }
-    .waitlist-input {
-      flex: 1;
-      background: none;
-      border: none;
-      outline: none;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      color: #E0E0FF;
-      min-width: 0;
-    }
-    .waitlist-input::placeholder { color: rgba(255,255,255,0.25); }
-    .waitlist-btn {
-      background: var(--monarch);
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      padding: 11px 20px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-      text-transform: uppercase;
-    }
-    .waitlist-btn:hover { filter: brightness(1.15); transform: scale(1.02); }
-    .waitlist-btn:active { transform: scale(0.98); }
-    .waitlist-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
-    .waitlist-msg {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      text-align: center;
-      margin-top: 12px;
-      min-height: 16px;
-      color: rgba(255,255,255,0.35);
-    }
-    .waitlist-msg.success { color: var(--monk); }
-    .waitlist-msg.error   { color: var(--mastermind); }
 
     /* ── CLASS PICKER (optional on form) ── */
     .class-pills {
@@ -607,10 +551,7 @@
       .hero-title { font-size: clamp(32px, 11vw, 56px); }
       .hero-sub { font-size: 14px; margin: 16px auto 32px; }
 
-      .waitlist-form { flex-direction: column; padding: 12px; gap: 10px; }
-      .waitlist-btn { width: 100%; text-align: center; }
-
-      .class-grid { grid-template-columns: 1fr; }
+.class-grid { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr 1fr; }
       .features-grid--2col { grid-template-columns: 1fr; }
       .install-grid { grid-template-columns: 1fr; }
@@ -876,8 +817,8 @@
   <div class="wrap" style="position:relative">
     <div class="counter-wrap reveal">
       <div class="counter-item">
-        <span class="counter-num" id="cnt-hunters">—</span>
-        <span class="counter-lbl">Hunters Waiting</span>
+        <span class="counter-num">Live</span>
+        <span class="counter-lbl">System Active</span>
       </div>
       <div class="counter-item">
         <span class="counter-num">10</span>
@@ -894,13 +835,7 @@
 
     <div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:420px;margin:0 auto" class="reveal">
       <a href="https://skryrsh.github.io/Weebji-os/" class="hero-open-btn" style="display:block;width:100%;background:var(--monarch);color:#000;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;padding:16px 24px;border-radius:14px;text-align:center;transition:all 0.2s;box-shadow:0 0 40px rgba(0,245,255,0.25);">◆ &nbsp; Launch the System</a>
-      <div class="waitlist-wrap" style="width:100%;margin:0">
-        <form class="waitlist-form" id="waitlist-form-2">
-          <input class="waitlist-input" id="waitlist-email-2" type="email" inputmode="email" placeholder="Email for updates" autocomplete="email" required />
-          <button class="waitlist-btn" type="submit" id="waitlist-btn-2">Stay Updated</button>
-        </form>
-        <div class="waitlist-msg" id="waitlist-msg-2"></div>
-      </div>
+      <a href="https://skryrsh.github.io/Weebji-os/WEEBJI-OS.apk" class="hero-open-btn" style="display:block;width:100%;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;padding:14px 24px;border-radius:14px;text-align:center;transition:all 0.2s;border:1px solid rgba(255,255,255,0.1);">↓ &nbsp; Android APK</a>
     </div>
   </div>
 </div>
@@ -972,61 +907,6 @@
     });
   });
 
-  /* ── SUPABASE WAITLIST ── */
-  const SB_URL  = 'https://qpcqbiicomlpsmkgqhsm.supabase.co';
-  const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwY3FiaWljb21scHNta2dxaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTU0NjYsImV4cCI6MjA4OTQzMTQ2Nn0.RGHdyTDAea-85XNU5gOJ-lmwVTbGzkeadFXQH5w37aE';
-  const sb = window.supabase.createClient(SB_URL, SB_ANON);
-
-  async function submitWaitlist(email, msgEl, btnEl) {
-    if (!email || !email.includes('@')) {
-      msgEl.textContent = 'Enter a valid email.';
-      msgEl.className = 'waitlist-msg error';
-      return;
-    }
-    btnEl.disabled = true;
-    btnEl.textContent = '...';
-    msgEl.textContent = '';
-    msgEl.className = 'waitlist-msg';
-
-    const { error } = await sb.from('waitlist').insert({ email: email.trim().toLowerCase(), class_interest: selectedClass || null });
-
-    if (error) {
-      if (error.code === '23505') {
-        msgEl.textContent = "You're already registered, Hunter.";
-        msgEl.className = 'waitlist-msg success';
-      } else {
-        msgEl.textContent = 'Something went wrong. Try again.';
-        msgEl.className = 'waitlist-msg error';
-        btnEl.disabled = false;
-        btnEl.textContent = 'Join Waitlist';
-      }
-      return;
-    }
-
-    msgEl.textContent = '◆ Registered. The System has noted your name.';
-    msgEl.className = 'waitlist-msg success';
-    btnEl.textContent = '✓ Joined';
-    loadWaitlistCount();
-  }
-
-  document.getElementById('waitlist-form-2').addEventListener('submit', e => {
-    e.preventDefault();
-    submitWaitlist(
-      document.getElementById('waitlist-email-2').value,
-      document.getElementById('waitlist-msg-2'),
-      document.getElementById('waitlist-btn-2')
-    );
-  });
-
-  /* ── WAITLIST COUNT ── */
-  async function loadWaitlistCount() {
-    const { data } = await sb.rpc('get_waitlist_count');
-    const el = document.getElementById('cnt-hunters');
-    if (el && data !== null) {
-      el.textContent = (data + 47).toLocaleString();
-    }
-  }
-  loadWaitlistCount();
 
   /* ── DRAG TO SCROLL (desktop) ── */
   const track = document.querySelector('.screens-track-wrap');

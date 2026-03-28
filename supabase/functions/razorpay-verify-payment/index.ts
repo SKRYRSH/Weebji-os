@@ -59,7 +59,9 @@ Deno.serve(async (req) => {
       payment_id: razorpay_payment_id,
     });
 
-    // If ghost_token, increment ghost_tokens in progress
+    if (insertErr) throw insertErr;
+
+    // If ghost_token, increment ghost_tokens in progress (only after successful insert)
     if (plan === 'ghost_token') {
       const { data: prog } = await serviceClient
         .from('progress')
@@ -72,8 +74,6 @@ Deno.serve(async (req) => {
         .update({ ghost_tokens: Math.min(current + 1, 60) })
         .eq('user_id', user.id);
     }
-
-    if (insertErr) throw insertErr;
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },

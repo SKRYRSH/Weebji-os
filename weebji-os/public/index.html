@@ -514,51 +514,9 @@
   #levelup-overlay.active .lbox-t,
   #levelup-overlay.active .lbox-b { height:52px; }
 
-  /* ══ CINEMATIC — INK WASH (faster + splatter) */
-  @keyframes kf-ink-wash { 0% { clip-path:circle(0% at 50% 108%); opacity:1; } 100% { clip-path:circle(170% at 50% 108%); opacity:1; } }
-  @keyframes kf-ink-fade  { 0% { opacity:1; } 100% { opacity:0; } }
-  .ink-wash { position:absolute; inset:0; background:#07090F; pointer-events:none; z-index:55;
-    animation: kf-ink-wash 0.65s cubic-bezier(0.86,0,0.07,1) forwards; }
-  .ink-wash.fade { animation: kf-ink-wash 0.65s cubic-bezier(0.86,0,0.07,1) forwards,
-    kf-ink-fade 0.3s 0.5s ease forwards; }
-  @media (prefers-reduced-motion:reduce) { .ink-wash { display:none; } }
-
-  /* ══ CINEMATIC — GOD RAY (much stronger) ════ */
-  .identity-ray { position:absolute; inset:0; pointer-events:none; opacity:0; }
-  .identity-ray.fire { animation: kf-god-ray 2.5s cubic-bezier(0.16,1,0.3,1) forwards; }
-  @keyframes kf-god-ray {
-    0%   { opacity:0; background: conic-gradient(from 270deg at 50% -10%, transparent 38%, rgba(var(--ray-rgb),0) 50%, transparent 62%); }
-    15%  { opacity:1; background: conic-gradient(from 270deg at 50% -10%, transparent 38%, rgba(var(--ray-rgb),0.55) 50%, transparent 62%); }
-    50%  { opacity:1; background: conic-gradient(from 270deg at 50% -10%, transparent 36%, rgba(var(--ray-rgb),0.7) 50%, transparent 64%); filter:blur(2px); }
-    80%  { opacity:0.6; }
-    100% { opacity:0; }
-  }
-  @media (prefers-reduced-motion:reduce) { .identity-ray.fire { display:none; } }
-
-  /* ══ CINEMATIC — STREAK MILESTONE (dramatic) */
-  #streak-milestone { position:absolute; inset:0; z-index:810; pointer-events:none;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:10px; opacity:0; overflow:hidden; }
-  #streak-milestone.active { pointer-events:all; animation: kf-smilestone 4s ease forwards; }
-  @keyframes kf-smilestone { 0%{opacity:0;} 5%{opacity:1;} 80%{opacity:1;} 100%{opacity:0;} }
-  .smilestone__bg { position:absolute; inset:0;
-    background: radial-gradient(ellipse 100% 70% at 50% 42%, rgba(255,215,0,0.18) 0%, rgba(255,165,0,0.06) 55%, transparent 75%);
-    animation: kf-smilestone-bg 4s ease forwards; }
-  @keyframes kf-smilestone-bg { 0%{opacity:0;transform:scale(0.3);} 12%{opacity:1;transform:scale(1);} 80%{opacity:1;} 100%{opacity:0;} }
-  .smilestone__label { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.45em;
-    color:rgba(255,215,0,0.5); text-transform:uppercase; position:relative; z-index:1;
-    animation: kf-lu-fade-up 0.5s 0.1s ease both; }
-  .smilestone__num { font-family:'Cinzel',serif; font-size:clamp(88px,26vw,120px); font-weight:900;
-    color:#FFD700; line-height:1; position:relative; z-index:1;
-    text-shadow: 0 0 50px rgba(255,215,0,0.9), 0 0 120px rgba(255,165,0,0.4);
-    animation: kf-lu-slam 0.6s 0.05s cubic-bezier(0.36,0.07,0.19,0.97) both; }
-  .smilestone__days { font-family:'Cinzel',serif; font-size:24px; font-weight:700;
-    letter-spacing:0.22em; color:rgba(255,255,255,0.75); position:relative; z-index:1;
-    animation: kf-lu-fade-up 0.5s 0.5s ease both; }
-  .smilestone__quote { font-family:'Inter',sans-serif; font-size:13px; color:rgba(255,215,0,0.38);
-    font-style:italic; max-width:270px; text-align:center; line-height:1.75;
-    position:relative; z-index:1; animation: kf-lu-fade-up 0.5s 0.75s ease both; }
-  @media (prefers-reduced-motion:reduce) { #streak-milestone.active { animation:none; opacity:1; } }
+  /* ══ CINEMATIC — INK WASH, GOD RAY, STREAK MILESTONE ══
+     Canonical definitions are in the Cinematic Engine section below.
+     Earlier duplicates removed to reduce file size. */
 
   /* Level-up particles */
   .lu-particle { position: absolute; border-radius: 50%; pointer-events: none; background: rgba(0,0,0,0.75); animation: kf-lu-particle ease-out forwards; }
@@ -2261,6 +2219,8 @@
       penanceSurvived   : localStorage.getItem('weebji_penance_survived') === 'true',
       shadowSlayerEarned: localStorage.getItem('weebji_shadow_slayer') === 'true',
       streakLostToday   : localStorage.getItem('weebji_streak_lost_today') === 'true',
+      dailyChallengeDone: (localStorage.getItem('weebji_dc_done') || '').startsWith(today),
+      workoutDone       : localStorage.getItem('weebji_wk_bonus') === 'true',
     };
 
     if (p.lastDate !== today) {
@@ -2553,10 +2513,10 @@
             ...(vSess?.access_token ? { headers: { Authorization: `Bearer ${vSess.access_token}` } } : {})
           });
           if (verifyErr) { spawnDropBanner('◆  Verification failed — contact weebji@gmail.com'); return; }
-          await SupabaseSync.pullProgress();
+          try { await SupabaseSync.pullProgress(); } catch(_) {}
           spawnDropBanner('◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
           if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, class: localStorage.getItem('weebji_class') });
-          renderProfile();
+          renderProfile(); initDashboard();
           if (plan !== 'ghost_token') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');
         },
         prefill: { email: user.email },
@@ -8956,7 +8916,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (document.getElementById('profile')?.classList.contains('active')) {
           if (typeof renderProfile === 'function') renderProfile();
         }
-      } catch(e) {}
+      } catch(e) { console.warn('[WEEBJI] Cloud sync failed:', e); }
     }
 
     async function signInWithEmail(email) {
@@ -9391,7 +9351,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
     try {
       const rss   = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
       const proxy = `https://corsproxy.io/?url=${encodeURIComponent(rss)}`;
-      const res   = await fetch(proxy);
+      const _ytCtrl = new AbortController();
+      const _ytTimer = setTimeout(() => _ytCtrl.abort(), 6000);
+      const res   = await fetch(proxy, { signal: _ytCtrl.signal });
+      clearTimeout(_ytTimer);
       const text  = await res.text();
       const xml   = new DOMParser().parseFromString(text, 'text/xml');
       const entries = [...xml.querySelectorAll('entry')];
@@ -9433,6 +9396,13 @@ DEV.skipSplash()      → go straight to class select (if no session)
         </div>
       </div>`;
   }
+
+  /* ══ GLOBAL ERROR GUARD ═════════════════════ */
+  window.addEventListener('unhandledrejection', e => {
+    e.preventDefault();
+    console.warn('[WEEBJI] unhandled rejection:', e.reason);
+    if (typeof posthog !== 'undefined') posthog.capture('js_error', { type: 'unhandledrejection', message: String(e.reason).slice(0, 200) });
+  });
 
 </script>
 

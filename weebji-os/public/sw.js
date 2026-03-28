@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v16 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v54';
+// ── WEEBJI OS — Service Worker v17 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v55';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
@@ -32,7 +32,7 @@ self.addEventListener('fetch', e => {
   if (isHTML) {
     // Network-first for HTML — always serve fresh app code when online
     e.respondWith(
-      fetch(e.request, { cache: 'no-store' })
+      fetch(new Request(e.request, { cache: 'no-store', headers: { ...Object.fromEntries(e.request.headers), 'Cache-Control': 'no-cache' } }))
         .then(res => {
           if (res.ok) {
             const clone = res.clone();

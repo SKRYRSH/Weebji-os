@@ -1,12 +1,11 @@
-// ── WEEBJI OS — Service Worker v14 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v52';
+// ── WEEBJI OS — Service Worker v15 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v53';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
-  // Do NOT skipWaiting here — wait in 'waiting' state so the in-app Update banner can show.
-  // skipWaiting only fires when the user taps Update (SKIP_WAITING message below).
+  self.skipWaiting(); // Take control immediately — triggers controllerchange → auto-reload
 });
 
 self.addEventListener('message', e => {

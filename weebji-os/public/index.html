@@ -381,13 +381,7 @@
   @keyframes kf-xp-float-crit { 0% { opacity:0; transform:translateX(-50%) translateY(0) scale(0.7); } 12% { opacity:1; transform:translateX(-50%) translateY(-10px) scale(1.35); } 60% { opacity:1; transform:translateX(-50%) translateY(-40px) scale(1.1); } 100% { opacity:0; transform:translateX(-50%) translateY(-90px) scale(0.9); } }
 
   /* ══ CRITICAL DROP BANNER ════════════════════ */
-  .yt-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,40,40,0.18); border-radius:14px; overflow:hidden; }
-  .yt-card__header { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:#882222; text-transform:uppercase; padding:10px 14px 0; }
-  .yt-card__body { display:flex; align-items:center; gap:12px; padding:10px 14px 12px; }
-  .yt-card__thumb { width:72px; height:44px; border-radius:6px; object-fit:cover; flex-shrink:0; background:#111; }
-  .yt-card__info { flex:1; min-width:0; }
-  .yt-card__title { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:rgba(255,255,255,0.85); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-  .yt-card__watch { margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#FF3333; text-transform:uppercase; cursor:pointer; background:none; border:none; padding:0; -webkit-tap-highlight-color:transparent; }
+  /* yt-card CSS removed — CORS proxy notice board feature removed */
   .drop-banner { position: fixed; left: 50%; top: 28%; z-index: 600; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #FF8800; text-shadow: 0 0 18px rgba(255,136,0,0.9), 0 0 40px rgba(255,136,0,0.3); white-space: nowrap; pointer-events: none; animation: kf-drop-banner 2.6s cubic-bezier(0.16,1,0.3,1) forwards; }
   @keyframes kf-drop-banner { 0% { opacity:0; transform:translateX(-50%) scale(0.75) translateY(14px); } 14% { opacity:1; transform:translateX(-50%) scale(1.08) translateY(0); } 65% { opacity:1; transform:translateX(-50%) scale(1) translateY(-6px); } 100% { opacity:0; transform:translateX(-50%) scale(0.95) translateY(-22px); } }
 
@@ -1145,6 +1139,10 @@
   .ritual-clock-save.saved { border-color:rgba(0,245,255,0.25); color:#00F5FF; }
   .ritual-clock-save:active { transform:scale(0.97); }
 
+  /* ══ OFFLINE INDICATOR ═════════════════════════════ */
+  #offline-pill { position:fixed; bottom:16px; left:50%; transform:translateX(-50%) translateY(60px); z-index:960; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em; color:rgba(255,255,255,0.5); background:rgba(20,20,30,0.92); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:8px 18px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); transition:transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s; opacity:0; pointer-events:none; white-space:nowrap; }
+  #offline-pill.visible { transform:translateX(-50%) translateY(0); opacity:1; }
+
   /* ══ THE VOID ════════════════════════════════════ */
   @keyframes kf-void-bg { 0%,100%{opacity:0.5;} 50%{opacity:1;} }
   @keyframes kf-void-pulse { 0%,100%{text-shadow:0 0 20px rgba(160,0,220,0.6),0 0 60px rgba(120,0,180,0.3);} 50%{text-shadow:0 0 40px rgba(200,0,255,0.9),0 0 100px rgba(160,0,220,0.5);} }
@@ -1467,8 +1465,7 @@
         <!-- Premium hype (free users only) -->
         <div id="premium-hype-card"></div>
 
-        <!-- YouTube Notice Board -->
-        <div id="yt-notice-board" style="margin:0 0 14px;display:none;"></div>
+        <!-- YouTube Notice Board removed — CORS proxy was fragile -->
 
         <div class="stats-strip">
           <div class="stat-mini">
@@ -1563,6 +1560,7 @@
           <div style="flex:1">
             <div class="profile-tokens__label">Ghost Tokens</div>
             <div class="profile-tokens__count" id="profile-tokens-count">3 remaining</div>
+            <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px;">Skip one day without breaking your streak</div>
           </div>
         </div>
         <!-- Phase 5: Manifest display -->
@@ -1702,6 +1700,9 @@
       <p class="dormant__sub">"Discipline is returning before the window closes. The System rests. So must you."</p>
       <button class="dormant__override" id="dormant-override-btn">Override (XP penalty)</button>
     </div>
+
+    <!-- Offline indicator pill -->
+    <div id="offline-pill">◆ Offline — progress saves locally</div>
 
     <!-- The Void overlay -->
     <div id="void-overlay">
@@ -2557,15 +2558,29 @@
           <div class="plus-paywall__header">◆ WEEBJI+</div>
           ${trialBanner}
           <p class="plus-paywall__pitch">${pitch}</p>
-          <ul class="plus-paywall__missing">
-            <li>◈ System Voice — the AI narrator speaks your progress aloud</li>
-            <li>⚔ Weekly Dungeon — 10 rotating boss fights, exclusive titles</li>
-            <li>⚡ Friend Battles — 7-day XP wars, winner earns exclusive title</li>
-            <li>👻 10 Ghost Tokens/month (free gets 3)</li>
-            <li>📊 Deep Analytics — streak history, HP charts</li>
-            <li>🏋 20 Custom Exercises (free gets 5)</li>
-            <li>🏰 Guild Creation — lead your own faction</li>
-          </ul>
+          <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <div style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.015);">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.25em;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:6px;">Free Tier</div>
+              <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.3);line-height:1.4;">
+                <li>◇ Daily quests &amp; XP system</li>
+                <li>◇ Streak tracking &amp; HP</li>
+                <li>◇ 3 Ghost Tokens/month</li>
+                <li>◇ 5 custom exercises</li>
+              </ul>
+            </div>
+            <div style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,210,60,0.12);background:rgba(255,210,60,0.03);">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.25em;color:rgba(255,210,60,0.5);text-transform:uppercase;margin-bottom:6px;">WEEBJI+</div>
+              <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,210,60,0.45);line-height:1.4;">
+                <li>◆ System Voice narrator</li>
+                <li>◆ Weekly Dungeon bosses</li>
+                <li>◆ Friend Battles (XP wars)</li>
+                <li>◆ 10 Ghost Tokens/month</li>
+                <li>◆ Deep Analytics &amp; charts</li>
+                <li>◆ 20 custom exercises</li>
+                <li>◆ Guild Creation</li>
+              </ul>
+            </div>
+          </div>
           <div class="plus-social-proof" id="plus-social-proof">◆ hunters upgraded this week</div>
           <div class="plus-plans">
             <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('monthly')">
@@ -4201,8 +4216,7 @@
     renderWelcomeCard(p, cls);
     // Mission Briefing — fullscreen overlay on very first dashboard visit
     if (!localStorage.getItem('weebji_mission_done')) setTimeout(() => showMissionBriefing(cls, color), 1200);
-    // YouTube Notice Board
-    loadYTNoticeBoard();
+    // YouTube Notice Board removed — CORS proxy was fragile
   }
 
   /* ── Day-1 Welcome Card ──────────────────── */
@@ -4945,7 +4959,7 @@
         <button class="mm-btn mm-btn-start" id="mm-start-btn">${Pomo.running ? 'Pause' : 'Begin Session'}</button>
         <button class="mm-btn mm-btn-cancel" id="mm-cancel-btn">Cancel</button>
       </div>
-      <p class="mm-xp-info">Focus without interruption. The System is watching.</p>
+      <p class="mm-xp-info">Deep focus mode — leave this screen and The Void drains your HP. Stay. Ascend.</p>
     `;
     document.querySelectorAll('.mm-mode-btn').forEach(b =>
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectMode(b.dataset.mode); }));
@@ -9329,73 +9343,18 @@ DEV.skipSplash()      → go straight to class select (if no session)
       .subscribe();
   })();
 
-  /* ══ YOUTUBE NOTICE BOARD ════════════════════
-     Fetches latest long-form video from your channel.
-     To update: change YT_PLAYLIST_ID to your long-form playlist ID.
-     Get it from: youtube.com/playlist?list=XXXXX → the XXXXX part.
-  ════════════════════════════════════════════ */
-  const YT_PLAYLIST_ID = 'PLQ2XV45qE1jMUA7BT0S0jR_6pxR4bipJ_';
-  const YT_CACHE_KEY   = 'weebji_yt_cache_v2'; // v2 — forces re-fetch with date-sort fix
-  const YT_CACHE_TTL   = 2 * 60 * 60 * 1000; // 2 hours
+  /* YouTube Notice Board removed — CORS proxy (corsproxy.io) was fragile */
 
-  async function loadYTNoticeBoard() {
-    const el = document.getElementById('yt-notice-board');
-    if (!el || YT_PLAYLIST_ID === 'YOUR_PLAYLIST_ID_HERE') return;
-
-    // Serve from cache if fresh
-    try {
-      const cached = JSON.parse(localStorage.getItem(YT_CACHE_KEY) || 'null');
-      if (cached && Date.now() - cached.ts < YT_CACHE_TTL) { renderYTCard(el, cached); return; }
-    } catch(e) {}
-
-    try {
-      const rss   = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
-      const proxy = `https://corsproxy.io/?url=${encodeURIComponent(rss)}`;
-      const _ytCtrl = new AbortController();
-      const _ytTimer = setTimeout(() => _ytCtrl.abort(), 6000);
-      const res   = await fetch(proxy, { signal: _ytCtrl.signal });
-      clearTimeout(_ytTimer);
-      const text  = await res.text();
-      const xml   = new DOMParser().parseFromString(text, 'text/xml');
-      const entries = [...xml.querySelectorAll('entry')];
-      if (!entries.length) return;
-      // Sort by published date descending — pick most recently uploaded
-      entries.sort((a, b) => {
-        const da = new Date(a.querySelector('published')?.textContent || 0);
-        const db = new Date(b.querySelector('published')?.textContent || 0);
-        return db - da;
-      });
-      const entry = entries[0];
-      const rawId  = entry.querySelector('id')?.textContent || '';
-      const videoId = rawId.includes('video:') ? rawId.split('video:')[1]
-                    : rawId.includes('v=')      ? rawId.split('v=')[1].split('&')[0]
-                    : '';
-      if (!videoId) return;
-      const data = {
-        ts:    Date.now(),
-        title: entry.querySelector('title')?.textContent || 'New Video',
-        thumb: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-        link:  `https://youtu.be/${videoId}`,
-      };
-      localStorage.setItem(YT_CACHE_KEY, JSON.stringify(data));
-      renderYTCard(el, data);
-    } catch(e) { console.error('[YT notice board]', e); }
-  }
-
-  function renderYTCard(el, data) {
-    el.style.display = 'block';
-    el.innerHTML = `
-      <div class="yt-card">
-        <div class="yt-card__header">◈ Latest Drop</div>
-        <div class="yt-card__body">
-          <img class="yt-card__thumb" src="${data.thumb}" alt="" loading="lazy" onerror="this.style.display='none'" />
-          <div class="yt-card__info">
-            <div class="yt-card__title">${data.title}</div>
-            <button class="yt-card__watch" onclick="window.open('${data.link}','_blank')">▶ Watch Now</button>
-          </div>
-        </div>
-      </div>`;
-  }
+  /* ══ OFFLINE INDICATOR ══════════════════════ */
+  (() => {
+    const pill = document.getElementById('offline-pill');
+    if (!pill) return;
+    const show = () => pill.classList.add('visible');
+    const hide = () => pill.classList.remove('visible');
+    if (!navigator.onLine) show();
+    window.addEventListener('offline', show);
+    window.addEventListener('online', hide);
+  })();
 
   /* ══ GLOBAL ERROR GUARD ═════════════════════ */
   window.addEventListener('unhandledrejection', e => {

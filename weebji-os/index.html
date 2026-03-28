@@ -1959,8 +1959,13 @@
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
   // Android WebView UA always contains "; wv)" — suppress install prompt inside native APK
   const _isWebView = /; wv\)/.test(navigator.userAgent);
-  // Suppress install prompt if already installed PWA or running inside native APK WebView
-  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || _isWebView) {
+  // Suppress install prompt if already installed PWA, native APK WebView, or minimal-ui mode
+  const _isInstalled = window.matchMedia('(display-mode: standalone)').matches
+    || window.matchMedia('(display-mode: minimal-ui)').matches
+    || window.navigator.standalone
+    || _isWebView
+    || document.referrer.startsWith('android-app://');
+  if (_isInstalled) {
     localStorage.setItem('weebji_install_dismissed', '1');
   }
 
@@ -1975,8 +1980,7 @@
 
   function showInstallPromptWhenReady() {
     // Already installed PWA or native APK WebView — never show
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone || _isWebView;
-    if (isStandalone) { localStorage.setItem('weebji_install_dismissed', '1'); return; }
+    if (_isInstalled) { localStorage.setItem('weebji_install_dismissed', '1'); return; }
     const dismissed = localStorage.getItem('weebji_install_dismissed');
     if (dismissed) return;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -1987,7 +1991,7 @@
     const delay = firstActionDone ? 5000 : 30000;
     setTimeout(() => {
       if (localStorage.getItem('weebji_install_dismissed')) return;
-      if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone || _isWebView) return;
+      if (_isInstalled) return;
       if (!deferredInstallEvent && !isIOS) return;
       document.getElementById('install-prompt').classList.add('visible');
     }, delay);
@@ -1997,10 +2001,10 @@
     if (deferredInstallEvent) {
       document.getElementById('install-prompt').classList.remove('visible');
       deferredInstallEvent.prompt();
-      deferredInstallEvent.userChoice.then(choice => {
-        if (choice.outcome === 'accepted') localStorage.setItem('weebji_install_dismissed', '1');
+      deferredInstallEvent.userChoice.then(() => {
+        localStorage.setItem('weebji_install_dismissed', '1');
         deferredInstallEvent = null;
-      }).catch(() => { deferredInstallEvent = null; });
+      }).catch(() => { localStorage.setItem('weebji_install_dismissed', '1'); deferredInstallEvent = null; });
     } else {
       // iOS only — show Safari manual instructions
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);

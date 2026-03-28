@@ -2523,7 +2523,13 @@
       const client = SupabaseSync._client();
       if (!client) throw new Error('Not connected');
 
-      const { data, error } = await client.functions.invoke('razorpay-create-order', { body: { plan } });
+      // Explicitly get session token — functions.invoke() falls back to anon key
+      // if the session isn't loaded yet, causing 401 on the edge function
+      const { data: { session } } = await client.auth.getSession();
+      if (!session?.access_token) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
+      const authHeaders = { headers: { Authorization: `Bearer ${session.access_token}` } };
+
+      const { data, error } = await client.functions.invoke('razorpay-create-order', { body: { plan }, ...authHeaders });
       if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
 
       const options = {
@@ -2536,13 +2542,15 @@
         image:       'https://skryrsh.github.io/Weebji-os/icons/icon-192.png',
         handler: async function(response) {
           const verifyClient = SupabaseSync._client();
+          const { data: { session: vSess } } = await verifyClient.auth.getSession();
           const { error: verifyErr } = await verifyClient.functions.invoke('razorpay-verify-payment', {
             body: {
               razorpay_order_id:   response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature:  response.razorpay_signature,
               plan,
-            }
+            },
+            ...(vSess?.access_token ? { headers: { Authorization: `Bearer ${vSess.access_token}` } } : {})
           });
           if (verifyErr) { spawnDropBanner('◆  Verification failed — contact weebji@gmail.com'); return; }
           await SupabaseSync.pullProgress();

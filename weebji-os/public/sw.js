@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v15 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v53';
+// ── WEEBJI OS — Service Worker v16 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v54';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
@@ -14,9 +14,10 @@ self.addEventListener('message', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
+      .then(clients => Promise.all(clients.map(c => c.navigate(c.url))))
   );
   self.clients.claim();
 });

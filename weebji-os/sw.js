@@ -1,5 +1,5 @@
 // ── WEEBJI OS — Service Worker v19 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v61';
+const CACHE_NAME = 'weebji-os-v62';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
@@ -9,7 +9,21 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (!e.data) return;
+  if (e.data.type === 'SKIP_WAITING') { self.skipWaiting(); return; }
+  if (e.data.type === 'LOCAL_NOTIF') {
+    const { notifType, title, body } = e.data;
+    const cfg = NOTIF_CFG[notifType] || { vibrate: [150, 80, 150], tag: 'weebji-local', requireInteraction: false };
+    self.registration.showNotification(title || 'WEEBJI OS', {
+      body:               body || 'The System has updated your status.',
+      icon:               BASE + 'icons/icon-192.png',
+      tag:                cfg.tag,
+      renotify:           true,
+      vibrate:            cfg.vibrate,
+      requireInteraction: cfg.requireInteraction,
+      data:               { url: BASE, type: notifType },
+    });
+  }
 });
 
 self.addEventListener('activate', e => {
@@ -61,16 +75,27 @@ self.addEventListener('fetch', e => {
 
 // Notification type → vibration pattern + behaviour
 const NOTIF_CFG = {
-  streak_reminder:    { vibrate: [200,100,200,100,200], tag: 'weebji-streak',  requireInteraction: false },
-  hp_critical:        { vibrate: [400,150,400,150,800], tag: 'weebji-hp',      requireInteraction: true  },
-  power_window:       { vibrate: [100,50,100],          tag: 'weebji-power',   requireInteraction: false },
-  morning_activation: { vibrate: [100,50,100,50,100],   tag: 'weebji-morning', requireInteraction: false },
-  comeback:           { vibrate: [300,200,300,200,300], tag: 'weebji-comeback',requireInteraction: true  },
-  ghost_token:        { vibrate: [200,100,200,100,400], tag: 'weebji-ghost',   requireInteraction: true  },
-  level_up:           { vibrate: [50,30,50,30,300],     tag: 'weebji-level',   requireInteraction: false },
-  secret_title:       { vibrate: [100,50,200,50,100],   tag: 'weebji-title',   requireInteraction: false },
-  weekly_summary:     { vibrate: [200,100,200],         tag: 'weebji-weekly',  requireInteraction: false },
-  penance:            { vibrate: [500,200,500],         tag: 'weebji-penance', requireInteraction: true  },
+  // Server-push types
+  streak_reminder:    { vibrate: [200,100,200,100,200], tag: 'weebji-streak',   requireInteraction: false },
+  hp_critical:        { vibrate: [400,150,400,150,800], tag: 'weebji-hp',       requireInteraction: true  },
+  power_window:       { vibrate: [100,50,100],          tag: 'weebji-power',    requireInteraction: false },
+  morning_activation: { vibrate: [100,50,100,50,100],   tag: 'weebji-morning',  requireInteraction: false },
+  comeback:           { vibrate: [300,200,300,200,300], tag: 'weebji-comeback', requireInteraction: true  },
+  ghost_token:        { vibrate: [200,100,200,100,400], tag: 'weebji-ghost',    requireInteraction: true  },
+  level_up:           { vibrate: [50,30,50,30,300],     tag: 'weebji-level',    requireInteraction: false },
+  secret_title:       { vibrate: [100,50,200,50,100],   tag: 'weebji-title',    requireInteraction: false },
+  weekly_summary:     { vibrate: [200,100,200],         tag: 'weebji-weekly',   requireInteraction: false },
+  penance:            { vibrate: [500,200,500],         tag: 'weebji-penance',  requireInteraction: true  },
+  streak_7:           { vibrate: [100,50,100,50,300],   tag: 'weebji-streak7',  requireInteraction: false },
+  streak_30:          { vibrate: [150,60,150,60,400],   tag: 'weebji-streak30', requireInteraction: false },
+  streak_100:         { vibrate: [200,80,200,80,600],   tag: 'weebji-s100',     requireInteraction: true  },
+  streak_365:         { vibrate: [300,100,300,100,800], tag: 'weebji-s365',     requireInteraction: true  },
+  // Local-notification types (triggered from within the app via LOCAL_NOTIF)
+  workout_complete:   { vibrate: [80,40,80,40,200],     tag: 'weebji-workout',  requireInteraction: false },
+  sanctuary_complete: { vibrate: [50,30,50,30,150],     tag: 'weebji-void',     requireInteraction: false },
+  ritual_complete:    { vibrate: [60,30,120],           tag: 'weebji-ritual',   requireInteraction: false },
+  pillar_unlock:      { vibrate: [100,50,200,50,100],   tag: 'weebji-pillar',   requireInteraction: false },
+  friend_levelup:     { vibrate: [50,30,50],            tag: 'weebji-friend',   requireInteraction: false },
 };
 
 self.addEventListener('push', e => {

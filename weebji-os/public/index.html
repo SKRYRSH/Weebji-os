@@ -1852,7 +1852,7 @@
 
   /* ══ NATIVE WEB PUSH ════════════════════════ */
   const WeebjPush = (() => {
-    const VAPID_PK   = 'BEAWkgoqC3rrnfEx7LaQ1-erv94Gfp_IbHQL62mK_nvQm7E_NTKVhsZ_SaXizuwYeatc47IEDhjRG4NJsXsjfQs';
+    const VAPID_PK   = 'BD5uck5o_EQh1udJ5dBmg4ZTm5qUbYjvGRtgwhv91zKT2V6IQjLhLXyWa56Q1RyKuuRvjWUIe-uTPppJHgTWnrc';
     const SEND_URL   = 'https://qpcqbiicomlpsmkgqhsm.supabase.co/functions/v1/send-push';
     const ANON_KEY   = 'sb_publishable_mn4VVnBOgUzwSoB6msiFYA_AleeHLa2';
 
@@ -6416,6 +6416,16 @@
     // Local notification
     WeebjPush.local('level_up', `LEVEL ${newLevel} ACHIEVED`, 'Evolution detected. The System has upgraded your rank.');
 
+    // Level milestone email at 10 / 25 / 50 / 100
+    if ([10, 25, 50, 100].includes(newLevel)) {
+      const _lc = SupabaseSync._client();
+      if (_lc) {
+        _lc.functions.invoke('brevo-event-email', {
+          body: { event: 'level_milestone', data: { level: newLevel, hunter_name: localStorage.getItem('weebji_name') || 'Hunter' } },
+        }).catch(() => {});
+      }
+    }
+
     // Clean up
     luEl.addEventListener('animationend', () => luEl.classList.remove('active'), { once: true });
   }
@@ -7184,6 +7194,16 @@
     else if (streak === 30)  WeebjPush.send('streak_30');
     else if (streak === 100) WeebjPush.send('streak_100');
     else if (streak === 365) WeebjPush.send('streak_365');
+    // Streak milestone email (fire-and-forget)
+    if ([7, 30, 100, 365].includes(streak)) {
+      const _sc = SupabaseSync._client();
+      if (_sc) {
+        const _p = loadProgress();
+        _sc.functions.invoke('brevo-event-email', {
+          body: { event: 'streak_milestone', data: { streak, hunter_name: localStorage.getItem('weebji_name') || 'Hunter', level: _p.level } },
+        }).catch(() => {});
+      }
+    }
   }
 
   // 5. GHOST SHIMMER — silver sweep on ghost token use

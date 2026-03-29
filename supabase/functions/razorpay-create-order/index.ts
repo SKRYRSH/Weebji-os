@@ -7,7 +7,7 @@ const CORS = {
 
 const PLANS: Record<string, { amount: number; description: string }> = {
   monthly:     { amount: 49900,  description: 'WEEBJI+ Monthly' },
-  annual:      { amount: 100,    description: 'WEEBJI+ Annual' },
+  annual:      { amount: 299900, description: 'WEEBJI+ Annual' },
   ghost_token: { amount: 9900,   description: 'Ghost Token' },
 };
 

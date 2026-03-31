@@ -8865,13 +8865,13 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (badge) badge.textContent = '#' + hn.number;
           // Upsert so this creates the row if it doesn't exist yet,
           // and always keeps hunter_number in sync with the canonical sequential number
-          client.from('leaderboard').upsert({
+          await client.from('leaderboard').upsert({
             user_id:       currentUser.id,
             hunter_number: hn.number,
             display_name:  localStorage.getItem('weebji_name') || 'Hunter',
             class:         localStorage.getItem('weebji_class') || 'monarch',
             color:         localStorage.getItem('weebji_color') || '#00F5FF',
-          }, { onConflict: 'user_id' }).then(() => {});
+          }, { onConflict: 'user_id' }).catch(e => console.warn('lb upsert:', e));
         }
 
         // Restore progress

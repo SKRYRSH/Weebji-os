@@ -6417,6 +6417,7 @@
 
     // Local notification
     WeebjPush.local('level_up', `LEVEL ${newLevel} ACHIEVED`, 'Evolution detected. The System has upgraded your rank.');
+    if ([10,25,50,100].includes(newLevel)) SupabaseSync.callBrevoEvent('level_milestone', { hunter_name: loadProgress().name || 'Hunter', level: newLevel });
 
     // Clean up
     luEl.addEventListener('animationend', () => luEl.classList.remove('active'), { once: true });
@@ -7184,10 +7185,10 @@
     // Phase 5: System Voice
     setTimeout(() => SystemVoice.onStreakMilestone(streak), 800);
     // Push notifications
-    if (streak === 7)        WeebjPush.send('streak_7');
-    else if (streak === 30)  WeebjPush.send('streak_30');
-    else if (streak === 100) WeebjPush.send('streak_100');
-    else if (streak === 365) WeebjPush.send('streak_365');
+    if (streak === 7)        { WeebjPush.send('streak_7');   SupabaseSync.callBrevoEvent('streak_milestone', { hunter_name: loadProgress().name || 'Hunter', streak: 7   }); }
+    else if (streak === 30)  { WeebjPush.send('streak_30');  SupabaseSync.callBrevoEvent('streak_milestone', { hunter_name: loadProgress().name || 'Hunter', streak: 30  }); }
+    else if (streak === 100) { WeebjPush.send('streak_100'); SupabaseSync.callBrevoEvent('streak_milestone', { hunter_name: loadProgress().name || 'Hunter', streak: 100 }); }
+    else if (streak === 365) { WeebjPush.send('streak_365'); SupabaseSync.callBrevoEvent('streak_milestone', { hunter_name: loadProgress().name || 'Hunter', streak: 365 }); }
   }
 
   // 5. GHOST SHIMMER — silver sweep on ghost token use
@@ -8788,6 +8789,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             if (Notification.permission === 'granted') WeebjPush.subscribe();
             else WeebjPush.init();
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
+            if (event === 'SIGNED_IN') setTimeout(() => SupabaseSync.triggerBrevoSignup(), 3000);
             if (onProfile) { renderAuthSection(); if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(); }
           } else {
             renderAuthSection();
@@ -9066,7 +9068,37 @@ DEV.skipSplash()      → go straight to class select (if no session)
     }
 
     function getClient() { return client; }
-    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, verifyOtp, signOut, getUser, isPremium, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
+
+    async function triggerBrevoSignup() {
+      if (!currentUser) return;
+      if (localStorage.getItem('weebji_brevo_signup_done')) return;
+      const p = loadProgress();
+      const name = p.name || 'Hunter';
+      const cls  = p.class || localStorage.getItem('weebji_class') || 'monarch';
+      try {
+        const res = await fetch('https://qpcqbiicomlpsmkgqhsm.supabase.co/functions/v1/brevo-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentUser.email, hunter_name: name, class: cls, signup_date: currentUser.created_at }),
+        });
+        if (res.ok) localStorage.setItem('weebji_brevo_signup_done', '1');
+      } catch {}
+    }
+
+    async function callBrevoEvent(event, data) {
+      if (!client || !currentUser) return;
+      try {
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) return;
+        await fetch('https://qpcqbiicomlpsmkgqhsm.supabase.co/functions/v1/brevo-event-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+          body: JSON.stringify({ event, data }),
+        });
+      } catch {}
+    }
+
+    return { init, pushProgress, pullProgress, upsertPushSub, triggerBrevoSignup, callBrevoEvent, signInWithEmail, verifyOtp, signOut, getUser, isPremium, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
   })();
 
   /* ══ GUILD SYSTEM ════════════════════════════ */

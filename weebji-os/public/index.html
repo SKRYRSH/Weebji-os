@@ -8798,6 +8798,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
           prevStreak: p.prevStreak, lastDate: p.lastDate, yesterdayCount: p.yesterdayCount,
           ghostWhisperEarned: p.ghostWhisperEarned, penanceSurvived: p.penanceSurvived,
           shadowSlayerEarned: p.shadowSlayerEarned,
+          customWorkouts: JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]'),
+          penanceActive: localStorage.getItem('weebji_penance_active') === '1',
           playerName: localStorage.getItem('weebji_name') || null,
           playerClass: localStorage.getItem('weebji_class') || null,
           playerColor: localStorage.getItem('weebji_color') || null,
@@ -8922,6 +8924,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.playerName && !localStorage.getItem('weebji_name'))  localStorage.setItem('weebji_name',  d.playerName);
           if (d.playerClass && !localStorage.getItem('weebji_class')) localStorage.setItem('weebji_class', d.playerClass);
           if (d.playerColor && !localStorage.getItem('weebji_color')) localStorage.setItem('weebji_color', d.playerColor);
+          // Custom workouts — restore on new device (never overwrite existing local list)
+          if (d.customWorkouts?.length && !JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]').length)
+            localStorage.setItem('weebji_custom_workouts', JSON.stringify(d.customWorkouts));
+          // Penance cross-device — if penance was active on another device, enforce it here too
+          if (d.penanceActive && localStorage.getItem('weebji_penance_active') !== '1')
+            localStorage.setItem('weebji_penance_active', '1');
         }
         // Upsert leaderboard after identity is restored so display_name is always the real name
         if (hn?.number) {

@@ -1,11 +1,11 @@
-// ── WEEBJI OS — Service Worker v19 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v62';
+// ── WEEBJI OS — Service Worker v20 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v63';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
-  // Do NOT skipWaiting here — wait for user to tap the update banner
+  self.skipWaiting(); // Take control immediately — triggers controllerchange → auto-reload
 });
 
 self.addEventListener('message', e => {

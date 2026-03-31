@@ -7329,18 +7329,33 @@
     // ── Borders + corner accents ──────────────────────────────────────────
     const plus = isWeebjiPlus();
     if (plus) {
-      ctx.strokeStyle = 'rgba(255,180,0,0.12)'; ctx.lineWidth = 1; ctx.strokeRect(12, 12, W-24, H-24);
-      ctx.strokeStyle = 'rgba(255,210,60,0.6)'; ctx.lineWidth = 2.5; ctx.strokeRect(26, 26, W-52, H-52);
+      // Outer glow border
+      ctx.strokeStyle = 'rgba(255,180,0,0.38)'; ctx.lineWidth = 1.5; ctx.strokeRect(12, 12, W-24, H-24);
+      // Inner gold border
+      ctx.strokeStyle = 'rgba(255,215,60,0.75)'; ctx.lineWidth = 3; ctx.strokeRect(26, 26, W-52, H-52);
+      // Gold radial glow at bottom (makes the lower section feel luxe)
+      const goldGlow = ctx.createRadialGradient(W/2, H, 0, W/2, H, W*0.9);
+      goldGlow.addColorStop(0,'rgba(255,180,0,0.18)'); goldGlow.addColorStop(0.5,'rgba(255,160,0,0.07)'); goldGlow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle = goldGlow; ctx.fillRect(0, H*0.55, W, H*0.45);
+      // Gold particles scattered across card
+      for (let i = 0; i < 120; i++) {
+        const px = rng(i*4.1+3)*W, py = rng(i*2.7+7)*H;
+        const ps = rng(i*6.3)*1.8+0.4, pa = rng(i*3.9)*0.22+0.04;
+        ctx.beginPath(); ctx.arc(px, py, ps, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,200,60,${pa})`; ctx.fill();
+      }
     } else {
       ctx.strokeStyle = `rgba(${rgb},0.28)`; ctx.lineWidth = 1.5; ctx.strokeRect(26, 26, W-52, H-52);
     }
-    const ca = 32, cl = 56;
+    const ca = 32, cl = plus ? 80 : 56;
     [[ca,ca],[W-ca,ca],[ca,H-ca],[W-ca,H-ca]].forEach(([cx2,cy2]) => {
       const dx = cx2 < W/2 ? 1 : -1, dy = cy2 < H/2 ? 1 : -1;
       ctx.beginPath();
       ctx.moveTo(cx2, cy2+dy*cl); ctx.lineTo(cx2, cy2); ctx.lineTo(cx2+dx*cl, cy2);
-      ctx.strokeStyle = plus ? 'rgba(255,210,60,0.55)' : `rgba(${rgb},0.55)`;
-      ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = plus ? 'rgba(255,215,60,0.8)' : `rgba(${rgb},0.55)`;
+      ctx.lineWidth = plus ? 3 : 2;
+      if (plus) { ctx.shadowColor = 'rgba(255,180,0,0.5)'; ctx.shadowBlur = 12; }
+      ctx.stroke(); ctx.shadowBlur = 0;
     });
 
     // ── HEADER (top overlay) ──────────────────────────────────────────────
@@ -7350,14 +7365,24 @@
     ctx.fillText('WEEBJI OS', 68, 100);
     ctx.textAlign = 'right';
     if (plus) {
-      ctx.font = '700 24px "JetBrains Mono", monospace';
-      ctx.fillStyle = 'rgba(255,210,60,0.9)';
-      ctx.shadowColor = 'rgba(255,180,0,0.7)'; ctx.shadowBlur = 18;
-      ctx.fillText('WEEBJI+ ◆', W-68, 72);
+      // WEEBJI+ stamp badge
+      ctx.font = '800 30px "JetBrains Mono", monospace';
+      const badgeText = 'WEEBJI+ ◆';
+      const badgeW = ctx.measureText(badgeText).width + 48, badgeH = 58;
+      const badgeX = W - 68 - badgeW, badgeY = 48;
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 8);
+      const badgeGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX+badgeW, badgeY+badgeH);
+      badgeGrad.addColorStop(0,'rgba(255,180,0,0.22)'); badgeGrad.addColorStop(1,'rgba(255,140,0,0.12)');
+      ctx.fillStyle = badgeGrad; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,210,60,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,220,80,1)';
+      ctx.shadowColor = 'rgba(255,180,0,0.9)'; ctx.shadowBlur = 22;
+      ctx.fillText(badgeText, W-68-24, badgeY+badgeH*0.68);
       ctx.shadowBlur = 0;
       ctx.font = '400 22px "JetBrains Mono", monospace';
-      ctx.fillStyle = 'rgba(255,210,60,0.55)';
-      ctx.fillText(`#${num}`, W-68, 100);
+      ctx.fillStyle = 'rgba(255,210,60,0.6)';
+      ctx.fillText(`#${num}`, W-68, badgeY + badgeH + 26);
     } else {
       ctx.font = '400 28px "JetBrains Mono", monospace';
       ctx.fillStyle = 'rgba(255,255,255,0.25)';
@@ -7365,16 +7390,16 @@
     }
     ctx.font = '700 26px "JetBrains Mono", monospace';
     ctx.fillStyle = color;
-    ctx.fillText(`LVL ${p.level}  ${tierInfo.rank}-RANK`, W-68, 112);
-    ctx.beginPath(); ctx.moveTo(68, 136); ctx.lineTo(W-68, 136);
-    ctx.strokeStyle = plus ? 'rgba(255,200,60,0.25)' : `rgba(${rgb},0.18)`; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillText(`LVL ${p.level}  ${tierInfo.rank}-RANK`, W-68, plus ? 148 : 112);
+    ctx.beginPath(); ctx.moveTo(68, plus ? 168 : 136); ctx.lineTo(W-68, plus ? 168 : 136);
+    ctx.strokeStyle = plus ? 'rgba(255,200,60,0.35)' : `rgba(${rgb},0.18)`; ctx.lineWidth = 1; ctx.stroke();
     if (plus) {
-      // Gold shimmer lines across card
+      // Gold shimmer lines — more visible
       [H*0.28, H*0.72].forEach(ly => {
         const sg = ctx.createLinearGradient(0, ly, W, ly);
-        sg.addColorStop(0,'rgba(255,180,0,0)'); sg.addColorStop(0.35,'rgba(255,200,60,0.07)');
-        sg.addColorStop(0.5,'rgba(255,220,80,0.13)'); sg.addColorStop(0.65,'rgba(255,200,60,0.07)'); sg.addColorStop(1,'rgba(255,180,0,0)');
-        ctx.fillStyle = sg; ctx.fillRect(0, ly-1, W, 2);
+        sg.addColorStop(0,'rgba(255,180,0,0)'); sg.addColorStop(0.35,'rgba(255,200,60,0.18)');
+        sg.addColorStop(0.5,'rgba(255,220,80,0.28)'); sg.addColorStop(0.65,'rgba(255,200,60,0.18)'); sg.addColorStop(1,'rgba(255,180,0,0)');
+        ctx.fillStyle = sg; ctx.fillRect(0, ly-1, W, 3);
       });
     }
 
@@ -7474,11 +7499,23 @@
     const statsTopY = streakNumY + 136;
     ctx.beginPath(); ctx.moveTo(68, statsTopY); ctx.lineTo(W-68, statsTopY);
     ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1; ctx.stroke();
-    const stats = [
-      { label: 'STUDIED',  value: `${Math.floor((p.totalStudyMins || 0) / 60)}h` },
-      { label: 'WORKOUTS', value: String(p.totalWorkoutDays || p.monarchGrid?.length || 0) },
-      { label: 'RITUALS',  value: String(p.monkGrid?.length || 0) },
-    ];
+    const stats = cls === 'monk'
+      ? [
+          { label: 'STUDIED',  value: `${Math.floor((p.totalStudyMins || 0) / 60)}h` },
+          { label: 'RITUALS',  value: String(p.monkGrid?.length || 0) },
+          { label: 'TITLES',   value: String((p.titles || []).length) },
+        ]
+      : cls === 'mastermind'
+      ? [
+          { label: 'STUDIED',  value: `${Math.floor((p.totalStudyMins || 0) / 60)}h` },
+          { label: 'SESSIONS', value: String((p.mmGrid?.length || 0) + (p.voidSessions || 0)) },
+          { label: 'TITLES',   value: String((p.titles || []).length) },
+        ]
+      : [
+          { label: 'STUDIED',  value: `${Math.floor((p.totalStudyMins || 0) / 60)}h` },
+          { label: 'WORKOUTS', value: String(p.totalWorkoutDays || p.monarchGrid?.length || 0) },
+          { label: 'TITLES',   value: String((p.titles || []).length) },
+        ];
     const sw = (W - 136) / 3;
     stats.forEach((s, i) => {
       const cx = 68 + sw*i + sw/2;

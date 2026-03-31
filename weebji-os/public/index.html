@@ -7390,8 +7390,8 @@
     }
     ctx.font = '700 26px "JetBrains Mono", monospace';
     ctx.fillStyle = color;
-    ctx.fillText(`LVL ${p.level}  ${tierInfo.rank}-RANK`, W-68, plus ? 148 : 112);
-    ctx.beginPath(); ctx.moveTo(68, plus ? 168 : 136); ctx.lineTo(W-68, plus ? 168 : 136);
+    ctx.fillText(`LVL ${p.level}  ${tierInfo.rank}-RANK`, W-68, plus ? 176 : 112);
+    ctx.beginPath(); ctx.moveTo(68, plus ? 196 : 136); ctx.lineTo(W-68, plus ? 196 : 136);
     ctx.strokeStyle = plus ? 'rgba(255,200,60,0.35)' : `rgba(${rgb},0.18)`; ctx.lineWidth = 1; ctx.stroke();
     if (plus) {
       // Gold shimmer lines — more visible
@@ -7496,7 +7496,7 @@
     }
 
     // Stats row
-    const statsTopY = streakNumY + 136;
+    const statsTopY = streakNumY + (lbRank ? 168 : 136);
     ctx.beginPath(); ctx.moveTo(68, statsTopY); ctx.lineTo(W-68, statsTopY);
     ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1; ctx.stroke();
     const stats = cls === 'monk'

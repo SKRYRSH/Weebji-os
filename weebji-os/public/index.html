@@ -2238,7 +2238,8 @@
       if (p.lastDate) {
         if (yesterdayDone === 0) {
           p.prevStreak = p.streak; // save for Ghost Token restoration
-          p.hp = Math.max(1, p.hp - 1);
+          const hpFloor = p.level >= 5 ? 0 : 1;
+          p.hp = Math.max(hpFloor, p.hp - 1);
           p.streak = 0;
           p.streakLostToday = true;
         } else {
@@ -2249,7 +2250,8 @@
 
       // Apply penalty for each additional fully-missed day beyond yesterday
       if (missedDays > 0) {
-        p.hp = Math.max(1, p.hp - missedDays);
+        const hpFloor = p.level >= 5 ? 0 : 1;
+        p.hp = Math.max(hpFloor, p.hp - missedDays);
         p.streak = 0;
       }
 
@@ -2276,6 +2278,8 @@
       p.workoutChecked = []; p.questsChecked = []; p.customDone = []; p.workoutBonus = false;
       p.monkChecked = []; p.monkBonus = false; p.mmSessions = 0;
       p.lastDate = today;
+      // Level 5+: HP can hit 0 → flag for penance on boot
+      if (p.hp === 0 && p.level >= 5) localStorage.setItem('weebji_penance_active', '1');
       saveProgress(p);
     }
 
@@ -7618,6 +7622,7 @@
   /* ══ PHASE 3 — GHOST TOKEN INTERVENTION ══════ */
   function checkGhostIntervention(p) {
     if (!p.streakLostToday || !p.prevStreak) return;
+    if (localStorage.getItem('weebji_penance_active') === '1') return; // penance takes over
     const overlay = document.getElementById('ghost-intervention');
     document.getElementById('ghost-streak-text').textContent =
       `Your ${p.prevStreak}-day streak ended. The System watched it fall.`;
@@ -8889,7 +8894,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (data.level > p.level || (data.level === p.level && data.xp >= p.xp) || (p.level <= 1 && p.xp <= 0) || data.level > 1) {
           p.level = data.level; p.xp = data.xp;
           // Clamp hp to valid 0-5 range (DB may store legacy 0-100 values)
-          p.hp = Math.min(5, Math.max(1, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
+          p.hp = Math.min(5, Math.max(0, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
           p.streak = data.streak; p.bestStreak = data.best_streak;
           p.ghostTokens = data.ghost_tokens;
           p.totalStudyMins = data.total_study_mins;

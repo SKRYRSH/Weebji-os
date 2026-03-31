@@ -8793,6 +8793,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
           prevStreak: p.prevStreak, lastDate: p.lastDate, yesterdayCount: p.yesterdayCount,
           ghostWhisperEarned: p.ghostWhisperEarned, penanceSurvived: p.penanceSurvived,
           shadowSlayerEarned: p.shadowSlayerEarned,
+          playerName: localStorage.getItem('weebji_name') || null,
+          playerClass: localStorage.getItem('weebji_class') || null,
+          playerColor: localStorage.getItem('weebji_color') || null,
         };
         // Build leaderboard payload
         const hunterNum = localStorage.getItem('weebji_hunter_num');
@@ -8919,6 +8922,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.ghostWhisperEarned)  p.ghostWhisperEarned  = true;
           if (d.penanceSurvived)     p.penanceSurvived     = true;
           if (d.shadowSlayerEarned)  p.shadowSlayerEarned  = true;
+          // Restore identity on new device — name/class/color live in localStorage, sync from DB if missing
+          if (d.playerName && !localStorage.getItem('weebji_name'))  localStorage.setItem('weebji_name',  d.playerName);
+          if (d.playerClass && !localStorage.getItem('weebji_class')) localStorage.setItem('weebji_class', d.playerClass);
+          if (d.playerColor && !localStorage.getItem('weebji_color')) localStorage.setItem('weebji_color', d.playerColor);
         }
         saveProgress(p);
         // Always refresh visible stats immediately — user may be on any screen

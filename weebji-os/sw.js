@@ -5,7 +5,7 @@ const SHELL = [BASE, BASE + 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
-  self.skipWaiting(); // Take control immediately — triggers controllerchange → auto-reload
+  // Do NOT skipWaiting here — let the update banner show so user can choose when to reload
 });
 
 self.addEventListener('message', e => {

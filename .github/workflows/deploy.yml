@@ -25,6 +25,7 @@ jobs:
         run: |
           cp weebji-os/index.html weebji-os/public/index.html
           cp weebji-os/sw.js     weebji-os/public/sw.js
+          cp -r landing           weebji-os/public/landing
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with:

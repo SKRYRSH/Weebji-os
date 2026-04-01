@@ -2549,7 +2549,7 @@
     // Play Store TWA — open web checkout in Chrome (outside TWA scope = no Google billing cut)
     if (document.referrer.startsWith('android-app://')) {
       const planLabel = plan === 'monthly' ? 'plus' : plan === 'annual' ? 'plus_annual' : 'ghost_token';
-      window.open(`https://weebji-landing.netlify.app?checkout=${planLabel}`, '_blank');
+      window.open(`https://skryrsh.github.io/Weebji-os/landing?checkout=${planLabel}`, '_blank');
       spawnDropBanner('◆  Opening browser — sign in and subscribe there, then return to the app');
       return;
     }
@@ -7653,11 +7653,11 @@
     if (plus) {
       ctx.fillStyle = 'rgba(255,200,60,0.45)';
       ctx.shadowColor = 'rgba(255,180,0,0.3)'; ctx.shadowBlur = 12;
-      ctx.fillText('WEEBJI+ ◆  weebji-landing.netlify.app', W/2, arcY + 50);
+      ctx.fillText('WEEBJI+ ◆  skryrsh.github.io/Weebji-os/landing', W/2, arcY + 50);
       ctx.shadowBlur = 0;
     } else {
       ctx.fillStyle = 'rgba(255,255,255,0.12)';
-      ctx.fillText('weebji-landing.netlify.app', W/2, arcY + 50);
+      ctx.fillText('skryrsh.github.io/Weebji-os/landing', W/2, arcY + 50);
     }
   }
 
@@ -7688,7 +7688,7 @@
       const file = new File([blob], `weebji-arc-${num}.png`, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         const streakTxt = (p.streak || 0) > 0 ? `${p.streak}-day streak. ` : '';
-      const shareText = `${streakTxt}Level ${p.level} Hunter. This is my arc.\n\nweebji-landing.netlify.app`;
+      const shareText = `${streakTxt}Level ${p.level} Hunter. This is my arc.\n\nskryrsh.github.io/Weebji-os/landing`;
       navigator.share({ files: [file], title: 'WEEBJI OS — My Arc', text: shareText }).catch(()=>{});
       } else {
         // Fallback: download + copy text

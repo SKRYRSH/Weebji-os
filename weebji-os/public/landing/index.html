@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0A0A0F" />
+  <meta name="description" content="WEEBJI OS — The self-improvement system that actually feels like the game of your life." />
+  <meta property="og:title" content="WEEBJI OS — The Awakening" />
+  <meta property="og:description" content="Gamified self-improvement. Solo Leveling, but real life. Early access opening soon." />
+  <meta property="og:image" content="https://skryrsh.github.io/Weebji-os/assets/bg-monarch.jpeg" />
+  <title>WEEBJI OS — The Awakening</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --monarch: #00F5FF;
+      --mastermind: #FF2233;
+      --monk: #A8D8A8;
+      --bg: #0A0A0F;
+      --glass: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.07);
+    }
+    html { scroll-behavior: smooth; }
+    html { overflow-x: hidden; }
+    body {
+      background: var(--bg);
+      color: #E0E0FF;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ── CANVAS STARFIELD ── */
+    #star-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── NOISE OVERLAY — desktop only ── */
+    @media (min-width: 601px) {
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        opacity: 0.4;
+        z-index: 0;
+        pointer-events: none;
+      }
+    }
+
+    /* ── LAYOUT ── */
+    .wrap { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      background: rgba(10,10,15,0.7);
+      backdrop-filter: blur(20px);
+    }
+    .nav-logo {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.8);
+    }
+    .nav-logo span { color: var(--monarch); }
+    .nav-cta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: #000;
+      background: var(--monarch);
+      border: none;
+      padding: 8px 18px;
+      border-radius: 99px;
+      text-decoration: none;
+      font-weight: 700;
+      text-transform: uppercase;
+      transition: filter 0.2s, transform 0.2s;
+    }
+    .nav-cta:hover { filter: brightness(1.15); transform: scale(1.03); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+    }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.45em;
+      color: rgba(0,245,255,0.5);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fadeUp 1s ease both;
+    }
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(36px, 8vw, 88px);
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      line-height: 1.05;
+      color: #fff;
+      text-shadow: 0 0 80px rgba(0,245,255,0.15), 0 0 200px rgba(0,245,255,0.06);
+      animation: fadeUp 1s 0.15s ease both;
+      margin-bottom: 8px;
+    }
+    .hero-title em {
+      font-style: normal;
+      color: var(--monarch);
+      text-shadow: 0 0 40px rgba(0,245,255,0.4);
+    }
+    .hero-sub {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(14px, 2vw, 18px);
+      color: rgba(255,255,255,0.3);
+      line-height: 1.7;
+      max-width: 480px;
+      margin: 24px auto 48px;
+      animation: fadeUp 1s 0.3s ease both;
+    }
+    .hero-sub strong { color: rgba(255,255,255,0.65); font-weight: 500; }
+
+
+    /* ── CLASS PICKER (optional on form) ── */
+    .class-pills {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .class-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: transparent;
+      color: rgba(255,255,255,0.35);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+    .class-pill[data-class="monarch"].active  { border-color: rgba(0,245,255,0.5); color: var(--monarch); background: rgba(0,245,255,0.07); }
+    .class-pill[data-class="mastermind"].active { border-color: rgba(255,34,51,0.5); color: var(--mastermind); background: rgba(255,34,51,0.07); }
+    .class-pill[data-class="monk"].active     { border-color: rgba(168,216,168,0.5); color: var(--monk); background: rgba(168,216,168,0.07); }
+
+    /* ── SECTION ── */
+    section { padding: 80px 0; position: relative; z-index: 1; }
+    .section-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.4em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(22px, 4vw, 36px);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-align: center;
+      margin-bottom: 48px;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* ── CLASS CARDS ── */
+    .class-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .class-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    .class-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--c), transparent);
+      opacity: 0.6;
+    }
+    .class-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(var(--cr), 0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .class-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.12); }
+    .class-card[data-cls="monarch"] { --c: #00F5FF; --cr: 0,245,255; }
+    .class-card[data-cls="mastermind"] { --c: #FF2233; --cr: 255,34,51; }
+    .class-card[data-cls="monk"] { --c: #A8D8A8; --cr: 168,216,168; }
+    .card-glyph {
+      font-size: 28px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .card-class {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      color: var(--c);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .card-name {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 10px;
+    }
+    .card-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.65;
+    }
+    .card-traits {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .card-trait {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid rgba(var(--cr), 0.2);
+      color: rgba(var(--cr), 0.55);
+      text-transform: uppercase;
+    }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .features-grid--2col {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .feat-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+    }
+    .feat-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .feat-title {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 6px;
+    }
+    .feat-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      line-height: 1.6;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      margin: 0;
+    }
+
+    /* ── BOTTOM CTA ── */
+    .cta-section {
+      padding: 100px 24px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .cta-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(600px, 100vw);
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(0,245,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(26px, 5vw, 52px);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+    .cta-sub {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: rgba(255,255,255,0.3);
+      max-width: 360px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    /* ── COUNTER ── */
+    .counter-wrap {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 64px;
+    }
+    .counter-item { text-align: center; }
+    .counter-num {
+      font-family: 'Cinzel', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--monarch);
+      display: block;
+      text-shadow: 0 0 20px rgba(0,245,255,0.3);
+    }
+    .counter-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 32px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-logo {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.25em;
+      color: rgba(255,255,255,0.2);
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    .footer-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.2);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: rgba(255,255,255,0.5); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { text-shadow: 0 0 40px rgba(0,245,255,0.4); }
+      50%       { text-shadow: 0 0 80px rgba(0,245,255,0.7), 0 0 120px rgba(0,245,255,0.2); }
+    }
+    .hero-title em { animation: pulse-glow 3s ease infinite; }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ── SCREENSHOTS ── */
+    .screens-track-wrap {
+      overflow-x: auto;
+      overflow-y: visible;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 20px 0 40px;
+      cursor: grab;
+    }
+    .screens-track-wrap::-webkit-scrollbar { display: none; }
+    .screens-track-wrap:active { cursor: grabbing; }
+    .screens-track {
+      display: flex;
+      gap: 20px;
+      padding: 0 24px;
+      width: max-content;
+    }
+    .screen-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .screen-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+    }
+    .phone-frame {
+      width: 220px;
+      height: 440px;
+      border-radius: 32px;
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow: hidden;
+      background: #0A0A0F;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(0,245,255,0.04);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      flex-shrink: 0;
+    }
+    .phone-frame:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 60px 100px rgba(0,0,0,0.7), 0 0 80px rgba(0,245,255,0.08);
+    }
+    .phone-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+    }
+    .screens-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.12);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .hero-open-btn:hover { filter: brightness(1.15); transform: translateY(-2px); box-shadow: 0 0 60px rgba(0,245,255,0.4); }
+    .hero-open-btn:active { transform: translateY(0); }
+
+    /* ── INSTALL SECTION ── */
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .install-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .install-platform {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+    }
+    .install-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.85);
+    }
+    .install-steps {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.9;
+      list-style: none;
+      padding: 0;
+    }
+    .install-steps li::before { content: '→ '; color: var(--monarch); }
+    .install-btn {
+      display: inline-block;
+      background: rgba(0,245,255,0.08);
+      border: 1px solid rgba(0,245,255,0.25);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--monarch);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      align-self: flex-start;
+    }
+    .install-btn:hover { background: rgba(0,245,255,0.14); border-color: rgba(0,245,255,0.5); }
+
+    @media (max-width: 600px) {
+      nav { padding: 14px 18px; }
+      .nav-logo { font-size: 11px; }
+      .nav-cta { font-size: 9px; padding: 7px 14px; }
+
+      .hero { padding: 100px 20px 60px; }
+      .hero-title { font-size: clamp(32px, 11vw, 56px); }
+      .hero-sub { font-size: 14px; margin: 16px auto 32px; }
+
+.class-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .features-grid--2col { grid-template-columns: 1fr; }
+      .install-grid { grid-template-columns: 1fr; }
+
+      .screens-track { padding: 0 20px; }
+      .phone-frame { width: 180px; height: 360px; }
+
+      .counter-wrap { gap: 20px; }
+      .counter-num { font-size: 24px; }
+
+      .cta-section { padding: 60px 20px; }
+      section { padding: 60px 0; }
+
+      .footer-links { gap: 14px; }
+      .footer-links a { font-size: 8px; }
+
+      .install-card { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">WEEBJI<span>OS</span></div>
+  <a href="https://github.com/SKRYRSH/Weebji-os/releases/download/v1.0.0/WEEBJI-OS.apk" class="nav-cta">↓ Download APK</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap" style="display:flex;flex-direction:column;align-items:center">
+    <div class="hero-eyebrow">◆ &nbsp; The System Awakens &nbsp; ◆</div>
+    <h1 class="hero-title">Level Up.<br><em>For Real.</em></h1>
+    <p class="hero-sub">
+      <strong>WEEBJI OS</strong> is a self-improvement system that actually feels like the game of your life.
+      Track workouts, build focus, forge discipline — and watch your character evolve.
+    </p>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:380px;animation:fadeUp 1s 0.45s ease both;">
+      <a href="https://github.com/SKRYRSH/Weebji-os/releases/download/v1.0.0/WEEBJI-OS.apk" class="hero-open-btn" style="display:block;width:100%;background:var(--monarch);color:#000;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;padding:16px 24px;border-radius:14px;text-align:center;transition:all 0.2s;box-shadow:0 0 40px rgba(0,245,255,0.25);">↓ &nbsp; Download APK — Android</a>
+      <a href="https://skryrsh.github.io/Weebji-os/" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;color:rgba(255,255,255,0.3);text-transform:uppercase;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.6)'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">or open in browser →</a>
+    </div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- CLASSES -->
+<section>
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Choose Your Path</div>
+    <h2 class="section-title reveal">Three Classes. One Mission.</h2>
+    <div class="class-grid">
+      <div class="class-card reveal reveal-delay-1" data-cls="monarch">
+        <span class="card-glyph">⚔</span>
+        <div class="card-class">Monarch</div>
+        <div class="card-name">The Iron Sovereign</div>
+        <p class="card-desc">Built in the forge. Forged by reps. The Monarch dominates the physical — gym, home workouts, rest days all tracked with military precision.</p>
+        <div class="card-traits">
+          <span class="card-trait">Gym Mode</span>
+          <span class="card-trait">Home Mode</span>
+          <span class="card-trait">Rest Protocol</span>
+        </div>
+      </div>
+      <div class="class-card reveal reveal-delay-2" data-cls="mastermind">
+        <span class="card-glyph">◈</span>
+        <div class="card-class">Mastermind</div>
+        <div class="card-name">The Architect of Mind</div>
+        <p class="card-desc">Pomodoro engine. Deep work sessions. 25, 50, or 90-minute focus modes with full focus-lock so nothing can interrupt the grind.</p>
+        <div class="card-traits">
+          <span class="card-trait">Focus Lock</span>
+          <span class="card-trait">Pomodoro</span>
+          <span class="card-trait">Session Grid</span>
+        </div>
+      </div>
+      <div class="class-card reveal reveal-delay-3" data-cls="monk">
+        <span class="card-glyph">☯</span>
+        <div class="card-class">Monk</div>
+        <div class="card-name">The Pilgrim of Silence</div>
+        <p class="card-desc">8 daily rituals. Cold showers, journaling, meditation, sunlight — every small act of discipline counts toward your awakening.</p>
+        <div class="card-traits">
+          <span class="card-trait">8 Rituals</span>
+          <span class="card-trait">Ritual Clock</span>
+          <span class="card-trait">Streak Guard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- SCREENSHOTS -->
+<section style="padding:80px 0;overflow:hidden">
+  <div class="wrap">
+    <div class="section-eyebrow reveal">In Action</div>
+    <h2 class="section-title reveal">See the System.</h2>
+  </div>
+  <div class="screens-track-wrap">
+    <div class="screens-track">
+      <div class="screen-item">
+        <div class="screen-label">The Awakening</div>
+        <div class="phone-frame"><img src="screenshots/splash.png" alt="Splash screen" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">Choose Your Path</div>
+        <div class="phone-frame"><img src="screenshots/class-select.png" alt="Class selection" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">Hunter Identity</div>
+        <div class="phone-frame"><img src="screenshots/profile-avatar.png" alt="Hunter profile" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">The Forge</div>
+        <div class="phone-frame"><img src="screenshots/dashboard-workout.png" alt="Daily workout" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">Weekly Dungeon Boss</div>
+        <div class="phone-frame"><img src="screenshots/dungeon-boss.png" alt="Dungeon boss fight" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">Your Arc</div>
+        <div class="phone-frame"><img src="screenshots/heatmap.png" alt="Activity heatmap" loading="lazy" /></div>
+      </div>
+      <div class="screen-item">
+        <div class="screen-label">The Leaderboard</div>
+        <div class="phone-frame"><img src="screenshots/leaderboard.png" alt="Leaderboard and WEEBJI+" loading="lazy" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="screens-hint reveal">← swipe →</div>
+</section>
+
+<hr class="divider" />
+
+<!-- INSTALL -->
+<section>
+  <div class="wrap">
+    <div class="section-eyebrow reveal">Get the App</div>
+    <h2 class="section-title reveal">Install in 30 Seconds.</h2>
+    <div class="install-grid">
+      <div class="install-card reveal reveal-delay-1">
+        <div class="install-platform">🤖 Android</div>
+        <div class="install-title">Download APK</div>
+        <ul class="install-steps">
+          <li>Tap the button below</li>
+          <li>Install the APK file</li>
+          <li>Launch WEEBJI OS like any app</li>
+        </ul>
+        <a href="https://github.com/SKRYRSH/Weebji-os/releases/download/v1.0.0/WEEBJI-OS.apk" class="install-btn" id="apk-link">Download APK →</a>
+      </div>
+      <div class="install-card reveal reveal-delay-2">
+        <div class="install-platform">🍎 iPhone / iPad</div>
+        <div class="install-title">Add to Home Screen</div>
+        <ul class="install-steps">
+          <li>Open app link in Safari</li>
+          <li>Tap the Share icon at the bottom</li>
+          <li>Tap "Add to Home Screen"</li>
+          <li>Tap Add — done</li>
+        </ul>
+        <a href="https://skryrsh.github.io/Weebji-os/" class="install-btn">Open in Safari →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- FEATURES -->
+<section>
+  <div class="wrap">
+    <div class="section-eyebrow reveal">What's Inside</div>
+    <h2 class="section-title reveal">Built Different.</h2>
+    <div class="features-grid">
+      <div class="feat-card reveal reveal-delay-1">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">XP & Leveling</div>
+        <p class="feat-desc">Every action earns XP. Critical drops. Level up cinematics. Your stats actually move.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2">
+        <span class="feat-icon">👻</span>
+        <div class="feat-title">Ghost Tokens</div>
+        <p class="feat-desc">Miss a day? Spend a Ghost Token to protect your streak. Use them wisely — they're scarce.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-1">
+        <span class="feat-icon">🛡</span>
+        <div class="feat-title">HP System</div>
+        <p class="feat-desc">Your health depletes when you skip. Go critical and the System degrades around you.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2">
+        <span class="feat-icon">⚔</span>
+        <div class="feat-title">Shadow Rival</div>
+        <p class="feat-desc">Your enemy is you — from 7 days ago. Stay ahead or watch your past self pull ahead.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-1">
+        <span class="feat-icon">🏰</span>
+        <div class="feat-title">Guilds</div>
+        <p class="feat-desc">Join a faction. Train with others. Real-time leaderboard shows who's actually putting in work.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2">
+        <span class="feat-icon">🤝</span>
+        <div class="feat-title">Squad System</div>
+        <p class="feat-desc">Add hunters by their # and track their streaks, levels, and titles in real time. Accountability at its darkest.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-1">
+        <span class="feat-icon">🎯</span>
+        <div class="feat-title">Daily Challenges</div>
+        <p class="feat-desc">Class-specific missions every day. XP reward on completion. No two days are the same fight.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2">
+        <span class="feat-icon">◆</span>
+        <div class="feat-title">Share Cards</div>
+        <p class="feat-desc">Cinematic arc cards you'll actually want to post. Show the world what level you're on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- WEEBJI+ SHOWCASE -->
+<section>
+  <div class="wrap">
+    <div class="section-eyebrow reveal">WEEBJI+</div>
+    <h2 class="section-title reveal">For Hunters Who Want Everything.</h2>
+    <p style="font-family:'Inter',sans-serif;font-size:15px;color:rgba(255,255,255,0.4);text-align:center;max-width:480px;margin:0 auto 48px;line-height:1.7;" class="reveal">The free tier is real. But WEEBJI+ is where the System shows its true face.</p>
+    <div class="features-grid features-grid--2col">
+      <div class="feat-card reveal reveal-delay-1" style="border-color:rgba(139,0,255,0.3);background:rgba(139,0,255,0.04);">
+        <span class="feat-icon">⚔</span>
+        <div class="feat-title" style="color:#CC44FF;">Weekly Dungeon</div>
+        <p class="feat-desc">A new boss every Monday. Three gates to unlock. One final confrontation on Sunday. Defeat it to earn an exclusive title no one else can get that week. Free users watch from outside.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2" style="border-color:rgba(255,60,60,0.3);background:rgba(255,60,60,0.04);">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title" style="color:#FF6666;">Friend Battles</div>
+        <p class="feat-desc">Challenge a squad member to a 7-day XP war. Whoever earns the most XP wins +200 XP and the "Defeated Their Shadow" title. Head-to-head. No mercy.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-1" style="border-color:rgba(0,245,255,0.2);background:rgba(0,245,255,0.03);">
+        <span class="feat-icon">🗣</span>
+        <div class="feat-title" style="color:#00F5FF;">System Voice</div>
+        <p class="feat-desc">The AI narrator speaks to you by name. References your class, streak, and sworn enemy. Not generic. Feels like the System actually knows you — because it does.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2" style="border-color:rgba(255,215,0,0.2);background:rgba(255,215,0,0.03);">
+        <span class="feat-icon">📊</span>
+        <div class="feat-title" style="color:#FFD700;">Deep Analytics</div>
+        <p class="feat-desc">90-day streak heatmap. HP history. XP arc over time. See exactly when you peaked, when you fell, and where you need to grind harder.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:40px;" class="reveal">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;color:rgba(255,255,255,0.3);margin-bottom:10px;">WEEBJI+ — $4.99/month · $29.99/year</div>
+      <div style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.18);">Unlock inside the app · cancel anytime</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- BOTTOM CTA -->
+<div class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="wrap" style="position:relative">
+    <div class="counter-wrap reveal">
+      <div class="counter-item">
+        <span class="counter-num">Live</span>
+        <span class="counter-lbl">System Active</span>
+      </div>
+      <div class="counter-item">
+        <span class="counter-num">10</span>
+        <span class="counter-lbl">Dungeon Bosses</span>
+      </div>
+      <div class="counter-item">
+        <span class="counter-num">∞</span>
+        <span class="counter-lbl">Excuses Eliminated</span>
+      </div>
+    </div>
+
+    <h2 class="cta-title reveal">Your Awakening<br>Starts Now.</h2>
+    <p class="cta-sub reveal">Dungeon bosses. Friend battles. System Voice. A leaderboard that actually means something. The System is live.</p>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;max-width:420px;margin:0 auto" class="reveal">
+      <a href="https://github.com/SKRYRSH/Weebji-os/releases/download/v1.0.0/WEEBJI-OS.apk" class="hero-open-btn" style="display:block;width:100%;background:var(--monarch);color:#000;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;padding:16px 24px;border-radius:14px;text-align:center;transition:all 0.2s;box-shadow:0 0 40px rgba(0,245,255,0.25);">↓ &nbsp; Download APK — Android</a>
+      <a href="https://skryrsh.github.io/Weebji-os/" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;color:rgba(255,255,255,0.3);text-transform:uppercase;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.6)'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">or open in browser →</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">WEEBJI OS</div>
+  <div class="footer-links">
+    <a href="mailto:weebjiglobal@gmail.com">Contact</a>
+    <a href="https://skryrsh.github.io/Weebji-os/legal/privacy.html">Privacy Policy</a>
+    <a href="https://skryrsh.github.io/Weebji-os/legal/terms.html">Terms</a>
+    <a href="https://skryrsh.github.io/Weebji-os/legal/refund.html">Refunds</a>
+  </div>
+</footer>
+
+<script>
+  /* ── STARFIELD ── */
+  const canvas = document.getElementById('star-canvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resizeCanvas() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function initStars() {
+    stars = [];
+    const count = Math.floor((canvas.width * canvas.height) / 6000);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2,
+        a: Math.random(),
+        speed: 0.0003 + Math.random() * 0.0005,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function drawStars(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      const alpha = s.a * (0.4 + 0.6 * Math.sin(t * s.speed * 1000 + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
+
+  const isMobile = window.innerWidth < 600;
+  if (!isMobile) {
+    resizeCanvas(); initStars(); requestAnimationFrame(drawStars);
+    window.addEventListener('resize', () => { resizeCanvas(); initStars(); });
+  } else {
+    canvas.style.display = 'none';
+  }
+
+  /* ── CLASS PILLS ── */
+  let selectedClass = '';
+  document.querySelectorAll('.class-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.class-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      selectedClass = pill.dataset.class;
+    });
+  });
+
+
+  /* ── DRAG TO SCROLL (desktop) ── */
+  const track = document.querySelector('.screens-track-wrap');
+  let isDragging = false, startX, scrollLeft;
+  track.addEventListener('mousedown', e => { isDragging = true; startX = e.pageX - track.offsetLeft; scrollLeft = track.scrollLeft; });
+  track.addEventListener('mouseleave', () => isDragging = false);
+  track.addEventListener('mouseup', () => isDragging = false);
+  track.addEventListener('mousemove', e => { if (!isDragging) return; e.preventDefault(); track.scrollLeft = scrollLeft - (e.pageX - track.offsetLeft - startX); });
+
+  /* ── SCROLL REVEAL ── */
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  revealEls.forEach(el => observer.observe(el));
+
+  /* ── PLAY STORE CHECKOUT REDIRECT ── */
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    if (!checkout) return;
+    // Clean URL so refresh doesn't re-show overlay
+    window.history.replaceState({}, '', window.location.pathname);
+
+    const PLAN_LABELS = {
+      plus:        { name: 'WEEBJI+ Monthly', price: '₹499 / month', color: '#00F5FF' },
+      plus_annual: { name: 'WEEBJI+ Annual',  price: '₹2,999 / year (~₹250/mo)', color: '#FFD700' },
+      ghost_token: { name: 'Ghost Token',      price: '₹99 one-time', color: '#A78BFA' },
+    };
+    const plan = PLAN_LABELS[checkout] || PLAN_LABELS['plus'];
+
+    // Inject overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(7,9,15,0.97);display:flex;align-items:center;justify-content:center;padding:24px;';
+    overlay.innerHTML = `
+      <div style="max-width:420px;width:100%;background:#0D0D22;border:1px solid rgba(0,245,255,0.2);border-radius:20px;padding:40px 32px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;">
+        <p style="margin:0 0 6px;font-size:9px;letter-spacing:5px;color:#00F5FF;font-family:'Courier New',monospace;">◈ SYSTEM CHECKOUT ◈</p>
+        <h2 style="margin:0 0 8px;font-size:22px;font-weight:900;color:#fff;letter-spacing:2px;">${plan.name}</h2>
+        <p style="margin:0 0 28px;font-size:15px;font-weight:700;color:${plan.color};">${plan.price}</p>
+        <p style="margin:0 0 24px;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.7;">Google Play doesn't allow in-app payments for web apps.<br>Open WEEBJI OS in your browser to subscribe — it only takes 30 seconds.</p>
+        <a href="https://skryrsh.github.io/Weebji-os/" target="_blank" style="display:block;background:${plan.color};color:#000;font-weight:800;font-size:11px;letter-spacing:3px;text-decoration:none;padding:15px 24px;border-radius:10px;margin-bottom:14px;text-transform:uppercase;">Open WEEBJI OS in Browser →</a>
+        <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.25);line-height:1.6;">After subscribing, return to the app and refresh your profile.<br>Your WEEBJI+ will sync automatically.</p>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  })();
+</script>
+</body>
+</html>

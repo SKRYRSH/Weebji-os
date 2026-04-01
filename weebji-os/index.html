@@ -2406,6 +2406,69 @@
     }
   }
 
+  function renderWeeklyReport(p, color) {
+    const el = document.getElementById('profile-analytics');
+    if (!el) return;
+    const hexC = color || '#00F5FF';
+
+    // Compute this week's stats (last 7 days)
+    const monarchSet = new Set(p.monarchGrid || []);
+    const mmSet      = new Set(p.mmGrid      || []);
+    const monkSet    = new Set(p.monkGrid    || []);
+    let weekDays = 0, weekStudy = 0, weekWorkouts = 0, weekRituals = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toDateString();
+      if (monarchSet.has(ds)) weekWorkouts++;
+      if (mmSet.has(ds))      { weekDays++; weekStudy += (p.mmDaily?.[ds] || 0); }
+      if (monkSet.has(ds))    weekRituals++;
+    }
+    // Days any training happened
+    const anyDays = Array.from({length:7},(_,i)=>{ const d=new Date();d.setDate(d.getDate()-i);return d.toDateString();})
+      .filter(ds => monarchSet.has(ds)||mmSet.has(ds)||monkSet.has(ds)).length;
+
+    const plus = isWeebjiPlus();
+    const blur = plus ? '' : 'filter:blur(5px);user-select:none;pointer-events:none';
+
+    const card = document.createElement('div');
+    card.innerHTML = `
+      <div class="analytics-card" style="border-color:${hexRgba(hexC,0.14)};position:relative;overflow:hidden">
+        <div class="analytics-header" style="color:${hexRgba(hexC,0.55)}">◆ WEEKLY ARC REPORT <span class="analytics-plus-tag">WEEBJI+</span></div>
+        ${!plus ? `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;gap:10px;background:rgba(7,9,15,0.55);backdrop-filter:blur(2px)">
+          <div style="color:${hexC};font-family:Cinzel,serif;font-size:13px;letter-spacing:2px;">UNLOCK FULL REPORT</div>
+          <div style="color:rgba(255,255,255,0.45);font-size:12px;font-family:Inter,sans-serif;text-align:center;max-width:220px">7-day breakdown of every session, streak data, and progress vs last week</div>
+          <button onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)" style="background:${hexRgba(hexC,0.12)};border:1px solid ${hexRgba(hexC,0.35)};color:${hexC};font-family:Cinzel,serif;font-size:11px;letter-spacing:1.5px;padding:8px 18px;border-radius:8px;cursor:pointer">UPGRADE TO WEEBJI+</button>
+        </div>` : ''}
+        <div style="${blur}">
+          <div class="analytics-totals" style="margin-top:12px">
+            <div class="analytics-stat"><span style="color:${hexC}">${anyDays}/7</span><div class="analytics-stat-lbl">Days Active</div></div>
+            <div class="analytics-stat"><span style="color:${hexC}">${weekWorkouts}</span><div class="analytics-stat-lbl">Workouts</div></div>
+            <div class="analytics-stat"><span style="color:${hexC}">${Math.floor(weekStudy/60)}h ${weekStudy%60}m</span><div class="analytics-stat-lbl">Focused</div></div>
+            <div class="analytics-stat"><span style="color:${hexC}">${weekRituals}</span><div class="analytics-stat-lbl">Rituals</div></div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:6px">
+            ${Array.from({length:7},(_,i)=>{
+              const d=new Date();d.setDate(d.getDate()-(6-i));
+              const ds=d.toDateString();
+              const active=monarchSet.has(ds)||mmSet.has(ds)||monkSet.has(ds);
+              const lbl=d.toLocaleDateString('en',{weekday:'short'}).charAt(0);
+              return `<div style="flex:1;text-align:center">
+                <div style="height:28px;border-radius:4px;background:${active?hexRgba(hexC,0.45):'rgba(255,255,255,0.05)'}"></div>
+                <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;font-family:Inter,sans-serif">${lbl}</div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="margin-top:12px;font-size:11px;font-family:Inter,sans-serif;color:rgba(255,255,255,0.3);text-align:center">
+            ${anyDays >= 5 ? '◈ Exceptional week. The System acknowledges your consistency.' :
+              anyDays >= 3 ? '◈ Solid progress. Push for 5+ days next week.' :
+              anyDays >= 1 ? '◈ Weak week. The System expects more.' :
+              '◈ No activity logged. The System is watching.'}
+          </div>
+        </div>
+      </div>`;
+    el.prepend(card);
+  }
+
   function renderDeepAnalytics(p, color) {
     const el = document.getElementById('profile-analytics');
     if (!el) return;
@@ -6801,6 +6864,8 @@
     if (typeof SupabaseSync !== 'undefined') SupabaseSync.renderAuthSection();
     // WEEBJI+ upgrade / active section (shown after user has seen the product)
     renderWeebjiPlusSection(color);
+    // Weekly report (teased for free, full for WEEBJI+)
+    renderWeeklyReport(p, color);
     // Deep analytics (WEEBJI+ gated)
     renderDeepAnalytics(p, color);
     // Global leaderboard

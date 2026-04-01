@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     const vapidPublicKey  = Deno.env.get('VAPID_PUBLIC_KEY')!;
     const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY')!;
 
-    webpush.setVapidDetails('mailto:support@weebji.com', vapidPublicKey, vapidPrivateKey);
+    webpush.setVapidDetails('mailto:weebjiglobal@gmail.com', vapidPublicKey, vapidPrivateKey);
 
     const templateFn = NOTIF[type];
     const { title, body } = templateFn ? templateFn(extras) : { title: 'WEEBJI OS', body: 'The System is watching.' };

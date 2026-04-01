@@ -41,7 +41,7 @@ function buildPurchaseEmail(email: string, planLabel: string): string {
     </td></tr>
     <tr><td style="background:linear-gradient(90deg,transparent,rgba(0,245,255,0.2),transparent);height:1px;"></td></tr>
     <tr><td style="background:#0D0D22;border:1px solid rgba(0,245,255,0.12);border-top:none;border-radius:0 0 16px 16px;padding:32px 40px;text-align:center;">
-      <a href="https://weebji.com" style="display:inline-block;background:${accentClr};color:#000;font-weight:800;font-size:11px;letter-spacing:3px;text-decoration:none;padding:14px 40px;border-radius:8px;text-transform:uppercase;">OPEN WEEBJI OS</a>
+      <a href="https://skryrsh.github.io/Weebji-os/" style="display:inline-block;background:${accentClr};color:#000;font-weight:800;font-size:11px;letter-spacing:3px;text-decoration:none;padding:14px 40px;border-radius:8px;text-transform:uppercase;">OPEN WEEBJI OS</a>
       <p style="margin:24px 0 0;font-size:9px;color:rgba(255,255,255,0.18);letter-spacing:2px;">© WEEBJI OS · The System is always watching</p>
     </td></tr>
   </table>

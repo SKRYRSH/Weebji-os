@@ -1,30 +1,11 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function isoInDays(days: number): string {
-  return new Date(Date.now() + days * 86_400_000).toISOString().replace(/\.\d{3}Z$/, '+00:00');
-}
-
-async function sendEmail(apiKey: string, to: string, name: string, subject: string, html: string, scheduledAt?: string) {
-  const body: Record<string, unknown> = {
-    sender:      { name: 'WEEBJI OS', email: 'weebjiglobal@gmail.com' },
-    to:          [{ email: to, name }],
-    subject,
-    htmlContent: html,
-  };
-  if (scheduledAt) body.scheduledAt = scheduledAt;
-  await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  }).catch(() => {});
-}
-
-// ── Email templates ───────────────────────────────────────────────────────────
+// ── Shared helpers ────────────────────────────────────────────────────────────
 
 const CLASS_CFG: Record<string, { color: string; label: string; trait: string }> = {
   monarch:    { color: '#00F5FF', label: 'MONARCH',    trait: 'Physical dominance. Raw output. No excuses.' },
@@ -64,32 +45,8 @@ function bullet(glyph: string, text: string, color: string): string {
   return `<p style="margin:0 0 9px;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;"><span style="color:${color};margin-right:8px;">${glyph}</span>${text}</p>`;
 }
 
-// Email 1 — Welcome (immediate)
-function emailWelcome(name: string, cls: string): { subject: string; html: string } {
-  const c = CLASS_CFG[cls] || CLASS_CFG['monarch'];
-  const body = `
-    <p style="margin:0 0 5px;font-size:9px;letter-spacing:3px;color:rgba(255,255,255,0.3);font-family:'Courier New',monospace;">NEW HUNTER REGISTERED</p>
-    <h2 style="margin:0 0 20px;font-size:21px;font-weight:800;color:#fff;">Welcome, ${name}.</h2>
-    <p style="margin:0 0 16px;font-size:14px;color:rgba(255,255,255,0.65);line-height:1.8;">The System has accepted your registration. Your class has been assigned. Your protocol begins now.</p>
-    <table cellpadding="0" cellspacing="0" width="100%" style="margin:20px 0;"><tr><td style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.07);border-left:3px solid ${c.color};border-radius:0 8px 8px 0;padding:14px 18px;">
-      <p style="margin:0 0 3px;font-size:9px;letter-spacing:3px;color:rgba(255,255,255,0.3);font-family:'Courier New',monospace;">CLASS ASSIGNED</p>
-      <p style="margin:0 0 5px;font-size:16px;font-weight:700;color:${c.color};letter-spacing:2px;font-family:'Courier New',monospace;">${c.label}</p>
-      <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">${c.trait}</p>
-    </td></tr></table>
-    <div style="border-top:1px solid rgba(255,255,255,0.06);margin:24px 0;"></div>
-    <p style="margin:0 0 12px;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;font-family:'Courier New',monospace;">The System has prepared</p>
-    ${bullet('◆', 'Daily training protocol — workouts, focus sessions, rituals', c.color)}
-    ${bullet('◆', 'Dungeon Gates — 10 boss challenges unlocked by consistent training', c.color)}
-    ${bullet('◆', 'Global leaderboard — compete against every registered hunter', c.color)}
-    ${bullet('◆', 'Arc share card — document and share your evolution', c.color)}
-    ${quote('The System does not care about your past. Only what you do next. Begin.', c.color)}`;
-  return {
-    subject: '◈ Hunter Registration Confirmed — Your Arc Begins',
-    html: frame('HUNTER REGISTRATION CONFIRMED', c.color, body, 'Begin Your Arc →', c.color),
-  };
-}
+// ── Email templates ───────────────────────────────────────────────────────────
 
-// Email 2 — Day 2 check-in
 function emailDay2(name: string, cls: string): { subject: string; html: string } {
   const c = CLASS_CFG[cls] || CLASS_CFG['monarch'];
   const body = `
@@ -109,7 +66,6 @@ function emailDay2(name: string, cls: string): { subject: string; html: string }
   };
 }
 
-// Email 3 — Day 7 first week
 function emailDay7(name: string, cls: string): { subject: string; html: string } {
   const c = CLASS_CFG[cls] || CLASS_CFG['monarch'];
   const body = `
@@ -128,7 +84,6 @@ function emailDay7(name: string, cls: string): { subject: string; html: string }
   };
 }
 
-// Email 4 — Day 21 re-engagement
 function emailDay21(name: string, cls: string): { subject: string; html: string } {
   const c = CLASS_CFG[cls] || CLASS_CFG['monarch'];
   const body = `
@@ -147,41 +102,77 @@ function emailDay21(name: string, cls: string): { subject: string; html: string 
 
 // ── Edge Function ─────────────────────────────────────────────────────────────
 
+const DAY_OFFSETS: Record<string, number> = { day2: 2, day7: 7, day21: 21 };
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
+  // Cron-only — no user JWT needed
+  if (req.headers.get('x-weebji-cron') !== 'true') {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   try {
-    const { email, hunter_name, class: hunterClass, signup_date } = await req.json();
-    if (!email) return new Response('Missing email', { status: 400 });
+    const { type } = await req.json();
+    const days = DAY_OFFSETS[type as string];
+    if (!days) return new Response('Invalid type. Use day2, day7, or day21', { status: 400 });
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+
+    // Target date = exactly N days ago (UTC)
+    const target = new Date();
+    target.setUTCDate(target.getUTCDate() - days);
+    const dateStr = target.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+
+    // Query users who signed up on target date
+    const { data: users, error } = await supabase
+      .from('progress')
+      .select('user_id, hunter_name, class')
+      .gte('created_at', `${dateStr}T00:00:00Z`)
+      .lt('created_at',  `${dateStr}T23:59:59Z`);
+
+    if (error) throw new Error(error.message);
+    if (!users || users.length === 0) {
+      return new Response(JSON.stringify({ ok: true, sent: 0 }), {
+        headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
 
     const apiKey = Deno.env.get('BREVO_API_KEY')!;
-    const name   = hunter_name || 'Hunter';
-    const cls    = hunterClass || 'monarch';
+    let sent = 0;
 
-    // 1. Add / update contact in Brevo list
-    const contactRes = await fetch('https://api.brevo.com/v3/contacts', {
-      method: 'POST',
-      headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        attributes: { FIRSTNAME: name, CLASS: cls, SIGNUP_DATE: signup_date || new Date().toISOString() },
-        listIds: [3],
-        updateEnabled: true,
-      }),
-    });
+    for (const row of users) {
+      // Get email from auth.users
+      const { data: authUser } = await supabase.auth.admin.getUserById(row.user_id);
+      const email = authUser?.user?.email;
+      if (!email) continue;
 
-    if (!contactRes.ok && contactRes.status !== 204) {
-      const err = await contactRes.text();
-      throw new Error(`Brevo contact error: ${err}`);
+      const name = row.hunter_name || 'Hunter';
+      const cls  = row.class || 'monarch';
+
+      let payload: { subject: string; html: string };
+      if (type === 'day2')  payload = emailDay2(name, cls);
+      else if (type === 'day7')  payload = emailDay7(name, cls);
+      else payload = emailDay21(name, cls);
+
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender:      { name: 'WEEBJI OS', email: 'weebjiglobal@gmail.com' },
+          to:          [{ email, name }],
+          subject:     payload.subject,
+          htmlContent: payload.html,
+        }),
+      });
+
+      if (res.ok) sent++;
     }
 
-    // 2. On first signup: send welcome only — drip (day 2/7/21) handled by brevo-sequence cron
-    if (contactRes.status === 201) {
-      const w = emailWelcome(name, cls);
-      await sendEmail(apiKey, email, name, w.subject, w.html);
-    }
-
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(JSON.stringify({ ok: true, sent, type, date: dateStr }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
 

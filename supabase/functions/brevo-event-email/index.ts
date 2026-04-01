@@ -38,7 +38,7 @@ function shell(headline: string, sub: string, body: string, ctaText: string, cta
 
     <!-- CTA FOOTER -->
     <tr><td style="background:#0D0D22;border:1px solid rgba(0,245,255,0.12);border-top:none;border-radius:0 0 16px 16px;padding:32px 40px;text-align:center;">
-      <a href="https://weebji.com" style="display:inline-block;background:${ctaColor};color:#000000;font-weight:800;font-size:11px;letter-spacing:3px;text-decoration:none;padding:14px 40px;border-radius:8px;text-transform:uppercase;">${ctaText}</a>
+      <a href="https://skryrsh.github.io/Weebji-os/" style="display:inline-block;background:${ctaColor};color:#000000;font-weight:800;font-size:11px;letter-spacing:3px;text-decoration:none;padding:14px 40px;border-radius:8px;text-transform:uppercase;">${ctaText}</a>
       <p style="margin:24px 0 0;font-size:9px;color:rgba(255,255,255,0.18);letter-spacing:2px;text-transform:uppercase;">© WEEBJI OS &nbsp;·&nbsp; The System is always watching</p>
     </td></tr>
 

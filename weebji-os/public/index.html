@@ -1611,8 +1611,6 @@
           </div>
           <button class="ritual-clock-save" id="ritual-clock-save-btn">Set Power Window</button>
         </div>
-        <!-- Workout Mode toggle (all classes) -->
-        <div id="profile-workout-mode"></div>
         <!-- Custom Workouts (Forge access only) -->
         <div id="profile-custom-workouts"></div>
         <!-- Phase 5: System Voice toggle -->
@@ -4496,6 +4494,54 @@
     });
   }
 
+  /* ── Shared workout forge render (Monarch + unlocked Monk/Mastermind) ── */
+  function _renderForgeWorkout(p, cls, accentColor) {
+    const forgeCard = document.getElementById('forge-card');
+    const titleEl   = document.getElementById('forge-title');
+    const subEl     = document.getElementById('forge-sub');
+    const bonusEl   = document.getElementById('forge-bonus');
+    const type      = todayWorkoutType();
+
+    if (type === 'REST') {
+      forgeCard.classList.add('dash-card--rest');
+      titleEl.textContent = 'REST DAY';
+      titleEl.style.color = '#8888AA'; titleEl.style.textShadow = '0 0 8px rgba(136,136,170,0.3)';
+      subEl.textContent = ''; bonusEl.classList.add('hidden');
+      renderRestContent(p);
+      return;
+    }
+
+    const workoutMode    = localStorage.getItem('weebji_workout_mode') || 'home';
+    const workoutStarted = p.workoutChecked && p.workoutChecked.length > 0;
+    forgeCard.classList.add('dash-card--cyan');
+    forgeCard.style.borderColor = hexRgba(accentColor, 0.25);
+    forgeCard.style.boxShadow   = `0 0 14px ${hexRgba(accentColor, 0.08)}`;
+    titleEl.textContent = 'THE FORGE'; titleEl.style.color = accentColor;
+    titleEl.style.textShadow = `0 0 14px ${hexRgba(accentColor, 0.6)}`;
+    subEl.textContent = `${type} DAY`;
+    bonusEl.classList.toggle('hidden', !p.workoutBonus);
+
+    const modeWrap = document.getElementById('forge-mode-wrap');
+    if (modeWrap) {
+      modeWrap.innerHTML = `<div class="forge-mode-toggle">
+        <button class="forge-mode-btn${workoutMode==='home'?' active':''}${workoutStarted?' disabled':''}" id="forge-mode-home">🏠 Home</button>
+        <button class="forge-mode-btn${workoutMode==='gym'?' active':''}${workoutStarted?' disabled':''}" id="forge-mode-gym">🏋️ Gym</button>
+      </div>${workoutStarted ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;letter-spacing:0.2em;color:#333355;text-align:center;margin-top:4px;text-transform:uppercase;">Mode locked — workout in progress</div>' : ''}`;
+      if (!workoutStarted) {
+        document.getElementById('forge-mode-home').addEventListener('click', () => {
+          localStorage.setItem('weebji_workout_mode', 'home');
+          renderForgeArea(p, cls);
+        });
+        document.getElementById('forge-mode-gym').addEventListener('click', () => {
+          localStorage.setItem('weebji_workout_mode', 'gym');
+          renderForgeArea(p, cls);
+        });
+      }
+    }
+    const workoutData = workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type];
+    renderExercises(p, workoutData);
+  }
+
   /* ── Forge area (class-aware) ───────────── */
   function renderForgeArea(p, cls) {
     const forgeCard = document.getElementById('forge-card');
@@ -4510,61 +4556,39 @@
     const _mw = document.getElementById('forge-mode-wrap'); if (_mw) _mw.innerHTML = '';
 
     if (cls === 'mastermind') {
-      forgeCard.style.borderColor = hexRgba('#FF2233', 0.25);
-      forgeCard.style.boxShadow   = `0 0 14px ${hexRgba('#FF2233', 0.08)}`;
-      titleEl.textContent = 'THE WHITE ROOM';
-      titleEl.style.color = '#FF2233'; titleEl.style.textShadow = `0 0 14px rgba(255,34,51,0.6)`;
-      subEl.textContent = 'FOCUS ENGINE';
-      bonusEl.classList.add('hidden');
-      renderMastermindUI(p);
+      if (p.level >= 7) {
+        // Forge unlocked — show workout section with toggle
+        _renderForgeWorkout(p, cls, '#FF2233');
+      } else {
+        forgeCard.style.borderColor = hexRgba('#FF2233', 0.25);
+        forgeCard.style.boxShadow   = `0 0 14px ${hexRgba('#FF2233', 0.08)}`;
+        titleEl.textContent = 'THE WHITE ROOM';
+        titleEl.style.color = '#FF2233'; titleEl.style.textShadow = `0 0 14px rgba(255,34,51,0.6)`;
+        subEl.textContent = 'FOCUS ENGINE';
+        bonusEl.classList.add('hidden');
+        renderMastermindUI(p);
+      }
       return;
     }
 
     if (cls === 'monk') {
-      forgeCard.style.borderColor = hexRgba('#A8D8A8', 0.22);
-      forgeCard.style.boxShadow   = `0 0 14px ${hexRgba('#A8D8A8', 0.07)}`;
-      titleEl.textContent = 'THE SANCTUARY';
-      titleEl.style.color = '#A8D8A8'; titleEl.style.textShadow = `0 0 14px rgba(168,216,168,0.5)`;
-      subEl.textContent = `${p.monkChecked.length}/${MONK_RITUALS.length} TODAY`;
-      bonusEl.classList.add('hidden');
-      renderMonkUI(p);
+      if (p.level >= 3) {
+        // Forge unlocked — show workout section with toggle
+        _renderForgeWorkout(p, cls, '#A8D8A8');
+      } else {
+        forgeCard.style.borderColor = hexRgba('#A8D8A8', 0.22);
+        forgeCard.style.boxShadow   = `0 0 14px ${hexRgba('#A8D8A8', 0.07)}`;
+        titleEl.textContent = 'THE SANCTUARY';
+        titleEl.style.color = '#A8D8A8'; titleEl.style.textShadow = `0 0 14px rgba(168,216,168,0.5)`;
+        subEl.textContent = `${p.monkChecked.length}/${MONK_RITUALS.length} TODAY`;
+        bonusEl.classList.add('hidden');
+        renderMonkUI(p);
+      }
       return;
     }
 
-    // Monarch — render by today's schedule
-    const type = todayWorkoutType();
-    if (type === 'REST') {
-      forgeCard.classList.add('dash-card--rest');
-      titleEl.textContent = 'REST DAY';
-      titleEl.style.color = '#8888AA'; titleEl.style.textShadow = '0 0 8px rgba(136,136,170,0.3)';
-      subEl.textContent = ''; bonusEl.classList.add('hidden');
-      renderRestContent(p);
-    } else {
-      forgeCard.classList.add('dash-card--cyan');
-      const workoutMode = localStorage.getItem('weebji_workout_mode') || 'home';
-      titleEl.textContent = 'THE FORGE'; subEl.textContent = `${type} DAY`;
-      bonusEl.classList.toggle('hidden', !p.workoutBonus);
-      const modeWrap = document.getElementById('forge-mode-wrap');
-      if (modeWrap) {
-        const workoutStarted = p.workoutChecked && p.workoutChecked.length > 0;
-        modeWrap.innerHTML = `<div class="forge-mode-toggle">
-          <button class="forge-mode-btn${workoutMode==='home'?' active':''}${workoutStarted?' disabled':''}" id="forge-mode-home">🏠 Home</button>
-          <button class="forge-mode-btn${workoutMode==='gym'?' active':''}${workoutStarted?' disabled':''}" id="forge-mode-gym">🏋️ Gym</button>
-        </div>${workoutStarted ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;letter-spacing:0.2em;color:#333355;text-align:center;margin-top:4px;text-transform:uppercase;">Mode locked — workout in progress</div>' : ''}`;
-        if (!workoutStarted) {
-          document.getElementById('forge-mode-home').addEventListener('click', () => {
-            localStorage.setItem('weebji_workout_mode', 'home');
-            renderForgeArea(p, cls);
-          });
-          document.getElementById('forge-mode-gym').addEventListener('click', () => {
-            localStorage.setItem('weebji_workout_mode', 'gym');
-            renderForgeArea(p, cls);
-          });
-        }
-      }
-      const workoutData = workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type];
-      renderExercises(p, workoutData);
-    }
+    // Monarch — render workout forge
+    _renderForgeWorkout(p, cls, '#00F5FF');
     // Monarch: calendar + PR board appended after exercise list
     requestAnimationFrame(() => {
       const listEl = document.getElementById('exercise-list');
@@ -6874,8 +6898,6 @@
       }
     }
 
-    // Workout mode toggle (all classes — needed for dungeon gate checks)
-    renderWorkoutModeToggle(color);
     // Custom workouts (Forge users only)
     renderCustomWorkouts(cls, color, p);
 

@@ -700,6 +700,9 @@
   .dungeon-card__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(139,0,255,0.6); text-transform:uppercase; margin-bottom:6px; }
   .dungeon-card__boss { font-family:'Cinzel',serif; font-size:18px; font-weight:900; letter-spacing:0.1em; color:#fff; text-shadow:0 0 20px rgba(139,0,255,0.7), 0 0 40px rgba(139,0,255,0.3); margin-bottom:4px; }
   .dungeon-card__quote { font-family:'Inter',sans-serif; font-size:11px; font-style:italic; color:rgba(255,255,255,0.3); margin-bottom:16px; line-height:1.5; }
+  .dungeon-boss-img { width:100%; height:220px; border-radius:14px; overflow:hidden; margin:12px 0 18px; position:relative; }
+  .dungeon-boss-img img { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; }
+  .dungeon-boss-img::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent,#07090F); pointer-events:none; }
   .dungeon-boss-hp { margin-bottom:18px; }
   .dungeon-boss-hp__label { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.25em; color:rgba(139,0,255,0.5); text-transform:uppercase; margin-bottom:5px; display:flex; justify-content:space-between; }
   .dungeon-boss-hp__track { width:100%; height:6px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; }
@@ -2695,113 +2698,123 @@
   const DUNGEONS = [
     {
       boss:'THE IRON WARDEN', quote:'"Order. Discipline. Collapse."',
+      img:'bosses/iron-warden.jpg',
       gates:[
-        { day:'Monday',   task:'Complete your full workout — zero exercises skipped.',        check: p => (p.workoutChecked||[]).length >= 3 || p.workoutDone },
-        { day:'Wednesday',task:'Log a single unbroken 45-minute focus session.',              check: p => Object.values(p.mmDaily||{}).some(v=>v>=45) },
-        { day:'Friday',   task:'Complete all 3 daily quests and the daily challenge.',        check: p => (p.questsChecked||[]).length >= 3 && !!p.dailyChallengeDone },
+        { day:'Monday',   task:'Complete your full workout — every exercise, zero skipped.',  check: p => (p.workoutChecked||[]).length >= 4 || p.workoutDone },
+        { day:'Wednesday',task:'Log a single unbroken 60-minute focus session.',              check: p => Object.values(p.mmDaily||{}).some(v=>v>=60) },
+        { day:'Friday',   task:'Complete all 3 daily quests + daily challenge + workout.',    check: p => (p.questsChecked||[]).length >= 3 && !!p.dailyChallengeDone && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
       ],
-      boss_task:'Complete a full workout AND a 60-min focus session in the same day.',
-      boss_check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && Object.values(p.mmDaily||{}).some(v=>v>=60),
-      xp:500, title:'⚔ Iron Warden Slayer', glyph:'🔱',
+      boss_task:'Full workout + 90-min focus session + active streak of 5+. The Warden accepts nothing less.',
+      boss_check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=5,
+      xp:600, title:'⚔ Iron Warden Slayer', glyph:'🔱',
     },
     {
       boss:'THE VOID ARCHITECT', quote:'"You cannot build what you fear to imagine."',
+      img:'bosses/void-architect.jpg',
       gates:[
         { day:'Monday',   task:'Complete all 3 daily quests without skipping a single one.',  check: p => (p.questsChecked||[]).length >= 3 },
-        { day:'Wednesday',task:'Achieve a 7-day active streak — no breaks.',                  check: p => (p.streak||0) >= 7 },
-        { day:'Friday',   task:'Complete your workout + daily challenge today.',              check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && !!p.dailyChallengeDone },
+        { day:'Wednesday',task:'Achieve a 10-day active streak — no breaks.',                 check: p => (p.streak||0) >= 10 },
+        { day:'Friday',   task:'Full workout + daily challenge + 45-min focus today.',        check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=45) },
       ],
-      boss_task:'Perfect day — full workout, all 3 quests, daily challenge. No excuses.',
-      boss_check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && (p.questsChecked||[]).length >= 3 && !!p.dailyChallengeDone,
-      xp:500, title:'◆ Void Architect\'s Pupil', glyph:'🌀',
+      boss_task:'Perfect day AND active streak of 10+. The Architect demands a foundation, not a single brick.',
+      boss_check: p => ((p.workoutChecked||[]).length >= 3 || p.workoutDone) && (p.questsChecked||[]).length >= 3 && !!p.dailyChallengeDone && (p.streak||0)>=10,
+      xp:650, title:'◆ Void Architect\'s Pupil', glyph:'🌀',
     },
     {
       boss:'THE HOLLOW KING', quote:'"An empire built on weak days crumbles."',
+      img:'bosses/hollow-king.jpg',
       gates:[
-        { day:'Monday',   task:'Start your streak — or extend it. Log any activity today.',  check: p => (p.streak||0) >= 1 },
-        { day:'Wednesday',task:'Complete full workout in gym mode.',                          check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
-        { day:'Friday',   task:'Log 90 minutes of total focus time this week.',              check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0) >= 90 },
+        { day:'Monday',   task:'Extend your streak — log a workout AND complete all quests.',  check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 },
+        { day:'Wednesday',task:'Complete full workout in gym mode. The King trains heavy.',    check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
+        { day:'Friday',   task:'Log 120 minutes of total focus time this week.',               check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0) >= 120 },
       ],
-      boss_task:'Hit 10 days streak. The Hollow King respects nothing less.',
-      boss_check: p => (p.streak||0) >= 10,
-      xp:600, title:'👑 Hollow King\'s Bane', glyph:'💀',
+      boss_task:'14-day active streak. The Hollow King bows only to those who never stop.',
+      boss_check: p => (p.streak||0) >= 14,
+      xp:700, title:'👑 Hollow King\'s Bane', glyph:'💀',
     },
     {
       boss:'THE SILENT SOVEREIGN', quote:'"Silence is not weakness. It is the calm before annihilation."',
+      img:'bosses/silent-sovereign.jpg',
       gates:[
-        { day:'Monday',   task:'Complete all monk rituals today — every single one.',        check: p => (p.monkChecked||[]).length >= 5 },
-        { day:'Wednesday',task:'Complete daily quests + a full workout back to back.',       check: p => (p.questsChecked||[]).length >= 3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
-        { day:'Friday',   task:'Log any focus session — 30 minutes minimum.',               check: p => Object.values(p.mmDaily||{}).some(v=>v>=30) },
+        { day:'Monday',   task:'Complete all monk rituals today — every single one.',          check: p => (p.monkChecked||[]).length >= 5 },
+        { day:'Wednesday',task:'Full workout + all 3 quests + daily challenge today.',         check: p => (p.questsChecked||[]).length >= 3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && !!p.dailyChallengeDone },
+        { day:'Friday',   task:'Log a 60-minute unbroken focus session.',                     check: p => Object.values(p.mmDaily||{}).some(v=>v>=60) },
       ],
-      boss_task:'Complete rituals, workout, quests, and focus — all in one day.',
-      boss_check: p => (p.monkChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3,
-      xp:550, title:'🤫 The Sovereign\'s Echo', glyph:'⚪',
+      boss_task:'Rituals + workout + all quests + 60-min focus. Every pillar. One day.',
+      boss_check: p => (p.monkChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=60),
+      xp:650, title:'🤫 The Sovereign\'s Echo', glyph:'⚪',
     },
     {
       boss:'THE CRIMSON BEAST', quote:'"It does not think. It does not stop. It does not forgive."',
+      img:'bosses/crimson-beast.jpg',
       gates:[
-        { day:'Monday',   task:'Complete your workout — every rep counts.',                  check: p => (p.workoutChecked||[]).length>=3||p.workoutDone },
-        { day:'Wednesday',task:'Hit a best streak of 5 days or more.',                      check: p => (p.bestStreak||0) >= 5 },
-        { day:'Friday',   task:'Complete the daily challenge — no substitutions.',           check: p => !!p.dailyChallengeDone },
+        { day:'Monday',   task:'Complete your workout — every rep, no shortcuts.',             check: p => (p.workoutChecked||[]).length>=4||p.workoutDone },
+        { day:'Wednesday',task:'Best streak of 10 days or more in your history.',              check: p => (p.bestStreak||0) >= 10 },
+        { day:'Friday',   task:'Complete the daily challenge + all quests + workout.',         check: p => !!p.dailyChallengeDone && (p.questsChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
       ],
-      boss_task:'Full workout + all quests + daily challenge. The Crimson Beast demands proof.',
-      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone,
-      xp:500, title:'🔴 Crimson Beast Tamer', glyph:'🦁',
+      boss_task:'Full workout + all quests + daily challenge + active streak of 7+. Prove you are not prey.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=7,
+      xp:650, title:'🔴 Crimson Beast Tamer', glyph:'🦁',
     },
     {
       boss:'THE OBSIDIAN MONK', quote:'"Stillness is a weapon. Master it."',
+      img:'bosses/obsidian-monk.jpg',
       gates:[
-        { day:'Monday',   task:'Log a 30-minute focus session — no distractions.',          check: p => Object.values(p.mmDaily||{}).some(v=>v>=30) },
-        { day:'Wednesday',task:'Complete all daily quests before noon.',                     check: p => (p.questsChecked||[]).length>=3 },
-        { day:'Friday',   task:'Achieve 14-day best streak.',                               check: p => (p.bestStreak||0)>=14 },
+        { day:'Monday',   task:'Log a 60-minute focus session — total silence, no breaks.',   check: p => Object.values(p.mmDaily||{}).some(v=>v>=60) },
+        { day:'Wednesday',task:'Complete all daily quests + all monk rituals today.',          check: p => (p.questsChecked||[]).length>=3 && (p.monkChecked||[]).length>=5 },
+        { day:'Friday',   task:'Best streak of 21+ days — prove sustained discipline.',       check: p => (p.bestStreak||0)>=21 },
       ],
-      boss_task:'Log 2 hours total focus time this week. Mind over everything.',
-      boss_check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=120,
-      xp:600, title:'🖤 Obsidian Monk\'s Disciple', glyph:'🧘',
+      boss_task:'150 minutes of total focus logged this week. The mind is the battlefield.',
+      boss_check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=150,
+      xp:700, title:'🖤 Obsidian Monk\'s Disciple', glyph:'🧘',
     },
     {
       boss:'THE PLAGUE DOCTOR', quote:'"I cure nothing. I only reveal what was always there."',
+      img:'bosses/plague-doctor.jpg',
       gates:[
-        { day:'Monday',   task:'Complete full workout — no rest day swaps.',                check: p => (p.workoutChecked||[]).length>=3||p.workoutDone },
-        { day:'Wednesday',task:'Complete quests + log any focus session today.',            check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=1) },
-        { day:'Friday',   task:'5+ day streak active right now.',                           check: p => (p.streak||0)>=5 },
+        { day:'Monday',   task:'Complete full workout — no rest day excuses.',                check: p => (p.workoutChecked||[]).length>=3||p.workoutDone },
+        { day:'Wednesday',task:'All quests + 45-min focus + daily challenge today.',          check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=45) && !!p.dailyChallengeDone },
+        { day:'Friday',   task:'Active streak of 7+ days right now.',                         check: p => (p.streak||0)>=7 },
       ],
-      boss_task:'Perfect streak week — active every single day this week.',
-      boss_check: p => (p.streak||0)>=7,
-      xp:550, title:'🎭 The Doctor\'s Patient Zero', glyph:'🧪',
+      boss_task:'10-day active streak. The Doctor has seen your excuses. Show him something different.',
+      boss_check: p => (p.streak||0)>=10,
+      xp:650, title:'🎭 The Doctor\'s Patient Zero', glyph:'🧪',
     },
     {
       boss:'THE ASHEN TITAN', quote:'"From the ash of who you were rises what you will become."',
+      img:'bosses/ashen-titan.jpg',
       gates:[
-        { day:'Monday',   task:'Complete workout in gym mode — titans train heavy.',        check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
-        { day:'Wednesday',task:'Complete all 3 quests and the daily challenge.',            check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
-        { day:'Friday',   task:'Log 60 minutes of focus this week.',                       check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=60 },
+        { day:'Monday',   task:'Gym workout only — titans do not train at home today.',       check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
+        { day:'Wednesday',task:'All 3 quests + daily challenge + 60-min focus. No half-reps.',check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=60) },
+        { day:'Friday',   task:'Log 90 total focus minutes this week. Ash requires heat.',    check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=90 },
       ],
-      boss_task:'Workout + 90-min focus + all quests. Titans do not half-effort.',
-      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=90 && (p.questsChecked||[]).length>=3,
-      xp:600, title:'🪨 Ashen Titan\'s Heir', glyph:'🔥',
+      boss_task:'Gym workout + 120-min total focus + all quests. Titans are forged, not born.',
+      boss_check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=120 && (p.questsChecked||[]).length>=3,
+      xp:700, title:'🪨 Ashen Titan\'s Heir', glyph:'🔥',
     },
     {
       boss:'THE FRACTURED MIRROR', quote:'"The only enemy you have ever faced is the one looking back."',
+      img:'bosses/fractured-mirror.jpg',
       gates:[
-        { day:'Monday',   task:'Complete all daily quests — face yourself.',                check: p => (p.questsChecked||[]).length>=3 },
-        { day:'Wednesday',task:'Complete workout AND monk rituals today.',                   check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.monkChecked||[]).length>=3 },
-        { day:'Friday',   task:'Best streak of 7+ days — proof you\'ve changed.',          check: p => (p.bestStreak||0)>=7 },
+        { day:'Monday',   task:'Complete all daily quests — confront yourself fully.',        check: p => (p.questsChecked||[]).length>=3 },
+        { day:'Wednesday',task:'Full workout + all monk rituals + 45-min focus today.',       check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.monkChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=45) },
+        { day:'Friday',   task:'Best streak of 14+ days — the mirror does not lie.',         check: p => (p.bestStreak||0)>=14 },
       ],
-      boss_task:'Perfect day — every system active. Workout, quests, focus, challenge.',
-      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone,
-      xp:650, title:'🪞 Mirror Breaker', glyph:'💎',
+      boss_task:'Perfect day + active streak of 10+. Every system. No cracks.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=10,
+      xp:750, title:'🪞 Mirror Breaker', glyph:'💎',
     },
     {
       boss:'THE ETERNAL HUNTER', quote:'"There is no finish line. There is only the next gate."',
+      img:'bosses/eternal-hunter.jpg',
       gates:[
-        { day:'Monday',   task:'Log any workout — the hunt begins.',                       check: p => (p.workoutChecked||[]).length>=3||p.workoutDone },
-        { day:'Wednesday',task:'Complete quests + 45-min focus session today.',            check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=45) },
-        { day:'Friday',   task:'Active streak of 3+ days minimum.',                        check: p => (p.streak||0)>=3 },
+        { day:'Monday',   task:'Full workout + all quests — the hunt opens with full effort.',check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 },
+        { day:'Wednesday',task:'Complete quests + 60-min focus + daily challenge today.',     check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=60) && !!p.dailyChallengeDone },
+        { day:'Friday',   task:'Active streak of 7+ days. Hunters do not rest.',              check: p => (p.streak||0)>=7 },
       ],
-      boss_task:'The eternal test — workout, all quests, focus, challenge. All of it. Today.',
-      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=30),
-      xp:700, title:'🏹 The Eternal Hunter', glyph:'⭐',
+      boss_task:'The final hunt — workout, all quests, 60-min focus, daily challenge, streak 14+. Everything.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=60) && (p.streak||0)>=14,
+      xp:800, title:'🏹 The Eternal Hunter', glyph:'⭐',
     },
   ];
 
@@ -2918,6 +2931,7 @@
       <div class="dungeon-card__eyebrow">⚔ Weekly Dungeon ${plus?'':'— WEEBJI+'}</div>
       <div class="dungeon-card__boss">${dungeon.boss}</div>
       <div class="dungeon-card__quote">${dungeon.quote}</div>
+      <div class="dungeon-boss-img"><img src="${dungeon.img}" alt="${dungeon.boss}" loading="lazy"></div>
       <div class="dungeon-reward">
         <div>
           <div class="dungeon-reward__xp">+${dungeon.xp} XP</div>

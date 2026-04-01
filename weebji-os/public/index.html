@@ -335,6 +335,8 @@
   .quest-row.done .quest-name { text-decoration: line-through; color: #444466; }
   .quest-xp { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #FFD700; flex-shrink: 0; text-shadow: 0 0 6px rgba(255,215,0,0.9), 0 0 16px rgba(255,215,0,0.35); transition: opacity 0.3s ease; }
   .quest-row.done .quest-xp { opacity: 0.25; }
+  .custom-task-edit { background: none; border: none; color: rgba(0,245,255,0.25); font-size: 14px; line-height: 1; cursor: pointer; padding: 4px 0 4px 8px; flex-shrink: 0; transition: color 0.2s; -webkit-tap-highlight-color: transparent; }
+  .custom-task-edit:active { color: rgba(0,245,255,0.7); }
   .custom-task-delete { background: none; border: none; color: rgba(255,255,255,0.12); font-size: 18px; line-height: 1; cursor: pointer; padding: 4px 0 4px 10px; flex-shrink: 0; transition: color 0.2s; -webkit-tap-highlight-color: transparent; }
   .custom-task-delete:active { color: rgba(255,80,80,0.6); }
   .custom-task-add { display: flex; align-items: center; gap: 8px; padding: 11px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.18); cursor: pointer; border-top: 1px dashed rgba(255,255,255,0.06); margin-top: 6px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
@@ -728,9 +730,16 @@
   .dungeon-reward { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; background:rgba(255,215,0,0.04); border:1px solid rgba(255,215,0,0.12); margin-bottom:14px; }
   .dungeon-reward__xp { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#FFD700; text-shadow:0 0 10px rgba(255,215,0,0.5); }
   .dungeon-reward__title { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,215,0,0.5); letter-spacing:0.1em; }
-  .dungeon-locked-overlay { text-align:center; padding:8px 0 4px; }
-  .dungeon-locked-overlay__label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:rgba(139,0,255,0.45); text-transform:uppercase; margin-bottom:8px; }
-  .dungeon-locked-overlay__btn { display:inline-block; padding:10px 22px; border-radius:10px; border:1px solid rgba(139,0,255,0.35); background:rgba(139,0,255,0.08); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em; color:#CC44FF; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  .dungeon-locked-overlay { text-align:center; padding:8px 0 4px; border-top:1px solid rgba(139,0,255,0.15); margin-top:4px; }
+  .dungeon-locked-overlay__label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:rgba(204,68,255,0.6); text-transform:uppercase; margin-bottom:10px; }
+  .dungeon-locked-overlay__reward { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:8px; }
+  .dungeon-locked-overlay__xp { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; color:#FFD700; text-shadow:0 0 14px rgba(255,215,0,0.6); }
+  .dungeon-locked-overlay__title-badge { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(204,68,255,0.7); padding:3px 8px; border:1px solid rgba(139,0,255,0.3); border-radius:6px; background:rgba(139,0,255,0.06); text-transform:uppercase; }
+  .dungeon-locked-overlay__pitch { font-size:12px; color:rgba(255,255,255,0.4); line-height:1.6; margin:0 0 8px; }
+  .dungeon-locked-overlay__pitch strong { color:rgba(255,255,255,0.75); }
+  .dungeon-locked-overlay__urgency { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(255,180,0,0.5); margin-bottom:12px; }
+  .dungeon-locked-overlay__btn { display:inline-block; padding:12px 24px; border-radius:10px; border:1px solid rgba(139,0,255,0.5); background:rgba(139,0,255,0.12); font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.15em; color:#CC44FF; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; text-shadow:0 0 12px rgba(204,68,255,0.4); box-shadow:0 0 18px rgba(139,0,255,0.12); margin-bottom:8px; }
+  .dungeon-locked-overlay__price { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.2); letter-spacing:0.1em; }
   .dungeon-defeated { text-align:center; padding:16px 0 8px; }
   .dungeon-defeated__glyph { font-size:32px; margin-bottom:8px; }
   .dungeon-defeated__title { font-family:'Cinzel',serif; font-size:14px; font-weight:900; color:#CC44FF; text-shadow:0 0 16px rgba(139,0,255,0.6); letter-spacing:0.12em; margin-bottom:4px; }
@@ -794,6 +803,8 @@
   .cw-item__name { flex: 1; font-family: 'Inter', sans-serif; font-size: 13px; color: #CCCCDD; }
   .cw-item__meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444466; }
   .cw-item__xp { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #00F5FF; margin: 0 4px; }
+  .cw-edit-btn { padding: 3px 8px; border-radius: 5px; border: 1px solid rgba(0,245,255,0.15); background: transparent; font-size: 12px; color: rgba(0,245,255,0.45); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.15s ease; }
+  .cw-edit-btn:active { background: rgba(0,245,255,0.08); }
   .cw-del-btn { padding: 3px 8px; border-radius: 5px; border: 1px solid rgba(255,50,50,0.18); background: transparent; font-size: 10px; color: #FF4455; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.15s ease; }
   .cw-del-btn:active { background: rgba(255,50,50,0.12); }
   .cw-empty { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #333355; letter-spacing: 0.12em; text-align: center; padding: 6px 0; }
@@ -1863,48 +1874,15 @@
 
   /* ══ NATIVE WEB PUSH ════════════════════════ */
   const WeebjPush = (() => {
-    const VAPID_PK   = 'BEAWkgoqC3rrnfEx7LaQ1-erv94Gfp_IbHQL62mK_nvQm7E_NTKVhsZ_SaXizuwYeatc47IEDhjRG4NJsXsjfQs';
-    const SEND_URL   = 'https://qpcqbiicomlpsmkgqhsm.supabase.co/functions/v1/send-push';
-    const ANON_KEY   = 'sb_publishable_mn4VVnBOgUzwSoB6msiFYA_AleeHLa2';
-
-    function _toUint8(b64) {
-      const pad = '='.repeat((4 - b64.length % 4) % 4);
-      const b = atob((b64 + pad).replace(/-/g,'+').replace(/_/g,'/'));
-      return new Uint8Array([...b].map(c => c.charCodeAt(0)));
-    }
-
-    async function subscribe() {
-      if (!('Notification' in window) || !('serviceWorker' in navigator)) return false;
-      const perm = await Notification.requestPermission();
-      if (perm !== 'granted') return false;
-      try {
-        const reg = await navigator.serviceWorker.ready;
-        let sub = await reg.pushManager.getSubscription();
-        if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: _toUint8(VAPID_PK) });
-        await _store(sub);
-        return true;
-      } catch { return false; }
-    }
-
-    async function _store(sub) {
-      const user = SupabaseSync.getUser();
-      if (!user) return;
-      const j = sub.toJSON();
-      await SupabaseSync.upsertPushSub({ user_id: user.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth });
-    }
-
-    async function send(type, extras = {}) {
-      const user = SupabaseSync.getUser();
-      if (!user) return;
-      if (Notification.permission !== 'granted') return;
-      try {
-        await fetch(SEND_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ANON_KEY}` },
-          body: JSON.stringify({ user_id: user.id, type, ...extras })
-        });
-      } catch {}
-    }
+    const _msgs = {
+      hp_critical:  { title: '⚠ SYSTEM CRITICAL',          body: 'One HP remaining. Miss today and you reset. The System demands action.' },
+      ghost_token:  { title: '👻 Ghost Token Needed',       body: 'Streak at risk. Activate a Ghost Token from your dashboard.' },
+      streak_7:     { title: '🔥 7-Day Streak',              body: 'One week straight. The System has taken note.' },
+      streak_30:    { title: '🔥 30-Day Streak',             body: '30 days of execution. The System recognizes your discipline.' },
+      streak_100:   { title: '🔥 100-Day Streak',            body: 'Legendary. 100 consecutive days of pure execution.' },
+      streak_365:   { title: '🔥 365-Day Streak',            body: 'One full year. You ARE the System.' },
+      secret_title: { title: '◆ Secret Title Unlocked',     body: 'The System has granted you a new designation.' },
+    };
 
     function local(notifType, title, body) {
       if (Notification.permission !== 'granted') return;
@@ -1914,14 +1892,18 @@
       }).catch(() => {});
     }
 
-    async function init() {
-      if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') return;
-      try {
-        const reg = await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.getSubscription();
-        if (sub) await _store(sub);
-      } catch {}
+    function send(type) {
+      const m = _msgs[type];
+      if (m) local(type, m.title, m.body);
     }
+
+    async function subscribe() {
+      if (!('Notification' in window)) return false;
+      const perm = await Notification.requestPermission();
+      return perm === 'granted';
+    }
+
+    function init() { /* no-op */ }
 
     return { subscribe, send, local, init };
   })();
@@ -2915,8 +2897,15 @@
 
     const lockedHtml = !plus ? `
       <div class="dungeon-locked-overlay">
-        <div class="dungeon-locked-overlay__label">◆ WEEBJI+ Required to Enter</div>
-        <div class="dungeon-locked-overlay__btn" onclick="document.querySelector('.profile-scroll')&&document.getElementById('profile-plus-section').scrollIntoView({behavior:'smooth'});Sound.play('tap');showScreen('profile');renderProfile();">Unlock WEEBJI+ →</div>
+        <div class="dungeon-locked-overlay__label">⚔ DUNGEON SEALED — WEEBJI+ REQUIRED</div>
+        <div class="dungeon-locked-overlay__reward">
+          <span class="dungeon-locked-overlay__xp">+${dungeon.xp} XP</span>
+          <span class="dungeon-locked-overlay__title-badge">${dungeon.title}</span>
+        </div>
+        <p class="dungeon-locked-overlay__pitch">Defeat <strong>${dungeon.boss}</strong> this week. Claim the title. Most hunters never make it past Gate 1.</p>
+        <div class="dungeon-locked-overlay__urgency">⏳ ${timerTxt} — dungeon resets next week</div>
+        <div class="dungeon-locked-overlay__btn" onclick="document.querySelector('.profile-scroll')&&document.getElementById('profile-plus-section').scrollIntoView({behavior:'smooth'});Sound.play('tap');showScreen('profile');renderProfile();">UNLOCK WEEBJI+ — ENTER NOW →</div>
+        <div class="dungeon-locked-overlay__price">From ₹199/mo · Cancel anytime</div>
       </div>` : '';
 
     const defeatedHtml = bossDone ? `
@@ -4516,7 +4505,16 @@
     forgeCard.classList.remove('dash-card--cyan','dash-card--rest','dash-card--coming-soon');
     forgeCard.removeAttribute('style');
     titleEl.removeAttribute('style'); titleEl.className = 'dash-card__title';
-    const _mw = document.getElementById('forge-mode-wrap'); if (_mw) _mw.innerHTML = '';
+    const _mw = document.getElementById('forge-mode-wrap');
+    if (_mw) {
+      const _wm = localStorage.getItem('weebji_workout_mode') || 'home';
+      _mw.innerHTML = `<div class="forge-mode-toggle">
+        <button class="forge-mode-btn${_wm==='home'?' active':''}" id="forge-mode-home">🏠 Home</button>
+        <button class="forge-mode-btn${_wm==='gym'?' active':''}" id="forge-mode-gym">🏋️ Gym</button>
+      </div>`;
+      document.getElementById('forge-mode-home').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','home'); renderForgeArea(p,cls); });
+      document.getElementById('forge-mode-gym').addEventListener('click',  () => { localStorage.setItem('weebji_workout_mode','gym');  renderForgeArea(p,cls); });
+    }
 
     if (cls === 'mastermind') {
       forgeCard.style.borderColor = hexRgba('#FF2233', 0.25);
@@ -4762,9 +4760,11 @@
         <div class="quest-check">${done ? CHECK_SVG : ''}</div>
         <div class="quest-name">${t.name}</div>
         <div class="quest-xp">+${t.xp} XP</div>
+        <button class="custom-task-edit" data-id="${t.id}" title="Edit">✎</button>
         <button class="custom-task-delete" data-id="${t.id}">×</button>`;
       row.addEventListener('click', e => {
         if (e.target.closest('.custom-task-delete')) return;
+        if (e.target.closest('.custom-task-edit')) return;
         onCustomTaskTap(t, row);
       });
       row.querySelector('.custom-task-delete').addEventListener('click', e => {
@@ -4777,6 +4777,28 @@
           saveProgress(pp); updateXPBar(pp); updateStats(pp);
         }
         renderCustomTasks(loadProgress(), color);
+      });
+      row.querySelector('.custom-task-edit').addEventListener('click', e => {
+        e.stopPropagation();
+        row.innerHTML = `
+          <div class="custom-task-input-row" style="flex:1;border-top:none;padding:4px 0 0">
+            <input class="custom-task-input" value="${t.name.replace(/"/g,'&quot;')}" maxlength="40" autocomplete="off" style="flex:1">
+            <button class="custom-task-confirm">✓</button>
+            <button class="custom-task-cancel">×</button>
+          </div>`;
+        const inp = row.querySelector('.custom-task-input');
+        inp.focus(); inp.select();
+        const save = () => {
+          const name = inp.value.trim();
+          if (!name) { renderCustomTasks(loadProgress(), color); return; }
+          const list = loadCustomTasks();
+          const idx  = list.findIndex(x => x.id === t.id);
+          if (idx >= 0) { list[idx] = { ...list[idx], name }; saveCustomTasks(list); }
+          renderCustomTasks(loadProgress(), color);
+        };
+        row.querySelector('.custom-task-confirm').addEventListener('click', save);
+        row.querySelector('.custom-task-cancel').addEventListener('click', () => renderCustomTasks(loadProgress(), color));
+        inp.addEventListener('keydown', ev => { if (ev.key==='Enter') save(); if (ev.key==='Escape') renderCustomTasks(loadProgress(), color); });
       });
       container.appendChild(row);
     });
@@ -6918,8 +6940,20 @@
     const client = SupabaseSync._client();
     const me = SupabaseSync.getUser();
     if (!client) { el.innerHTML = ''; return; }
-    // Push latest local progress first so leaderboard reads fresh data
-    await SupabaseSync.pushProgress();
+    // Always write current user row directly so they appear in the leaderboard
+    if (me) {
+      const _p = loadProgress();
+      await client.from('leaderboard').upsert({
+        user_id:       me.id,
+        display_name:  localStorage.getItem('weebji_name') || 'Hunter',
+        class:         localStorage.getItem('weebji_class') || 'monarch',
+        color:         localStorage.getItem('weebji_color') || '#00F5FF',
+        hunter_number: localStorage.getItem('weebji_hunter_num') ? parseInt(localStorage.getItem('weebji_hunter_num')) : null,
+        level:         _p.level,
+        streak:        _p.streak || 0,
+        best_streak:   _p.bestStreak || 0,
+      }, { onConflict: 'user_id' }).catch(() => {});
+    }
 
     const ri = parseInt(color.slice(1,3),16), gi = parseInt(color.slice(3,5),16), bi = parseInt(color.slice(5,7),16);
     const rgb = `${ri},${gi},${bi}`;
@@ -7179,6 +7213,7 @@
                 <div class="cw-item__name">${ex.name}</div>
                 <div class="cw-item__meta">${ex.sets}×${ex.reps}</div>
                 <div class="cw-item__xp">+${ex.xp}</div>
+                <button class="cw-edit-btn" data-idx="${i}" title="Edit">✎</button>
                 <button class="cw-del-btn" data-idx="${i}">✕</button>
               </div>`).join('')
           }
@@ -7198,6 +7233,42 @@
         if (document.getElementById('dashboard').classList.contains('active')) {
           renderForgeArea(loadProgress(), cls);
         }
+      });
+    });
+
+    // Edit (replace) handlers
+    el.querySelectorAll('.cw-edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx  = parseInt(btn.dataset.idx);
+        const list = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
+        const ex   = list[idx];
+        if (!ex) return;
+        const item = btn.closest('.cw-item');
+        item.innerHTML = `
+          <div class="cw-form" style="flex:1;padding:0">
+            <input id="cw-edit-name" type="text" value="${ex.name}" maxlength="30" style="margin-bottom:6px"/>
+            <div class="cw-form__row">
+              <input id="cw-edit-sets" type="number" value="${ex.sets}" min="1" max="20" style="flex:1" />
+              <input id="cw-edit-reps" type="text" value="${ex.reps}" maxlength="10" style="flex:1.5" />
+              <input id="cw-edit-xp" type="number" value="${ex.xp}" min="1" max="15" style="flex:1" />
+            </div>
+            <div style="display:flex;gap:6px;margin-top:6px">
+              <button class="cw-form__save" id="cw-edit-save" style="flex:1;border-color:${hexRgba(color,0.35)};color:${color}">Save</button>
+              <button class="cw-form__save" id="cw-edit-cancel" style="flex:0 0 auto;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.35)">✕</button>
+            </div>
+          </div>`;
+        item.querySelector('#cw-edit-cancel').addEventListener('click', () => renderCustomWorkouts(cls, color, p));
+        item.querySelector('#cw-edit-save').addEventListener('click', () => {
+          const name = item.querySelector('#cw-edit-name').value.trim();
+          if (!name) { item.querySelector('#cw-edit-name').style.borderColor='rgba(255,34,51,0.6)'; return; }
+          const sets = Math.min(20, Math.max(1, parseInt(item.querySelector('#cw-edit-sets').value)||3));
+          const reps = item.querySelector('#cw-edit-reps').value.trim()||'10';
+          const xp   = Math.min(15, Math.max(1, parseInt(item.querySelector('#cw-edit-xp').value)||10));
+          list[idx] = { name, sets, reps, xp };
+          localStorage.setItem('weebji_custom_workouts', JSON.stringify(list));
+          renderCustomWorkouts(cls, color, p);
+          if (document.getElementById('dashboard').classList.contains('active')) renderForgeArea(loadProgress(), cls);
+        });
       });
     });
 

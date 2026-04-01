@@ -6861,6 +6861,7 @@
         editForm.style.display = 'none';
         renderProfile();
         if (typeof GuildSystem !== 'undefined') GuildSystem.syncMemberStats();
+        if (typeof SupabaseSync !== 'undefined') SupabaseSync.pushProgress();
       };
     }
 

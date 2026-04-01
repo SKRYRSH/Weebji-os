@@ -2025,16 +2025,12 @@
   function maybeShowNotifPrompt() {
     if (Notification.permission !== 'default') return;
     if (localStorage.getItem('weebji_notif_dismissed')) return;
-    // Only show once per session
     if (sessionStorage.getItem('weebji_notif_shown_this_session')) return;
-    // Only show after user has completed their first workout/quest
-    if (!localStorage.getItem('weebji_first_action_done')) return;
-    const p = loadProgress();
-    if ((p.streak || 0) < 1) return;
+    if (!SupabaseSync.getUser()) return; // must be signed in to save subscription
     // Never show both prompts simultaneously — give install prompt priority
-    const delay = deferredInstallEvent && !localStorage.getItem('weebji_install_dismissed') ? 40000 : 8000;
+    const delay = deferredInstallEvent && !localStorage.getItem('weebji_install_dismissed') ? 35000 : 12000;
     setTimeout(() => {
-      // Double-check install prompt isn't visible before showing notif prompt
+      if (Notification.permission !== 'default') return; // re-check in case user granted elsewhere
       if (!document.getElementById('install-prompt').classList.contains('visible')) {
         sessionStorage.setItem('weebji_notif_shown_this_session', '1');
         document.getElementById('notif-prompt').classList.add('visible');
@@ -4015,6 +4011,7 @@
         verifyBtn.disabled = false; verifyBtn.textContent = 'Verify Code';
       } else {
         document.getElementById('gate-code-msg').textContent = 'Verified! Loading your OS...';
+        setTimeout(() => maybeShowNotifPrompt(), 15000);
       }
     };
 

@@ -4496,76 +4496,6 @@
     });
   }
 
-  /* ── Append forge section below class-specific content (Monk lv3+ / MM lv7+) ── */
-  function _appendForgeSection(p, cls, accentColor) {
-    const listEl = document.getElementById('exercise-list');
-    if (!listEl) return;
-    const type = todayWorkoutType();
-    const workoutMode = localStorage.getItem('weebji_workout_mode') || 'home';
-
-    const section = document.createElement('div');
-    section.className = 'forge-unlock-section';
-
-    if (type === 'REST') {
-      section.innerHTML = `
-        <div class="forge-unlock-header" style="color:${hexRgba(accentColor,0.5)}">⚔ THE FORGE — REST DAY</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;">Recovery. The body rebuilds in silence.</div>`;
-      listEl.appendChild(section);
-      return;
-    }
-
-    const exercises = workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type];
-    const customs   = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
-    const allEx     = [...exercises, ...customs];
-
-    const exRows = allEx.map((ex, i) => {
-      const done = (p.workoutChecked || []).includes(i);
-      return `<div class="monk-ritual-row${done?' done':''}" data-fu-idx="${i}">
-        <div class="monk-check">${done ? CHECK_SVG : ''}</div>
-        <div class="monk-ritual-name">${ex.name}<span style="opacity:0.35;font-size:10px;margin-left:6px">${ex.sets}×${ex.reps}</span></div>
-        <div class="monk-ritual-xp">+${ex.xp} XP</div>
-      </div>`;
-    }).join('');
-
-    section.innerHTML = `
-      <div class="forge-unlock-header" style="color:${hexRgba(accentColor,0.5)}">⚔ THE FORGE — ${type} DAY</div>
-      <div class="forge-mode-toggle" style="margin-bottom:10px">
-        <button class="forge-mode-btn${workoutMode==='home'?' active':''}" id="fu-mode-home">🏠 Home</button>
-        <button class="forge-mode-btn${workoutMode==='gym'?' active':''}" id="fu-mode-gym">🏋️ Gym</button>
-      </div>
-      ${exRows}`;
-
-    listEl.appendChild(section);
-
-    section.querySelector('#fu-mode-home').addEventListener('click', () => {
-      localStorage.setItem('weebji_workout_mode', 'home');
-      renderForgeArea(loadProgress(), cls);
-    });
-    section.querySelector('#fu-mode-gym').addEventListener('click', () => {
-      localStorage.setItem('weebji_workout_mode', 'gym');
-      renderForgeArea(loadProgress(), cls);
-    });
-
-    section.querySelectorAll('[data-fu-idx]').forEach(row => {
-      row.addEventListener('click', () => {
-        const idx  = parseInt(row.dataset.fuIdx);
-        const _p   = loadProgress();
-        const done = (_p.workoutChecked || []).includes(idx);
-        if (done) {
-          _p.xp = Math.max(0, _p.xp - allEx[idx].xp);
-          _p.workoutChecked = (_p.workoutChecked || []).filter(i => i !== idx);
-          row.classList.remove('done'); row.querySelector('.monk-check').innerHTML = '';
-        } else {
-          if (!_p.workoutChecked) _p.workoutChecked = [];
-          _p.workoutChecked.push(idx);
-          _p.xp += rollCriticalDrop(allEx[idx].xp, row.querySelector('.monk-ritual-xp'), _p);
-          row.classList.add('done'); row.querySelector('.monk-check').innerHTML = CHECK_SVG;
-          Sound.play('check');
-        }
-        saveProgress(_p); updateXPBar(_p); updateStats(_p);
-      });
-    });
-  }
 
   /* ── Forge area (class-aware) ───────────── */
   function renderForgeArea(p, cls) {
@@ -4588,7 +4518,6 @@
       subEl.textContent = 'FOCUS ENGINE';
       bonusEl.classList.add('hidden');
       renderMastermindUI(p);
-      if (p.level >= 7) _appendForgeSection(p, cls, '#FF2233');
       return;
     }
 
@@ -4600,7 +4529,6 @@
       subEl.textContent = `${p.monkChecked.length}/${MONK_RITUALS.length} TODAY`;
       bonusEl.classList.add('hidden');
       renderMonkUI(p);
-      if (p.level >= 3) _appendForgeSection(p, cls, '#A8D8A8');
       return;
     }
 
@@ -5526,9 +5454,13 @@
       el.innerHTML = `<p style="font-family:'Inter',sans-serif;font-size:13px;color:#555577;padding:8px 0;font-style:italic">Rest day. Recovery is training.</p>`;
       return;
     }
+    const workoutMode = localStorage.getItem('weebji_workout_mode') || 'home';
     const customs = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
-    const allExercises = [...WORKOUTS[type], ...customs];
-    el.innerHTML = '';
+    const allExercises = [...(workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]), ...customs];
+    el.innerHTML = `<div class="forge-mode-toggle" style="margin-bottom:12px">
+      <button class="forge-mode-btn${workoutMode==='home'?' active':''}" id="sec-mode-home">🏠 Home</button>
+      <button class="forge-mode-btn${workoutMode==='gym'?' active':''}" id="sec-mode-gym">🏋️ Gym</button>
+    </div>`;
     allExercises.forEach((ex, i) => {
       const done = p.workoutChecked.includes(i);
       const setsCompleted = ForgeTimer.getSets(i);
@@ -5556,6 +5488,14 @@
         onExerciseTap(i, row, allExercises);
       });
       el.appendChild(row);
+    });
+    el.querySelector('#sec-mode-home')?.addEventListener('click', () => {
+      localStorage.setItem('weebji_workout_mode', 'home');
+      renderSecondaryMonarch(p, el);
+    });
+    el.querySelector('#sec-mode-gym')?.addEventListener('click', () => {
+      localStorage.setItem('weebji_workout_mode', 'gym');
+      renderSecondaryMonarch(p, el);
     });
   }
 

@@ -2525,7 +2525,7 @@
         <div class="analytics-bars">${bars}</div>
         <div class="analytics-totals">
           <div class="analytics-stat"><span>${studyH}h ${studyM}m</span><div class="analytics-stat-lbl">Total Study</div></div>
-          <div class="analytics-stat"><span>${p.totalWorkoutDays||p.monarchGrid?.length||0}</span><div class="analytics-stat-lbl">Workouts</div></div>
+          <div class="analytics-stat"><span>${(p.totalWorkoutDays||p.monarchGrid?.length||0)+(p.workoutBonus?1:0)}</span><div class="analytics-stat-lbl">Workouts</div></div>
           <div class="analytics-stat"><span>${medMins}m</span><div class="analytics-stat-lbl">Meditated</div></div>
           <div class="analytics-stat"><span>${p.bestStreak||0}</span><div class="analytics-stat-lbl">Best Streak</div></div>
         </div>
@@ -7700,7 +7700,7 @@
     ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1; ctx.stroke();
     const stats = [
       { label: 'STUDIED',  value: `${Math.floor((p.totalStudyMins || 0) / 60)}h` },
-      { label: 'WORKOUTS', value: String(p.totalWorkoutDays || p.monarchGrid?.length || 0) },
+      { label: 'WORKOUTS', value: String((p.totalWorkoutDays || p.monarchGrid?.length || 0) + (p.workoutBonus ? 1 : 0)) },
       { label: 'RITUALS',  value: String(p.monkGrid?.length || 0) },
       { label: 'TITLES',   value: String((p.titles || []).length) },
     ];

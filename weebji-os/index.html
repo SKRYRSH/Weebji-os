@@ -4083,6 +4083,12 @@
       } else {
         document.getElementById('gate-code-msg').textContent = 'Verified! Loading your OS...';
         setTimeout(() => maybeShowNotifPrompt(), 15000);
+        // Nudge to set name if still default
+        setTimeout(() => {
+          if ((localStorage.getItem('weebji_name') || 'Hunter') === 'Hunter') {
+            spawnDropBanner('◈  Set your name in Profile — claim your spot on the leaderboard');
+          }
+        }, 5000);
       }
     };
 

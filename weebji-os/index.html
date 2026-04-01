@@ -2592,7 +2592,7 @@
             },
             ...(vSess?.access_token ? { headers: { Authorization: `Bearer ${vSess.access_token}` } } : {})
           });
-          if (verifyErr) { spawnDropBanner('◆  Verification failed — contact weebji@gmail.com'); return; }
+          if (verifyErr) { spawnDropBanner('◆  Verification failed — contact weebjiglobal@gmail.com'); return; }
           try { await SupabaseSync.pullProgress(); } catch(_) {}
           spawnDropBanner('◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
           if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, class: localStorage.getItem('weebji_class') });

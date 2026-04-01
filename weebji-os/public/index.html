@@ -4098,7 +4098,10 @@
       const { error } = await SupabaseSync.signInWithEmail(email);
       if (error) {
         const isRateLimit = error.status === 429 || error.code === 'over_email_send_rate_limit' || (error.message || '').toLowerCase().includes('rate');
-        msgEl.textContent = isRateLimit ? 'Too many attempts — wait 1 hour' : 'Error — try again';
+        const isNetwork   = (error.message || '').toLowerCase().includes('fetch') || (error.message || '').toLowerCase().includes('network');
+        msgEl.textContent = isRateLimit ? 'Too many attempts — wait 1 hour'
+          : isNetwork     ? 'Network error — disable Private Mode or check connection'
+          : 'Error — try again';
         sendBtn.disabled = false; return;
       }
       if (typeof posthog !== 'undefined') posthog.capture('otp_sent', { class: localStorage.getItem('weebji_class') });

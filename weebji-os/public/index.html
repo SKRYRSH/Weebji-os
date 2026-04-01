@@ -1608,6 +1608,14 @@
           </div>
           <span class="profile-voice__toggle off" id="voice-toggle-state">OFF</span>
         </button>
+        <button class="profile-voice" id="notif-toggle-btn">
+          <span class="profile-voice__icon">🔔</span>
+          <div class="profile-voice__info">
+            <span class="profile-voice__label">Push Alerts</span>
+            <span class="profile-voice__sub" id="notif-toggle-sub">Tap to enable streak reminders</span>
+          </div>
+          <span class="profile-voice__toggle off" id="notif-toggle-state">OFF</span>
+        </button>
         <button class="profile-share-btn" id="profile-share-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Share Your Arc
@@ -6733,6 +6741,27 @@
       }
     }
 
+    // Notifications toggle
+    const notifBtn = document.getElementById('notif-toggle-btn');
+    if (notifBtn) {
+      const nToggle = document.getElementById('notif-toggle-state');
+      const nSub    = document.getElementById('notif-toggle-sub');
+      const perm    = Notification.permission;
+      if (perm === 'granted') {
+        if (nToggle) { nToggle.textContent = 'ON'; nToggle.className = 'profile-voice__toggle on'; }
+        if (nSub)    nSub.textContent = 'Morning + streak reminders active';
+        notifBtn.style.borderColor = hexRgba(color, 0.25); notifBtn.style.opacity = '1';
+      } else if (perm === 'denied') {
+        if (nToggle) { nToggle.textContent = 'OFF'; nToggle.className = 'profile-voice__toggle off'; }
+        if (nSub)    nSub.textContent = 'Blocked — enable in Android Settings > Apps';
+        notifBtn.style.borderColor = hexRgba(color, 0.07); notifBtn.style.opacity = '0.55';
+      } else {
+        if (nToggle) { nToggle.textContent = 'OFF'; nToggle.className = 'profile-voice__toggle off'; }
+        if (nSub)    nSub.textContent = 'Tap to enable streak reminders';
+        notifBtn.style.borderColor = hexRgba(color, 0.07); notifBtn.style.opacity = '1';
+      }
+    }
+
     // Custom workouts (Forge users only)
     renderCustomWorkouts(cls, color, p);
 
@@ -7643,6 +7672,17 @@
       if (voiceBtn) voiceBtn.style.borderColor = hexRgba(color, 0.25);
       setTimeout(() => SystemVoice.speak('System Voice activated. The System is listening.', 0), 200);
     }
+  });
+
+  document.getElementById('notif-toggle-btn').addEventListener('click', async () => {
+    if (Notification.permission === 'denied') {
+      spawnDropBanner('🔔  Notifications blocked — enable in Android Settings > Apps');
+      return;
+    }
+    localStorage.removeItem('weebji_notif_dismissed');
+    sessionStorage.removeItem('weebji_notif_shown_this_session');
+    await WeebjPush.subscribe();
+    renderProfile();
   });
 
   /* ══ PHASE 3 — GHOST TOKEN INTERVENTION ══════ */

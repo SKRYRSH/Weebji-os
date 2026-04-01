@@ -922,6 +922,35 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
   }, { threshold: 0.1 });
   revealEls.forEach(el => observer.observe(el));
+
+  /* ── PLAY STORE CHECKOUT REDIRECT ── */
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    if (!checkout) return;
+
+    const PLAN_LABELS = {
+      plus:        { name: 'WEEBJI+ Monthly', price: '₹499 / month', color: '#00F5FF' },
+      plus_annual: { name: 'WEEBJI+ Annual',  price: '₹2,999 / year (~₹250/mo)', color: '#FFD700' },
+      ghost_token: { name: 'Ghost Token',      price: '₹99 one-time', color: '#A78BFA' },
+    };
+    const plan = PLAN_LABELS[checkout] || PLAN_LABELS['plus'];
+
+    // Inject overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(7,9,15,0.97);display:flex;align-items:center;justify-content:center;padding:24px;';
+    overlay.innerHTML = `
+      <div style="max-width:420px;width:100%;background:#0D0D22;border:1px solid rgba(0,245,255,0.2);border-radius:20px;padding:40px 32px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;">
+        <p style="margin:0 0 6px;font-size:9px;letter-spacing:5px;color:#00F5FF;font-family:'Courier New',monospace;">◈ SYSTEM CHECKOUT ◈</p>
+        <h2 style="margin:0 0 8px;font-size:22px;font-weight:900;color:#fff;letter-spacing:2px;">${plan.name}</h2>
+        <p style="margin:0 0 28px;font-size:15px;font-weight:700;color:${plan.color};">${plan.price}</p>
+        <p style="margin:0 0 24px;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.7;">Google Play doesn't allow in-app payments for web apps.<br>Open WEEBJI OS in your browser to subscribe — it only takes 30 seconds.</p>
+        <a href="https://skryrsh.github.io/Weebji-os/" target="_blank" style="display:block;background:${plan.color};color:#000;font-weight:800;font-size:11px;letter-spacing:3px;text-decoration:none;padding:15px 24px;border-radius:10px;margin-bottom:14px;text-transform:uppercase;">Open WEEBJI OS in Browser →</a>
+        <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.25);line-height:1.6;">After subscribing, return to the app and refresh your profile.<br>Your WEEBJI+ will sync automatically.</p>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  })();
 </script>
 </body>
 </html>

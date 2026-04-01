@@ -2546,6 +2546,14 @@
   }
 
   async function _openCheckout(plan) {
+    // Play Store TWA — open web checkout in Chrome (outside TWA scope = no Google billing cut)
+    if (document.referrer.startsWith('android-app://')) {
+      const planLabel = plan === 'monthly' ? 'plus' : plan === 'annual' ? 'plus_annual' : 'ghost_token';
+      window.open(`https://weebji.netlify.app?checkout=${planLabel}`, '_blank');
+      spawnDropBanner('◆  Opening browser — sign in and subscribe there, then return to the app');
+      return;
+    }
+
     if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, class: localStorage.getItem('weebji_class') });
 
     const user = SupabaseSync.getUser?.();

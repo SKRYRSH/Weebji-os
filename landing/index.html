@@ -928,6 +928,8 @@
     const params = new URLSearchParams(window.location.search);
     const checkout = params.get('checkout');
     if (!checkout) return;
+    // Clean URL so refresh doesn't re-show overlay
+    window.history.replaceState({}, '', window.location.pathname);
 
     const PLAN_LABELS = {
       plus:        { name: 'WEEBJI+ Monthly', price: '₹499 / month', color: '#00F5FF' },

@@ -878,6 +878,24 @@
   .smilestone__quote { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(255,215,0,0.4); font-style: italic; max-width: 270px; text-align: center; line-height: 1.7; position: relative; z-index: 1; }
   @media (prefers-reduced-motion: reduce) { #streak-milestone.active { animation: none; opacity: 1; } }
 
+  /* ══ STREAK REWARD GATE ══════════════════════ */
+  #streak-reward-gate { position:absolute; inset:0; z-index:815; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); opacity:0; pointer-events:none; transition:opacity 0.4s; }
+  #streak-reward-gate.visible { opacity:1; pointer-events:all; }
+  .srg__inner { background:linear-gradient(160deg,#0d0d12,#13101a); border:1px solid rgba(255,215,0,0.22); border-radius:12px; padding:36px 28px 28px; width:min(320px,88vw); display:flex; flex-direction:column; align-items:center; gap:10px; position:relative; box-shadow:0 0 60px rgba(255,215,0,0.1); }
+  .srg__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.35em; color:rgba(255,215,0,0.45); text-transform:uppercase; }
+  .srg__days { font-family:'Cinzel',serif; font-size:54px; font-weight:900; color:#FFD700; line-height:1; text-shadow:0 0 30px rgba(255,215,0,0.6); }
+  .srg__subtitle { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:rgba(255,255,255,0.35); margin-top:-4px; }
+  .srg__reward-box { background:rgba(255,215,0,0.06); border:1px solid rgba(255,215,0,0.15); border-radius:8px; padding:14px 20px; width:100%; text-align:center; position:relative; }
+  .srg__reward-title { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:#FFD700; letter-spacing:0.1em; }
+  .srg__reward-xp { font-family:'JetBrains Mono',monospace; font-size:11px; color:rgba(255,215,0,0.5); margin-top:4px; letter-spacing:0.15em; }
+  .srg__lock-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.7); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+  .srg__lock-icon { font-size:22px; }
+  .srg__lock-text { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:rgba(255,255,255,0.35); }
+  .srg__claim-btn { margin-top:6px; width:100%; padding:12px; background:linear-gradient(135deg,#c9a227,#e8c140); border:none; border-radius:6px; font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.2em; color:#000; cursor:pointer; }
+  .srg__claim-btn:active { opacity:0.85; }
+  .srg__upgrade-btn { margin-top:6px; width:100%; padding:12px; background:transparent; border:1px solid rgba(255,215,0,0.35); border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:rgba(255,215,0,0.7); cursor:pointer; }
+  .srg__close-btn { position:absolute; top:10px; right:14px; background:none; border:none; color:rgba(255,255,255,0.3); font-size:18px; cursor:pointer; line-height:1; padding:0; }
+
   /* ══ SECRET TITLE UNLOCK CINEMATIC ══════════ */
   #title-unlock { position:absolute; inset:0; z-index:830; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; opacity:0; pointer-events:none; background:#000; text-align:center; padding:48px 32px; }
   #title-unlock.active { animation:kf-title-unlock 5.2s cubic-bezier(0.16,1,0.3,1) forwards; pointer-events:all; }
@@ -1688,6 +1706,26 @@
       <div class="smilestone__num"  id="smilestone-num">7</div>
       <p class="smilestone__days">DAYS</p>
       <p class="smilestone__quote" id="smilestone-quote"></p>
+    </div>
+
+    <!-- Streak Reward Gate -->
+    <div id="streak-reward-gate">
+      <div class="srg__inner">
+        <button class="srg__close-btn" onclick="closeStreakRewardGate()">×</button>
+        <p class="srg__eyebrow">Streak Milestone Reward</p>
+        <div class="srg__days" id="srg-days">7</div>
+        <p class="srg__subtitle">DAYS</p>
+        <div class="srg__reward-box" id="srg-reward-box">
+          <div class="srg__reward-title" id="srg-reward-title">7-DAY WARRIOR</div>
+          <div class="srg__reward-xp" id="srg-reward-xp">+500 XP · TITLE UNLOCKED</div>
+          <div class="srg__lock-overlay" id="srg-lock-overlay">
+            <span class="srg__lock-icon">🔒</span>
+            <span class="srg__lock-text">WEEBJI+ ONLY</span>
+          </div>
+        </div>
+        <button class="srg__claim-btn" id="srg-claim-btn" onclick="claimStreakReward()">CLAIM REWARD</button>
+        <button class="srg__upgrade-btn" id="srg-upgrade-btn" onclick="closeStreakRewardGate();showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WITH WEEBJI+ →</button>
+      </div>
     </div>
 
     <!-- Mission Briefing overlay (first-time onboarding) -->
@@ -5381,7 +5419,7 @@
       hasAny = true;
 
       if (!isUnlocked) {
-        // Locked card
+        // Locked card — level requirement not met
         const card = document.createElement('div');
         card.className = 'unlock-card locked';
         card.innerHTML = `
@@ -5391,6 +5429,21 @@
             <div class="unlock-card__status">Unlocks at Level ${requiredLvl}</div>
           </div>
           <div class="unlock-card__lock">🔒</div>
+        `;
+        container.appendChild(card);
+      } else if (!isWeebjiPlus()) {
+        // Level met but not Plus — Plus gate
+        const card = document.createElement('div');
+        card.className = 'unlock-card locked';
+        card.style.cursor = 'pointer';
+        card.onclick = () => { showScreen('profile'); setTimeout(() => document.getElementById('profile-plus-section')?.scrollIntoView({ behavior: 'smooth' }), 100); };
+        card.innerHTML = `
+          <div class="unlock-card__icon" style="background:${hexRgba(meta.color,0.06)};color:${meta.color}">${meta.icon}</div>
+          <div class="unlock-card__meta">
+            <div class="unlock-card__name" style="color:rgba(255,215,0,0.35)">${meta.label}</div>
+            <div class="unlock-card__status" style="color:rgba(255,215,0,0.25)">◆ WEEBJI+ — Tap to unlock</div>
+          </div>
+          <div class="unlock-card__lock" style="color:rgba(255,215,0,0.3)">◆</div>
         `;
         container.appendChild(card);
       } else {
@@ -7461,7 +7514,18 @@
     const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
     CinCanvas.rain(70, '#FFD700');
     CinCanvas.burst(cx, cy, 20, '#FFD700', 8);
-    el.addEventListener('animationend', () => el.classList.remove('active'), { once: true });
+    el.addEventListener('animationend', () => {
+      el.classList.remove('active');
+      // Show reward gate after cinematic if this streak has a Plus reward
+      const STREAK_REWARDS = {
+        7:   { title: 'streak_7_warrior',    display: '7-DAY WARRIOR',    xp: 500  },
+        14:  { title: 'streak_14_relentless', display: 'THE RELENTLESS',   xp: 1000 },
+        30:  { title: 'streak_30_iron',      display: 'IRON DISCIPLINE',  xp: 2500 },
+        60:  { title: 'streak_60_persistent',display: 'THE PERSISTENT',   xp: 3000 },
+        100: { title: 'streak_100_centurion',display: 'THE CENTURION',    xp: 5000 },
+      };
+      if (STREAK_REWARDS[streak]) showStreakRewardGate(streak, STREAK_REWARDS[streak]);
+    }, { once: true });
     // Phase 5: System Voice
     setTimeout(() => SystemVoice.onStreakMilestone(streak), 800);
     // Push notifications
@@ -7469,6 +7533,52 @@
     else if (streak === 30)  { WeebjPush.send('streak_30');  SupabaseSync.callBrevoEvent('streak_milestone', { hunter_name: loadProgress().name || 'Hunter', streak: 30  }); }
     else if (streak === 100) { WeebjPush.send('streak_100'); SupabaseSync.callBrevoEvent('streak_milestone', { hunter_name: loadProgress().name || 'Hunter', streak: 100 }); }
     else if (streak === 365) { WeebjPush.send('streak_365'); SupabaseSync.callBrevoEvent('streak_milestone', { hunter_name: loadProgress().name || 'Hunter', streak: 365 }); }
+  }
+
+  let _srgCurrentStreak = null;
+  function showStreakRewardGate(streak, reward) {
+    const p = loadProgress();
+    // Don't show if already claimed
+    if (p.titles && p.titles.includes(reward.title)) return;
+    const plus = isWeebjiPlus();
+    _srgCurrentStreak = streak;
+    document.getElementById('srg-days').textContent        = streak;
+    document.getElementById('srg-reward-title').textContent = reward.display;
+    document.getElementById('srg-reward-xp').textContent   = `+${reward.xp} XP · TITLE UNLOCKED`;
+    document.getElementById('srg-lock-overlay').style.display = plus ? 'none' : 'flex';
+    document.getElementById('srg-claim-btn').style.display    = plus ? 'block' : 'none';
+    document.getElementById('srg-upgrade-btn').style.display  = plus ? 'none' : 'block';
+    document.getElementById('streak-reward-gate').classList.add('visible');
+  }
+
+  function closeStreakRewardGate() {
+    document.getElementById('streak-reward-gate').classList.remove('visible');
+    _srgCurrentStreak = null;
+  }
+
+  function claimStreakReward() {
+    if (!isWeebjiPlus() || !_srgCurrentStreak) return;
+    const STREAK_REWARDS = {
+      7:   { title: 'streak_7_warrior',    display: '7-DAY WARRIOR',    xp: 500  },
+      14:  { title: 'streak_14_relentless', display: 'THE RELENTLESS',   xp: 1000 },
+      30:  { title: 'streak_30_iron',      display: 'IRON DISCIPLINE',  xp: 2500 },
+      60:  { title: 'streak_60_persistent',display: 'THE PERSISTENT',   xp: 3000 },
+      100: { title: 'streak_100_centurion',display: 'THE CENTURION',    xp: 5000 },
+    };
+    const reward = STREAK_REWARDS[_srgCurrentStreak];
+    if (!reward) return;
+    const p = loadProgress();
+    if (!p.titles) p.titles = [];
+    if (!p.titles.includes(reward.title)) p.titles.push(reward.title);
+    p.xp += reward.xp;
+    const leveled = checkLevelUp(p);
+    saveProgress(p);
+    closeStreakRewardGate();
+    updateStats(p);
+    if (leveled) triggerLevelUp(p.level);
+    WeebjPush.send('secret_title');
+    SupabaseSync.pushProgress();
+    spawnDropBanner(`◆  ${reward.display} — Title + ${reward.xp} XP claimed`);
   }
 
   // 5. GHOST SHIMMER — silver sweep on ghost token use

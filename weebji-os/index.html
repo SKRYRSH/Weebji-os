@@ -2997,12 +2997,18 @@
       <div class="dungeon-timer">${timerTxt}</div>
     </div>`;
 
-    // Boss speaks once per session when dungeon opens (Plus only)
+    // Boss speaks once per session when dungeon card scrolls into view (Plus only)
     if (plus && !bossDone) {
       const voiceKey = `dungeon_voiced_${yearWeek}_${dungeonIndex}`;
       if (!sessionStorage.getItem(voiceKey)) {
-        sessionStorage.setItem(voiceKey, '1');
-        setTimeout(() => SystemVoice.speak(dungeon.taunt_plus), 800);
+        const obs = new IntersectionObserver((entries, o) => {
+          if (entries[0].isIntersecting) {
+            o.disconnect();
+            sessionStorage.setItem(voiceKey, '1');
+            setTimeout(() => SystemVoice.speakBoss(dungeon.taunt_plus), 400);
+          }
+        }, { threshold: 0.5 });
+        obs.observe(el);
       }
     }
 
@@ -8644,6 +8650,34 @@ ${particles}
         utt.onend = () => ind.classList.remove('speaking');
       }
 
+      window.speechSynthesis.speak(utt);
+    }
+
+    function speakBoss(text) {
+      if (!isWeebjiPlus() && !isInVoiceTrial()) return;
+      if (!isEnabled()) return;
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.rate   = 0.82;
+      utt.pitch  = 0.4;
+      utt.volume = 1.0;
+
+      // Aggressive male voice search — covers Chrome/Android/Windows/iOS
+      const voices = window.speechSynthesis.getVoices();
+      const male = voices.find(v =>
+        /male/i.test(v.name) ||
+        /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed|rock/i.test(v.name)
+      ) || voices.find(v => v.lang.startsWith('en') && !/female|zira|samantha|karen|victoria|fiona|moira|tessa|veena/i.test(v.name));
+      if (male) utt.voice = male;
+
+      const ind = document.getElementById('voice-indicator');
+      if (ind) {
+        ind.style.setProperty('--vd-color', '#8B00FF');
+        ind.classList.add('speaking');
+        utt.onend = () => ind.classList.remove('speaking');
+      }
       window.speechSynthesis.speak(utt);
     }
 

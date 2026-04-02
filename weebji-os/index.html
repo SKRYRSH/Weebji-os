@@ -6618,6 +6618,14 @@
     if (p.hp === 1) {
       WeebjPush.send('hp_critical');
       WeebjPush.local('hp_critical', '⚠ SYSTEM CRITICAL', 'One HP remaining. Miss today and you reset. The System demands action.');
+      // Also fire server-side push so it reaches user even if app is closed
+      try {
+        const _u = SupabaseSync.getUser();
+        if (_u?.id) {
+          const _c = SupabaseSync._client();
+          if (_c) _c.functions.invoke('send-push', { body: { user_id: _u.id, type: 'hp_critical' } }).catch(() => {});
+        }
+      } catch(_) {}
     }
   }
 

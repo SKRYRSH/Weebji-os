@@ -1899,10 +1899,39 @@
       if (m) local(type, m.title, m.body);
     }
 
+    const _VAPID_PUBLIC = 'BA4fOQBsL02zdz1FfDb_X9FYcfRy6qGN1FXGaG0TKt-lgHVJjEgGmlMo15jsM2oweYLM22KsdtJauUaxEDcoRsQ';
+
+    function _urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const raw     = atob(base64);
+      return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+    }
+
     async function subscribe() {
       if (!('Notification' in window)) return false;
       const perm = await Notification.requestPermission();
-      return perm === 'granted';
+      if (perm !== 'granted') return false;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const existing = await reg.pushManager.getSubscription();
+        const sub = existing || await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: _urlBase64ToUint8Array(_VAPID_PUBLIC),
+        });
+        // Save to Supabase if user is signed in
+        const user = await SupabaseSync.getUser().catch(() => null);
+        if (user?.id) {
+          const s = sub.toJSON();
+          await SupabaseSync.upsertPushSub({
+            user_id: user.id,
+            endpoint: s.endpoint,
+            p256dh:   s.keys.p256dh,
+            auth:     s.keys.auth,
+          }).catch(() => {});
+        }
+      } catch (_) {}
+      return true;
     }
 
     function init() { /* no-op */ }

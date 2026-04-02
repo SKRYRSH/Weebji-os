@@ -25,8 +25,16 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const url  = new URL(req.url);
-    const type = url.searchParams.get('type');
+    let type: string | null = null;
+    try {
+      const body = await req.json();
+      type = body?.type ?? null;
+    } catch { /* no body */ }
+    // fallback: query param (for manual curl testing)
+    if (!type) {
+      const url = new URL(req.url);
+      type = url.searchParams.get('type');
+    }
     if (!type || !NOTIF[type]) {
       return new Response('Missing or invalid type param', { status: 400 });
     }

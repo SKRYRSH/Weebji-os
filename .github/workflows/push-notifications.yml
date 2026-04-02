@@ -53,6 +53,6 @@ jobs:
         run: |
           curl -sf -X POST \
             "${{ secrets.SUPABASE_URL }}/functions/v1/scheduled-push" \
-            -H "x-weebji-cron: true" \
+            -H "x-weebji-cron: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -d '{"type":"${{ steps.notif.outputs.type }}"}'

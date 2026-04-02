@@ -18,8 +18,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
   // Auth: cron secret header
-  const cronSecret = Deno.env.get('CRON_SECRET');
-  const incoming   = req.headers.get('x-weebji-cron');
+  const cronSecret = Deno.env.get('CRON_SECRET')?.trim();
+  const incoming   = req.headers.get('x-weebji-cron')?.trim();
   if (!cronSecret || incoming !== cronSecret) {
     return new Response('Unauthorized', { status: 401 });
   }

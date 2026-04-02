@@ -2997,6 +2997,15 @@
       <div class="dungeon-timer">${timerTxt}</div>
     </div>`;
 
+    // Boss speaks once per session when dungeon opens (Plus only)
+    if (plus && !bossDone) {
+      const voiceKey = `dungeon_voiced_${yearWeek}_${dungeonIndex}`;
+      if (!sessionStorage.getItem(voiceKey)) {
+        sessionStorage.setItem(voiceKey, '1');
+        setTimeout(() => SystemVoice.speak(dungeon.taunt_plus), 800);
+      }
+    }
+
     // Gate claim buttons
     el.querySelectorAll('.dungeon-gate__btn[data-gate]').forEach(btn => {
       btn.addEventListener('click', async () => {

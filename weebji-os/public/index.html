@@ -9208,6 +9208,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
             display_name:  resolvedName,
             class:         localStorage.getItem('weebji_class') || 'monarch',
             color:         localStorage.getItem('weebji_color') || '#00F5FF',
+            level:         data?.level       || 1,
+            streak:        data?.streak      || 0,
+            best_streak:   data?.best_streak || 0,
+            updated_at:    new Date().toISOString(),
           }, { onConflict: 'user_id' }).catch(e => console.warn('lb upsert:', e));
         }
         saveProgress(p);

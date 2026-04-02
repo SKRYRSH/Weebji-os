@@ -11,6 +11,7 @@ const NOTIF: Record<string, (e: Record<string, unknown>) => { title: string; bod
   morning_activation: () => ({ title: '◈ SYSTEM ONLINE', body: 'The gates are open. Your protocol awaits.' }),
   streak_reminder:    () => ({ title: 'SYSTEM ALERT', body: 'Your streak is waiting. Train today or lose it.' }),
   comeback:           () => ({ title: 'RECONNECTION REQUIRED', body: 'You have been offline. The System has logged the gap. Return now.' }),
+  weekly_summary:     (e) => ({ title: '◈ WEEKLY SYSTEM REPORT', body: `Level ${e.level || '?'} · ${e.streak || 0}-day streak. Progress logged.` }),
 };
 
 Deno.serve(async (req) => {
@@ -64,10 +65,10 @@ Deno.serve(async (req) => {
     const userIds = subs.map(s => s.user_id);
     const { data: progRows } = await supabase
       .from('progress')
-      .select('user_id, streak, updated_at')
+      .select('user_id, streak, level, updated_at')
       .in('user_id', userIds);
 
-    const progMap: Record<string, { streak: number; updated_at: string }> = {};
+    const progMap: Record<string, { streak: number; level: number; updated_at: string }> = {};
     for (const p of progRows || []) progMap[p.user_id] = p;
 
     let sent = 0;
@@ -79,6 +80,7 @@ Deno.serve(async (req) => {
       if (!prog) { skipped++; continue; }
 
       const streak    = prog.streak || 0;
+      const level     = prog.level  || 1;
       const updatedAt = prog.updated_at || '';
       const notTrained = updatedAt < todayISTStart;
       const inactive3d = updatedAt < threeDaysAgo;
@@ -87,8 +89,9 @@ Deno.serve(async (req) => {
       if (type === 'morning_activation' && !(streak > 0 && notTrained)) { skipped++; continue; }
       if (type === 'streak_reminder'    && !(streak > 0 && notTrained)) { skipped++; continue; }
       if (type === 'comeback'           && !inactive3d)                 { skipped++; continue; }
+      // weekly_summary — everyone with a subscription
 
-      const { title, body } = NOTIF[type]({});
+      const { title, body } = NOTIF[type]({ streak, level });
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },

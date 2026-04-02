@@ -11,6 +11,8 @@ on:
     - cron: '0 20 * * *'
     # comeback — once daily
     - cron: '0 6 * * *'
+    # weekly summary — Sunday 10am IST (4:30 UTC)
+    - cron: '30 4 * * 0'
   workflow_dispatch:
     inputs:
       type:
@@ -22,6 +24,7 @@ on:
           - morning_activation
           - streak_reminder
           - comeback
+          - weekly_summary
 
 jobs:
   send:
@@ -34,7 +37,10 @@ jobs:
             echo "type=${{ inputs.type }}" >> $GITHUB_OUTPUT
           else
             HOUR=$(date -u +%H)
-            if [ "$HOUR" = "02" ] || [ "$HOUR" = "08" ] || [ "$HOUR" = "13" ]; then
+            DOW=$(date -u +%u)
+            if [ "$HOUR" = "04" ] && [ "$DOW" = "7" ]; then
+              echo "type=weekly_summary" >> $GITHUB_OUTPUT
+            elif [ "$HOUR" = "02" ] || [ "$HOUR" = "08" ] || [ "$HOUR" = "13" ]; then
               echo "type=morning_activation" >> $GITHUB_OUTPUT
             elif [ "$HOUR" = "15" ] || [ "$HOUR" = "20" ]; then
               echo "type=streak_reminder" >> $GITHUB_OUTPUT

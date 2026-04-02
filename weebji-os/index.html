@@ -7923,6 +7923,16 @@
     if ((p.prevStreak || 0) >= 7) p.ghostWhisperEarned = true;
     checkSecretTitles(p, localStorage.getItem('weebji_class'));
     saveProgress(p);
+    // Fire server-side push if ghost tokens now depleted
+    if (p.ghostTokens <= 0) {
+      try {
+        const _u = SupabaseSync.getUser();
+        if (_u?.id) {
+          const _c = SupabaseSync._client();
+          if (_c) _c.functions.invoke('send-push', { body: { user_id: _u.id, type: 'ghost_token' } }).catch(() => {});
+        }
+      } catch(_) {}
+    }
     document.getElementById('ghost-intervention').classList.remove('active');
     updateStats(p);
     Sound.play('milestone');

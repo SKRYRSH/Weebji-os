@@ -79,11 +79,10 @@ Deno.serve(async (req) => {
 
     for (const sub of subs) {
       const prog = progMap[sub.user_id];
-      if (!prog) { skipped++; continue; }
 
-      const streak    = prog.streak || 0;
-      const level     = prog.level  || 1;
-      const updatedAt = prog.updated_at || '';
+      const streak    = prog?.streak || 0;
+      const level     = prog?.level  || 1;
+      const updatedAt = prog?.updated_at || '';
       const notTrained = updatedAt < todayISTStart;
       const inactive3d = updatedAt < threeDaysAgo;
 
@@ -102,11 +101,9 @@ Deno.serve(async (req) => {
         sent++;
       } catch (e: unknown) {
         const err = e as { statusCode?: number };
-        if (err.statusCode === 410) {
-          // Expired subscription — clean up
+        if (err.statusCode === 410 || err.statusCode === 404) {
           expired.push(sub.user_id);
         }
-        // else: ignore transient failures
         skipped++;
       }
     }

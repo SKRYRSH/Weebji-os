@@ -2727,6 +2727,8 @@
   const DUNGEONS = [
     {
       boss:'THE IRON WARDEN', quote:'"Order. Discipline. Collapse."',
+      taunt_free:'"Authorization denied. Return when your rank is verified."',
+      taunt_plus:'"I have broken stronger soldiers. Let us see if you are different."',
       img:'bosses/iron-warden.jpg',
       gates:[
         { day:'Monday',   task:'Complete your full workout — every exercise, zero skipped.',  check: p => (p.workoutChecked||[]).length >= 4 || p.workoutDone },
@@ -2739,6 +2741,8 @@
     },
     {
       boss:'THE VOID ARCHITECT', quote:'"You cannot build what you fear to imagine."',
+      taunt_free:'"You stand before something you cannot comprehend. Leave."',
+      taunt_plus:'"Every great structure begins with a single decision. This is yours."',
       img:'bosses/void-architect.jpg',
       gates:[
         { day:'Monday',   task:'Complete all 3 daily quests without skipping a single one.',  check: p => (p.questsChecked||[]).length >= 3 },
@@ -2751,6 +2755,8 @@
     },
     {
       boss:'THE HOLLOW KING', quote:'"An empire built on weak days crumbles."',
+      taunt_free:'"Peasants do not address the King. Upgrade your standing."',
+      taunt_plus:'"My throne was built on the bones of those who almost made it."',
       img:'bosses/hollow-king.jpg',
       gates:[
         { day:'Monday',   task:'Extend your streak — log a workout AND complete all quests.',  check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 },
@@ -2763,6 +2769,8 @@
     },
     {
       boss:'THE SILENT SOVEREIGN', quote:'"Silence is not weakness. It is the calm before annihilation."',
+      taunt_free:'"You are not worth the words."',
+      taunt_plus:'"I have waited lifetimes. A few more days will not break me. Can you say the same?"',
       img:'bosses/silent-sovereign.jpg',
       gates:[
         { day:'Monday',   task:'Complete all monk rituals today — every single one.',          check: p => (p.monkChecked||[]).length >= 5 },
@@ -2775,6 +2783,8 @@
     },
     {
       boss:'THE CRIMSON BEAST', quote:'"It does not think. It does not stop. It does not forgive."',
+      taunt_free:'"Prey does not earn entry. Run."',
+      taunt_plus:'"I smell hesitation. Come closer. Let me cure you of it."',
       img:'bosses/crimson-beast.jpg',
       gates:[
         { day:'Monday',   task:'Complete your workout — every rep, no shortcuts.',             check: p => (p.workoutChecked||[]).length>=4||p.workoutDone },
@@ -2787,6 +2797,8 @@
     },
     {
       boss:'THE OBSIDIAN MONK', quote:'"Stillness is a weapon. Master it."',
+      taunt_free:'"Your mind is not ready for this confrontation."',
+      taunt_plus:'"Stillness is not peace. It is control. Do you have it?"',
       img:'bosses/obsidian-monk.jpg',
       gates:[
         { day:'Monday',   task:'Log a 60-minute focus session — total silence, no breaks.',   check: p => Object.values(p.mmDaily||{}).some(v=>v>=60) },
@@ -2799,6 +2811,8 @@
     },
     {
       boss:'THE PLAGUE DOCTOR', quote:'"I cure nothing. I only reveal what was always there."',
+      taunt_free:'"I only treat those enrolled in the full program."',
+      taunt_plus:'"I have already diagnosed your weakness. The question is — will you let me cut it out?"',
       img:'bosses/plague-doctor.jpg',
       gates:[
         { day:'Monday',   task:'Complete full workout — no rest day excuses.',                check: p => (p.workoutChecked||[]).length>=3||p.workoutDone },
@@ -2811,6 +2825,8 @@
     },
     {
       boss:'THE ASHEN TITAN', quote:'"From the ash of who you were rises what you will become."',
+      taunt_free:'"Titans were not built for those who observe. Only those who endure."',
+      taunt_plus:'"I was forged in fire that consumed everything around me. Show me you were too."',
       img:'bosses/ashen-titan.jpg',
       gates:[
         { day:'Monday',   task:'Gym workout only — titans do not train at home today.',       check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
@@ -2823,6 +2839,8 @@
     },
     {
       boss:'THE FRACTURED MIRROR', quote:'"The only enemy you have ever faced is the one looking back."',
+      taunt_free:'"You do not want to see what I reflect. Not yet."',
+      taunt_plus:'"Every crack in this mirror is a lie you told yourself. I remember all of them."',
       img:'bosses/fractured-mirror.jpg',
       gates:[
         { day:'Monday',   task:'Complete all daily quests — confront yourself fully.',        check: p => (p.questsChecked||[]).length>=3 },
@@ -2835,6 +2853,8 @@
     },
     {
       boss:'THE ETERNAL HUNTER', quote:'"There is no finish line. There is only the next gate."',
+      taunt_free:'"The final gate is not for observers. Only the worthy enter."',
+      taunt_plus:'"You have made it further than most. Now comes the part where they all quit."',
       img:'bosses/eternal-hunter.jpg',
       gates:[
         { day:'Monday',   task:'Full workout + all quests — the hunt opens with full effort.',check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 },
@@ -2968,6 +2988,10 @@
       <div class="dungeon-card__boss">${dungeon.boss}</div>
       <div class="dungeon-card__quote">${dungeon.quote}</div>
       <div class="dungeon-boss-img"><img src="${dungeon.img}" alt="${dungeon.boss}" loading="lazy"></div>
+      <div style="margin:10px 0 4px;padding:10px 14px;border-left:2px solid rgba(255,255,255,${plus?'0.18':'0.08'});background:rgba(255,255,255,0.02);border-radius:0 8px 8px 0">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:rgba(255,255,255,${plus?'0.55':'0.25'});line-height:1.6;font-style:italic">${plus ? dungeon.taunt_plus : dungeon.taunt_free}</div>
+        ${!plus ? `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,200,50,0.4);margin-top:5px;cursor:pointer" onclick="showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">— ${dungeon.boss} · WEEBJI+ TO ENTER →</div>` : `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,255,255,0.18);margin-top:5px">— ${dungeon.boss}</div>`}
+      </div>
       <div class="dungeon-reward">
         <div>
           <div class="dungeon-reward__xp">+${dungeon.xp} XP</div>

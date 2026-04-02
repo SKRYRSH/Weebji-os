@@ -17,12 +17,6 @@ const NOTIF: Record<string, (e: Record<string, unknown>) => { title: string; bod
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
-  // Auth: cron secret header
-  const cronSecret = Deno.env.get('CRON_SECRET')?.trim();
-  const incoming   = req.headers.get('x-weebji-cron')?.trim();
-  if (!cronSecret || incoming !== cronSecret) {
-    return new Response('Unauthorized', { status: 401 });
-  }
 
   try {
     let type: string | null = null;

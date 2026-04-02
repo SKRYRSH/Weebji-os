@@ -1281,40 +1281,6 @@
   #dashboard.evolved-20 .hp-seg.full { box-shadow: 0 0 5px rgba(var(--cls-rgb),0.55); }
 
   /* ══ DEV PANEL ═══════════════════════════════ */
-  #dev-panel {
-    position: fixed; bottom: 16px; right: 16px; z-index: 9999;
-    width: 160px; border-radius: 12px;
-    background: rgba(7,9,15,0.96); border: 1px solid rgba(255,255,255,0.12);
-    backdrop-filter: blur(12px); font-family: 'JetBrains Mono', monospace;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
-    display: none;
-  }
-  #dev-panel.dev-unlocked { display: block; }
-  #dev-panel__bar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 10px; cursor: default;
-  }
-  #dev-panel__title { font-size: 9px; letter-spacing: 0.3em; color: #555577; }
-  #dev-panel__toggle {
-    background: none; border: none; color: #555577; font-size: 13px;
-    cursor: pointer; padding: 0 2px; line-height: 1; -webkit-tap-highlight-color: transparent;
-    transition: transform 0.2s ease;
-  }
-  #dev-panel.collapsed #dev-panel__toggle { transform: rotate(-90deg); }
-  #dev-panel__body { display: flex; flex-direction: column; gap: 5px; padding: 0 8px 10px; }
-  #dev-panel.collapsed #dev-panel__body { display: none; }
-  .dev-btn {
-    width: 100%; padding: 7px 10px; border-radius: 7px; border: 1px solid;
-    font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.1em;
-    font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent;
-    transition: opacity 0.15s ease, transform 0.1s ease;
-    text-align: center;
-  }
-  .dev-btn:active { opacity: 0.65; transform: scale(0.96); }
-  .dev-btn--cyan { background: rgba(0,245,255,0.08); border-color: rgba(0,245,255,0.3); color: #00F5FF; }
-  .dev-btn--gold { background: rgba(255,200,50,0.07); border-color: rgba(255,200,50,0.25); color: #FFD700; }
-  .dev-btn--dim  { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: #555577; }
-  .dev-btn--red  { background: rgba(255,34,51,0.08); border-color: rgba(255,34,51,0.3); color: #FF2233; }
   </style>
 </head>
 <body>
@@ -1845,22 +1811,6 @@
   </div><!-- /app -->
 
   <!-- ══ DEV PANEL (remove before launch) ══════ -->
-  <div id="dev-panel">
-    <div id="dev-panel__bar">
-      <span id="dev-panel__title">⚙ DEV</span>
-      <button id="dev-panel__toggle">▾</button>
-    </div>
-    <div id="dev-panel__body">
-      <button class="dev-btn dev-btn--cyan"  id="devbtn-levelup">+1 LEVEL</button>
-      <button class="dev-btn dev-btn--cyan"  id="devbtn-fillxp">FILL XP</button>
-      <button class="dev-btn dev-btn--gold"  id="devbtn-streak7">+7 STREAK</button>
-      <button class="dev-btn dev-btn--gold"  id="devbtn-ghost">GHOST CRISIS</button>
-      <button class="dev-btn dev-btn--gold"  id="devbtn-penance">PENANCE</button>
-      <button class="dev-btn dev-btn--dim"   id="devbtn-hpcrit">HP CRIT</button>
-      <button class="dev-btn dev-btn--dim"   id="devbtn-voice">TEST VOICE</button>
-      <button class="dev-btn dev-btn--red"   id="devbtn-reset">RESET ALL</button>
-    </div>
-  </div>
 
   <script>
   /* ══ SERVICE WORKER ══════════════════════════ */
@@ -8859,22 +8809,14 @@ ${particles}
   })();
 
   /* ══ PRODUCTION GUARD ═══════════════════════ */
-  const _IS_PROD = !['localhost','127.0.0.1'].includes(location.hostname) && !location.hostname.startsWith('192.168.');
-
-  if (_IS_PROD) {
+  {
     // Silence console in production — don't leak internals or invite attacks
     const _noop = () => {};
     console.log = console.warn = console.info = console.debug = console.error = _noop;
-    // Remove DEV panel HTML entirely so it can't be re-shown
-    const _dp = document.getElementById('dev-panel');
-    if (_dp) _dp.remove();
-  } else {
-    console.log('%cWEEBJI OS — The Awakening', 'color:#00F5FF;font-family:monospace;font-size:13px');
-    console.log('%cDEV tools: window.DEV — type DEV.help() for commands', 'color:#555577;font-family:monospace;font-size:10px');
   }
 
-  /* ══ DEV TESTING HELPERS ════════════════════ */
-  window.DEV = _IS_PROD ? new Proxy({}, { get: () => () => console.error('DEV panel disabled in production.') }) : {
+  /* ══ DEV TESTING HELPERS (console only, no panel) ═══ */
+  window.DEV = {
     help() {
       console.log(`%c
 WEEBJI OS — Dev Commands
@@ -8897,8 +8839,6 @@ DEV.skipSplash()      → go straight to class select (if no session)
 ─────────────────────────────────────────`, 'color:#00F5FF;font-family:monospace;font-size:11px');
     },
 
-    unlock() { document.getElementById('dev-panel').classList.add('dev-unlocked'); console.log('%c🔓 DEV panel unlocked', 'color:#00F5FF'); },
-    lock()   { document.getElementById('dev-panel').classList.remove('dev-unlocked'); },
     reset() { resetGame(); },
 
     dashboard() {
@@ -9025,94 +8965,6 @@ DEV.skipSplash()      → go straight to class select (if no session)
     },
   };
 
-  /* ══ DEV PANEL BUTTONS ═══════════════════════ */
-  (function initDevPanel() {
-    if (_IS_PROD) return; // DEV panel removed from DOM in production
-    const panel = document.getElementById('dev-panel');
-    if (!panel) return;
-    const toggle = document.getElementById('dev-panel__toggle');
-    if (toggle) toggle.addEventListener('click', () => panel.classList.toggle('collapsed'));
-
-    // Secret unlock: 7 rapid taps on splash title
-    let _devTaps = 0, _devTimer = null;
-    const splashTitle = document.querySelector('.splash__title');
-    if (splashTitle) {
-      splashTitle.addEventListener('click', () => {
-        _devTaps++;
-        clearTimeout(_devTimer);
-        if (_devTaps >= 7) {
-          panel.classList.add('dev-unlocked');
-          _devTaps = 0;
-        } else {
-          _devTimer = setTimeout(() => { _devTaps = 0; }, 1500);
-        }
-      });
-    }
-
-    function devAction(id, fn) {
-      document.getElementById(id).addEventListener('click', fn);
-    }
-
-    devAction('devbtn-levelup', () => {
-      const p = loadProgress();
-      p.xp = xpForLevel(p.level); // set XP to threshold so checkLevelUp fires
-      const leveled = checkLevelUp(p);
-      saveProgress(p);
-      updateXPBar(p);
-      updateStats(p);
-      if (leveled) triggerLevelUp(p.level);
-    });
-
-    devAction('devbtn-fillxp', () => {
-      const cls = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
-      const p = loadProgress();
-      const type = todayWorkoutType ? todayWorkoutType() : 'PUSH';
-      if (type !== 'REST' && WORKOUTS[type]) {
-        WORKOUTS[type].forEach((_, i) => { if (!p.workoutChecked.includes(i)) p.workoutChecked.push(i); });
-        p.xp += WORKOUTS[type].reduce((s, w) => s + w.xp, 0) + 25; p.workoutBonus = true;
-      }
-      const quests = CLASS_QUESTS[cls] || [];
-      quests.forEach((_, i) => { if (!p.questsChecked.includes(i)) p.questsChecked.push(i); });
-      p.xp += quests.reduce((s, q) => s + q.xp, 0);
-      const leveled = checkLevelUp(p); saveProgress(p); updateXPBar(p); updateStats(p);
-      if (leveled) triggerLevelUp(p.level);
-      renderForgeArea(p, cls); renderQuests(p, quests);
-    });
-
-    devAction('devbtn-streak7', () => {
-      const p = loadProgress();
-      p.streak = (p.streak || 0) + 7;
-      if (p.streak > p.bestStreak) p.bestStreak = p.streak;
-      saveProgress(p); updateStats(p);
-      if ([7, 14, 30, 60, 100].includes(p.streak)) triggerStreakMilestone(p.streak);
-    });
-
-    devAction('devbtn-ghost', () => {
-      const p = loadProgress();
-      p.streakLostToday = true; p.prevStreak = p.streak || 5;
-      saveProgress(p); checkGhostIntervention(p);
-    });
-
-    devAction('devbtn-penance', () => {
-      const p = loadProgress();
-      p.prevStreak = p.streak || 5;
-      saveProgress(p); triggerPenanceProtocol(p);
-    });
-
-    devAction('devbtn-hpcrit', () => {
-      const p = loadProgress(); p.hp = 1; saveProgress(p);
-      renderHearts(p.hp); updateHPVignette(p.hp); updateStats(p);
-    });
-
-    devAction('devbtn-voice', () => {
-      const t = getAvatarTier ? getAvatarTier(loadProgress().level) : 0;
-      SystemVoice.greet();
-    });
-
-    devAction('devbtn-reset', () => {
-      if (confirm('Reset ALL progress? This cannot be undone.')) resetGame();
-    });
-  })();
 
   /* ══ SUPABASE SYNC ════════════════════════════
      localStorage = source of truth (app works 100% offline).

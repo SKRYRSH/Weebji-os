@@ -1934,9 +1934,25 @@
       return true;
     }
 
+    async function unsubscribe() {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) await sub.unsubscribe();
+        localStorage.setItem('weebji_push_opted_out', '1');
+        const user = await SupabaseSync.getUser().catch(() => null);
+        if (user?.id) {
+          const sb = SupabaseSync._client();
+          if (sb) await sb.from('push_subscriptions').delete().eq('user_id', user.id).catch(() => {});
+        }
+      } catch (_) {}
+    }
+
+    function isOptedOut() { return localStorage.getItem('weebji_push_opted_out') === '1'; }
+
     function init() { /* no-op */ }
 
-    return { subscribe, send, local, init };
+    return { subscribe, unsubscribe, isOptedOut, send, local, init };
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
@@ -6877,7 +6893,7 @@
       const nToggle = document.getElementById('notif-toggle-state');
       const nSub    = document.getElementById('notif-toggle-sub');
       const perm    = Notification.permission;
-      if (perm === 'granted') {
+      if (perm === 'granted' && !WeebjPush.isOptedOut()) {
         if (nToggle) { nToggle.textContent = 'ON'; nToggle.className = 'profile-voice__toggle on'; }
         if (nSub)    nSub.textContent = 'Morning + streak reminders active';
         notifBtn.style.borderColor = hexRgba(color, 0.25); notifBtn.style.opacity = '1';
@@ -7886,9 +7902,14 @@
       spawnDropBanner('🔔  Notifications blocked — enable in Android Settings > Apps');
       return;
     }
-    localStorage.removeItem('weebji_notif_dismissed');
-    sessionStorage.removeItem('weebji_notif_shown_this_session');
-    await WeebjPush.subscribe();
+    if (Notification.permission === 'granted' && !WeebjPush.isOptedOut()) {
+      await WeebjPush.unsubscribe();
+    } else {
+      localStorage.removeItem('weebji_push_opted_out');
+      localStorage.removeItem('weebji_notif_dismissed');
+      sessionStorage.removeItem('weebji_notif_shown_this_session');
+      await WeebjPush.subscribe();
+    }
     renderProfile();
   });
 

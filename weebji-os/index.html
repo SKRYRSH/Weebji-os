@@ -9187,7 +9187,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.penanceSurvived)     p.penanceSurvived     = true;
           if (d.shadowSlayerEarned)  p.shadowSlayerEarned  = true;
           // Restore identity on new device — name/class/color live in localStorage, sync from DB if missing
-          if (d.playerName && !localStorage.getItem('weebji_name'))  localStorage.setItem('weebji_name',  d.playerName);
+          if (d.playerName && (!localStorage.getItem('weebji_name') || localStorage.getItem('weebji_name') === 'Hunter'))  localStorage.setItem('weebji_name',  d.playerName);
           if (d.playerClass && !localStorage.getItem('weebji_class')) localStorage.setItem('weebji_class', d.playerClass);
           if (d.playerColor && !localStorage.getItem('weebji_color')) localStorage.setItem('weebji_color', d.playerColor);
           // Custom workouts — restore on new device (never overwrite existing local list)
@@ -9199,10 +9199,13 @@ DEV.skipSplash()      → go straight to class select (if no session)
         }
         // Upsert leaderboard after identity is restored so display_name is always the real name
         if (hn?.number) {
+          const resolvedName = (data?.data?.playerName && data.data.playerName !== 'Hunter')
+            ? data.data.playerName
+            : (localStorage.getItem('weebji_name') || 'Hunter');
           await client.from('leaderboard').upsert({
             user_id:       currentUser.id,
             hunter_number: hn.number,
-            display_name:  localStorage.getItem('weebji_name') || 'Hunter',
+            display_name:  resolvedName,
             class:         localStorage.getItem('weebji_class') || 'monarch',
             color:         localStorage.getItem('weebji_color') || '#00F5FF',
           }, { onConflict: 'user_id' }).catch(e => console.warn('lb upsert:', e));

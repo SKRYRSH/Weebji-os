@@ -2690,18 +2690,18 @@
           <div class="plus-plans">
             <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('monthly')">
               <div class="plus-plan__period">Monthly</div>
-              <div class="plus-plan__price">$4.99</div>
+              <div class="plus-plan__price">₹499</div>
               <div class="plus-plan__unit">/month</div>
             </div>
             <div class="plus-plan featured" id="plus-plan-annual" onclick="Sound.play('tap');_openCheckout('annual')">
               <div class="plus-plan__badge">BEST VALUE</div>
               <div class="plus-plan__period">Annual</div>
-              <div class="plus-plan__price">$29.99</div>
+              <div class="plus-plan__price">₹2,999</div>
               <div class="plus-plan__unit">/year — save 50%</div>
             </div>
           </div>
         </div>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Need a Ghost Token? — $0.99</button>`;
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Need a Ghost Token? — ₹99</button>`;
       // Async: fill social proof with real premium count
       _fetchPremiumCount();
     }
@@ -3274,8 +3274,8 @@
           <div class="premium-hype__feature-text"><strong>${f.title}</strong> — ${f.desc}</div>
         </div>`).join('')}
       </div>
-      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — $4.99/mo</button>
-      <div class="premium-hype__price">or $29.99/yr — save 50% · cancel anytime</div>
+      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — ₹499/mo</button>
+      <div class="premium-hype__price">or ₹2,999/yr — save 50% · cancel anytime</div>
     </div>`;
   }
 
@@ -5421,7 +5421,7 @@
           <div class="unlock-card__icon" style="background:${hexRgba(meta.color,0.06)};color:${meta.color}">${meta.icon}</div>
           <div class="unlock-card__meta">
             <div class="unlock-card__name" style="color:rgba(255,215,0,0.35)">${meta.label}</div>
-            <div class="unlock-card__status" style="color:rgba(255,215,0,0.25)">◆ WEEBJI+ — Tap to unlock</div>
+            <div class="unlock-card__status" style="color:rgba(255,215,0,0.25)">◆ WEEBJI+ — ${secondaryCls === 'mastermind' ? 'THE WHITE ROOM' : secondaryCls === 'monk' ? 'THE SANCTUARY' : 'THE FORGE'} is sealed</div>
           </div>
           <div class="unlock-card__lock" style="color:rgba(255,215,0,0.3)">◆</div>
         `;
@@ -7779,6 +7779,35 @@
     const infoY = avatarDrawn ? 1050 : 890;
     ctx.textAlign = 'center';
 
+    // Plus crown rays — draw behind name
+    if (plus) {
+      const rayOriginX = W/2, rayOriginY = infoY + 30;
+      const rays = [
+        { angle: -90, w: 90 }, { angle: -72, w: 68 }, { angle: -108, w: 68 },
+        { angle: -55, w: 50 }, { angle: -125, w: 50 }, { angle: -40, w: 36 }, { angle: -140, w: 36 },
+      ];
+      rays.forEach(({ angle, w }) => {
+        const rad = (angle * Math.PI) / 180;
+        const len = 820;
+        const ex = rayOriginX + Math.cos(rad) * len;
+        const ey = rayOriginY + Math.sin(rad) * len;
+        const perpX = -Math.sin(rad), perpY = Math.cos(rad);
+        const hw = w / 2;
+        ctx.beginPath();
+        ctx.moveTo(rayOriginX + perpX*hw, rayOriginY + perpY*hw);
+        ctx.lineTo(ex + perpX*(w*0.08), ey + perpY*(w*0.08));
+        ctx.lineTo(ex - perpX*(w*0.08), ey - perpY*(w*0.08));
+        ctx.lineTo(rayOriginX - perpX*hw, rayOriginY - perpY*hw);
+        ctx.closePath();
+        const rg = ctx.createLinearGradient(rayOriginX, rayOriginY, ex, ey);
+        rg.addColorStop(0, 'rgba(255,215,0,0.13)');
+        rg.addColorStop(0.5, 'rgba(255,215,0,0.07)');
+        rg.addColorStop(1, 'rgba(255,215,0,0)');
+        ctx.fillStyle = rg;
+        ctx.fill();
+      });
+    }
+
     // Name
     const nameFontSize = Math.min(130, Math.max(56, Math.floor(10800 / Math.max(name.length, 5))));
     ctx.font = `900 ${nameFontSize}px "Cinzel", serif`;
@@ -7805,33 +7834,21 @@
     ctx.fillStyle = `rgba(${rgb},0.45)`;
     ctx.fillText(tierInfo.label.toUpperCase(), W/2, divY + 46);
 
-    // Secret titles
+    // Secret titles — show best one large
     const secretTitles = (p.titles || []).map(id => SECRET_TITLES.find(t => t.id === id)).filter(Boolean);
     const titlesY = divY + 96;
     if (secretTitles.length > 0) {
-      const showTitles = secretTitles.slice(-3);
-      ctx.font = '600 26px "JetBrains Mono", monospace';
-      const BADGE_PAD_X = 28, BADGE_H = 52, BADGE_GAP = 16;
-      const bWidths = showTitles.map(t => ctx.measureText(`${t.glyph} ${t.label.toUpperCase()}`).width + BADGE_PAD_X*2);
-      const totalBW = bWidths.reduce((a,b) => a+b, 0) + BADGE_GAP*(showTitles.length-1);
-      let bx = (W - totalBW) / 2;
-      showTitles.forEach((t, i) => {
-        const bw = bWidths[i], by = titlesY - BADGE_H/2, br = 10;
-        ctx.beginPath();
-        ctx.moveTo(bx+br, by); ctx.lineTo(bx+bw-br, by); ctx.arcTo(bx+bw, by, bx+bw, by+br, br);
-        ctx.lineTo(bx+bw, by+BADGE_H-br); ctx.arcTo(bx+bw, by+BADGE_H, bx+bw-br, by+BADGE_H, br);
-        ctx.lineTo(bx+br, by+BADGE_H); ctx.arcTo(bx, by+BADGE_H, bx, by+BADGE_H-br, br);
-        ctx.lineTo(bx, by+br); ctx.arcTo(bx, by, bx+br, by, br); ctx.closePath();
-        ctx.fillStyle = 'rgba(255,215,0,0.08)'; ctx.fill();
-        ctx.strokeStyle = 'rgba(255,215,0,0.45)'; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.fillStyle = '#FFD700'; ctx.shadowColor = 'rgba(255,215,0,0.5)'; ctx.shadowBlur = 10;
-        ctx.fillText(`${t.glyph} ${t.label.toUpperCase()}`, bx+bw/2, titlesY+10);
-        ctx.shadowBlur = 0; bx += bw + BADGE_GAP;
-      });
+      const best = secretTitles[secretTitles.length - 1];
+      const titleText = `${best.glyph}  ${best.label.toUpperCase()}  ${best.glyph}`;
+      ctx.font = `700 ${plus ? 48 : 32}px "Cinzel", serif`;
+      ctx.fillStyle = plus ? '#FFD700' : `rgba(${rgb},0.7)`;
+      if (plus) { ctx.shadowColor = 'rgba(255,215,0,0.95)'; ctx.shadowBlur = 32; }
+      ctx.fillText(titleText, W/2, titlesY + 12);
+      ctx.shadowBlur = 0;
     }
 
     // Streak
-    const streakTopY = titlesY + (secretTitles.length > 0 ? 74 : 26);
+    const streakTopY = titlesY + (secretTitles.length > 0 ? 80 : 26);
     ctx.font = '500 30px "JetBrains Mono", monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillText('BEST STREAK', W/2, streakTopY);

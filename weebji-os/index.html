@@ -2690,18 +2690,18 @@
           <div class="plus-plans">
             <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('monthly')">
               <div class="plus-plan__period">Monthly</div>
-              <div class="plus-plan__price">₹499</div>
+              <div class="plus-plan__price">$4.99</div>
               <div class="plus-plan__unit">/month</div>
             </div>
             <div class="plus-plan featured" id="plus-plan-annual" onclick="Sound.play('tap');_openCheckout('annual')">
               <div class="plus-plan__badge">BEST VALUE</div>
               <div class="plus-plan__period">Annual</div>
-              <div class="plus-plan__price">₹2,999</div>
+              <div class="plus-plan__price">$29.99</div>
               <div class="plus-plan__unit">/year — save 50%</div>
             </div>
           </div>
         </div>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Need a Ghost Token? — ₹99</button>`;
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Need a Ghost Token? — $0.99</button>`;
       // Async: fill social proof with real premium count
       _fetchPremiumCount();
     }
@@ -2966,7 +2966,7 @@
         <p class="dungeon-locked-overlay__pitch">Defeat <strong>${dungeon.boss}</strong> this week. Claim the title. Most hunters never make it past Gate 1.</p>
         <div class="dungeon-locked-overlay__urgency">⏳ ${timerTxt} — dungeon resets next week</div>
         <div class="dungeon-locked-overlay__btn" onclick="document.querySelector('.profile-scroll')&&document.getElementById('profile-plus-section').scrollIntoView({behavior:'smooth'});Sound.play('tap');showScreen('profile');renderProfile();">UNLOCK WEEBJI+ — ENTER NOW →</div>
-        <div class="dungeon-locked-overlay__price">From ₹199/mo · Cancel anytime</div>
+        <div class="dungeon-locked-overlay__price">From $4.99/mo · Cancel anytime</div>
       </div>` : '';
 
     const defeatedHtml = bossDone ? `
@@ -3274,8 +3274,8 @@
           <div class="premium-hype__feature-text"><strong>${f.title}</strong> — ${f.desc}</div>
         </div>`).join('')}
       </div>
-      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — ₹499/mo</button>
-      <div class="premium-hype__price">or ₹2,999/yr — save 50% · cancel anytime</div>
+      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — $4.99/mo</button>
+      <div class="premium-hype__price">or $29.99/yr — save 50% · cancel anytime</div>
     </div>`;
   }
 

@@ -1914,7 +1914,7 @@
           applicationServerKey: _urlBase64ToUint8Array(_VAPID_PUBLIC),
         });
         // Save to Supabase if user is signed in
-        const user = await SupabaseSync.getUser().catch(() => null);
+        const user = SupabaseSync.getUser();
         if (user?.id) {
           const s = sub.toJSON();
           await SupabaseSync.upsertPushSub({
@@ -1934,7 +1934,7 @@
         const sub = await reg.pushManager.getSubscription();
         if (sub) await sub.unsubscribe();
         localStorage.setItem('weebji_push_opted_out', '1');
-        const user = await SupabaseSync.getUser().catch(() => null);
+        const user = SupabaseSync.getUser();
         if (user?.id) {
           const sb = SupabaseSync._client();
           if (sb) await sb.from('push_subscriptions').delete().eq('user_id', user.id).catch(() => {});

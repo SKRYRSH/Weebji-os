@@ -9759,20 +9759,20 @@ DEV.skipSplash()      → go straight to class select (if no session)
   /* ══ YOUTUBE NOTICE BOARD ════════════════════
      Uses rss2json.com (no CORS issues). Playlist ID from youtube.com/playlist?list=XXXXX
   ════════════════════════════════════════════ */
-  const YT_PLAYLIST_ID = 'PLQ2XV45qE1jMUA7BT0S0jR_6pxR4bipJ_';
+  const YT_CHANNEL_ID  = 'UCfChvEHAHj_8pOAczLlJfIw';
   const YT_CACHE_KEY   = 'weebji_yt_cache';
   const YT_CACHE_TTL   = 2 * 60 * 60 * 1000; // 2 hours
 
   async function loadYTNoticeBoard() {
     const el = document.getElementById('yt-notice-board');
-    if (!el || !YT_PLAYLIST_ID) return;
+    if (!el || !YT_CHANNEL_ID) return;
     try {
       const cached = JSON.parse(localStorage.getItem(YT_CACHE_KEY) || 'null');
       if (cached && Date.now() - cached.ts < YT_CACHE_TTL) { renderYTCard(el, cached); return; }
     } catch(e) {}
     try {
-      const rss = `https://www.youtube.com/feeds/videos.xml?playlist_id=${YT_PLAYLIST_ID}`;
-      const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&order_by=pubDate&order_dir=desc&count=1`;
+      const rss = `https://www.youtube.com/feeds/videos.xml?channel_id=${YT_CHANNEL_ID}`;
+      const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=1`;
       const res  = await fetch(api);
       const json = await res.json();
       const item = json.items?.[0];

@@ -5405,29 +5405,13 @@
     const order = CLASS_UNLOCK_ORDER[cls] || [];
     if (order.length === 0) return;
 
-    const unlockLevels = [3, 7];
     let hasAny = false;
 
-    order.forEach((secondaryCls, i) => {
-      const meta         = CLASS_META[secondaryCls];
-      const requiredLvl  = unlockLevels[i];
-      const isUnlocked   = p.level >= requiredLvl;
+    order.forEach((secondaryCls) => {
+      const meta = CLASS_META[secondaryCls];
       hasAny = true;
 
-      if (!isUnlocked) {
-        // Locked card — level requirement not met
-        const card = document.createElement('div');
-        card.className = 'unlock-card locked';
-        card.innerHTML = `
-          <div class="unlock-card__icon" style="background:${hexRgba(meta.color,0.06)};color:${meta.color}">${meta.icon}</div>
-          <div class="unlock-card__meta">
-            <div class="unlock-card__name" style="color:#333355">${meta.label}</div>
-            <div class="unlock-card__status">Unlocks at Level ${requiredLvl}</div>
-          </div>
-          <div class="unlock-card__lock">🔒</div>
-        `;
-        container.appendChild(card);
-      } else if (!isWeebjiPlus()) {
+      if (!isWeebjiPlus()) {
         // Level met but not Plus — Plus gate
         const card = document.createElement('div');
         card.className = 'unlock-card locked';

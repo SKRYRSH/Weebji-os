@@ -2613,8 +2613,6 @@
       return;
     }
 
-    if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, class: localStorage.getItem('weebji_class') });
-
     const user = SupabaseSync.getUser?.();
     if (!user) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
 
@@ -2630,6 +2628,9 @@
 
       const { data, error } = await client.functions.invoke('razorpay-create-order', { body: { plan }, ...authHeaders });
       if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
+
+      // Only capture after order confirmed — prevents inflated counts from auth-fail retries
+      if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, class: localStorage.getItem('weebji_class') });
 
       const options = {
         key:         RAZORPAY_KEY_ID,

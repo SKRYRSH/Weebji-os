@@ -122,6 +122,16 @@
   .gate__or { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: rgba(255,255,255,0.2); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; }
   .gate__or::before, .gate__or::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
 
+  /* ══ LEGAL SECTION ═══════════════════════════ */
+  .legal-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .legal-section__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.35em; color: rgba(255,255,255,0.15); text-transform: uppercase; margin-bottom: 14px; }
+  .legal-section__link { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: rgba(255,255,255,0.35); text-decoration: none; text-transform: uppercase; margin-bottom: 8px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .legal-section__link:active { background: rgba(255,255,255,0.05); }
+  .legal-section__link span { opacity: 0.4; }
+  .legal-section__delete { width: 100%; margin-top: 6px; padding: 11px; border-radius: 10px; background: transparent; border: 1px solid rgba(255,60,60,0.15); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: rgba(255,80,80,0.4); text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .legal-section__delete:active { background: rgba(255,60,60,0.06); }
+  .legal-section__version { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.1); text-align: center; margin-top: 14px; letter-spacing: 0.2em; }
+
   /* ══ SCREEN 03 — CONTRACT ═════════════════════ */
   #contract { overflow-y: auto; scrollbar-width: none; }
   #contract::-webkit-scrollbar { display: none; }
@@ -1640,7 +1650,8 @@
         <div id="profile-leaderboard"></div>
         <div id="profile-friends"></div>
         <div id="profile-guild-section"></div>
-        <div style="height:32px"></div>
+        <div id="profile-legal"></div>
+        <div style="height:48px"></div>
       </div>
     </div>
 
@@ -2602,8 +2613,6 @@
       return;
     }
 
-    if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, class: localStorage.getItem('weebji_class') });
-
     const user = SupabaseSync.getUser?.();
     if (!user) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
 
@@ -2619,6 +2628,9 @@
 
       const { data, error } = await client.functions.invoke('razorpay-create-order', { body: { plan }, ...authHeaders });
       if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
+
+      // Only capture after order confirmed — prevents inflated counts from auth-fail retries
+      if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, class: localStorage.getItem('weebji_class') });
 
       const options = {
         key:         RAZORPAY_KEY_ID,
@@ -7082,6 +7094,55 @@
     renderFriends(color);
     // Guilds section
     if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(color);
+    renderLegalSection();
+  }
+
+  function renderLegalSection() {
+    const el = document.getElementById('profile-legal');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="legal-section">
+        <div class="legal-section__eyebrow">Legal &amp; Account</div>
+        <a class="legal-section__link" href="privacy.html" target="_blank" rel="noopener">Privacy Policy <span>↗</span></a>
+        <a class="legal-section__link" href="terms.html" target="_blank" rel="noopener">Terms of Service <span>↗</span></a>
+        <button class="legal-section__delete" onclick="confirmDeleteAccount()">Delete My Account</button>
+        <div class="legal-section__version">WEEBJI OS · v1.0</div>
+      </div>`;
+  }
+
+  function confirmDeleteAccount() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;padding:32px;';
+    overlay.innerHTML = `
+      <div style="max-width:340px;width:100%;text-align:center;">
+        <p style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.35em;color:rgba(255,80,80,0.6);text-transform:uppercase;margin-bottom:14px;">Warning</p>
+        <h2 style="font-family:'Cinzel',serif;font-size:22px;font-weight:900;letter-spacing:0.1em;color:#fff;margin-bottom:12px;">Delete Account?</h2>
+        <p style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.45);line-height:1.7;margin-bottom:28px;">Your XP, streak, level, and cloud data will be permanently erased. This cannot be undone.<br><br>Deletion is processed within 24 hours.</p>
+        <button id="del-confirm-btn" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(255,60,60,0.4);background:rgba(255,60,60,0.08);font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.2em;color:rgba(255,80,80,0.8);cursor:pointer;margin-bottom:10px;text-transform:uppercase;">Confirm — Delete Everything</button>
+        <button id="del-cancel-btn" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;color:rgba(255,255,255,0.25);cursor:pointer;text-transform:uppercase;">Cancel</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#del-cancel-btn').onclick = () => overlay.remove();
+    overlay.querySelector('#del-confirm-btn').onclick = async () => {
+      overlay.querySelector('#del-confirm-btn').textContent = 'Processing...';
+      overlay.querySelector('#del-confirm-btn').disabled = true;
+      if (typeof posthog !== 'undefined') posthog.capture('account_delete_requested');
+      try {
+        const client = SupabaseSync._client();
+        if (client) {
+          const { error } = await client.rpc('request_account_deletion');
+          if (error) throw error;
+        }
+      } catch(e) {
+        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'delete_account_rpc', error: e?.message });
+      }
+      // Sign out and wipe local data regardless
+      if (typeof SupabaseSync !== 'undefined') await SupabaseSync.signOut().catch(() => {});
+      Object.keys(localStorage).filter(k => k.startsWith('weebji_')).forEach(k => localStorage.removeItem(k));
+      overlay.remove();
+      spawnDropBanner('◆  Account deletion requested — processed within 24h');
+      setTimeout(() => { showScreen('splash'); location.reload(); }, 2000);
+    };
   }
 
   async function renderLeaderboard(color) {

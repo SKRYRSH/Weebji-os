@@ -1,35 +1,36 @@
 {
   "name": "WEEBJI OS",
   "short_name": "WEEBJI OS",
+  "id": "/Weebji-os/",
   "description": "Gamified self-improvement. Solo Leveling, but real life.",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/Weebji-os/",
+  "scope": "/Weebji-os/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#0A0A0F",
   "theme_color": "#0A0A0F",
   "lang": "en",
-  "categories": ["entertainment", "health", "productivity"],
+  "categories": ["health", "fitness"],
   "icons": [
-    { "src": "./icons/icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./icons/icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "./icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "./icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icons/icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
     {
       "name": "Daily Check-in",
       "short_name": "Check-in",
       "description": "Log today's habits and quests",
-      "url": "./?action=checkin",
+      "url": "./index.html?action=checkin",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Hunter Profile",
       "short_name": "Profile",
       "description": "View your Hunter profile and stats",
-      "url": "./?action=profile",
+      "url": "./index.html?action=profile",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     }
   ]

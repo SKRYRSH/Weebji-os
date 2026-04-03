@@ -116,6 +116,11 @@
   .gate__step-text strong { color: rgba(255,255,255,0.95); font-weight: 600; }
   .gate__install-btn { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: rgba(255,255,255,0.8); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; margin-bottom: 14px; }
   .gate__already { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #333355; text-align: center; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; padding: 8px; }
+  .gate__skip-link { background: none; border: none; color: rgba(255,255,255,0.18); font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; padding: 14px 0 0; display: block; width: 100%; text-align: center; -webkit-tap-highlight-color: transparent; }
+  .gate__google-btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.85); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; transition: background 0.2s; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  .gate__google-btn:active { background: rgba(255,255,255,0.1); transform: scale(0.97); }
+  .gate__or { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: rgba(255,255,255,0.2); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; }
+  .gate__or::before, .gate__or::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
 
   /* ══ SCREEN 03 — CONTRACT ═════════════════════ */
   #contract { overflow-y: auto; scrollbar-width: none; }
@@ -1382,12 +1387,15 @@
     <!-- ══ S04B: SIGN-IN GATE ══════════════════ -->
     <div id="sign-in-gate" class="screen">
       <div id="gate-form-wrap" style="width:100%;max-width:380px;">
-        <p class="gate__eyebrow" id="gate-eyebrow">Step 03 of 03 — Lock In</p>
-        <h2 class="gate__title" id="gate-title">Save Your Identity</h2>
-        <p class="gate__sub">Enter your email. We'll send a 6-digit code — no password.<br>Your progress saves to the cloud, forever.</p>
+        <p class="gate__eyebrow" id="gate-eyebrow">Protect Your Progress</p>
+        <h2 class="gate__title" id="gate-title">Your Data Is At Risk</h2>
+        <p class="gate__sub">No account = no backup. If your browser clears storage, you lose your streak, level, and all XP — permanently.<br><br>Enter your email. We'll send a 6-digit code — no password ever.</p>
+        <button class="gate__google-btn" id="gate-google-btn" onclick="SupabaseSync.signInWithGoogle()"><svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+        <div class="gate__or">or</div>
         <input class="gate__input" id="gate-email" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" />
-        <button class="gate__btn" id="gate-send-btn">Lock In My Identity</button>
+        <button class="gate__btn" id="gate-send-btn">Protect My Progress</button>
         <p class="gate__msg" id="gate-msg"></p>
+        <button class="gate__skip-link" id="gate-skip-btn" onclick="skipSignInGate()" style="display:none;">Skip — keep data at risk locally</button>
       </div>
       <div id="gate-install-wrap" style="width:100%;max-width:380px;display:none;">
         <p class="gate__eyebrow">Code Sent ✓</p>
@@ -1924,7 +1932,11 @@
             auth:     s.keys.auth,
           }).catch(() => {});
         }
-      } catch (_) {}
+      } catch (e) {
+        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_subscribe', error: e?.message });
+        spawnDropBanner('◆  Notifications failed to enable — try again in Settings');
+        return false;
+      }
       return true;
     }
 
@@ -1933,13 +1945,23 @@
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.getSubscription();
         if (sub) await sub.unsubscribe();
+        // Only mark opted-out after browser unsubscribe actually succeeds
         localStorage.setItem('weebji_push_opted_out', '1');
         const user = SupabaseSync.getUser();
         if (user?.id) {
           const sb = SupabaseSync._client();
-          if (sb) await sb.from('push_subscriptions').delete().eq('user_id', user.id).catch(() => {});
+          if (sb) {
+            const { error: delErr, count } = await sb.from('push_subscriptions').delete({ count: 'exact' }).eq('user_id', user.id);
+            if (delErr || count === 0) {
+              if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_unsubscribe_db', error: delErr?.message, rows_deleted: count });
+              spawnDropBanner('◆  Notifications disabled on device — sync failed, you may still receive some');
+            }
+          }
         }
-      } catch (_) {}
+      } catch (e) {
+        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_unsubscribe', error: e?.message });
+        spawnDropBanner('◆  Failed to disable notifications — try again');
+      }
     }
 
     function isOptedOut() { return localStorage.getItem('weebji_push_opted_out') === '1'; }
@@ -2619,7 +2641,10 @@
             ...(vSess?.access_token ? { headers: { Authorization: `Bearer ${vSess.access_token}` } } : {})
           });
           if (verifyErr) { spawnDropBanner('◆  Verification failed — contact weebjiglobal@gmail.com'); return; }
-          try { await SupabaseSync.pullProgress(); } catch(_) {}
+          try { await SupabaseSync.pullProgress(); } catch(e) {
+            if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pullProgress_post_payment', error: e?.message });
+            spawnDropBanner('◆  Payment verified — refresh if Plus features are not active');
+          }
           spawnDropBanner('◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
           if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, class: localStorage.getItem('weebji_class') });
           renderProfile(); initDashboard();
@@ -3554,6 +3579,8 @@
               SystemVoice.say('WEEBJI+ activated. The System recognises your commitment.');
             }
           }
+        }).catch(e => {
+          if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pullProgress_visibility', error: e?.message });
         });
       }
     }
@@ -4171,10 +4198,26 @@
   }
 
   /* ══ FLOW: S04B — SIGN-IN GATE ═══════════════ */
-  function showSignInGate() {
+  function showSignInGate(isReturning = false) {
     const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
     const gate  = document.getElementById('sign-in-gate');
     gate.style.setProperty('--gate-accent', color);
+    // Context-aware copy
+    if (isReturning) {
+      document.getElementById('gate-eyebrow').textContent = 'Your Data Is At Risk';
+      document.getElementById('gate-title').textContent   = 'Protect Your Progress';
+      document.getElementById('gate-send-btn').textContent = 'Secure My Account';
+      gate.querySelector('.gate__sub').innerHTML = 'No account = no backup. One browser cache clear and your streak, level, and XP are gone — permanently.<br><br>Enter your email. 6-digit code, no password ever.';
+      const skipBtn = document.getElementById('gate-skip-btn');
+      if (skipBtn) skipBtn.style.display = '';
+    } else {
+      document.getElementById('gate-eyebrow').textContent = 'Step 03 of 03 — Lock In';
+      document.getElementById('gate-title').textContent   = 'Save Your Identity';
+      document.getElementById('gate-send-btn').textContent = 'Protect My Progress';
+      gate.querySelector('.gate__sub').innerHTML = 'Enter your email. We\'ll send a 6-digit code — no password.<br>Your progress saves to the cloud, forever.';
+      const skipBtn = document.getElementById('gate-skip-btn');
+      if (skipBtn) skipBtn.style.display = 'none';
+    }
     showScreen('sign-in-gate');
 
     const sendBtn  = document.getElementById('gate-send-btn');
@@ -4270,9 +4313,21 @@
   }
 
   /* ══ FLOW: S04 → S05 ══════════════════════════ */
+  function skipSignInGate() {
+    // Reset counter so gate reappears after 3 more sessions
+    localStorage.setItem('weebji_launch_count', '0');
+    window._gateSkippedThisSession = true;
+    if (typeof posthog !== 'undefined') posthog.capture('signin_gate_skipped');
+    enterDashboard();
+  }
+
   function enterDashboard(fromOnboarding = false) {
-    if (fromOnboarding && !SupabaseSync.getUser() && !localStorage.getItem('weebji_account_linked')) {
-      showSignInGate(); return;
+    const noAccount = !SupabaseSync.getUser() && !localStorage.getItem('weebji_account_linked');
+    if (noAccount && !window._gateSkippedThisSession) {
+      const launches = parseInt(localStorage.getItem('weebji_launch_count') || '0') + 1;
+      localStorage.setItem('weebji_launch_count', String(launches));
+      if (fromOnboarding) { showSignInGate(false); return; }
+      if (launches >= 3)  { showSignInGate(true);  return; }
     }
     showScreen('dashboard');
     Sound.play('appOpen');
@@ -6696,9 +6751,13 @@
         const _u = SupabaseSync.getUser();
         if (_u?.id) {
           const _c = SupabaseSync._client();
-          if (_c) _c.functions.invoke('send-push', { body: { user_id: _u.id, type: 'hp_critical' } }).catch(() => {});
+          if (_c) _c.functions.invoke('send-push', { body: { user_id: _u.id, type: 'hp_critical' } }).catch(e => {
+            if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'send_push_hp_critical', error: e?.message });
+          });
         }
-      } catch(_) {}
+      } catch(e) {
+        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'send_push_hp_critical_outer', error: e?.message });
+      }
     }
   }
 
@@ -9151,11 +9210,14 @@ DEV.skipSplash()      → go straight to class select (if no session)
     async function upsertPushSub({ user_id, endpoint, p256dh, auth }) {
       if (!client) return;
       try {
-        await client.from('push_subscriptions').upsert(
+        const { error } = await client.from('push_subscriptions').upsert(
           { user_id, endpoint, p256dh, auth, updated_at: new Date().toISOString() },
           { onConflict: 'endpoint' }
         );
-      } catch {}
+        if (error && typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'upsertPushSub', error: error.message });
+      } catch(e) {
+        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'upsertPushSub_throw', error: e?.message });
+      }
     }
 
     async function pushProgress() {
@@ -9217,10 +9279,16 @@ DEV.skipSplash()      → go straight to class select (if no session)
           ...(vpSess?.access_token ? { headers: { Authorization: `Bearer ${vpSess.access_token}` } } : {}),
         });
       } catch(e) {
+        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pushProgress_edge_fn', error: e?.message });
         // Edge function failed — push leaderboard directly as fallback only
         try {
-          await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' }).catch(() => {});
-        } catch(_) {}
+          const { error: lbErr } = await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
+          if (lbErr) {
+            if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pushProgress_lb_fallback', error: lbErr.message });
+          }
+        } catch(e2) {
+          if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pushProgress_total_failure', error: e2?.message });
+        }
       }
     }
 
@@ -9339,6 +9407,15 @@ DEV.skipSplash()      → go straight to class select (if no session)
       return { error };
     }
 
+    async function signInWithGoogle() {
+      if (!client) { spawnDropBanner('◆ App not loaded — try disabling ad blocker'); return; }
+      const { error } = await client.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + window.location.pathname }
+      });
+      if (error) spawnDropBanner('◆ Google sign-in failed — try email below');
+    }
+
     async function verifyOtp(email, token) {
       if (!client) return { error: 'Supabase not configured' };
       const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
@@ -9378,6 +9455,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
       } else {
         let _authEmail = '';
         el.innerHTML = `
+          <button class="gate__google-btn" id="auth-google-btn" style="margin-bottom:12px;" onclick="SupabaseSync.signInWithGoogle()"><svg width="16" height="16" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+          <div class="gate__or" style="margin-bottom:12px;">or</div>
           <div id="auth-email-step">
             <input class="gate__input" id="auth-email-input" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" style="margin-bottom:10px;" />
             <button class="profile-auth-btn" id="auth-send-btn">☁ Sign In / Create Account</button>
@@ -9449,7 +9528,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       } catch {}
     }
 
-    return { init, pushProgress, pullProgress, upsertPushSub, triggerBrevoSignup, callBrevoEvent, signInWithEmail, verifyOtp, signOut, getUser, isPremium, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
+    return { init, pushProgress, pullProgress, upsertPushSub, triggerBrevoSignup, callBrevoEvent, signInWithEmail, signInWithGoogle, verifyOtp, signOut, getUser, isPremium, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
   })();
 
   /* ══ GUILD SYSTEM ════════════════════════════ */
@@ -9837,8 +9916,14 @@ DEV.skipSplash()      → go straight to class select (if no session)
   /* ══ GLOBAL ERROR GUARD ═════════════════════ */
   window.addEventListener('unhandledrejection', e => {
     e.preventDefault();
+    const msg = String(e.reason?.message || e.reason).slice(0, 200);
+    const stack = String(e.reason?.stack || '').slice(0, 300);
     console.warn('[WEEBJI] unhandled rejection:', e.reason);
-    if (typeof posthog !== 'undefined') posthog.capture('js_error', { type: 'unhandledrejection', message: String(e.reason).slice(0, 200) });
+    if (typeof posthog !== 'undefined') posthog.capture('js_error', { type: 'unhandledrejection', message: msg, stack, url: location.pathname });
+  });
+
+  window.addEventListener('error', e => {
+    if (typeof posthog !== 'undefined') posthog.capture('js_error', { type: 'uncaught', message: e.message?.slice(0, 200), file: e.filename, line: e.lineno });
   });
 
 </script>

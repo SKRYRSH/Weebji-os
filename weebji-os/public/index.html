@@ -2740,11 +2740,11 @@
       img:'bosses/void-architect.jpg',
       gates:[
         { day:'Monday',   task:'All 3 daily quests + daily challenge — lay the foundation.',  check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
-        { day:'Wednesday',task:'Achieve a 14-day active streak — no breaks, no excuses.',     check: p => (p.streak||0)>=14 },
+        { day:'Wednesday',task:'Best streak of 14+ days in your history — prove you have done it before.', check: p => (p.bestStreak||0)>=14 },
         { day:'Friday',   task:'Gym workout + daily challenge + 60-min focus today.',         check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=60) },
       ],
-      boss_task:'Workout + all quests + daily challenge + active streak of 14+. Architects build on solid ground.',
-      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=14,
+      boss_task:'Workout + all quests + daily challenge + active streak of 7+. Architects build on solid ground.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=7,
       xp:750, title:'◆ Void Architect\'s Pupil', glyph:'🌀',
     },
     {
@@ -2757,8 +2757,8 @@
         { day:'Wednesday',task:'Gym workout + all quests + daily challenge. No substitutes.', check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
         { day:'Friday',   task:'180 total focus minutes logged this week — earn your throne.', check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=180 },
       ],
-      boss_task:'Active streak of 21 days. The Hollow King bows only to those who never stop.',
-      boss_check: p => (p.streak||0)>=21,
+      boss_task:'Best streak of 21+ days in your history. The Hollow King bows only to those who have proven they never stop.',
+      boss_check: p => (p.bestStreak||0)>=21,
       xp:800, title:'👑 Hollow King\'s Bane', glyph:'💀',
     },
     {
@@ -2785,8 +2785,8 @@
         { day:'Wednesday',task:'Best streak of 14+ days in your history — prove your record.',   check: p => (p.bestStreak||0)>=14 },
         { day:'Friday',   task:'Daily challenge + all quests + workout + 60-min focus today.',   check: p => !!p.dailyChallengeDone && (p.questsChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && Object.values(p.mmDaily||{}).some(v=>v>=60) },
       ],
-      boss_task:'Workout + all quests + daily challenge + 60-min focus + active streak of 10+. Prove you are not prey.',
-      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=60) && (p.streak||0)>=10,
+      boss_task:'Workout + all quests + daily challenge + 60-min focus + active streak of 7+. Prove you are not prey.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=60) && (p.streak||0)>=7,
       xp:750, title:'🔴 Crimson Beast Tamer', glyph:'🦁',
     },
     {
@@ -2811,10 +2811,10 @@
       gates:[
         { day:'Monday',   task:'Full workout + all 3 quests + daily challenge today.',        check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
         { day:'Wednesday',task:'All quests + 60-min focus + daily challenge today.',          check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=60) && !!p.dailyChallengeDone },
-        { day:'Friday',   task:'Active streak of 10+ days — no gaps, no mercy.',             check: p => (p.streak||0)>=10 },
+        { day:'Friday',   task:'Active streak of 7+ days — no gaps, no mercy.',              check: p => (p.streak||0)>=7 },
       ],
-      boss_task:'14-day active streak + workout + all quests + challenge. The Doctor demands proof, not promises.',
-      boss_check: p => (p.streak||0)>=14 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone,
+      boss_task:'Best streak 14+ in your history + workout + all quests + challenge. The Doctor demands proof, not promises.',
+      boss_check: p => (p.bestStreak||0)>=14 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone,
       xp:750, title:'🎭 The Doctor\'s Patient Zero', glyph:'🧪',
     },
     {
@@ -2841,8 +2841,8 @@
         { day:'Wednesday',task:'Full workout + 5+ monk rituals + 60-min focus today.',         check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.monkChecked||[]).length>=5 && Object.values(p.mmDaily||{}).some(v=>v>=60) },
         { day:'Friday',   task:'Best streak of 21+ days in your history — the mirror sees all.',check: p => (p.bestStreak||0)>=21 },
       ],
-      boss_task:'Workout + all quests + challenge + 90-min focus + active streak of 14+. No cracks allowed.',
-      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=14,
+      boss_task:'Workout + all quests + challenge + 90-min focus + best streak 14+ in your history. No cracks allowed.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.bestStreak||0)>=14,
       xp:850, title:'🪞 Mirror Breaker', glyph:'💎',
     },
     {
@@ -2853,10 +2853,10 @@
       gates:[
         { day:'Monday',   task:'Full workout + all quests + challenge — the hunt opens fully.', check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
         { day:'Wednesday',task:'All quests + 90-min focus + daily challenge — no cutting short.', check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=90) && !!p.dailyChallengeDone },
-        { day:'Friday',   task:'Active streak of 14+ days. The hunt does not pause.',           check: p => (p.streak||0)>=14 },
+        { day:'Friday',   task:'Best streak of 14+ days in your history. The hunt does not forgive gaps.', check: p => (p.bestStreak||0)>=14 },
       ],
-      boss_task:'The final hunt — workout, all quests, challenge, 90-min focus, streak 21+, best streak 30+. Everything.',
-      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=21 && (p.bestStreak||0)>=30,
+      boss_task:'The final hunt — workout, all quests, challenge, 90-min focus, streak 7+, best streak 30+. Everything.',
+      boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=7 && (p.bestStreak||0)>=30,
       xp:1000, title:'🏹 The Eternal Hunter', glyph:'⭐',
     },
   ];

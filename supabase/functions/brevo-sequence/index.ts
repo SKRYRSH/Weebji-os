@@ -107,7 +107,6 @@ const DAY_OFFSETS: Record<string, number> = { day2: 2, day7: 7, day21: 21 };
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
-  // Cron-only — no user JWT needed
   if (req.headers.get('x-weebji-cron') !== 'true') {
     return new Response('Unauthorized', { status: 401 });
   }
@@ -127,16 +126,13 @@ Deno.serve(async (req) => {
     target.setUTCDate(target.getUTCDate() - days);
     const dateStr = target.toISOString().slice(0, 10); // 'YYYY-MM-DD'
 
-    // Query users who signed up on target date
-    const { data: users, error } = await supabase
-      .from('progress')
-      .select('user_id, hunter_name, class')
-      .gte('created_at', `${dateStr}T00:00:00Z`)
-      .lt('created_at',  `${dateStr}T23:59:59Z`);
+    // Get auth users created on that date via admin API
+    const { data: { users }, error: authErr } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+    if (authErr) throw new Error(authErr.message);
 
-    if (error) throw new Error(error.message);
-    if (!users || users.length === 0) {
-      return new Response(JSON.stringify({ ok: true, sent: 0 }), {
+    const targetUsers = users.filter(u => u.created_at?.startsWith(dateStr));
+    if (!targetUsers.length) {
+      return new Response(JSON.stringify({ ok: true, sent: 0, type, date: dateStr }), {
         headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
@@ -144,19 +140,24 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('BREVO_API_KEY')!;
     let sent = 0;
 
-    for (const row of users) {
-      // Get email from auth.users
-      const { data: authUser } = await supabase.auth.admin.getUserById(row.user_id);
-      const email = authUser?.user?.email;
+    for (const authUser of targetUsers) {
+      const email = authUser.email;
       if (!email) continue;
 
-      const name = row.hunter_name || 'Hunter';
-      const cls  = row.class || 'monarch';
+      // Get display_name and class from leaderboard
+      const { data: lb } = await supabase
+        .from('leaderboard')
+        .select('display_name, class')
+        .eq('user_id', authUser.id)
+        .maybeSingle();
+
+      const name = lb?.display_name || 'Hunter';
+      const cls  = lb?.class || 'monarch';
 
       let payload: { subject: string; html: string };
-      if (type === 'day2')  payload = emailDay2(name, cls);
+      if (type === 'day2')       payload = emailDay2(name, cls);
       else if (type === 'day7')  payload = emailDay7(name, cls);
-      else payload = emailDay21(name, cls);
+      else                       payload = emailDay21(name, cls);
 
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',

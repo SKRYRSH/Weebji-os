@@ -4489,17 +4489,18 @@
       streakEl.addEventListener('animationend', () => streakEl.classList.remove('streak-ping'), { once: true });
     });
 
-    // Music: start ambient — unlock AudioContext if browser suspended it
+    // Music: start ambient — unlock AudioContext on first user gesture (browsers require it)
     if (!MusicEngine.currentTheme()) {
       MusicEngine.play('ambient');
-      // Browsers suspend AudioContext until user gesture — retry on next tap if needed
+    }
+    // Persistent unlock: resume suspended context on ANY gesture (handles mobile re-suspend)
+    if (!window._weebjiMusicUnlockBound) {
+      window._weebjiMusicUnlockBound = true;
       const _unlockMusic = () => {
-        MusicEngine.play('ambient');
-        document.removeEventListener('click', _unlockMusic);
-        document.removeEventListener('touchstart', _unlockMusic);
+        if (MusicEngine.isEnabled() && MusicEngine.currentTheme()) MusicEngine.play(MusicEngine.currentTheme());
       };
-      document.addEventListener('click', _unlockMusic);
-      document.addEventListener('touchstart', _unlockMusic);
+      document.addEventListener('click', _unlockMusic, { passive: true });
+      document.addEventListener('touchstart', _unlockMusic, { passive: true });
     }
     _updateMusicBtn();
 
@@ -6338,6 +6339,13 @@
 
     function isEnabled() { return _enabled; }
     function currentTheme() { return _theme; }
+
+    // Auto-resume AudioContext when page returns to foreground (mobile tab-switch / screen unlock)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && _ctx && _ctx.state === 'suspended' && _enabled && _theme) {
+        _ctx.resume().catch(() => {});
+      }
+    });
 
     return { play, stop, toggle, isEnabled, currentTheme };
   })();
@@ -9969,25 +9977,61 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const cached = JSON.parse(localStorage.getItem(YT_CACHE_KEY) || 'null');
       if (cached && Date.now() - cached.ts < YT_CACHE_TTL) { renderYTCard(el, cached); return; }
     } catch(e) {}
-    try {
-      const rss = `https://www.youtube.com/feeds/videos.xml?channel_id=${YT_CHANNEL_ID}`;
-      const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=1`;
-      const res  = await fetch(api);
+
+    const rss = `https://www.youtube.com/feeds/videos.xml?channel_id=${YT_CHANNEL_ID}`;
+
+    function _parseVideoId(item) {
+      return item.link?.split('v=')[1]?.split('&')[0]
+          || item.guid?.split('v=')[1]?.split('&')[0]
+          || null;
+    }
+
+    // Try rss2json first, fall back to allorigins proxy
+    async function _tryRss2json() {
+      const res  = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=1`);
       const json = await res.json();
+      if (json.status !== 'ok') throw new Error('rss2json status: ' + json.status);
       const item = json.items?.[0];
-      if (!item) return;
-      const videoId = item.link?.split('v=')[1]?.split('&')[0]
-        || item.guid?.split('v=')[1]?.split('&')[0];
-      if (!videoId) return;
+      if (!item) throw new Error('no items');
+      const videoId = _parseVideoId(item);
+      if (!videoId) throw new Error('no videoId');
+      return { title: item.title || 'New Video', videoId };
+    }
+
+    async function _tryAllOrigins() {
+      const res  = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rss)}`);
+      const json = await res.json();
+      const xml  = new DOMParser().parseFromString(json.contents, 'text/xml');
+      const entry = xml.querySelector('entry');
+      if (!entry) throw new Error('no entry');
+      const videoId = entry.querySelector('videoId')?.textContent
+                   || entry.querySelector('id')?.textContent?.split(':').pop()
+                   || null;
+      if (!videoId) throw new Error('no videoId');
+      const title = entry.querySelector('title')?.textContent || 'New Video';
+      return { title, videoId };
+    }
+
+    try {
+      let result;
+      try        { result = await _tryRss2json(); }
+      catch(_e)  { result = await _tryAllOrigins(); }
+
       const data = {
         ts:    Date.now(),
-        title: item.title || 'New Video',
-        thumb: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-        link:  `https://youtu.be/${videoId}`,
+        title: result.title,
+        thumb: `https://i.ytimg.com/vi/${result.videoId}/mqdefault.jpg`,
+        link:  `https://youtu.be/${result.videoId}`,
       };
       localStorage.setItem(YT_CACHE_KEY, JSON.stringify(data));
       renderYTCard(el, data);
-    } catch(e) {}
+    } catch(e) {
+      // Show stale cache if both fail
+      try {
+        const stale = JSON.parse(localStorage.getItem(YT_CACHE_KEY) || 'null');
+        if (stale) renderYTCard(el, stale);
+      } catch(_) {}
+    }
   }
 
   function renderYTCard(el, data) {

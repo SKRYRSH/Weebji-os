@@ -95,18 +95,20 @@ Deno.serve(async (req) => {
 
     const planLabel = plan === 'annual' ? 'plus_annual' : plan === 'ghost_token' ? 'ghost_token' : 'plus';
 
-    const { error: insertErr } = await serviceClient.from('user_plans').upsert({
-      user_id:    user.id,
-      email:      user.email,
-      plan:       planLabel,
-      status:     'active',
-      order_id:   razorpay_order_id,
-      payment_id: razorpay_payment_id,
-    }, { onConflict: 'user_id' });
+    // ghost_token: never touch user_plans (would overwrite an existing plus subscription)
+    if (plan !== 'ghost_token') {
+      const { error: insertErr } = await serviceClient.from('user_plans').upsert({
+        user_id:    user.id,
+        email:      user.email,
+        plan:       planLabel,
+        status:     'active',
+        order_id:   razorpay_order_id,
+        payment_id: razorpay_payment_id,
+      }, { onConflict: 'user_id' });
+      if (insertErr) throw insertErr;
+    }
 
-    if (insertErr) throw insertErr;
-
-    // If ghost_token, increment ghost_tokens in progress (only after successful insert)
+    // ghost_token: just increment tokens in progress
     if (plan === 'ghost_token') {
       const { data: prog } = await serviceClient
         .from('progress')

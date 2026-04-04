@@ -1255,8 +1255,8 @@
   .plus-plan__price { font-family:'Cinzel',serif; font-size:20px; font-weight:900; color:#FFD93C; text-shadow:0 0 12px rgba(255,210,60,0.4); }
   .plus-plan__unit { font-family:'JetBrains Mono',monospace; font-size:8px; color:rgba(255,210,60,0.3); letter-spacing:0.1em; }
   .plus-plan__usd { font-family:'JetBrains Mono',monospace; font-size:7px; color:rgba(255,210,60,0.2); letter-spacing:0.08em; margin-top:3px; }
-  .ghost-shop-btn { width:100%; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.06); border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:rgba(255,255,255,0.2); text-transform:uppercase; cursor:pointer; transition:border-color 0.2s; -webkit-tap-highlight-color:transparent; }
-  .ghost-shop-btn:active { transform:scale(0.97); }
+  .ghost-shop-btn { width:100%; padding:12px; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.35); border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:rgba(139,92,246,0.9); text-transform:uppercase; cursor:pointer; transition:border-color 0.2s, background 0.2s; -webkit-tap-highlight-color:transparent; }
+  .ghost-shop-btn:active { transform:scale(0.97); background:rgba(139,92,246,0.15); }
 
   /* ══ DAILY CHALLENGE ══════════════════════════ */
   .daily-challenge-card { padding:14px 16px; border-radius:14px; border:1px solid; margin-bottom:12px; position:relative; overflow:hidden; }
@@ -2701,6 +2701,7 @@
       rzp.open();
 
     } catch(e) {
+      if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'checkout', error: e?.message, plan });
       spawnDropBanner('◆  Could not start checkout — try again');
     }
   }

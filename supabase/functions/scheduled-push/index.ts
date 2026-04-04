@@ -1,5 +1,3 @@
-// @ts-ignore – npm: specifier supported by Supabase Edge Functions (Deno 1.32+)
-import webpush from 'npm:web-push@3';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const CORS = {
@@ -7,30 +5,56 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-weebji-cron',
 };
 
-const NOTIF: Record<string, (e: Record<string, unknown>) => { title: string; body: string }> = {
-  morning_activation: () => ({ title: '◈ SYSTEM ONLINE', body: 'The gates are open. Your protocol awaits.' }),
-  streak_reminder:    () => ({ title: 'SYSTEM ALERT', body: 'Your streak is waiting. Train today or lose it.' }),
-  comeback:           () => ({ title: 'RECONNECTION REQUIRED', body: 'You have been offline. The System has logged the gap. Return now.' }),
-  weekly_summary:     (e) => ({ title: '◈ WEEKLY SYSTEM REPORT', body: `Level ${e.level || '?'} · ${e.streak || 0}-day streak. Progress logged.` }),
+const ONE_SIGNAL_APP_ID = 'd01da00b-3bb3-4b2f-812a-3042d915da12';
+const ONE_SIGNAL_API    = 'https://onesignal.com/api/v1/notifications';
+
+// Duolingo-style guilt-trip copy — short, punchy, on-brand
+const NOTIF: Record<string, { title: string; body: string }> = {
+  morning_activation: { title: '◈ SYSTEM ONLINE',          body: "Today's protocol is waiting. Don't let the streak die." },
+  streak_reminder:    { title: 'SYSTEM ALERT',              body: "You haven't trained today. Your streak dies at midnight." },
+  comeback_3d:        { title: 'RECONNECTION REQUIRED',     body: 'Your guild noticed you went dark. 3 days offline. Come back.' },
+  comeback_7d:        { title: 'RANK SLIPPING',             body: "Someone took your spot on the leaderboard. 7 days gone. Return now." },
 };
+
+async function sendOneSignal(userIds: string[], type: string) {
+  if (userIds.length === 0) return { ok: true, recipients: 0 };
+  const notif = NOTIF[type];
+  // Batch in chunks of 2000 (OneSignal limit per request)
+  const chunks: string[][] = [];
+  for (let i = 0; i < userIds.length; i += 2000) chunks.push(userIds.slice(i, i + 2000));
+
+  let totalRecipients = 0;
+  for (const chunk of chunks) {
+    const res = await fetch(ONE_SIGNAL_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${Deno.env.get('ONESIGNAL_API_KEY')}`,
+      },
+      body: JSON.stringify({
+        app_id: ONE_SIGNAL_APP_ID,
+        include_external_user_ids: chunk,
+        channel_for_external_user_ids: 'push',
+        headings: { en: notif.title },
+        contents: { en: notif.body },
+        url: 'https://skryrsh.github.io/Weebji-os/',
+      }),
+    });
+    const json = await res.json();
+    totalRecipients += json.recipients || 0;
+  }
+  return { ok: true, recipients: totalRecipients };
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
-
   try {
     let type: string | null = null;
-    try {
-      const body = await req.json();
-      type = body?.type ?? null;
-    } catch { /* no body */ }
-    // fallback: query param (for manual curl testing)
-    if (!type) {
-      const url = new URL(req.url);
-      type = url.searchParams.get('type');
-    }
+    try { type = (await req.json())?.type ?? null; } catch { /* no body */ }
+    if (!type) type = new URL(req.url).searchParams.get('type');
     if (!type || !NOTIF[type]) {
-      return new Response('Missing or invalid type param', { status: 400 });
+      return new Response('Missing or invalid type', { status: 400 });
     }
 
     const supabase = createClient(
@@ -38,82 +62,35 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    const vapidPublicKey  = Deno.env.get('VAPID_PUBLIC_KEY')!;
-    const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY')!;
-    webpush.setVapidDetails('mailto:weebjiglobal@gmail.com', vapidPublicKey, vapidPrivateKey);
-
-    const now       = new Date();
+    const now = new Date();
     // IST midnight = UTC 18:30 previous day
     const istMidnightUTC = new Date(now);
     istMidnightUTC.setUTCHours(18, 30, 0, 0);
     if (istMidnightUTC > now) istMidnightUTC.setUTCDate(istMidnightUTC.getUTCDate() - 1);
     const todayISTStart = istMidnightUTC.toISOString();
+    const threeDaysAgo  = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    const sevenDaysAgo  = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    // Query relevant users from progress table
+    let query = supabase.from('progress').select('user_id, streak, updated_at');
 
-    // Fetch all push subscriptions
-    const { data: subs, error } = await supabase
-      .from('push_subscriptions')
-      .select('user_id, endpoint, p256dh, auth');
+    if (type === 'morning_activation' || type === 'streak_reminder') {
+      // Users with active streaks who haven't trained today
+      query = query.gt('streak', 0).lt('updated_at', todayISTStart);
+    } else if (type === 'comeback_3d') {
+      // Inactive 3-7 days (not 7+ — those get comeback_7d)
+      query = query.lt('updated_at', threeDaysAgo).gte('updated_at', sevenDaysAgo);
+    } else if (type === 'comeback_7d') {
+      query = query.lt('updated_at', sevenDaysAgo);
+    }
 
+    const { data: rows, error } = await query;
     if (error) throw error;
-    if (!subs || subs.length === 0) {
-      return new Response(JSON.stringify({ ok: true, sent: 0, skipped: 0 }), {
-        headers: { ...CORS, 'Content-Type': 'application/json' },
-      });
-    }
 
-    // Fetch progress for all subscribed users
-    const userIds = subs.map(s => s.user_id);
-    const { data: progRows } = await supabase
-      .from('progress')
-      .select('user_id, streak, level, updated_at')
-      .in('user_id', userIds);
+    const userIds = (rows || []).map(r => r.user_id);
+    const result = await sendOneSignal(userIds, type);
 
-    const progMap: Record<string, { streak: number; level: number; updated_at: string }> = {};
-    for (const p of progRows || []) progMap[p.user_id] = p;
-
-    let sent = 0;
-    let skipped = 0;
-    const expired: string[] = [];
-
-    for (const sub of subs) {
-      const prog = progMap[sub.user_id];
-
-      const streak    = prog?.streak || 0;
-      const level     = prog?.level  || 1;
-      const updatedAt = prog?.updated_at || '';
-      const notTrained = updatedAt < todayISTStart;
-      const inactive3d = updatedAt < threeDaysAgo;
-
-      // Filter: who gets this push
-      if (type === 'morning_activation' && !(streak > 0 && notTrained)) { skipped++; continue; }
-      if (type === 'streak_reminder'    && !(streak > 0 && notTrained)) { skipped++; continue; }
-      if (type === 'comeback'           && !inactive3d)                 { skipped++; continue; }
-      // weekly_summary — everyone with a subscription
-
-      const { title, body } = NOTIF[type]({ streak, level });
-      try {
-        await webpush.sendNotification(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          JSON.stringify({ title, body, type }),
-        );
-        sent++;
-      } catch (e: unknown) {
-        const err = e as { statusCode?: number };
-        if (err.statusCode === 410 || err.statusCode === 404) {
-          expired.push(sub.user_id);
-        }
-        skipped++;
-      }
-    }
-
-    // Clean up expired subscriptions
-    if (expired.length > 0) {
-      await supabase.from('push_subscriptions').delete().in('user_id', expired);
-    }
-
-    return new Response(JSON.stringify({ ok: true, sent, skipped, expired: expired.length }), {
+    return new Response(JSON.stringify({ ok: true, targeted: userIds.length, ...result }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
 

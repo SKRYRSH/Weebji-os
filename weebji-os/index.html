@@ -18,6 +18,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';document.head.appendChild(s)"></script>
   <!-- Razorpay Checkout -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- OneSignal Web Push -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -1887,20 +1889,31 @@
     }).catch(e => console.warn('[SW] failed', e));
   }
 
-  /* ══ NATIVE WEB PUSH ════════════════════════ */
+  /* ══ ONESIGNAL WEB PUSH ═════════════════════ */
   const WeebjPush = (() => {
+    const _OS_APP_ID = 'd01da00b-3bb3-4b2f-812a-3042d915da12';
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: _OS_APP_ID,
+        notifyButton: { enable: false },
+        promptOptions: { slidedown: { enabled: false } },
+      });
+    });
+
+    // In-app LOCAL_NOTIF — fired via SW postMessage when app is in foreground
     const _msgs = {
-      hp_critical:  { title: '⚠ SYSTEM CRITICAL',          body: 'One HP remaining. Miss today and you reset. The System demands action.' },
-      ghost_token:  { title: '👻 Ghost Token Needed',       body: 'Streak at risk. Activate a Ghost Token from your dashboard.' },
-      streak_7:     { title: '🔥 7-Day Streak',              body: 'One week straight. The System has taken note.' },
-      streak_30:    { title: '🔥 30-Day Streak',             body: '30 days of execution. The System recognizes your discipline.' },
-      streak_100:   { title: '🔥 100-Day Streak',            body: 'Legendary. 100 consecutive days of pure execution.' },
-      streak_365:   { title: '🔥 365-Day Streak',            body: 'One full year. You ARE the System.' },
-      secret_title: { title: '◆ Secret Title Unlocked',     body: 'The System has granted you a new designation.' },
+      hp_critical:  { title: '⚠ CRITICAL HP',           body: 'One HP remaining. Miss today and the System resets you.' },
+      ghost_token:  { title: '👻 GHOST TOKENS DEPLETED', body: 'No protection remains. Miss today and your streak becomes ash.' },
+      streak_7:     { title: '🔥 7-DAY STREAK',           body: 'One week of unbroken discipline. The System has noticed.' },
+      streak_30:    { title: '⚡ 30-DAY STREAK',           body: 'One month. Very few reach this. The System promotes your standing.' },
+      streak_100:   { title: '💎 100-DAY STREAK',          body: 'Triple digits. You are no longer ordinary. The System acknowledges.' },
+      streak_365:   { title: '👑 ONE FULL YEAR',           body: '365 days. The System has never met your equal. Legend confirmed.' },
+      secret_title: { title: '◆ SECRET TITLE UNLOCKED',   body: 'The System has granted you a new designation.' },
     };
 
     function local(notifType, title, body) {
-      if (Notification.permission !== 'granted') return;
       if (!('serviceWorker' in navigator)) return;
       navigator.serviceWorker.ready.then(reg => {
         reg.active?.postMessage({ type: 'LOCAL_NOTIF', notifType, title, body });
@@ -1912,63 +1925,33 @@
       if (m) local(type, m.title, m.body);
     }
 
-    const _VAPID_PUBLIC = 'BA4fOQBsL02zdz1FfDb_X9FYcfRy6qGN1FXGaG0TKt-lgHVJjEgGmlMo15jsM2oweYLM22KsdtJauUaxEDcoRsQ';
-
-    function _urlBase64ToUint8Array(base64String) {
-      const padding = '='.repeat((4 - base64String.length % 4) % 4);
-      const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-      const raw     = atob(base64);
-      return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
-    }
-
     async function subscribe() {
       if (!('Notification' in window)) return false;
-      const perm = await Notification.requestPermission();
-      if (perm !== 'granted') return false;
       try {
-        const reg = await navigator.serviceWorker.ready;
-        const existing = await reg.pushManager.getSubscription();
-        const sub = existing || await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: _urlBase64ToUint8Array(_VAPID_PUBLIC),
+        await new Promise((resolve, reject) => {
+          OneSignalDeferred.push(async function(OneSignal) {
+            try {
+              await OneSignal.Notifications.requestPermission();
+              await OneSignal.User.PushSubscription.optIn();
+              resolve(true);
+            } catch(e) { reject(e); }
+          });
         });
-        // Save to Supabase if user is signed in
-        const user = SupabaseSync.getUser();
-        if (user?.id) {
-          const s = sub.toJSON();
-          await SupabaseSync.upsertPushSub({
-            user_id: user.id,
-            endpoint: s.endpoint,
-            p256dh:   s.keys.p256dh,
-            auth:     s.keys.auth,
-          }).catch(() => {});
-        }
+        localStorage.removeItem('weebji_push_opted_out');
+        return true;
       } catch (e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_subscribe', error: e?.message });
         spawnDropBanner('◆  Notifications failed to enable — try again in Settings');
         return false;
       }
-      return true;
     }
 
-    async function unsubscribe() {
+    function unsubscribe() {
       try {
-        const reg = await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.getSubscription();
-        if (sub) await sub.unsubscribe();
-        // Only mark opted-out after browser unsubscribe actually succeeds
+        OneSignalDeferred.push(function(OneSignal) {
+          OneSignal.User.PushSubscription.optOut();
+        });
         localStorage.setItem('weebji_push_opted_out', '1');
-        const user = SupabaseSync.getUser();
-        if (user?.id) {
-          const sb = SupabaseSync._client();
-          if (sb) {
-            const { error: delErr, count } = await sb.from('push_subscriptions').delete({ count: 'exact' }).eq('user_id', user.id);
-            if (delErr || count === 0) {
-              if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_unsubscribe_db', error: delErr?.message, rows_deleted: count });
-              spawnDropBanner('◆  Notifications disabled on device — sync failed, you may still receive some');
-            }
-          }
-        }
       } catch (e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_unsubscribe', error: e?.message });
         spawnDropBanner('◆  Failed to disable notifications — try again');
@@ -1977,7 +1960,7 @@
 
     function isOptedOut() { return localStorage.getItem('weebji_push_opted_out') === '1'; }
 
-    function init() { /* no-op */ }
+    function init() { /* OneSignal init handled above */ }
 
     return { subscribe, unsubscribe, isOptedOut, send, local, init };
   })();
@@ -9291,7 +9274,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
             checkPremiumFromSupabase();
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
             if (gateActive) { enterDashboard(false); }
-            // Re-store push subscription now that user is authenticated
+            // Link OneSignal to this user so backend can target by user_id
+            if (typeof OneSignalDeferred !== 'undefined') {
+              OneSignalDeferred.push(function(OneSignal) { OneSignal.login(currentUser.id); });
+            }
             if (Notification.permission === 'granted') WeebjPush.subscribe();
             else WeebjPush.init();
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
@@ -9533,6 +9519,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
     async function signOut() {
       if (!client) return;
+      if (typeof OneSignalDeferred !== 'undefined') {
+        OneSignalDeferred.push(function(OneSignal) { OneSignal.logout(); });
+      }
       await client.auth.signOut();
       currentUser = null;
       premiumStatus = false;

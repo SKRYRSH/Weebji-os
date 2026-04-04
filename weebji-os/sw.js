@@ -1,5 +1,6 @@
 // ── WEEBJI OS — Service Worker v21 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v114';
+importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
+const CACHE_NAME = 'weebji-os-v115';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
@@ -98,34 +99,4 @@ const NOTIF_CFG = {
   friend_levelup:     { vibrate: [50,30,50],            tag: 'weebji-friend',   requireInteraction: false },
 };
 
-self.addEventListener('push', e => {
-  const data  = e.data ? e.data.json() : {};
-  const type  = data.type || 'streak_reminder';
-  const cfg   = NOTIF_CFG[type] || { vibrate: [200,100,200], tag: 'weebji-default', requireInteraction: false };
-
-  e.waitUntil(
-    self.registration.showNotification(data.title || 'WEEBJI OS', {
-      body:               data.body || 'The System is watching.',
-      icon:               BASE + 'icons/icon-192.png',
-      tag:                cfg.tag,
-      renotify:           true,
-      vibrate:            cfg.vibrate,
-      requireInteraction: cfg.requireInteraction,
-      data:               { url: data.url || BASE, type },
-      actions:            cfg.requireInteraction
-        ? [{ action: 'open', title: 'Open App' }]
-        : undefined,
-    })
-  );
-});
-
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  const target = e.notification.data?.url || BASE;
-  e.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      for (const c of list) { if ('focus' in c) return c.focus(); }
-      return clients.openWindow(target);
-    })
-  );
-});
+// push + notificationclick handled by OneSignal SDK SW (importScripts above)

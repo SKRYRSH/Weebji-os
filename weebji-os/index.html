@@ -2650,7 +2650,10 @@
       const { data: { session } } = await client.auth.getSession();
       if (!session?.access_token) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
 
-      const { data, error } = await client.functions.invoke('razorpay-create-order', { body: { plan } });
+      const { data, error } = await client.functions.invoke('razorpay-create-order', {
+        body: { plan },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
       if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
 
       // Only capture after order confirmed — prevents inflated counts from auth-fail retries

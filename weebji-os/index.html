@@ -6145,33 +6145,28 @@
       // Sub harmonic root
       _drone(108, 'sine', 0.18, 0.03, 0.12);
 
-      // Bowl strike: exponential pitch decay 432→380Hz over 5s, amplitude decay to silence
-      function bowl() {
-        if (!_nodes.length) return;
+      // Bowl strike — pre-schedule 20 bowls on audio clock (20 × 7.5s = 150s lookahead)
+      for (let i = 0; i < 20; i++) {
+        const t = _ctx.currentTime + i * 7.5;
         const o = _ctx.createOscillator(); const g = _ctx.createGain();
         o.type = 'sine';
-        o.frequency.setValueAtTime(432, _ctx.currentTime);
-        o.frequency.exponentialRampToValueAtTime(380, _ctx.currentTime + 5);
-        g.gain.setValueAtTime(0.32, _ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.0001, _ctx.currentTime + 6);
+        o.frequency.setValueAtTime(432, t);
+        o.frequency.exponentialRampToValueAtTime(380, t + 5);
+        g.gain.setValueAtTime(0.32, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 6);
         o.connect(g); g.connect(_master);
-        o.start(); o.stop(_ctx.currentTime + 6.5); _nodes.push(o);
-        _timers.push(setTimeout(bowl, 7500));
+        o.start(t); o.stop(t + 6.5); _nodes.push(o);
       }
-      bowl();
 
-      // Breathing pad synced to 4-4-4-4 box breathing (16s cycle)
+      // Breathing pad — pre-schedule all ramps on audio clock (10 × 16s = 160s lookahead)
       const padG = _drone(135, 'sine', 0, 0.04, 0.15);
-      function breathe() {
-        if (!_nodes.length) return;
-        const t = _ctx.currentTime;
+      for (let i = 0; i < 10; i++) {
+        const t = _ctx.currentTime + i * 16;
         padG.gain.linearRampToValueAtTime(0.18, t + 4);
         padG.gain.linearRampToValueAtTime(0.18, t + 8);
         padG.gain.linearRampToValueAtTime(0.01, t + 12);
         padG.gain.linearRampToValueAtTime(0.01, t + 16);
-        _timers.push(setTimeout(breathe, 16000));
       }
-      breathe();
       _fadeIn(0.15, 3.5);
     }
 
@@ -6203,40 +6198,37 @@
       const bnG = _ctx.createGain(); bnG.gain.value = 0.022;
       bnSrc.connect(bnG); bnG.connect(lpf); bnSrc.start(); _nodes.push(bnSrc);
 
-      // Bass + kick/snare pattern
+      // Bass + kick/snare — lookahead scheduler: setTimeout drives scheduling, audio clock drives timing
       const bassNotes = [110, 98, 110, 82.5];
-      let _lb = 0;
-      function schedBar() {
-        if (!_nodes.length) return;
-        const now = _ctx.currentTime;
-        const note = bassNotes[_lb % bassNotes.length];
-        // Bass thump through LPF
-        const b = _ctx.createOscillator(); const bg = _ctx.createGain();
-        b.type = 'sine';
-        b.frequency.setValueAtTime(note * 1.5, now); b.frequency.exponentialRampToValueAtTime(note, now + 0.09);
-        bg.gain.setValueAtTime(0.55, now); bg.gain.exponentialRampToValueAtTime(0.001, now + beat * 1.5);
-        b.connect(bg); bg.connect(lpf); b.start(now); b.stop(now + beat * 1.8); _nodes.push(b);
-        // Kick at beats 1 & 3
-        [0, beat * 2].forEach(off => {
-          const k = _ctx.createOscillator(); const kg = _ctx.createGain();
-          k.type = 'sine';
-          k.frequency.setValueAtTime(160, now+off); k.frequency.exponentialRampToValueAtTime(45, now+off+0.12);
-          kg.gain.setValueAtTime(0.52, now+off); kg.gain.exponentialRampToValueAtTime(0.001, now+off+0.25);
-          k.connect(kg); kg.connect(_master); k.start(now+off); k.stop(now+off+0.3); _nodes.push(k);
-        });
-        // Snare (bandpass noise) at beats 2 & 4
-        [beat, beat*3].forEach(off => {
-          const nb = _ctx.createBuffer(1, Math.floor(_ctx.sampleRate*0.18), _ctx.sampleRate);
-          const nd = nb.getChannelData(0); for (let i=0;i<nd.length;i++) nd[i]=Math.random()*2-1;
-          const sn = _ctx.createBufferSource(); sn.buffer = nb;
-          const sf = _ctx.createBiquadFilter(); sf.type='bandpass'; sf.frequency.value=1800; sf.Q.value=0.8;
-          const sg = _ctx.createGain(); sg.gain.setValueAtTime(0.22, now+off); sg.gain.exponentialRampToValueAtTime(0.001, now+off+0.18);
-          sn.connect(sf); sf.connect(sg); sg.connect(_master); sn.start(now+off); sn.stop(now+off+0.2); _nodes.push(sn);
-        });
-        _lb++;
-        _timers.push(setTimeout(schedBar, bar * 1000 - 25));
+      const snareBuf = _ctx.createBuffer(1, Math.floor(_ctx.sampleRate * 0.18), _ctx.sampleRate);
+      { const sd = snareBuf.getChannelData(0); for (let i = 0; i < sd.length; i++) sd[i] = Math.random() * 2 - 1; }
+      let _lb = 0, _mmNext = _ctx.currentTime;
+      function _mmSched() {
+        while (_mmNext < _ctx.currentTime + 0.5) {
+          const now = _mmNext, note = bassNotes[_lb % bassNotes.length];
+          const b = _ctx.createOscillator(); const bg = _ctx.createGain();
+          b.type = 'sine';
+          b.frequency.setValueAtTime(note * 1.5, now); b.frequency.exponentialRampToValueAtTime(note, now + 0.09);
+          bg.gain.setValueAtTime(0.55, now); bg.gain.exponentialRampToValueAtTime(0.001, now + beat * 1.5);
+          b.connect(bg); bg.connect(lpf); b.start(now); b.stop(now + beat * 1.8); _nodes.push(b);
+          [0, beat * 2].forEach(off => {
+            const k = _ctx.createOscillator(); const kg = _ctx.createGain();
+            k.type = 'sine';
+            k.frequency.setValueAtTime(160, now+off); k.frequency.exponentialRampToValueAtTime(45, now+off+0.12);
+            kg.gain.setValueAtTime(0.52, now+off); kg.gain.exponentialRampToValueAtTime(0.001, now+off+0.25);
+            k.connect(kg); kg.connect(_master); k.start(now+off); k.stop(now+off+0.3); _nodes.push(k);
+          });
+          [beat, beat*3].forEach(off => {
+            const sn = _ctx.createBufferSource(); sn.buffer = snareBuf;
+            const sf = _ctx.createBiquadFilter(); sf.type='bandpass'; sf.frequency.value=1800; sf.Q.value=0.8;
+            const sg = _ctx.createGain(); sg.gain.setValueAtTime(0.22, now+off); sg.gain.exponentialRampToValueAtTime(0.001, now+off+0.18);
+            sn.connect(sf); sf.connect(sg); sg.connect(_master); sn.start(now+off); sn.stop(now+off+0.2); _nodes.push(sn);
+          });
+          _lb++; _mmNext += bar;
+        }
+        _timers.push(setTimeout(_mmSched, 250));
       }
-      schedBar();
+      _mmSched();
       _fadeIn(0.13, 2.5);
     }
 
@@ -6265,37 +6257,38 @@
       // Hi-hat noise (persistent, gain-automated for 16th pattern)
       const hhG = _noiseSource('highpass', 9500, 0);
 
-      function schedBar() {
-        if (!_nodes.length) return;
-        const now = _ctx.currentTime;
-        // 808 sub kick: 180Hz → 55Hz in 80ms (research: authentic 808 envelope)
-        [0, beat * 2].forEach(off => {
-          const o = _ctx.createOscillator(); const g = _ctx.createGain();
-          o.type = 'sine';
-          o.frequency.setValueAtTime(180, now+off);
-          o.frequency.exponentialRampToValueAtTime(55, now+off+0.08); // 80ms pitch decay
-          g.gain.setValueAtTime(0.85, now+off); g.gain.exponentialRampToValueAtTime(0.001, now+off+0.7);
-          o.connect(g); g.connect(distLPF); o.start(now+off); o.stop(now+off+0.8); _nodes.push(o);
-        });
-        // Cowbell: 540Hz + 900Hz harmonics (research: authentic cowbell spectrum)
-        [beat, beat*3].forEach(off => {
-          [540, 900].forEach((freq, fi) => {
-            const cw = _ctx.createOscillator(); const cwG = _ctx.createGain();
-            cw.type = 'square'; cw.frequency.value = freq;
-            cwG.gain.setValueAtTime(fi===0 ? 0.11 : 0.06, now+off);
-            cwG.gain.exponentialRampToValueAtTime(0.001, now+off+0.20);
-            cw.connect(cwG); cwG.connect(_master); cw.start(now+off); cw.stop(now+off+0.22); _nodes.push(cw);
+      // Monarch beat — lookahead scheduler: 250ms poll, 500ms audio lookahead
+      let _mnNext = _ctx.currentTime;
+      function _mnSched() {
+        while (_mnNext < _ctx.currentTime + 0.5) {
+          const now = _mnNext;
+          [0, beat * 2].forEach(off => {
+            const o = _ctx.createOscillator(); const g = _ctx.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(180, now+off);
+            o.frequency.exponentialRampToValueAtTime(55, now+off+0.08);
+            g.gain.setValueAtTime(0.85, now+off); g.gain.exponentialRampToValueAtTime(0.001, now+off+0.7);
+            o.connect(g); g.connect(distLPF); o.start(now+off); o.stop(now+off+0.8); _nodes.push(o);
           });
-        });
-        // 16th-note hi-hat via gain automation (single looped node)
-        for (let n = 0; n < 8; n++) {
-          const t = now + n * beat * 0.5;
-          hhG.gain.setValueAtTime(n % 2 === 0 ? 0.12 : 0.05, t);
-          hhG.gain.setValueAtTime(0.001, t + 0.03);
+          [beat, beat*3].forEach(off => {
+            [540, 900].forEach((freq, fi) => {
+              const cw = _ctx.createOscillator(); const cwG = _ctx.createGain();
+              cw.type = 'square'; cw.frequency.value = freq;
+              cwG.gain.setValueAtTime(fi===0 ? 0.11 : 0.06, now+off);
+              cwG.gain.exponentialRampToValueAtTime(0.001, now+off+0.20);
+              cw.connect(cwG); cwG.connect(_master); cw.start(now+off); cw.stop(now+off+0.22); _nodes.push(cw);
+            });
+          });
+          for (let n = 0; n < 8; n++) {
+            const t = now + n * beat * 0.5;
+            hhG.gain.setValueAtTime(n % 2 === 0 ? 0.12 : 0.05, t);
+            hhG.gain.setValueAtTime(0.001, t + 0.03);
+          }
+          _mnNext += bar;
         }
-        _timers.push(setTimeout(schedBar, bar * 1000 - 25));
+        _timers.push(setTimeout(_mnSched, 250));
       }
-      schedBar();
+      _mnSched();
       _fadeIn(0.18, 1.5);
     }
 

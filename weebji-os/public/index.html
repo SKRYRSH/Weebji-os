@@ -2727,13 +2727,13 @@
           <div class="plus-plans">
             <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('monthly')">
               <div class="plus-plan__period">Monthly</div>
-              <div class="plus-plan__price">$4.99</div>
+              <div class="plus-plan__price">$9.99</div>
               <div class="plus-plan__unit">/month</div>
             </div>
             <div class="plus-plan featured" id="plus-plan-annual" onclick="Sound.play('tap');_openCheckout('annual')">
               <div class="plus-plan__badge">BEST VALUE</div>
               <div class="plus-plan__period">Annual</div>
-              <div class="plus-plan__price">$29.99</div>
+              <div class="plus-plan__price">$59.99</div>
               <div class="plus-plan__unit">/year — save 50%</div>
             </div>
           </div>
@@ -3003,7 +3003,7 @@
         <p class="dungeon-locked-overlay__pitch">Defeat <strong>${dungeon.boss}</strong> this week. Claim the title. Most hunters never make it past Gate 1.</p>
         <div class="dungeon-locked-overlay__urgency">⏳ ${timerTxt} — dungeon resets next week</div>
         <div class="dungeon-locked-overlay__btn" onclick="document.querySelector('.profile-scroll')&&document.getElementById('profile-plus-section').scrollIntoView({behavior:'smooth'});Sound.play('tap');showScreen('profile');renderProfile();">UNLOCK WEEBJI+ — ENTER NOW →</div>
-        <div class="dungeon-locked-overlay__price">From $4.99/mo · Cancel anytime</div>
+        <div class="dungeon-locked-overlay__price">From $9.99/mo · Cancel anytime</div>
       </div>` : '';
 
     const defeatedHtml = bossDone ? `
@@ -3311,8 +3311,8 @@
           <div class="premium-hype__feature-text"><strong>${f.title}</strong> — ${f.desc}</div>
         </div>`).join('')}
       </div>
-      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — $4.99/mo</button>
-      <div class="premium-hype__price">or $29.99/yr — save 50% · cancel anytime</div>
+      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — $9.99/mo</button>
+      <div class="premium-hype__price">or $59.99/yr — save 50% · cancel anytime</div>
     </div>`;
   }
 
@@ -9362,7 +9362,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
         // Restore premium status via secure server-side RPC (bypasses RLS)
         const { data: premiumPlan } = await client.rpc('get_premium_status');
         premiumStatus = !!premiumPlan;
-        if (premiumPlan && document.getElementById('profile')?.classList.contains('active')) renderProfile();
+        if (premiumPlan) {
+          if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
+          if (document.getElementById('dungeon')?.classList.contains('active')) renderDungeonCard();
+          if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
+          if (document.getElementById('battle')?.classList.contains('active')) renderBattleCard();
+        }
 
         // Get or create sequential hunter number
         let { data: hn } = await client.from('hunter_numbers').select('number').eq('user_id', currentUser.id).maybeSingle();
@@ -9499,7 +9504,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
       try {
         const { data: premiumPlan } = await client.rpc('get_premium_status');
         premiumStatus = !!premiumPlan;
-        if (premiumPlan && document.getElementById('profile')?.classList.contains('active')) renderProfile();
+        if (premiumPlan) {
+          if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
+          if (document.getElementById('dungeon')?.classList.contains('active')) renderDungeonCard();
+          if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
+          if (document.getElementById('battle')?.classList.contains('active')) renderBattleCard();
+        }
       } catch(e) { console.warn('Premium check failed', e); }
     }
 

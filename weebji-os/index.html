@@ -2604,13 +2604,56 @@
       </div>`;
   }
 
+  // Play Billing SKU IDs — must match exactly what you create in Play Console
+  const PLAY_SKUS = { monthly: 'weebji_plus_monthly', annual: 'weebji_plus_annual', ghost_token: 'weebji_ghost_token' };
+  const PLAY_PRICES = { monthly: '9.99', annual: '59.99', ghost_token: '0.99' };
+
+  async function _openPlayBilling(plan) {
+    const sku = PLAY_SKUS[plan];
+    if (!sku) return false;
+    try {
+      const service = await window.getDigitalGoodsService('https://play.google.com/billing');
+      const details = await service.getDetails([sku]);
+      if (!details?.length) { spawnDropBanner('◆  Product not found in Play Store'); return true; }
+      const request = new PaymentRequest(
+        [{ supportedMethods: 'https://play.google.com/billing', data: { sku } }],
+        { total: { label: 'WEEBJI+', amount: { currency: 'USD', value: PLAY_PRICES[plan] || '9.99' } } }
+      );
+      const canPay = await request.canMakePayment();
+      if (!canPay) { spawnDropBanner('◆  Google Play Billing unavailable'); return true; }
+      const payResponse = await request.show();
+      const { purchaseToken } = payResponse.details;
+      // Verify server-side
+      const client = SupabaseSync._client();
+      const { data: { session } } = await client.auth.getSession();
+      if (!session?.access_token) { await payResponse.complete('fail'); spawnDropBanner('◆  Sign in first'); return true; }
+      const { data, error } = await client.functions.invoke('verify-play-purchase', {
+        body: { purchaseToken, sku, plan },
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+      if (error || data?.error) {
+        await payResponse.complete('fail');
+        spawnDropBanner('◆  Purchase verification failed — contact weebjiglobal@gmail.com');
+        return true;
+      }
+      await payResponse.complete('success');
+      await SupabaseSync.pullProgress();
+      spawnDropBanner('◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
+      if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, channel: 'play_billing' });
+      renderProfile(); initDashboard();
+      if (plan !== 'ghost_token') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');
+      return true;
+    } catch(e) {
+      if (e.name === 'AbortError') { return true; } // user cancelled — handled
+      return false; // Digital Goods API not available, fall through to Razorpay
+    }
+  }
+
   async function _openCheckout(plan) {
-    // Play Store TWA — open web checkout in Chrome (outside TWA scope = no Google billing cut)
-    if (document.referrer.startsWith('android-app://')) {
-      const planLabel = plan === 'monthly' ? 'plus' : plan === 'annual' ? 'plus_annual' : 'ghost_token';
-      window.open(`https://skryrsh.github.io/Weebji-os/landing?checkout=${planLabel}`, '_blank');
-      spawnDropBanner('◆  Opening browser — sign in and subscribe there, then return to the app');
-      return;
+    // TWA / Android: use Google Play Billing via Digital Goods API
+    if ('getDigitalGoodsService' in window) {
+      const handled = await _openPlayBilling(plan);
+      if (handled) return;
     }
 
     const user = SupabaseSync.getUser?.();
@@ -2727,13 +2770,13 @@
           <div class="plus-plans">
             <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('monthly')">
               <div class="plus-plan__period">Monthly</div>
-              <div class="plus-plan__price">$4.99</div>
+              <div class="plus-plan__price">$9.99</div>
               <div class="plus-plan__unit">/month</div>
             </div>
             <div class="plus-plan featured" id="plus-plan-annual" onclick="Sound.play('tap');_openCheckout('annual')">
               <div class="plus-plan__badge">BEST VALUE</div>
               <div class="plus-plan__period">Annual</div>
-              <div class="plus-plan__price">$29.99</div>
+              <div class="plus-plan__price">$59.99</div>
               <div class="plus-plan__unit">/year — save 50%</div>
             </div>
           </div>
@@ -3003,7 +3046,7 @@
         <p class="dungeon-locked-overlay__pitch">Defeat <strong>${dungeon.boss}</strong> this week. Claim the title. Most hunters never make it past Gate 1.</p>
         <div class="dungeon-locked-overlay__urgency">⏳ ${timerTxt} — dungeon resets next week</div>
         <div class="dungeon-locked-overlay__btn" onclick="document.querySelector('.profile-scroll')&&document.getElementById('profile-plus-section').scrollIntoView({behavior:'smooth'});Sound.play('tap');showScreen('profile');renderProfile();">UNLOCK WEEBJI+ — ENTER NOW →</div>
-        <div class="dungeon-locked-overlay__price">From $4.99/mo · Cancel anytime</div>
+        <div class="dungeon-locked-overlay__price">From $9.99/mo · Cancel anytime</div>
       </div>` : '';
 
     const defeatedHtml = bossDone ? `
@@ -3311,8 +3354,8 @@
           <div class="premium-hype__feature-text"><strong>${f.title}</strong> — ${f.desc}</div>
         </div>`).join('')}
       </div>
-      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — $4.99/mo</button>
-      <div class="premium-hype__price">or $29.99/yr — save 50% · cancel anytime</div>
+      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — $9.99/mo</button>
+      <div class="premium-hype__price">or $59.99/yr — save 50% · cancel anytime</div>
     </div>`;
   }
 
@@ -9362,7 +9405,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
         // Restore premium status via secure server-side RPC (bypasses RLS)
         const { data: premiumPlan } = await client.rpc('get_premium_status');
         premiumStatus = !!premiumPlan;
-        if (premiumPlan && document.getElementById('profile')?.classList.contains('active')) renderProfile();
+        if (premiumPlan) {
+          if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
+          if (document.getElementById('dungeon')?.classList.contains('active')) renderDungeonCard();
+          if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
+          if (document.getElementById('battle')?.classList.contains('active')) renderBattleCard();
+        }
 
         // Get or create sequential hunter number
         let { data: hn } = await client.from('hunter_numbers').select('number').eq('user_id', currentUser.id).maybeSingle();
@@ -9499,7 +9547,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
       try {
         const { data: premiumPlan } = await client.rpc('get_premium_status');
         premiumStatus = !!premiumPlan;
-        if (premiumPlan && document.getElementById('profile')?.classList.contains('active')) renderProfile();
+        if (premiumPlan) {
+          if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
+          if (document.getElementById('dungeon')?.classList.contains('active')) renderDungeonCard();
+          if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
+          if (document.getElementById('battle')?.classList.contains('active')) renderBattleCard();
+        }
       } catch(e) { console.warn('Premium check failed', e); }
     }
 

@@ -6,9 +6,9 @@ const CORS = {
 };
 
 const PLANS: Record<string, { amount: number; description: string }> = {
-  monthly:     { amount: 49900,  description: 'WEEBJI+ Monthly' },
-  annual:      { amount: 299900, description: 'WEEBJI+ Annual' },
-  ghost_token: { amount: 9900,   description: 'Ghost Token' },
+  monthly:     { amount: 84900,  description: 'WEEBJI+ Monthly' },  // $9.99 ≈ ₹849
+  annual:      { amount: 499900, description: 'WEEBJI+ Annual' },   // $59.99 ≈ ₹4,999
+  ghost_token: { amount: 9900,   description: 'Ghost Token' },      // $0.99 ≈ ₹99
 };
 
 Deno.serve(async (req) => {

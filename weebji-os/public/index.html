@@ -6018,6 +6018,7 @@
     let _theme = null;
     let _timers = [];
     let _enabled = localStorage.getItem('weebji_music_on') !== '0';
+    let _fadeGen = 0;          // generation counter — prevents stale fades killing new oscillators
 
     function _init() {
       if (_ctx) return;
@@ -6035,14 +6036,19 @@
       _nodes = [];
     }
 
-    // Fade master out, then run callback
+    // Fade master out, then run callback — generation-guarded so stale fades can't kill new oscillators
     function _fadeOut(secs, cb) {
       if (!_master) { if (cb) cb(); return; }
+      const gen = ++_fadeGen;
       const t = _ctx.currentTime;
       _master.gain.cancelScheduledValues(t);
       _master.gain.setValueAtTime(_master.gain.value, t);
       _master.gain.linearRampToValueAtTime(0, t + secs);
-      setTimeout(() => { _kill(); if (cb) cb(); }, secs * 1000 + 60);
+      setTimeout(() => {
+        if (gen !== _fadeGen) return; // a newer fade took over — don't kill its oscillators
+        _kill();
+        if (cb) cb();
+      }, secs * 1000 + 60);
     }
 
     function _fadeIn(vol, secs) {

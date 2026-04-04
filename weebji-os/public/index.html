@@ -2646,13 +2646,11 @@
       const client = SupabaseSync._client();
       if (!client) throw new Error('Not connected');
 
-      // Explicitly get session token — functions.invoke() falls back to anon key
-      // if the session isn't loaded yet, causing 401 on the edge function
+      // Ensure session is loaded/refreshed before invoking — client auto-sends fresh token
       const { data: { session } } = await client.auth.getSession();
       if (!session?.access_token) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
-      const authHeaders = { headers: { Authorization: `Bearer ${session.access_token}` } };
 
-      const { data, error } = await client.functions.invoke('razorpay-create-order', { body: { plan }, ...authHeaders });
+      const { data, error } = await client.functions.invoke('razorpay-create-order', { body: { plan } });
       if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
 
       // Only capture after order confirmed — prevents inflated counts from auth-fail retries

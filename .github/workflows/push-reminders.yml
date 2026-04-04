@@ -1,57 +1,15 @@
 name: Push Reminders
-
+# DISABLED — push notifications handled by Supabase pg_cron + OneSignal
+# Delete this file or leave disabled; do not re-enable without removing pg_cron jobs first
 on:
-  schedule:
-    # morning activation — 8am IST (2:30 UTC) covers Asia/ME, 8am UTC covers EU, 8am EST (13:00 UTC) covers US
-    - cron: '30 2 * * *'
-    - cron: '0 8 * * *'
-    - cron: '0 13 * * *'
-    # streak reminder — evening: 9pm IST (15:30 UTC), 9pm CET (20:00 UTC), 9pm EST (02:00 UTC next day)
-    - cron: '30 15 * * *'
-    - cron: '0 20 * * *'
-    # comeback — once daily
-    - cron: '0 6 * * *'
-    # weekly summary — Sunday 10am IST (4:30 UTC)
-    - cron: '30 4 * * 0'
   workflow_dispatch:
     inputs:
-      type:
-        description: 'Notification type'
-        required: true
-        default: 'streak_reminder'
-        type: choice
-        options:
-          - morning_activation
-          - streak_reminder
-          - comeback
-          - weekly_summary
+      disabled:
+        description: 'This workflow is disabled — pg_cron handles push reminders'
+        required: false
 
 jobs:
-  send:
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - name: Determine type
-        id: vars
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "type=${{ inputs.type }}" >> $GITHUB_OUTPUT
-          else
-            HOUR=$(date -u +%H)
-            DOW=$(date -u +%u)
-            if [ "$HOUR" = "04" ] && [ "$DOW" = "7" ]; then
-              echo "type=weekly_summary" >> $GITHUB_OUTPUT
-            elif [ "$HOUR" = "02" ] || [ "$HOUR" = "08" ] || [ "$HOUR" = "13" ]; then
-              echo "type=morning_activation" >> $GITHUB_OUTPUT
-            elif [ "$HOUR" = "15" ] || [ "$HOUR" = "20" ]; then
-              echo "type=streak_reminder" >> $GITHUB_OUTPUT
-            else
-              echo "type=comeback" >> $GITHUB_OUTPUT
-            fi
-          fi
-
-      - name: Call scheduled-push
-        run: |
-          curl -sf -X POST \
-            "${{ secrets.SUPABASE_URL }}/functions/v1/scheduled-push?type=${{ steps.vars.outputs.type }}" \
-            -H "x-weebji-cron: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+      - run: echo "Push reminders are handled by Supabase pg_cron. This workflow is a no-op."

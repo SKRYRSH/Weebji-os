@@ -12,8 +12,12 @@ const ONE_SIGNAL_API    = 'https://onesignal.com/api/v1/notifications';
 const NOTIF: Record<string, { title: string; body: string }> = {
   morning_activation: { title: '◈ SYSTEM ONLINE',          body: "Today's protocol is waiting. Don't let the streak die." },
   streak_reminder:    { title: 'SYSTEM ALERT',              body: "You haven't trained today. Your streak dies at midnight." },
+  midday_check:       { title: '◈ MID-SESSION CHECK',      body: "Half the day is gone. You still haven't trained. Fix that." },
   comeback_3d:        { title: 'RECONNECTION REQUIRED',     body: 'Your guild noticed you went dark. 3 days offline. Come back.' },
   comeback_7d:        { title: 'RANK SLIPPING',             body: "Someone took your spot on the leaderboard. 7 days gone. Return now." },
+  weekly_start:       { title: '◈ NEW WEEK DETECTED',      body: "Fresh week. Zero excuses. The System is watching from day one." },
+  midweek_check:      { title: 'MIDWEEK STATUS',            body: "Wednesday. Still time to make this week count. Are you training?" },
+  week_close:         { title: '⚠ WEEK CLOSES TONIGHT',    body: "Sunday ends in hours. Don't let this week die without a session." },
 };
 
 async function sendOneSignal(userIds: string[], type: string) {
@@ -74,7 +78,7 @@ Deno.serve(async (req) => {
     // Query relevant users from progress table
     let query = supabase.from('progress').select('user_id, streak, updated_at');
 
-    if (type === 'morning_activation' || type === 'streak_reminder') {
+    if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check') {
       // Users with active streaks who haven't trained today
       query = query.gt('streak', 0).lt('updated_at', todayISTStart);
     } else if (type === 'comeback_3d') {
@@ -83,6 +87,7 @@ Deno.serve(async (req) => {
     } else if (type === 'comeback_7d') {
       query = query.lt('updated_at', sevenDaysAgo);
     }
+    // weekly_start / midweek_check / week_close — all active users (no filter)
 
     const { data: rows, error } = await query;
     if (error) throw error;
@@ -90,11 +95,23 @@ Deno.serve(async (req) => {
     const userIds = (rows || []).map(r => r.user_id);
     const result = await sendOneSignal(userIds, type);
 
+    await supabase.from('push_log').insert({
+      type,
+      targeted:   userIds.length,
+      recipients: result.recipients,
+      ok:         result.ok,
+    });
+
     return new Response(JSON.stringify({ ok: true, targeted: userIds.length, ...result }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
 
   } catch (e) {
+    // Best-effort error log — use service role client directly
+    try {
+      const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      await sb.from('push_log').insert({ type: 'unknown', targeted: 0, recipients: 0, ok: false, error: (e as Error).message });
+    } catch { /* ignore */ }
     return new Response(JSON.stringify({ error: (e as Error).message }), {
       status: 500,
       headers: { ...CORS, 'Content-Type': 'application/json' },

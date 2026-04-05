@@ -1,12 +1,12 @@
 // ── WEEBJI OS — Service Worker v22 ────────────────────────────────────────────
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
-const CACHE_NAME = 'weebji-os-v117';
+const CACHE_NAME = 'weebji-os-v118';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
-  // Do NOT skipWaiting here — let the update banner show so user can choose when to reload
+  self.skipWaiting();
 });
 
 self.addEventListener('message', e => {

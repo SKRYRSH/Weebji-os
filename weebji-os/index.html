@@ -1924,11 +1924,14 @@
         await new Promise((resolve, reject) => {
           OneSignalDeferred.push(async function(OneSignal) {
             try {
-              if (_userId) { try { await OneSignal.login(_userId); } catch(le) { /* non-fatal */ } }
+              if (_userId) { try { await OneSignal.login(_userId); } catch(le) { if (typeof posthog!=='undefined') posthog.capture('push_login_fail',{error:le?.message}); } }
               if (Notification.permission !== 'granted') await OneSignal.Notifications.requestPermission();
               await OneSignal.User.PushSubscription.optIn();
               resolve(true);
-            } catch(e) { reject(e); }
+            } catch(e) {
+              if (typeof posthog!=='undefined') posthog.capture('push_optin_fail',{error:e?.message,perm:Notification.permission});
+              reject(e);
+            }
           });
         });
         localStorage.removeItem('weebji_push_opted_out');

@@ -1963,16 +1963,15 @@
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
-  // Android WebView UA always contains "; wv)" — suppress install prompt inside native APK
-  const _isWebView = /; wv\)/.test(navigator.userAgent);
-  // Suppress install prompt if already installed PWA, native APK WebView, or minimal-ui mode
   const _isInstalled = window.matchMedia('(display-mode: standalone)').matches
     || window.matchMedia('(display-mode: minimal-ui)').matches
     || window.navigator.standalone
-    || _isWebView
     || document.referrer.startsWith('android-app://');
   if (_isInstalled) {
     localStorage.setItem('weebji_install_dismissed', '1');
+  } else {
+    // Not installed — clear old dismissed flag so prompt can show again in browser
+    localStorage.removeItem('weebji_install_dismissed');
   }
 
   let deferredInstallEvent = null;

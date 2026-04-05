@@ -1924,7 +1924,7 @@
         await new Promise((resolve, reject) => {
           OneSignalDeferred.push(async function(OneSignal) {
             try {
-              if (_userId) await OneSignal.login(_userId);
+              if (_userId) { try { await OneSignal.login(_userId); } catch(le) { /* non-fatal */ } }
               if (Notification.permission !== 'granted') await OneSignal.Notifications.requestPermission();
               await OneSignal.User.PushSubscription.optIn();
               resolve(true);

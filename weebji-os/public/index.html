@@ -8183,16 +8183,14 @@
       spawnDropBanner('🔔  Notifications blocked — enable in Android Settings > Apps');
       return;
     }
-    try {
-      if (Notification.permission === 'granted' && !WeebjPush.isOptedOut()) {
-        await WeebjPush.unsubscribe();
-      } else {
-        localStorage.removeItem('weebji_push_opted_out');
-        localStorage.removeItem('weebji_notif_dismissed');
-        sessionStorage.removeItem('weebji_notif_shown_this_session');
-        await WeebjPush.subscribe();
-      }
-    } catch(e) { /* ignore — renderProfile still runs */ }
+    if (Notification.permission === 'granted' && !WeebjPush.isOptedOut()) {
+      WeebjPush.unsubscribe();
+    } else {
+      localStorage.removeItem('weebji_push_opted_out');
+      localStorage.removeItem('weebji_notif_dismissed');
+      sessionStorage.removeItem('weebji_notif_shown_this_session');
+      WeebjPush.subscribe(); // fire-and-forget — localStorage already cleared so UI shows ON
+    }
     renderProfile();
   });
 

@@ -2078,9 +2078,17 @@
     }, delay);
   }
 
-  document.getElementById('notif-yes-btn').addEventListener('click', () => {
+  document.getElementById('notif-yes-btn').addEventListener('click', async () => {
     document.getElementById('notif-prompt').classList.remove('visible');
     localStorage.setItem('weebji_notif_dismissed', '1');
+    if (typeof OneSignalDeferred !== 'undefined' && currentUser?.id) {
+      await new Promise(resolve => {
+        OneSignalDeferred.push(async function(OneSignal) {
+          await OneSignal.login(currentUser.id);
+          resolve();
+        });
+      });
+    }
     WeebjPush.subscribe();
   });
 
@@ -8185,6 +8193,15 @@
       localStorage.removeItem('weebji_push_opted_out');
       localStorage.removeItem('weebji_notif_dismissed');
       sessionStorage.removeItem('weebji_notif_shown_this_session');
+      // login first so subscription links to this user_id
+      if (typeof OneSignalDeferred !== 'undefined' && currentUser?.id) {
+        await new Promise(resolve => {
+          OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.login(currentUser.id);
+            resolve();
+          });
+        });
+      }
       await WeebjPush.subscribe();
     }
     renderProfile();
@@ -9269,12 +9286,18 @@ DEV.skipSplash()      → go straight to class select (if no session)
             checkPremiumFromSupabase();
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
             if (gateActive) { enterDashboard(false); }
-            // Link OneSignal to this user so backend can target by user_id
+            // Link OneSignal to this user then re-subscribe so backend can target by user_id
             if (typeof OneSignalDeferred !== 'undefined') {
-              OneSignalDeferred.push(function(OneSignal) { OneSignal.login(currentUser.id); });
+              OneSignalDeferred.push(async function(OneSignal) {
+                await OneSignal.login(currentUser.id);
+                if (Notification.permission === 'granted') {
+                  try {
+                    await OneSignal.Notifications.requestPermission();
+                    await OneSignal.User.PushSubscription.optIn();
+                  } catch(e) { /* silent */ }
+                }
+              });
             }
-            if (Notification.permission === 'granted') WeebjPush.subscribe();
-            else WeebjPush.init();
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
             if (event === 'SIGNED_IN') setTimeout(() => SupabaseSync.triggerBrevoSignup(), 3000);
             if (onProfile) { renderAuthSection(); if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(); }

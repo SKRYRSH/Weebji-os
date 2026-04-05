@@ -21,13 +21,14 @@ const NOTIF: Record<string, { title: string; body: string }> = {
 };
 
 async function sendOneSignal(userIds: string[], type: string) {
-  if (userIds.length === 0) return { ok: true, recipients: 0 };
+  if (userIds.length === 0) return { ok: true, recipients: 0, osError: null };
   const notif = NOTIF[type];
   // Batch in chunks of 2000 (OneSignal limit per request)
   const chunks: string[][] = [];
   for (let i = 0; i < userIds.length; i += 2000) chunks.push(userIds.slice(i, i + 2000));
 
   let totalRecipients = 0;
+  let lastError: string | null = null;
   for (const chunk of chunks) {
     const res = await fetch(ONE_SIGNAL_API, {
       method: 'POST',
@@ -46,8 +47,11 @@ async function sendOneSignal(userIds: string[], type: string) {
     });
     const json = await res.json();
     totalRecipients += json.recipients || 0;
+    if (!res.ok || json.errors) {
+      lastError = JSON.stringify(json.errors || json);
+    }
   }
-  return { ok: true, recipients: totalRecipients };
+  return { ok: lastError === null, recipients: totalRecipients, osError: lastError };
 }
 
 Deno.serve(async (req) => {
@@ -100,6 +104,7 @@ Deno.serve(async (req) => {
       targeted:   userIds.length,
       recipients: result.recipients,
       ok:         result.ok,
+      error:      result.osError,
     });
 
     return new Response(JSON.stringify({ ok: true, targeted: userIds.length, ...result }), {

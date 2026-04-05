@@ -1915,12 +1915,16 @@
       if (m) local(type, m.title, m.body);
     }
 
+    let _userId = null;
+    function setUser(id) { _userId = id; }
+
     async function subscribe() {
       if (!('Notification' in window)) return false;
       try {
         await new Promise((resolve, reject) => {
           OneSignalDeferred.push(async function(OneSignal) {
             try {
+              if (_userId) await OneSignal.login(_userId);
               await OneSignal.Notifications.requestPermission();
               await OneSignal.User.PushSubscription.optIn();
               resolve(true);
@@ -1952,7 +1956,7 @@
 
     function init() { /* OneSignal init handled above */ }
 
-    return { subscribe, unsubscribe, isOptedOut, send, local, init };
+    return { subscribe, unsubscribe, isOptedOut, send, local, init, setUser };
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
@@ -9271,17 +9275,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
             checkPremiumFromSupabase();
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
             if (gateActive) { enterDashboard(false); }
-            // Link OneSignal to this user then re-subscribe so backend can target by user_id
-            if (typeof OneSignalDeferred !== 'undefined') {
-              OneSignalDeferred.push(async function(OneSignal) {
-                await OneSignal.login(currentUser.id);
-                if (Notification.permission === 'granted') {
-                  try {
-                    await OneSignal.Notifications.requestPermission();
-                    await OneSignal.User.PushSubscription.optIn();
-                  } catch(e) { /* silent */ }
-                }
-              });
+            // Link OneSignal user id — subscribe() will login+optIn atomically
+            if (typeof WeebjPush !== 'undefined') {
+              WeebjPush.setUser(currentUser.id);
+              if (Notification.permission === 'granted' && !WeebjPush.isOptedOut()) WeebjPush.subscribe();
             }
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
             if (event === 'SIGNED_IN') setTimeout(() => SupabaseSync.triggerBrevoSignup(), 3000);

@@ -9952,6 +9952,31 @@ DEV.skipSplash()      → go straight to class select (if no session)
   // Validate WEEBJI+ purchase token from URL (must run after Supabase client is ready)
   checkUrlPlusActivation();
 
+  // ── DEMO MODE (Google Play review access) ─────────────────────────────────
+  // URL: ?_demo=1  — bypasses login, seeds sample data, unlocks premium
+  // Remove this block before any public launch beyond internal testing
+  (function initDemoMode() {
+    if (new URLSearchParams(location.search).get('_demo') !== '1') return;
+    // Seed localStorage with a sample active user
+    const demoData = {
+      weebji_xp: '3400', weebji_level: '12', weebji_hp: '5',
+      weebji_streak: '7', weebji_best_streak: '14',
+      weebji_ghost_tokens: '2', weebji_class: 'hunter',
+      weebji_color: '#00F5FF', weebji_name: 'ReviewUser',
+      weebji_total_workout_days: '30', weebji_total_study_mins: '420',
+      weebji_prs: '{"pushups":40,"squats":60,"plank":120}',
+      weebji_install_dismissed: '1',
+    };
+    Object.entries(demoData).forEach(([k, v]) => { if (!localStorage.getItem(k)) localStorage.setItem(k, v); });
+    // Patch SupabaseSync so isPremium() returns true and getUser() returns a mock user
+    const _origInit = SupabaseSync.init;
+    Object.defineProperty(SupabaseSync, 'isPremium',  { value: () => true, configurable: true });
+    Object.defineProperty(SupabaseSync, 'getUser',    { value: () => ({ id: 'demo-user', email: 'review@weebji.app' }), configurable: true });
+    // Skip to dashboard
+    setTimeout(() => { showScreen('dashboard'); }, 300);
+    console.info('[WEEBJI] Demo mode active — premium unlocked, auth bypassed');
+  })();
+
   /* ══ REALTIME ════════════════════════════════
      - Live leaderboard refresh when any hunter's stats change
      - Activity feed toasts when someone levels up

@@ -139,14 +139,16 @@ Deno.serve(async (req) => {
     );
 
     if (dbPlan === 'ghost_token') {
-      // Increment ghost tokens
-      const { data: prog } = await adminClient.from('progress').select('data').eq('user_id', user.id).single();
-      const currentData = prog?.data || {};
-      const currentTokens = currentData.ghostTokens || 0;
-      await adminClient.from('progress').upsert(
-        { user_id: user.id, data: { ...currentData, ghostTokens: currentTokens + 1 }, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id' }
-      );
+      // Increment ghost_tokens column directly (same path as Razorpay)
+      await adminClient.rpc('increment_ghost_tokens', { uid: user.id }).catch(async () => {
+        // Fallback: manual increment if RPC doesn't exist
+        const { data: prog } = await adminClient.from('progress').select('ghost_tokens').eq('user_id', user.id).single();
+        const current = prog?.ghost_tokens || 0;
+        await adminClient.from('progress').upsert(
+          { user_id: user.id, ghost_tokens: current + 1, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        );
+      });
     } else {
       // Upsert subscription plan
       await adminClient.from('user_plans').upsert(

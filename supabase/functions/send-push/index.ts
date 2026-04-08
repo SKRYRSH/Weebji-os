@@ -29,8 +29,17 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
   try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) return new Response('Unauthorized', { status: 401, headers: CORS });
+
+    const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+    if (authErr || !user) return new Response('Unauthorized', { status: 401, headers: CORS });
+
     const { user_id, type, ...extras } = await req.json();
     if (!user_id || !type) return new Response('Missing user_id or type', { status: 400 });
+    // Only allow sending to yourself
+    if (user_id !== user.id) return new Response('Forbidden', { status: 403, headers: CORS });
 
     const templateFn = NOTIF[type];
     const { title, body } = templateFn ? templateFn(extras) : { title: 'WEEBJI OS', body: 'The System is watching.' };

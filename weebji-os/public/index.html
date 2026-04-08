@@ -2632,6 +2632,12 @@
       if (handled) return;
     }
 
+    // Block Razorpay inside TWA — Play policy 4.1 requires Play Billing exclusively
+    if (document.referrer.startsWith('android-app://')) {
+      spawnDropBanner('◆  Open weebji.netlify.app in a browser to upgrade');
+      return;
+    }
+
     const user = SupabaseSync.getUser?.();
     if (!user) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
 
@@ -9075,7 +9081,8 @@ ${particles}
     console.log = console.warn = console.info = console.debug = console.error = _noop;
   }
 
-  /* ══ DEV TESTING HELPERS (console only, no panel) ═══ */
+  /* ══ DEV TESTING HELPERS (localhost only) ═══ */
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.search.includes('_debug=weebji'))
   window.DEV = {
     help() {
       console.log(`%c
@@ -9465,16 +9472,17 @@ DEV.skipSplash()      → go straight to class select (if no session)
           return;
         }
         const p = loadProgress();
-        // Always take the best stats (cloud or local, whichever is higher)
-        if (data.level > p.level || (data.level === p.level && data.xp >= p.xp) || (p.level <= 1 && p.xp <= 0) || data.level > 1) {
+        // Always take the best stats (max of local vs cloud — never downgrade)
+        if (data.level > p.level || (data.level === p.level && data.xp > p.xp)) {
           p.level = data.level; p.xp = data.xp;
-          // Clamp hp to valid 0-5 range (DB may store legacy 0-100 values)
-          p.hp = Math.min(5, Math.max(0, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
-          p.streak = data.streak; p.bestStreak = data.best_streak;
-          p.ghostTokens = data.ghost_tokens;
-          p.totalStudyMins = data.total_study_mins;
-          p.totalWorkoutDays = data.total_workout_days;
         }
+        // HP, streak, tokens — always take cloud (authoritative for these)
+        p.hp = Math.min(5, Math.max(0, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
+        if ((data.streak || 0) > (p.streak || 0)) p.streak = data.streak;
+        if ((data.best_streak || 0) > (p.bestStreak || 0)) p.bestStreak = data.best_streak;
+        if ((data.ghost_tokens || 0) > (p.ghostTokens || 0)) p.ghostTokens = data.ghost_tokens;
+        if ((data.total_study_mins || 0) > (p.totalStudyMins || 0)) p.totalStudyMins = data.total_study_mins;
+        if ((data.total_workout_days || 0) > (p.totalWorkoutDays || 0)) p.totalWorkoutDays = data.total_workout_days;
         // Always restore rich data from cloud (grids, reflections, PRs, titles, etc.)
         // This ensures data survives localStorage clears, new devices, reinstalls
         if (data.data) {
@@ -9563,6 +9571,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
       await client.auth.signOut();
       currentUser = null;
       premiumStatus = false;
+      // Wipe local progress so next user on same device starts clean
+      const keep = ['weebji_install_dismissed','weebji_notif_dismissed'];
+      Object.keys(localStorage).filter(k => k.startsWith('weebji_') && !keep.includes(k)).forEach(k => localStorage.removeItem(k));
       renderAuthSection();
     }
 
@@ -9718,7 +9729,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
     async function searchGuilds(query) {
       const client = _client();
       if (!client) return [];
-      const q = query.trim().toUpperCase();
+      const q = query.trim().toUpperCase().replace(/[^A-Z0-9 _-]/g, '');
+      if (!q) return [];
       const { data } = await client.from('guilds')
         .select('id,name,tag,description,max_members')
         .or(`tag.ilike.%${q}%,name.ilike.%${q}%`)

@@ -1,6 +1,6 @@
 // ── WEEBJI OS — Service Worker v22 ────────────────────────────────────────────
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
-const CACHE_NAME = 'weebji-os-v120';
+const CACHE_NAME = 'weebji-os-v121';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
@@ -99,4 +99,15 @@ const NOTIF_CFG = {
   friend_levelup:     { vibrate: [50,30,50],            tag: 'weebji-friend',   requireInteraction: false },
 };
 
-// push + notificationclick handled by OneSignal SDK SW (importScripts above)
+// Local notification click — focus app window
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const target = e.notification.data?.url || BASE;
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const existing = list.find(c => c.url.startsWith(BASE) && 'focus' in c);
+      return existing ? existing.focus() : clients.openWindow(target);
+    })
+  );
+});
+// OneSignal SDK SW handles its own push + notificationclick above

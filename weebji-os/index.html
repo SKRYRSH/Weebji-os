@@ -4737,8 +4737,20 @@
       return;
     }
 
-    // Monarch — render workout forge
-    _renderForgeWorkout(p, cls, '#00F5FF');
+    // Monarch — render by today's schedule
+    const type = todayWorkoutType();
+    if (type === 'REST') {
+      forgeCard.classList.add('dash-card--rest');
+      titleEl.textContent = 'REST DAY';
+      titleEl.style.color = '#8888AA'; titleEl.style.textShadow = '0 0 8px rgba(136,136,170,0.3)';
+      subEl.textContent = ''; bonusEl.classList.add('hidden');
+      renderRestContent(p);
+    } else {
+      forgeCard.classList.add('dash-card--cyan');
+      titleEl.textContent = 'THE FORGE'; subEl.textContent = `${type} DAY`;
+      bonusEl.classList.toggle('hidden', !p.workoutBonus);
+      renderExercises(p, WORKOUTS[type]);
+    }
     // Monarch: calendar + PR board appended after exercise list
     requestAnimationFrame(() => {
       const listEl = document.getElementById('exercise-list');

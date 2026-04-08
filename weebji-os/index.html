@@ -413,15 +413,15 @@
   /* ══ PENANCE PROTOCOL ════════════════════════ */
   #penance-protocol { position:absolute; inset:0; background:#000; z-index:900; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:52px 32px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; text-align:center; }
   #penance-protocol.active { opacity:1; pointer-events:all; }
-  .penance__eyebrow { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.4em; color:#2A0000; text-transform:uppercase; }
+  .penance__eyebrow { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.4em; color:#AA4444; text-transform:uppercase; }
   .penance__title { font-family:'Cinzel',serif; font-size:32px; font-weight:900; letter-spacing:0.24em; color:#CC0000; text-shadow:0 0 20px rgba(204,0,0,0.8), 0 0 60px rgba(204,0,0,0.2); animation:kf-penance-pulse 2.5s ease-in-out infinite; }
   @keyframes kf-penance-pulse { 0%,100% { text-shadow:0 0 20px rgba(204,0,0,0.8), 0 0 60px rgba(204,0,0,0.2); } 50% { text-shadow:0 0 30px rgba(204,0,0,1), 0 0 80px rgba(204,0,0,0.35); } }
-  .penance__verse { font-family:'Inter',sans-serif; font-size:13px; color:#3A0808; line-height:1.85; max-width:268px; font-style:italic; }
-  .penance__instruction { font-family:'JetBrains Mono',monospace; font-size:10px; color:#552222; letter-spacing:0.18em; text-transform:uppercase; }
-  .penance__input { width:100%; background:transparent; border:1px solid rgba(180,0,0,0.25); border-radius:8px; padding:14px 16px; font-family:'JetBrains Mono',monospace; font-size:13px; color:#FF3333; letter-spacing:0.12em; outline:none; text-align:center; transition:border-color 0.3s ease, box-shadow 0.3s ease; text-transform:uppercase; caret-color:#FF3333; }
-  .penance__input:focus { border-color:rgba(204,0,0,0.55); box-shadow:0 0 14px rgba(180,0,0,0.15) inset; }
+  .penance__verse { font-family:'Inter',sans-serif; font-size:13px; color:#CC8888; line-height:1.85; max-width:268px; font-style:italic; }
+  .penance__instruction { font-family:'JetBrains Mono',monospace; font-size:10px; color:#BB6666; letter-spacing:0.18em; text-transform:uppercase; }
+  .penance__input { width:100%; background:transparent; border:1px solid rgba(180,0,0,0.4); border-radius:8px; padding:14px 16px; font-family:'JetBrains Mono',monospace; font-size:13px; color:#FF3333; letter-spacing:0.12em; outline:none; text-align:center; transition:border-color 0.3s ease, box-shadow 0.3s ease; text-transform:uppercase; caret-color:#FF3333; }
+  .penance__input:focus { border-color:rgba(204,0,0,0.7); box-shadow:0 0 14px rgba(180,0,0,0.2) inset; }
   .penance__input.correct { border-color:#00F5FF; color:#00F5FF; box-shadow:0 0 18px rgba(0,245,255,0.25) inset; }
-  .penance__scar { font-family:'JetBrains Mono',monospace; font-size:10px; color:#1E0000; letter-spacing:0.07em; font-style:italic; max-width:260px; line-height:1.7; }
+  .penance__scar { font-family:'JetBrains Mono',monospace; font-size:10px; color:#AA5555; letter-spacing:0.07em; font-style:italic; max-width:260px; line-height:1.7; }
 
   /* ══ LEVEL UP OVERLAY ════════════════════════ */
   /* ══ CINEMATIC — GLOBAL CANVAS OVERLAY ══════ */
@@ -1224,9 +1224,9 @@
   .void__breach-banner { position:absolute; top:0; left:0; right:0; padding:14px 20px; background:rgba(160,0,0,0.92); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#FF5555; text-transform:uppercase; text-align:center; transform:translateY(-100%); transition:transform 0.3s ease; }
 
   /* Penance manifest reveal */
-  .penance__manifest { font-family:'Inter',sans-serif; font-size:13px; color:#660000; font-style:italic; max-width:260px; line-height:1.8; border-left:2px solid #330000; padding-left:14px; text-align:left; opacity:0; transform:translateY(6px); transition:opacity 0.6s 0.8s ease, transform 0.6s 0.8s ease; }
+  .penance__manifest { font-family:'Inter',sans-serif; font-size:13px; color:#CC8888; font-style:italic; max-width:260px; line-height:1.8; border-left:2px solid #660000; padding-left:14px; text-align:left; opacity:0; transform:translateY(6px); transition:opacity 0.6s 0.8s ease, transform 0.6s 0.8s ease; }
   .penance__manifest.show { opacity:1; transform:translateY(0); }
-  .penance__manifest-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:#330000; text-transform:uppercase; display:block; margin-bottom:6px; }
+  .penance__manifest-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:#AA5555; text-transform:uppercase; display:block; margin-bottom:6px; }
 
   /* Monetization overhaul */
   .plus-paywall { background:rgba(255,200,40,0.03); border:1px solid rgba(255,210,60,0.12); border-radius:16px; padding:18px 16px; margin-bottom:12px; }
@@ -4751,10 +4751,11 @@
       bonusEl.classList.toggle('hidden', !p.workoutBonus);
       renderExercises(p, WORKOUTS[type]);
     }
-    // Monarch: calendar + PR board appended after exercise list
+    // Monarch: calendar + PR board appended after exercise list (clear first to prevent duplication)
     requestAnimationFrame(() => {
       const listEl = document.getElementById('exercise-list');
       if (!listEl) return;
+      listEl.querySelectorAll('.dopamine-section, .pr-board').forEach(el => el.remove());
       const calSection = document.createElement('div');
       calSection.className = 'dopamine-section';
       renderMonthCalendar(calSection, p.monarchGrid || [], p.workoutBonus, '0,245,255', 'Perfect Days');
@@ -5270,7 +5271,8 @@
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectMode(b.dataset.mode); }));
     document.getElementById('mm-start-btn').addEventListener('click',  () => { Sound.play('tap'); Pomo.toggle(); });
     document.getElementById('mm-cancel-btn').addEventListener('click', () => { Sound.play('tap'); Pomo.cancel(); });
-    // Heatmap + calendar
+    // Heatmap + calendar (clear first to prevent duplication)
+    listEl.querySelectorAll('.dopamine-section, .deep-work-heatmap').forEach(el => el.remove());
     listEl.appendChild(renderDeepWorkHeatmap(p));
     const calSection = document.createElement('div');
     calSection.className = 'dopamine-section';

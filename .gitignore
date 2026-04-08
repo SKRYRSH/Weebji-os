@@ -23,3 +23,10 @@ Thumbs.db
 
 # Playwright MCP logs
 .playwright-mcp/
+
+# Android signing
+*.keystore
+*.jks
+uber-apk-signer.jar
+WEEBJI-OS.apk
+"WEEBJI OS - Google Play package/"

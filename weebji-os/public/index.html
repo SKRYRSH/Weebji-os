@@ -16,8 +16,8 @@
   <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_rUZFK8D1ws0J87t0xXS5m2pgivBILx5gXB0fqw52otw',{api_host:'https://us.i.posthog.com',defaults:'2026-01-30'});</script>
   <!-- Supabase JS (jsdelivr with unpkg fallback) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';document.head.appendChild(s)"></script>
-  <!-- Razorpay Checkout -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- Razorpay Checkout (defer — blocks page load outside India without this) -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   <!-- OneSignal Web Push -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1887,6 +1887,7 @@
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: _OS_APP_ID,
+        serviceWorkerPath: 'sw.js',
         notifyButton: { enable: false },
         promptOptions: { slidedown: { enabled: false } },
       });
@@ -1959,7 +1960,12 @@
 
     function init() { /* OneSignal init handled above */ }
 
-    return { subscribe, unsubscribe, isOptedOut, send, local, init, setUser };
+    function testPush() {
+      local('test', '✅ WEEBJI PUSH TEST', 'Notifications are working. The System sees you.');
+      console.log('[WeebjPush] testPush fired — check for notification');
+    }
+
+    return { subscribe, unsubscribe, isOptedOut, send, local, init, setUser, testPush };
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
@@ -1984,24 +1990,17 @@
   });
 
   function showInstallPromptWhenReady() {
-    // Already installed PWA or native APK WebView — never show
-    if (_isInstalled) { localStorage.setItem('weebji_install_dismissed', '1'); return; }
-    const dismissed = localStorage.getItem('weebji_install_dismissed');
-    if (dismissed) return;
+    // Auto-fire disabled — call triggerInstallPrompt() from a button instead
+  }
+
+  window.triggerInstallPrompt = function() {
+    if (_isInstalled) return;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (!deferredInstallEvent && !isIOS) return;
-    const cls = localStorage.getItem('weebji_class');
-    if (!cls) return;
-    const firstActionDone = localStorage.getItem('weebji_first_action_done');
-    const delay = firstActionDone ? 5000 : 30000;
-    setTimeout(() => {
-      if (localStorage.getItem('weebji_install_dismissed')) return;
-      if (_isInstalled) return;
-      if (!deferredInstallEvent && !isIOS) return;
-      localStorage.setItem('weebji_install_dismissed', '1'); // Set immediately — never show again after this
-      document.getElementById('install-prompt').classList.add('visible');
-    }, delay);
-  }
+    if (localStorage.getItem('weebji_install_dismissed')) return;
+    localStorage.setItem('weebji_install_dismissed', '1');
+    document.getElementById('install-prompt').classList.add('visible');
+  };
 
   document.getElementById('install-yes-btn').addEventListener('click', () => {
     if (deferredInstallEvent) {
@@ -2073,8 +2072,8 @@
     if (localStorage.getItem('weebji_notif_dismissed')) return;
     if (sessionStorage.getItem('weebji_notif_shown_this_session')) return;
     if (!SupabaseSync.getUser()) return; // must be signed in to save subscription
-    // Never show both prompts simultaneously — give install prompt priority
-    const delay = deferredInstallEvent && !localStorage.getItem('weebji_install_dismissed') ? 35000 : 12000;
+    // Install prompt is now manual-only — always use short delay
+    const delay = 12000;
     setTimeout(() => {
       if (Notification.permission !== 'default') return; // re-check in case user granted elsewhere
       if (!document.getElementById('install-prompt').classList.contains('visible')) {
@@ -4368,9 +4367,17 @@
     showScreen('dashboard');
     Sound.play('appOpen');
     if (typeof posthog !== 'undefined') posthog.capture('dashboard_opened', { from_onboarding: fromOnboarding, class: localStorage.getItem('weebji_class') });
-    // Pull cloud data immediately if signed in — reduces level-1 flash to near zero
+    // Pull cloud data immediately if signed in — re-render class cards once resolved
     if (typeof SupabaseSync !== 'undefined' && SupabaseSync.getUser()) {
-      SupabaseSync.pullProgress();
+      SupabaseSync.pullProgress().then(() => {
+        const _p   = loadProgress();
+        const _cls = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
+        renderForgeArea(_p, _cls);
+        renderQuests(_p, CLASS_QUESTS[_cls] || CLASS_QUESTS.monarch);
+        renderSecondaryPillars(_p, _cls);
+        updateXPBar(_p);
+        updateStats(_p);
+      }).catch(() => {});
     }
     initDashboard();
     // Phase 5: System Voice greeting (slight delay so dashboard is visible)
@@ -5497,9 +5504,26 @@
 
     let hasAny = false;
 
-    order.forEach((secondaryCls) => {
+    order.forEach((secondaryCls, idx) => {
       const meta = CLASS_META[secondaryCls];
       hasAny = true;
+
+      const requiredLevel = idx === 0 ? 3 : 7;
+      if ((p.level || 1) < requiredLevel) {
+        // Level not met — show locked card with level requirement
+        const card = document.createElement('div');
+        card.className = 'unlock-card locked';
+        card.innerHTML = `
+          <div class="unlock-card__icon" style="background:${hexRgba(meta.color,0.06)};color:${meta.color}">${meta.icon}</div>
+          <div class="unlock-card__meta">
+            <div class="unlock-card__name" style="color:rgba(255,255,255,0.3)">${meta.label}</div>
+            <div class="unlock-card__status" style="color:rgba(255,255,255,0.2)">LOCKED — Reach Level ${requiredLevel}</div>
+          </div>
+          <div class="unlock-card__lock" style="color:rgba(255,255,255,0.2)">⊘</div>
+        `;
+        container.appendChild(card);
+        return;
+      }
 
       if (!isWeebjiPlus()) {
         // Level met but not Plus — Plus gate
@@ -7189,10 +7213,26 @@
     const { data: rows } = await client
       .from('leaderboard')
       .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title,is_plus')
-      .order('streak', { ascending: false })
-      .order('best_streak', { ascending: false })
       .order('level', { ascending: false })
-      .limit(20);
+      .limit(50);
+
+    // Overlay live streaks from progress table (leaderboard.streak can be stale)
+    if (rows?.length) {
+      const ids = rows.map(r => r.user_id);
+      const { data: progRows } = await client
+        .from('progress')
+        .select('user_id,streak,best_streak')
+        .in('user_id', ids);
+      if (progRows?.length) {
+        const pm = Object.fromEntries(progRows.map(r => [r.user_id, r]));
+        rows.forEach(r => {
+          const pr = pm[r.user_id];
+          if (pr) { r.streak = pr.streak ?? r.streak; r.best_streak = Math.max(pr.best_streak ?? 0, r.best_streak ?? 0); }
+        });
+      }
+      rows.sort((a, b) => (b.streak||0)-(a.streak||0) || (b.best_streak||0)-(a.best_streak||0) || (b.level||0)-(a.level||0));
+      rows.splice(20);
+    }
 
     if (!rows || rows.length === 0) {
       el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px 16px;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;line-height:2;">No hunters ranked yet.<br><span style="color:rgba(255,255,255,0.12);font-size:9px;">Complete a workout or quest to claim your spot.<br>Sign in to sync your progress.</span></div></div>`;

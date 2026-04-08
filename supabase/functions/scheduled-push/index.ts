@@ -99,13 +99,16 @@ Deno.serve(async (req) => {
     const userIds = (rows || []).map(r => r.user_id);
     const result = await sendOneSignal(userIds, type);
 
-    await supabase.from('push_log').insert({
-      type,
-      targeted:   userIds.length,
-      recipients: result.recipients,
-      ok:         result.ok,
-      error:      result.osError,
-    });
+    // push_log is best-effort — don't crash the job if table is missing
+    try {
+      await supabase.from('push_log').insert({
+        type,
+        targeted:   userIds.length,
+        recipients: result.recipients,
+        ok:         result.ok,
+        error:      result.osError,
+      });
+    } catch { /* table may not exist yet */ }
 
     return new Response(JSON.stringify({ ok: true, targeted: userIds.length, ...result }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },

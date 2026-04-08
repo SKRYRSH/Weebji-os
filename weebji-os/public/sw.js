@@ -1,6 +1,6 @@
 // ── WEEBJI OS — Service Worker v22 ────────────────────────────────────────────
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
-const CACHE_NAME = 'weebji-os-v118';
+const CACHE_NAME = 'weebji-os-v120';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 

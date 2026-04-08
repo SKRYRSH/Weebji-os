@@ -39,9 +39,19 @@ Deno.serve(async (req) => {
     // Get current DB state to validate against
     const { data: cur } = await supabase
       .from('progress')
-      .select('level,xp,streak,best_streak,ghost_tokens,total_study_mins,total_workout_days,hp')
+      .select('level,xp,streak,best_streak,ghost_tokens,total_study_mins,total_workout_days,hp,updated_at')
       .eq('user_id', user.id)
       .single();
+
+    // Rate limit: reject pushes faster than 5s (blocks scripted grinding)
+    if (cur?.updated_at) {
+      const msSinceLast = Date.now() - new Date(cur.updated_at).getTime();
+      if (msSinceLast < 5000) {
+        return new Response(JSON.stringify({ ok: true, violations: ['rate_limited'] }), {
+          headers: { ...CORS, 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
     const violations: string[] = [];
 
@@ -89,6 +99,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Sanitise data blob — cap customWorkouts server-side (M11)
+    const safeData = inc.data || {};
+    if (Array.isArray(safeData.customWorkouts) && safeData.customWorkouts.length > 20) {
+      safeData.customWorkouts = safeData.customWorkouts.slice(0, 20);
+    }
+
     // Write validated progress
     const { error: writeErr } = await supabase.from('progress').upsert({
       user_id:            user.id,
@@ -100,7 +116,7 @@ Deno.serve(async (req) => {
       ghost_tokens:       vGhost,
       total_study_mins:   vStudy,
       total_workout_days: vWorkout,
-      data:               inc.data || {},
+      data:               safeData,
       updated_at:         new Date().toISOString(),
     }, { onConflict: 'user_id' });
 

@@ -2266,8 +2266,9 @@
     if (p.lastDate !== today) {
       // ── HP Penalty Logic (Master Build Doc §08) ──────────────────────
       // Calculate missed days (user may have been away multiple days)
+      const _utcDay = (s) => { const d = new Date(s); return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()); };
       const missedDays = p.lastDate
-        ? Math.max(0, Math.round((new Date(today) - new Date(p.lastDate)) / 86400000) - 1)
+        ? Math.max(0, Math.round((_utcDay(today) - _utcDay(p.lastDate)) / 86400000) - 1)
         : 0;
 
       // Yesterday's completion: check all class activity types

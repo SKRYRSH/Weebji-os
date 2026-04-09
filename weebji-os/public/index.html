@@ -1918,13 +1918,14 @@
       const c = SupabaseSync._client();
       if (!c) return;
       try {
-        await c.from('push_subscriptions').upsert({
+        await c.from('push_subscriptions').delete().eq('user_id', _userId);
+        await c.from('push_subscriptions').insert({
           user_id:    _userId,
           endpoint:   j.endpoint,
           p256dh:     j.keys?.p256dh,
           auth:       j.keys?.auth,
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        });
       } catch(_) {}
     }
 

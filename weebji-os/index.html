@@ -4166,6 +4166,14 @@
     }
   });
 
+  // Scroll sign-btn into view when keyboard opens on lower inputs
+  ['enemy-input', 'manifest-input'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('focus', () => {
+      setTimeout(() => document.getElementById('sign-btn')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 350);
+    });
+  });
+
   /* ══ FLOW: S03 → S04 ══════════════════════════ */
   document.getElementById('sign-btn').addEventListener('click', () => {
     const name = document.getElementById('name-input').value.trim();

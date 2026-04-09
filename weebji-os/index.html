@@ -1946,7 +1946,7 @@
         return true;
       } catch(e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_subscribe', error: e?.message });
-        return false;
+        return e?.message || 'unknown error';
       }
     }
 
@@ -8264,7 +8264,7 @@
       sessionStorage.removeItem('weebji_notif_shown_this_session');
       renderProfile();
       const ok = await WeebjPush.subscribe();
-      spawnDropBanner(ok ? '🔔  Push notifications enabled' : '🔔  Failed — try again or check browser settings');
+      spawnDropBanner(ok === true ? '🔔  Push notifications enabled' : `🔔  Push failed: ${ok}`);
     }
   });
 
@@ -9501,6 +9501,21 @@ DEV.skipSplash()      → go straight to class select (if no session)
               signup_date: new Date().toISOString(),
             },
           }).catch(() => {});
+          // Ensure new user appears on leaderboard immediately
+          if (hn?.number) {
+            const name = localStorage.getItem('weebji_name') || 'Hunter';
+            await client.from('leaderboard').upsert({
+              user_id:       currentUser.id,
+              hunter_number: hn.number,
+              display_name:  name,
+              class:         localStorage.getItem('weebji_class') || 'monarch',
+              color:         localStorage.getItem('weebji_color') || '#00F5FF',
+              level:         1,
+              streak:        0,
+              best_streak:   0,
+              updated_at:    new Date().toISOString(),
+            }, { onConflict: 'user_id' }).catch(() => {});
+          }
           return;
         }
         const p = loadProgress();

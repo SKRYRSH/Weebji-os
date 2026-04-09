@@ -9352,6 +9352,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
               }
             }
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
+            if (event === 'INITIAL_SESSION' && document.getElementById('dashboard')?.classList.contains('active')) initDashboard();
             if (event === 'SIGNED_IN') setTimeout(() => SupabaseSync.triggerBrevoSignup(), 3000);
             if (onProfile) { renderAuthSection(); if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(); }
           } else {

@@ -18,8 +18,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';document.head.appendChild(s)"></script>
   <!-- Razorpay Checkout (defer — blocks page load outside India without this) -->
   <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
-  <!-- OneSignal Web Push -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -1879,29 +1877,18 @@
     }).catch(e => console.warn('[SW] failed', e));
   }
 
-  /* ══ ONESIGNAL WEB PUSH ═════════════════════ */
+  /* ══ RAW VAPID WEB PUSH ══════════════════════ */
   const WeebjPush = (() => {
-    const _OS_APP_ID = 'd01da00b-3bb3-4b2f-812a-3042d915da12';
+    const VAPID_PUBLIC_KEY = 'BCTCR_us8hqiBRfTz4-xewx052OpKbBzXG34cEptiN6XEcW0sL5pM1jvUTE4qkEkagWVex-dK9FnLd2fd0R6w6M';
 
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: _OS_APP_ID,
-        serviceWorkerPath: 'sw.js',
-        notifyButton: { enable: false },
-        promptOptions: { slidedown: { enabled: false } },
-      });
-    });
-
-    // In-app LOCAL_NOTIF — fired via SW postMessage when app is in foreground
     const _msgs = {
       hp_critical:  { title: '⚠ CRITICAL HP',           body: 'One HP remaining. Miss today and the System resets you.' },
       ghost_token:  { title: '👻 GHOST TOKENS DEPLETED', body: 'No protection remains. Miss today and your streak becomes ash.' },
-      streak_7:     { title: '🔥 7-DAY STREAK',           body: 'One week of unbroken discipline. The System has noticed.' },
-      streak_30:    { title: '⚡ 30-DAY STREAK',           body: 'One month. Very few reach this. The System promotes your standing.' },
-      streak_100:   { title: '💎 100-DAY STREAK',          body: 'Triple digits. You are no longer ordinary. The System acknowledges.' },
-      streak_365:   { title: '👑 ONE FULL YEAR',           body: '365 days. The System has never met your equal. Legend confirmed.' },
-      secret_title: { title: '◆ SECRET TITLE UNLOCKED',   body: 'The System has granted you a new designation.' },
+      streak_7:     { title: '🔥 7-DAY STREAK',          body: 'One week of unbroken discipline. The System has noticed.' },
+      streak_30:    { title: '⚡ 30-DAY STREAK',          body: 'One month. Very few reach this. The System promotes your standing.' },
+      streak_100:   { title: '💎 100-DAY STREAK',         body: 'Triple digits. You are no longer ordinary. The System acknowledges.' },
+      streak_365:   { title: '👑 ONE FULL YEAR',          body: '365 days. The System has never met your equal. Legend confirmed.' },
+      secret_title: { title: '◆ SECRET TITLE UNLOCKED',  body: 'The System has granted you a new designation.' },
     };
 
     function local(notifType, title, body) {
@@ -1911,65 +1898,72 @@
       }).catch(() => {});
     }
 
-    function send(type) {
-      const m = _msgs[type];
-      if (m) local(type, m.title, m.body);
+    function send(type) { const m = _msgs[type]; if (m) local(type, m.title, m.body); }
+
+    function _urlB64ToUint8(b) {
+      const p = (b + '==='.slice((b.length + 3) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+      const r = atob(p); const out = new Uint8Array(r.length);
+      for (let i = 0; i < r.length; i++) out[i] = r.charCodeAt(i);
+      return out;
     }
 
     let _userId = null;
     function setUser(id) { _userId = id; }
-    function linkUser(id) {
-      _userId = id;
-      OneSignalDeferred.push(async function(OneSignal) {
-        try { await OneSignal.login(id); } catch(e) {}
-      });
+    function linkUser(id) { _userId = id; }
+
+    async function _saveSub(sub) {
+      if (!_userId || !sub) return;
+      const j = sub.toJSON();
+      if (typeof SupabaseSync === 'undefined') return;
+      const c = SupabaseSync._client();
+      if (!c) return;
+      await c.from('push_subscriptions').upsert({
+        user_id: _userId,
+        endpoint: j.endpoint,
+        p256dh:   j.keys?.p256dh,
+        auth:     j.keys?.auth,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' }).catch(() => {});
     }
 
     async function subscribe() {
-      if (!('Notification' in window)) return false;
+      if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) return false;
       try {
-        await new Promise((resolve, reject) => {
-          OneSignalDeferred.push(async function(OneSignal) {
-            try {
-              if (_userId) { try { await OneSignal.login(_userId); } catch(le) { if (typeof posthog!=='undefined') posthog.capture('push_login_fail',{error:le?.message}); } }
-              if (Notification.permission !== 'granted') await OneSignal.Notifications.requestPermission();
-              await OneSignal.User.PushSubscription.optIn();
-              resolve(true);
-            } catch(e) {
-              if (typeof posthog!=='undefined') posthog.capture('push_optin_fail',{error:e?.message,perm:Notification.permission});
-              reject(e);
-            }
-          });
+        if (Notification.permission === 'default') {
+          const perm = await Notification.requestPermission();
+          if (perm !== 'granted') return false;
+        }
+        if (Notification.permission !== 'granted') return false;
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: _urlB64ToUint8(VAPID_PUBLIC_KEY),
         });
+        await _saveSub(sub);
         localStorage.removeItem('weebji_push_opted_out');
         return true;
-      } catch (e) {
+      } catch(e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_subscribe', error: e?.message });
-        spawnDropBanner('◆  Notifications failed to enable — try again in Settings');
         return false;
       }
     }
 
-    function unsubscribe() {
+    async function unsubscribe() {
       try {
-        OneSignalDeferred.push(function(OneSignal) {
-          OneSignal.User.PushSubscription.optOut();
-        });
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) await sub.unsubscribe();
+        if (_userId && typeof SupabaseSync !== 'undefined') {
+          const c = SupabaseSync._client();
+          if (c) await c.from('push_subscriptions').delete().eq('user_id', _userId).catch(() => {});
+        }
         localStorage.setItem('weebji_push_opted_out', '1');
-      } catch (e) {
-        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_unsubscribe', error: e?.message });
-        spawnDropBanner('◆  Failed to disable notifications — try again');
-      }
+      } catch(e) {}
     }
 
     function isOptedOut() { return localStorage.getItem('weebji_push_opted_out') === '1'; }
-
-    function init() { /* OneSignal init handled above */ }
-
-    function testPush() {
-      local('test', '✅ WEEBJI PUSH TEST', 'Notifications are working. The System sees you.');
-      console.log('[WeebjPush] testPush fired — check for notification');
-    }
+    function init() {}
+    function testPush() { local('test', '✅ WEEBJI PUSH TEST', 'Notifications are working. The System sees you.'); }
 
     return { subscribe, unsubscribe, isOptedOut, send, local, init, setUser, linkUser, testPush };
   })();

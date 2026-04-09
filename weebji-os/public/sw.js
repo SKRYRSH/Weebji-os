@@ -1,6 +1,5 @@
-// ── WEEBJI OS — Service Worker v124 ────────────────────────────────────────────
-importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
-const CACHE_NAME = 'weebji-os-v124';
+// ── WEEBJI OS — Service Worker v125 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v125';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json'];
 
@@ -99,7 +98,29 @@ const NOTIF_CFG = {
   friend_levelup:     { vibrate: [50,30,50],            tag: 'weebji-friend',   requireInteraction: false },
 };
 
-// Local notification click — focus app window
+// ── SERVER PUSH ──────────────────────────────────────────────────────────────
+self.addEventListener('push', e => {
+  let payload = {};
+  try { payload = e.data?.json() || {}; } catch { payload = { type: 'morning_activation' }; }
+  const type  = payload.type || 'morning_activation';
+  const title = payload.title || 'WEEBJI OS';
+  const body  = payload.body  || 'The System is watching.';
+  const cfg   = NOTIF_CFG[type] || { vibrate: [150, 80, 150], tag: 'weebji-push', requireInteraction: false };
+  e.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon:               BASE + 'icons/icon-192.png',
+      badge:              BASE + 'icons/icon-192.png',
+      tag:                cfg.tag,
+      renotify:           true,
+      vibrate:            cfg.vibrate,
+      requireInteraction: cfg.requireInteraction,
+      data:               { url: BASE, type },
+    })
+  );
+});
+
+// Notification click — focus app window
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   const target = e.notification.data?.url || BASE;
@@ -110,4 +131,3 @@ self.addEventListener('notificationclick', e => {
     })
   );
 });
-// OneSignal SDK SW handles its own push + notificationclick above

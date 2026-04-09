@@ -2656,7 +2656,7 @@
       }
       if (error || data?.error) {
         await payResponse.complete('fail');
-        const errMsg = (error?.message || data?.detail || data?.error || 'unknown').slice(0, 120);
+        const errMsg = (error?.message || data?.detail || data?.error || data?.message || 'unknown').slice(0, 120);
         alert('BILLING ERR: ' + errMsg);
         spawnDropBanner('◆  Verify failed: ' + errMsg);
         return true;

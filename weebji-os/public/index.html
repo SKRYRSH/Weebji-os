@@ -1917,13 +1917,15 @@
       if (typeof SupabaseSync === 'undefined') return;
       const c = SupabaseSync._client();
       if (!c) return;
-      await c.from('push_subscriptions').upsert({
-        user_id: _userId,
-        endpoint: j.endpoint,
-        p256dh:   j.keys?.p256dh,
-        auth:     j.keys?.auth,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' }).catch(() => {});
+      try {
+        await c.from('push_subscriptions').upsert({
+          user_id:    _userId,
+          endpoint:   j.endpoint,
+          p256dh:     j.keys?.p256dh,
+          auth:       j.keys?.auth,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+      } catch(_) {}
     }
 
     async function subscribe() {

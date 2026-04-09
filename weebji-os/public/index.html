@@ -2635,7 +2635,8 @@
       });
       if (error || data?.error) {
         await payResponse.complete('fail');
-        spawnDropBanner('◆  Purchase verification failed — contact weebjiglobal@gmail.com');
+        const errMsg = error?.message || data?.detail || data?.error || 'unknown';
+        spawnDropBanner('◆  Verify failed: ' + errMsg);
         return true;
       }
       await payResponse.complete('success');

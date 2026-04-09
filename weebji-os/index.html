@@ -2634,10 +2634,22 @@
       let data, error;
       for (let attempt = 0; attempt < 3; attempt++) {
         if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * attempt));
-        ({ data, error } = await client.functions.invoke('verify-play-purchase', {
-          body: { purchaseToken, sku, plan },
-          headers: { Authorization: `Bearer ${session.access_token}` }
-        }));
+        try {
+          const resp = await fetch(`${SUPABASE_URL}/functions/v1/verify-play-purchase`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+              'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ purchaseToken, sku, plan })
+          });
+          data = await resp.json();
+          if (!resp.ok) { error = { message: `HTTP ${resp.status}: ${data?.error || data?.detail || ''}` }; data = null; }
+          else error = null;
+        } catch(e) {
+          error = { message: 'fetch: ' + e.message };
+        }
         if (!error) break;
       }
       if (error || data?.error) {

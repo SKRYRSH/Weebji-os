@@ -2625,14 +2625,21 @@
       if (!canPay) { spawnDropBanner('◆  Google Play Billing unavailable'); return true; }
       const payResponse = await request.show();
       const { purchaseToken } = payResponse.details;
-      // Verify server-side
+      // Brief pause — TWA payment sheet needs to release network context
+      await new Promise(r => setTimeout(r, 800));
+      // Verify server-side (retry once on network error)
       const client = SupabaseSync._client();
       const { data: { session } } = await client.auth.getSession();
       if (!session?.access_token) { await payResponse.complete('fail'); spawnDropBanner('◆  Sign in first'); return true; }
-      const { data, error } = await client.functions.invoke('verify-play-purchase', {
-        body: { purchaseToken, sku, plan },
-        headers: { Authorization: `Bearer ${session.access_token}` }
-      });
+      let data, error;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * attempt));
+        ({ data, error } = await client.functions.invoke('verify-play-purchase', {
+          body: { purchaseToken, sku, plan },
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        }));
+        if (!error) break;
+      }
       if (error || data?.error) {
         await payResponse.complete('fail');
         const errMsg = error?.message || data?.detail || data?.error || 'unknown';

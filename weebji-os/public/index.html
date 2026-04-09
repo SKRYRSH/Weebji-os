@@ -9352,7 +9352,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
             // Link OneSignal user id — subscribe() will login+optIn atomically
             if (typeof WeebjPush !== 'undefined') {
               WeebjPush.linkUser(currentUser.id);
-              if (Notification.permission === 'granted' && !WeebjPush.isOptedOut()) WeebjPush.subscribe();
+              if (Notification.permission === 'granted') {
+                if (event === 'SIGNED_IN') { localStorage.removeItem('weebji_push_opted_out'); WeebjPush.subscribe(); }
+                else if (!WeebjPush.isOptedOut()) WeebjPush.subscribe();
+              }
             }
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
             if (event === 'SIGNED_IN') setTimeout(() => SupabaseSync.triggerBrevoSignup(), 3000);

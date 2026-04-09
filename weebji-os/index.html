@@ -2657,12 +2657,11 @@
       if (error || data?.error) {
         await payResponse.complete('fail');
         const errMsg = (error?.message || data?.detail || data?.error || data?.message || 'unknown').slice(0, 120);
-        alert('BILLING ERR: ' + errMsg);
         spawnDropBanner('◆  Verify failed: ' + errMsg);
         return true;
       }
       await payResponse.complete('success');
-      await SupabaseSync.pullProgress();
+      try { await SupabaseSync.pullProgress(); } catch(e) { spawnDropBanner('◆  Payment confirmed — refresh if Plus features are not active'); return true; }
       spawnDropBanner('◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
       if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, channel: 'play_billing' });
       renderProfile(); initDashboard();
@@ -2670,7 +2669,8 @@
       return true;
     } catch(e) {
       if (e.name === 'AbortError') { return true; } // user cancelled — handled
-      return false; // Digital Goods API not available, fall through to Razorpay
+      spawnDropBanner('◆  Purchase error — please try again');
+      return true; // don't fall through to Razorpay on Android
     }
   }
 

@@ -1918,6 +1918,12 @@
 
     let _userId = null;
     function setUser(id) { _userId = id; }
+    function linkUser(id) {
+      _userId = id;
+      OneSignalDeferred.push(async function(OneSignal) {
+        try { await OneSignal.login(id); } catch(e) {}
+      });
+    }
 
     async function subscribe() {
       if (!('Notification' in window)) return false;
@@ -1965,7 +1971,7 @@
       console.log('[WeebjPush] testPush fired — check for notification');
     }
 
-    return { subscribe, unsubscribe, isOptedOut, send, local, init, setUser, testPush };
+    return { subscribe, unsubscribe, isOptedOut, send, local, init, setUser, linkUser, testPush };
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
@@ -9337,7 +9343,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             if (gateActive) { enterDashboard(false); }
             // Link OneSignal user id — subscribe() will login+optIn atomically
             if (typeof WeebjPush !== 'undefined') {
-              WeebjPush.setUser(currentUser.id);
+              WeebjPush.linkUser(currentUser.id);
               if (Notification.permission === 'granted' && !WeebjPush.isOptedOut()) WeebjPush.subscribe();
             }
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();

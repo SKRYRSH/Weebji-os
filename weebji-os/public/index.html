@@ -1976,8 +1976,15 @@
         if (Notification.permission === 'default') {
           await Notification.requestPermission();
         }
-        if (Notification.permission === 'granted') {
-          subscribe(); // fire-and-forget
+        if (Notification.permission !== 'granted') return;
+        const reg = await navigator.serviceWorker.ready;
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) {
+          // Already subscribed — just ensure it's saved in DB (idempotent)
+          _saveSub(existing);
+        } else {
+          // No subscription — create one
+          subscribe();
         }
       } catch(_) {}
     }

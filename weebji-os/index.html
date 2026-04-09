@@ -8255,14 +8255,17 @@
       return;
     }
     if (Notification.permission === 'granted' && !WeebjPush.isOptedOut()) {
+      localStorage.setItem('weebji_push_opted_out', '1'); // sync so renderProfile sees it immediately
       WeebjPush.unsubscribe();
+      renderProfile();
     } else {
       localStorage.removeItem('weebji_push_opted_out');
       localStorage.removeItem('weebji_notif_dismissed');
       sessionStorage.removeItem('weebji_notif_shown_this_session');
-      WeebjPush.subscribe(); // fire-and-forget — localStorage already cleared so UI shows ON
+      renderProfile();
+      const ok = await WeebjPush.subscribe();
+      spawnDropBanner(ok ? '🔔  Push notifications enabled' : '🔔  Failed — try again or check browser settings');
     }
-    renderProfile();
   });
 
   /* ══ PHASE 3 — GHOST TOKEN INTERVENTION ══════ */

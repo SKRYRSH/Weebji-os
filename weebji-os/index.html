@@ -8324,10 +8324,26 @@
     document.getElementById('ghost-tokens-count').textContent =
       `${p.ghostTokens} Ghost Token${p.ghostTokens !== 1 ? 's' : ''} remaining`;
     const useBtn = document.getElementById('ghost-use-btn');
-    useBtn.disabled = p.ghostTokens <= 0;
-    useBtn.textContent = p.ghostTokens <= 0
-      ? 'No Tokens Remaining'
-      : `Use Ghost Token  (${p.ghostTokens} left)`;
+    const subEl  = document.querySelector('.ghost-int__sub');
+    // Remove any previous upsell injected
+    document.getElementById('ghost-int-upsell')?.remove();
+    if (p.ghostTokens <= 0) {
+      useBtn.disabled = true;
+      useBtn.textContent = 'No Tokens Remaining';
+      if (subEl) subEl.textContent = 'No tokens left. Your streak is gone — unless you act now.';
+      const upsell = document.createElement('div');
+      upsell.id = 'ghost-int-upsell';
+      upsell.style.cssText = 'width:100%;display:flex;flex-direction:column;gap:8px;margin-top:4px;';
+      upsell.innerHTML = `
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token')" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(139,92,246,0.5);background:rgba(139,92,246,0.1);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.16em;color:rgba(180,130,255,0.95);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">👻 Buy a Ghost Token — $0.99</button>
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200)" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">Get 5 Tokens/mo with WEEBJI+</button>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.18);letter-spacing:0.1em;text-align:center;">$9.99/mo · or $59.99/yr — save 50%</div>`;
+      useBtn.parentElement.insertBefore(upsell, useBtn);
+    } else {
+      useBtn.disabled = false;
+      useBtn.textContent = `Use Ghost Token  (${p.ghostTokens} left)`;
+      if (subEl) subEl.textContent = 'You have Ghost Tokens. Use one to restore your streak before it\'s gone.';
+    }
     overlay.classList.add('active');
     Sound.play('ghostCrisis');
     // Phase 5: System Voice

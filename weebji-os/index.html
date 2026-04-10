@@ -2656,14 +2656,13 @@
       }
       if (error || data?.error) {
         await payResponse.complete('fail');
-        const errMsg = (error?.message || data?.detail || data?.error || data?.message || 'unknown').slice(0, 120);
-        spawnDropBanner('◆  Verify failed: ' + errMsg);
+        spawnDropBanner('◆  Purchase verification failed — contact weebjiglobal@gmail.com');
         return true;
       }
       await payResponse.complete('success');
       if (plan === 'ghost_token') { const _p = loadProgress(); _p.ghostTokens = (_p.ghostTokens || 0) + 1; saveProgress(_p); }
       try { await SupabaseSync.pullProgress(); } catch(e) { spawnDropBanner('◆  Payment confirmed — refresh if Plus features are not active'); return true; }
-      spawnDropBanner('◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
+      spawnDropBanner(plan === 'ghost_token' ? '◆  GHOST TOKEN ACQUIRED — Use it wisely' : '◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
       if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, channel: 'play_billing' });
       renderProfile(); initDashboard();
       if (plan !== 'ghost_token') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');

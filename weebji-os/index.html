@@ -1719,7 +1719,7 @@
           </div>
         </div>
         <button class="srg__claim-btn" id="srg-claim-btn" onclick="claimStreakReward()">CLAIM REWARD</button>
-        <button class="srg__upgrade-btn" id="srg-upgrade-btn" onclick="closeStreakRewardGate();showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WITH WEEBJI+ →</button>
+        <button class="srg__upgrade-btn" id="srg-upgrade-btn" onclick="closeStreakRewardGate();showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WITH WEEBJI+ — $9.99/mo →</button>
       </div>
     </div>
 
@@ -3225,8 +3225,19 @@
       el.innerHTML = `<div class="battle-card">
         <div class="battle-card__eyebrow">⚡ Friend Battles — WEEBJI+</div>
         <div class="battle-card__title">SHADOW WAR</div>
-        <div class="battle-card__pitch">Challenge a friend to a 7-day XP war. The hunter who earns the most wins XP and the <em>Defeated Their Shadow</em> title.</div>
-        <div class="battle-locked-btn" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ →</div>
+        <div class="battle-card__pitch">Pick any hunter on the leaderboard. 7 days. Whoever earns more XP wins. Right now, Plus users are already inside — you can't see it.</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0 16px">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,60,60,0.05);border:1px solid rgba(255,60,60,0.12)">
+            <span style="font-size:16px">⚡</span>
+            <div style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4"><strong style="color:rgba(255,255,255,0.8)">+200 XP</strong> to the winner — every week</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,60,60,0.05);border:1px solid rgba(255,60,60,0.12)">
+            <span style="font-size:16px">👑</span>
+            <div style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4">Exclusive <strong style="color:rgba(255,255,255,0.8)">"Defeated Their Shadow"</strong> title</div>
+          </div>
+        </div>
+        <div class="battle-locked-btn" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — Enter the War →</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;text-align:center;margin-top:10px">$9.99/mo · or $59.99/yr — save 50%</div>
       </div>`;
       return;
     }
@@ -7355,13 +7366,11 @@
 
     const plus = isWeebjiPlus();
     const outsideHtml = myRank && myRank > 20
-      ? (plus
-          ? `<div class="lb-my-rank" style="color:rgba(${rgb},0.7)">Your rank: <strong style="color:${color}">#${myRank}</strong></div>`
-          : `<div class="lb-my-rank" style="color:rgba(${rgb},0.5)">Your rank: <strong style="color:${color}">#??</strong> <span style="font-size:10px;opacity:0.6;font-family:'JetBrains Mono',monospace;cursor:pointer" onclick="showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">— unlock with WEEBJI+</span></div>`)
+      ? `<div class="lb-my-rank" style="color:rgba(${rgb},0.7)">Your rank: <strong style="color:${color}">#${myRank}</strong></div>`
       : '';
 
     const shareHtml = myRank
-      ? `<button class="lb-share-btn" onclick="openShareScreen()" style="border-color:rgba(${rgb},0.4);color:${color}">Share Rank ${plus || myRank <= 20 ? `#${myRank}` : '#??'}</button>` : '';
+      ? `<button class="lb-share-btn" onclick="openShareScreen()" style="border-color:rgba(${rgb},0.4);color:${color}">Share Rank #${myRank}</button>` : '';
 
     el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)">
       <div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD${shareHtml}</div>

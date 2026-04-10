@@ -9,7 +9,7 @@ const MAX_XP_PER_PUSH  = 600;  // generous — full study session worth
 const MAX_LEVEL        = 100;
 const MAX_STREAK_DAYS  = 3650; // 10 years
 const MAX_GHOST_TOKENS = 60;
-const MAX_GHOST_REFILL = 3;    // monthly WEEBJI+ refill
+const MAX_GHOST_REFILL = 5;    // monthly WEEBJI+ refill
 
 function clamp(n: number, lo: number, hi: number) {
   return Math.min(Math.max(n, lo), hi);

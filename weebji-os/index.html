@@ -9514,15 +9514,6 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (!data) {
           // First sign-in — no cloud record yet. Back up whatever the user has locally right now.
           await pushProgress();
-          // Add to Brevo onboarding sequence (fire-and-forget)
-          client.functions.invoke('brevo-signup', {
-            body: {
-              email: currentUser.email,
-              hunter_name: localStorage.getItem('weebji_name') || 'Hunter',
-              class: localStorage.getItem('weebji_class') || 'monarch',
-              signup_date: new Date().toISOString(),
-            },
-          }).catch(() => {});
           // Ensure new user appears on leaderboard immediately
           if (hn?.number) {
             const name = localStorage.getItem('weebji_name') || 'Hunter';

@@ -2360,7 +2360,7 @@
     const lastRefillMonth = localStorage.getItem('weebji_ghost_reset_month') || '';
     if (lastRefillMonth !== thisMonth) {
       if (isWeebjiPlus()) {
-        p.ghostTokens = 5;
+        p.ghostTokens = Math.max(p.ghostTokens || 0, 5);
       } else {
         p.ghostTokens = Math.max(p.ghostTokens || 0, 1);
       }
@@ -2609,6 +2609,8 @@
   // Play Billing SKU IDs — must match exactly what you create in Play Console
   const PLAY_SKUS = { monthly: 'weebji_plus_monthly', annual: 'weebji_plus_annual', ghost_token: 'weebji_ghost_token' };
   const PLAY_PRICES = { monthly: '9.99', annual: '59.99', ghost_token: '0.99' };
+  const _SB_URL = 'https://qpcqbiicomlpsmkgqhsm.supabase.co';
+  const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwY3FiaWljb21scHNta2dxaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTU0NjYsImV4cCI6MjA4OTQzMTQ2Nn0.RGHdyTDAea-85XNU5gOJ-lmwVTbGzkeadFXQH5w37aE';
 
   async function _openPlayBilling(plan) {
     const sku = PLAY_SKUS[plan];
@@ -2635,12 +2637,12 @@
       for (let attempt = 0; attempt < 3; attempt++) {
         if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * attempt));
         try {
-          const resp = await fetch(`${SUPABASE_URL}/functions/v1/verify-play-purchase`, {
+          const resp = await fetch(`${_SB_URL}/functions/v1/verify-play-purchase`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${session.access_token}`,
-              'apikey': SUPABASE_ANON_KEY
+              'apikey': _SB_KEY
             },
             body: JSON.stringify({ purchaseToken, sku, plan })
           });
@@ -2654,12 +2656,13 @@
       }
       if (error || data?.error) {
         await payResponse.complete('fail');
-        const errMsg = error?.message || data?.detail || data?.error || 'unknown';
+        const errMsg = (error?.message || data?.detail || data?.error || data?.message || 'unknown').slice(0, 120);
         spawnDropBanner('◆  Verify failed: ' + errMsg);
         return true;
       }
       await payResponse.complete('success');
-      await SupabaseSync.pullProgress();
+      if (plan === 'ghost_token') { const _p = loadProgress(); _p.ghostTokens = (_p.ghostTokens || 0) + 1; saveProgress(_p); }
+      try { await SupabaseSync.pullProgress(); } catch(e) { spawnDropBanner('◆  Payment confirmed — refresh if Plus features are not active'); return true; }
       spawnDropBanner('◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
       if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, channel: 'play_billing' });
       renderProfile(); initDashboard();
@@ -2667,7 +2670,8 @@
       return true;
     } catch(e) {
       if (e.name === 'AbortError') { return true; } // user cancelled — handled
-      return false; // Digital Goods API not available, fall through to Razorpay
+      spawnDropBanner('◆  Purchase error — please try again');
+      return true; // don't fall through to Razorpay on Android
     }
   }
 
@@ -9510,15 +9514,6 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (!data) {
           // First sign-in — no cloud record yet. Back up whatever the user has locally right now.
           await pushProgress();
-          // Add to Brevo onboarding sequence (fire-and-forget)
-          client.functions.invoke('brevo-signup', {
-            body: {
-              email: currentUser.email,
-              hunter_name: localStorage.getItem('weebji_name') || 'Hunter',
-              class: localStorage.getItem('weebji_class') || 'monarch',
-              signup_date: new Date().toISOString(),
-            },
-          }).catch(() => {});
           // Ensure new user appears on leaderboard immediately
           if (hn?.number) {
             const name = localStorage.getItem('weebji_name') || 'Hunter';
@@ -9545,7 +9540,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         p.hp = Math.min(5, Math.max(0, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
         if ((data.streak || 0) > (p.streak || 0)) p.streak = data.streak;
         if ((data.best_streak || 0) > (p.bestStreak || 0)) p.bestStreak = data.best_streak;
-        if ((data.ghost_tokens || 0) > (p.ghostTokens || 0)) p.ghostTokens = data.ghost_tokens;
+        if (data.ghost_tokens != null) p.ghostTokens = data.ghost_tokens;
         if ((data.total_study_mins || 0) > (p.totalStudyMins || 0)) p.totalStudyMins = data.total_study_mins;
         if ((data.total_workout_days || 0) > (p.totalWorkoutDays || 0)) p.totalWorkoutDays = data.total_workout_days;
         // Always restore rich data from cloud (grids, reflections, PRs, titles, etc.)

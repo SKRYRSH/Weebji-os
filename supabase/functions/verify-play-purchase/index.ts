@@ -62,12 +62,20 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) return new Response('Unauthorized', { status: 401 });
 
-    const supabase = createClient(
+    const token = authHeader.replace('Bearer ', '');
+    // Decode JWT to get user id — purchase token from Google Play is the real security gate
+    let userId: string;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (!payload.sub) throw new Error('no sub');
+      userId = payload.sub;
+    } catch(e) {
+      return new Response(JSON.stringify({ error: 'Invalid token', detail: (e as Error).message }), { status: 401, headers: CORS });
+    }
+    const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (authError || !user) return new Response('Unauthorized', { status: 401 });
 
     const { purchaseToken, sku, plan } = await req.json();
     if (!purchaseToken || !sku) return new Response(JSON.stringify({ error: 'Missing purchaseToken or sku' }), { status: 400, headers: CORS });
@@ -83,26 +91,41 @@ Deno.serve(async (req) => {
     const packageName = Deno.env.get('GOOGLE_PLAY_PACKAGE_NAME');
     if (!packageName) throw new Error('GOOGLE_PLAY_PACKAGE_NAME not set');
 
-    const accessToken = await getGoogleAccessToken(serviceAccountKey);
+    let accessToken: string;
+    try {
+      accessToken = await getGoogleAccessToken(serviceAccountKey);
+    } catch(e) {
+      throw new Error('Google auth failed: ' + (e as Error).message);
+    }
     const authBearerH = { Authorization: `Bearer ${accessToken}` };
     const playBase    = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications';
 
     const isSubscription = SUBSCRIPTION_SKUS.has(sku);
+    let expiresAt: string | null = null;
 
     if (isSubscription) {
       // Verify subscription
-      const verifyRes = await fetch(
-        `${playBase}/${packageName}/purchases/subscriptions/${sku}/tokens/${purchaseToken}`,
-        { headers: authBearerH }
-      );
+      let verifyRes: Response;
+      try {
+        verifyRes = await fetch(
+          `${playBase}/${packageName}/purchases/subscriptions/${sku}/tokens/${purchaseToken}`,
+          { headers: authBearerH }
+        );
+      } catch(e) {
+        throw new Error('Play fetch failed: ' + (e as Error).message);
+      }
       if (!verifyRes.ok) {
         const err = await verifyRes.text();
-        throw new Error(`Play verify failed: ${err}`);
+        throw new Error(`Play verify failed (${verifyRes.status}): ${err}`);
       }
       const purchase = await verifyRes.json();
       // paymentState 1 = payment received, 2 = free trial
       if (purchase.paymentState !== 1 && purchase.paymentState !== 2) {
         return new Response(JSON.stringify({ error: 'Payment not received' }), { status: 402, headers: CORS });
+      }
+      // Store expiry time from Google Play
+      if (purchase.expiryTimeMillis) {
+        expiresAt = new Date(parseInt(purchase.expiryTimeMillis)).toISOString();
       }
       // Acknowledge if not yet acknowledged
       if (purchase.acknowledgementState === 0) {
@@ -133,31 +156,28 @@ Deno.serve(async (req) => {
     }
 
     // Activate plan in DB
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
-
     if (dbPlan === 'ghost_token') {
-      // Increment ghost_tokens column directly (same path as Razorpay)
-      await adminClient.rpc('increment_ghost_tokens', { uid: user.id }).catch(async () => {
-        // Fallback: manual increment if RPC doesn't exist
-        const { data: prog } = await adminClient.from('progress').select('ghost_tokens').eq('user_id', user.id).single();
-        const current = prog?.ghost_tokens || 0;
+      // Increment ghost_tokens — check error via destructuring (Supabase client doesn't throw)
+      const { error: rpcError } = await adminClient.rpc('increment_ghost_tokens', { uid: userId });
+      if (rpcError) {
+        // Fallback: manual increment
+        const { data: prog } = await adminClient.from('progress').select('ghost_tokens').eq('user_id', userId).single();
+        const current = (prog?.ghost_tokens as number) || 0;
         await adminClient.from('progress').upsert(
-          { user_id: user.id, ghost_tokens: current + 1, updated_at: new Date().toISOString() },
+          { user_id: userId, ghost_tokens: current + 1, updated_at: new Date().toISOString() },
           { onConflict: 'user_id' }
         );
-      });
+      }
     } else {
-      // Upsert subscription plan
+      // Upsert subscription plan with expiry
       await adminClient.from('user_plans').upsert(
         {
-          user_id:    user.id,
+          user_id:    userId,
           plan:       dbPlan,
           status:     'active',
           payment_id: purchaseToken,
-          email:      user.email,
+          email:      null,
+          expires_at: expiresAt,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }

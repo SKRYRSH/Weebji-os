@@ -2105,29 +2105,29 @@
 
   function maybeShowNotifPrompt() {
     if (Notification.permission !== 'default') return;
-    if (localStorage.getItem('weebji_notif_dismissed')) return;
     if (sessionStorage.getItem('weebji_notif_shown_this_session')) return;
-    if (!SupabaseSync.getUser()) return; // must be signed in to save subscription
-    // Install prompt is now manual-only — always use short delay
-    const delay = 12000;
+    if (!SupabaseSync.getUser()) return;
+    // Snooze: don't show again if dismissed within last 3 days
+    const snoozed = localStorage.getItem('weebji_notif_snoozed');
+    if (snoozed && Date.now() - parseInt(snoozed) < 3 * 24 * 60 * 60 * 1000) return;
     setTimeout(() => {
-      if (Notification.permission !== 'default') return; // re-check in case user granted elsewhere
+      if (Notification.permission !== 'default') return;
       if (!document.getElementById('install-prompt').classList.contains('visible')) {
         sessionStorage.setItem('weebji_notif_shown_this_session', '1');
         document.getElementById('notif-prompt').classList.add('visible');
       }
-    }, delay);
+    }, 12000);
   }
 
   document.getElementById('notif-yes-btn').addEventListener('click', () => {
     document.getElementById('notif-prompt').classList.remove('visible');
-    localStorage.setItem('weebji_notif_dismissed', '1');
     WeebjPush.subscribe();
   });
 
   document.getElementById('notif-no-btn').addEventListener('click', () => {
     document.getElementById('notif-prompt').classList.remove('visible');
-    localStorage.setItem('weebji_notif_dismissed', '1');
+    // Snooze for 3 days — not permanent
+    localStorage.setItem('weebji_notif_snoozed', String(Date.now()));
   });
 
   /* ══ URL SHORTCUT HANDLING ═══════════════════
@@ -7164,7 +7164,7 @@
       }
     }
 
-    // Push Alerts — always-on, server-controlled
+    // Push Alerts — tappable, shows real subscription state
     const notifBtn = document.getElementById('notif-toggle-btn');
     if (notifBtn) {
       const nToggle = document.getElementById('notif-toggle-state');
@@ -7172,12 +7172,24 @@
       const perm    = Notification.permission;
       if (perm === 'denied') {
         if (nToggle) { nToggle.textContent = 'BLOCKED'; nToggle.className = 'profile-voice__toggle off'; }
-        if (nSub)    nSub.textContent = 'Enable in Android Settings > Apps';
-        notifBtn.style.borderColor = hexRgba(color, 0.07); notifBtn.style.opacity = '0.55';
-      } else {
+        if (nSub)    nSub.textContent = 'Enable in Android Settings > Apps > Browser';
+        notifBtn.style.cssText += ';cursor:default;opacity:0.55';
+        notifBtn.style.borderColor = hexRgba(color, 0.07);
+      } else if (perm === 'granted') {
         if (nToggle) { nToggle.textContent = 'ON'; nToggle.className = 'profile-voice__toggle on'; }
         if (nSub)    nSub.textContent = 'Morning + streak reminders active';
         notifBtn.style.borderColor = hexRgba(color, 0.25); notifBtn.style.opacity = '1';
+        notifBtn.style.cursor = 'default';
+      } else {
+        // permission === 'default' — not yet granted, make it tappable
+        if (nToggle) { nToggle.textContent = 'ENABLE'; nToggle.className = 'profile-voice__toggle off'; }
+        if (nSub)    nSub.textContent = 'Tap to enable push reminders';
+        notifBtn.style.borderColor = hexRgba(color, 0.2); notifBtn.style.opacity = '1';
+        notifBtn.style.cursor = 'pointer';
+        notifBtn.onclick = () => {
+          localStorage.removeItem('weebji_notif_snoozed');
+          document.getElementById('notif-prompt').classList.add('visible');
+        };
       }
     }
 

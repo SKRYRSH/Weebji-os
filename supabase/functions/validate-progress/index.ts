@@ -28,6 +28,12 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
+    // Service role client for writes that must bypass RLS (leaderboard)
+    const sbAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return new Response('Unauthorized', { status: 401 });
 
@@ -122,9 +128,9 @@ Deno.serve(async (req) => {
 
     if (writeErr) throw writeErr;
 
-    // Write leaderboard if included
+    // Write leaderboard via service role to bypass RLS
     if (lb) {
-      await supabase.from('leaderboard').upsert({
+      await sbAdmin.from('leaderboard').upsert({
         ...lb,
         user_id:    user.id,
         level:      vLevel,

@@ -7328,13 +7328,10 @@
       .order('level', { ascending: false })
       .limit(50);
 
-    // Overlay live streaks from progress table (leaderboard.streak can be stale)
+    // Overlay live streaks from progress table (now publicly readable)
     if (rows?.length) {
       const ids = rows.map(r => r.user_id);
-      const { data: progRows } = await client
-        .from('progress')
-        .select('user_id,streak,best_streak')
-        .in('user_id', ids);
+      const { data: progRows } = await client.from('progress').select('user_id,streak,best_streak').in('user_id', ids);
       if (progRows?.length) {
         const pm = Object.fromEntries(progRows.map(r => [r.user_id, r]));
         rows.forEach(r => {
@@ -9521,9 +9518,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
         }
 
         // Route through server-side validation edge function
-        // Only the edge function writes progress + leaderboard — no direct client upsert on success
         const { data: { session: vpSess } } = await client.auth.getSession();
-        await client.functions.invoke('validate-progress', {
+        const { error: vpError } = await client.functions.invoke('validate-progress', {
           body: {
             progress: {
               level: p.level, xp: p.xp, hp: p.hp,
@@ -9537,17 +9533,15 @@ DEV.skipSplash()      → go straight to class select (if no session)
           },
           ...(vpSess?.access_token ? { headers: { Authorization: `Bearer ${vpSess.access_token}` } } : {}),
         });
+        // Always upsert leaderboard directly — covers 401s and any edge fn failure
+        if (vpError) {
+          await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
+        }
       } catch(e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pushProgress_edge_fn', error: e?.message });
-        // Edge function failed — push leaderboard directly as fallback only
         try {
-          const { error: lbErr } = await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
-          if (lbErr) {
-            if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pushProgress_lb_fallback', error: lbErr.message });
-          }
-        } catch(e2) {
-          if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pushProgress_total_failure', error: e2?.message });
-        }
+          await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
+        } catch(_) {}
       }
     }
 

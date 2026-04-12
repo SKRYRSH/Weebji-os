@@ -1974,7 +1974,7 @@
         if (sub) await sub.unsubscribe();
         if (_userId && typeof SupabaseSync !== 'undefined') {
           const c = SupabaseSync._client();
-          if (c) await c.from('push_subscriptions').delete().eq('user_id', _userId).catch(() => {});
+          if (c) try { await c.from('push_subscriptions').delete().eq('user_id', _userId); } catch { /* ignore */ }
         }
         localStorage.setItem('weebji_push_opted_out', '1');
       } catch(e) {}
@@ -7177,9 +7177,15 @@
         notifBtn.style.borderColor = hexRgba(color, 0.07);
       } else if (perm === 'granted') {
         if (nToggle) { nToggle.textContent = 'ON'; nToggle.className = 'profile-voice__toggle on'; }
-        if (nSub)    nSub.textContent = 'Morning + streak reminders active';
+        if (nSub)    nSub.textContent = 'Active — tap to refresh subscription';
         notifBtn.style.borderColor = hexRgba(color, 0.25); notifBtn.style.opacity = '1';
-        notifBtn.style.cursor = 'default';
+        notifBtn.style.cursor = 'pointer';
+        notifBtn.onclick = async () => {
+          if (nSub) nSub.textContent = 'Refreshing...';
+          notifBtn.style.pointerEvents = 'none';
+          await WeebjPush.subscribe();
+          renderProfile();
+        };
       } else {
         // permission === 'default' — not yet granted, make it tappable
         if (nToggle) { nToggle.textContent = 'ENABLE'; nToggle.className = 'profile-voice__toggle off'; }

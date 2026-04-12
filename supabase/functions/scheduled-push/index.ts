@@ -99,8 +99,9 @@ Deno.serve(async (req) => {
         sent++;
       } catch (e: unknown) {
         failed++;
+        console.error('webpush error', sub.endpoint?.slice(-20), (e as Error).message, (e as { statusCode?: number }).statusCode);
         if ((e as { statusCode?: number }).statusCode === 410) {
-          await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint).catch(() => {});
+          try { await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint); } catch { /* ignore */ }
         }
       }
     }

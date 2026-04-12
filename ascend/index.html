@@ -143,6 +143,45 @@
   .day-pill.today { border-color: var(--gold); color: var(--gold); }
   .day-pill.today.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+  /* MEAL PLAN CARDS */
+  .meal-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .meal-card {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 12px; cursor: pointer; transition: border-color 0.2s;
+  }
+  .meal-card:active { opacity: 0.75; }
+  .meal-card.logged { border-color: var(--green); }
+  .meal-card__icon { font-size: 22px; margin-bottom: 6px; }
+  .meal-card__name { font-size: 13px; font-weight: 700; }
+  .meal-card__meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .meal-card__badge { font-size: 10px; color: var(--green); margin-top: 4px; display: none; }
+  .meal-card.logged .meal-card__badge { display: block; }
+
+  /* MEAL SHEET */
+  .meal-sheet-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 200; align-items: flex-end;
+  }
+  .meal-sheet-overlay.open { display: flex; }
+  .meal-sheet {
+    background: var(--surface); border-radius: 20px 20px 0 0; width: 100%;
+    max-width: 480px; margin: 0 auto; padding: 20px 20px 36px;
+    border-top: 1px solid var(--border);
+    transform: translateY(100%); transition: transform 0.3s ease;
+  }
+  .meal-sheet-overlay.open .meal-sheet { transform: translateY(0); }
+  .meal-sheet__handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 18px; }
+  .meal-sheet__title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .meal-sheet__macros { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .meal-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .meal-item:last-of-type { border-bottom: none; }
+  .meal-item__name { font-size: 14px; font-weight: 600; }
+  .meal-item__amount { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .meal-item__macro { font-size: 12px; color: var(--accent2); font-weight: 700; }
+
   /* DIET LOG */
   .food-item {
     display: flex; justify-content: space-between; align-items: center;
@@ -302,6 +341,10 @@
       <button class="btn btn-ghost" onclick="removeWater()">−</button>
     </div>
   </div>
+
+  <!-- MEAL PLAN -->
+  <div class="section-label">Meal Plan</div>
+  <div class="meal-cards" id="meal-cards"></div>
 
   <!-- QUICK ADD -->
   <div class="section-label">Quick Add Food</div>
@@ -722,6 +765,7 @@ function getFoodTotals(food) {
 function renderDiet() {
   const td = getTodayData();
   const totals = getFoodTotals(td.food);
+  renderMealCards();
 
   document.getElementById('p-curr').textContent = totals.p;
   document.getElementById('c-curr').textContent = totals.c;
@@ -979,8 +1023,124 @@ function savePR() {
   renderProgress();
 }
 
+// ─── MEAL PLAN ────────────────────────────────────────────────────────────────
+const MEALS = [
+  {
+    id: 'breakfast', icon: '🌅', name: 'Breakfast',
+    items: [
+      { name: '3 Boiled Eggs', amount: '3 whole eggs', p: 18, c: 210, carb: 1 },
+      { name: 'Milk', amount: '250 ml (1 glass)', p: 8, c: 150, carb: 12 },
+    ]
+  },
+  {
+    id: 'lunch', icon: '☀️', name: 'Lunch',
+    items: [
+      { name: 'Roti', amount: '2 rotis (~120g)', p: 4, c: 200, carb: 40 },
+      { name: 'Kala Chana', amount: '100g cooked', p: 9, c: 164, carb: 27 },
+      { name: 'Dahi (Yogurt)', amount: '100g', p: 3, c: 60, carb: 5 },
+      { name: 'Boiled Egg', amount: '1 whole egg', p: 6, c: 70, carb: 0 },
+    ]
+  },
+  {
+    id: 'dinner', icon: '🌙', name: 'Dinner',
+    items: [
+      { name: 'Roti', amount: '2 rotis (~120g)', p: 4, c: 200, carb: 40 },
+      { name: 'Kala Chana', amount: '150g cooked', p: 13, c: 246, carb: 40 },
+      { name: 'Milk', amount: '250 ml (1 glass)', p: 8, c: 150, carb: 12 },
+      { name: 'Sabzi (mom\'s)', amount: '1 katori (~100g)', p: 2, c: 80, carb: 10 },
+    ]
+  },
+  {
+    id: 'snack', icon: '⚡', name: 'Snack',
+    items: [
+      { name: 'Boiled Eggs', amount: '2 whole eggs', p: 12, c: 140, carb: 1 },
+      { name: 'Dahi (Yogurt)', amount: '100g', p: 3, c: 60, carb: 5 },
+    ]
+  },
+];
+
+function renderMealCards() {
+  const td = getTodayData();
+  const logged = td.loggedMeals || {};
+  const el = document.getElementById('meal-cards');
+  el.innerHTML = MEALS.map(m => {
+    const totP = m.items.reduce((s, i) => s + i.p, 0);
+    const totC = m.items.reduce((s, i) => s + i.c, 0);
+    return `<div class="meal-card${logged[m.id] ? ' logged' : ''}" onclick="openMealSheet('${m.id}')">
+      <div class="meal-card__icon">${m.icon}</div>
+      <div class="meal-card__name">${m.name}</div>
+      <div class="meal-card__meta">${totP}g protein · ${totC} kcal</div>
+      <div class="meal-card__badge">✓ Logged</div>
+    </div>`;
+  }).join('');
+}
+
+function openMealSheet(id) {
+  const meal = MEALS.find(m => m.id === id);
+  if (!meal) return;
+  const td = getTodayData();
+  const logged = (td.loggedMeals || {})[id];
+  const totP = meal.items.reduce((s, i) => s + i.p, 0);
+  const totC = meal.items.reduce((s, i) => s + i.c, 0);
+  const totCarb = meal.items.reduce((s, i) => s + i.carb, 0);
+  document.getElementById('meal-sheet-title').textContent = meal.icon + ' ' + meal.name;
+  document.getElementById('meal-sheet-macros').textContent = `${totP}g protein · ${totC} kcal · ${totCarb}g carbs`;
+  document.getElementById('meal-sheet-items').innerHTML = meal.items.map(item => `
+    <div class="meal-item">
+      <div>
+        <div class="meal-item__name">${item.name}</div>
+        <div class="meal-item__amount">${item.amount}</div>
+      </div>
+      <div class="meal-item__macro">${item.p}g P</div>
+    </div>`).join('');
+  const logBtn = document.getElementById('meal-log-btn');
+  if (logged) {
+    logBtn.textContent = '✓ Already Logged';
+    logBtn.disabled = true;
+    logBtn.style.opacity = '0.5';
+  } else {
+    logBtn.textContent = 'Log This Meal';
+    logBtn.disabled = false;
+    logBtn.style.opacity = '1';
+  }
+  logBtn.onclick = () => logMeal(id);
+  document.getElementById('meal-sheet-overlay').dataset.meal = id;
+  const overlay = document.getElementById('meal-sheet-overlay');
+  overlay.classList.add('open');
+  requestAnimationFrame(() => overlay.querySelector('.meal-sheet').style.transform = 'translateY(0)');
+}
+
+function closeMealSheet() {
+  document.getElementById('meal-sheet-overlay').classList.remove('open');
+}
+
+function logMeal(id) {
+  const meal = MEALS.find(m => m.id === id);
+  if (!meal) return;
+  const td = getTodayData();
+  if (!td.loggedMeals) td.loggedMeals = {};
+  meal.items.forEach(item => td.food.push({ name: item.name, p: item.p, c: item.c, carb: item.carb }));
+  td.loggedMeals[id] = true;
+  saveTodayData(td);
+  closeMealSheet();
+  renderDiet();
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 renderDashboard();
 </script>
+
+<!-- MEAL SHEET -->
+<div class="meal-sheet-overlay" id="meal-sheet-overlay" onclick="if(event.target===this)closeMealSheet()">
+  <div class="meal-sheet">
+    <div class="meal-sheet__handle"></div>
+    <div class="meal-sheet__title" id="meal-sheet-title"></div>
+    <div class="meal-sheet__macros" id="meal-sheet-macros"></div>
+    <div id="meal-sheet-items"></div>
+    <button class="btn btn-red" id="meal-log-btn" style="width:100%;margin-top:16px">Log This Meal</button>
+    <button class="btn btn-ghost" onclick="closeMealSheet()" style="width:100%;margin-top:8px">Close</button>
+  </div>
+</div>
+
 </body>
 </html>

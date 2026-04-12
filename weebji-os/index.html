@@ -7324,19 +7324,23 @@
 
     const { data: rows } = await client
       .from('leaderboard')
-      .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title,is_plus')
+      .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title,is_plus,updated_at')
       .order('level', { ascending: false })
       .limit(50);
 
-    // Overlay live streaks from progress table (now publicly readable)
+    // Overlay live streaks from progress — only use progress value if it's newer than leaderboard
     if (rows?.length) {
       const ids = rows.map(r => r.user_id);
-      const { data: progRows } = await client.from('progress').select('user_id,streak,best_streak').in('user_id', ids);
+      const { data: progRows } = await client.from('progress').select('user_id,streak,best_streak,updated_at').in('user_id', ids);
       if (progRows?.length) {
         const pm = Object.fromEntries(progRows.map(r => [r.user_id, r]));
         rows.forEach(r => {
           const pr = pm[r.user_id];
-          if (pr) { r.streak = pr.streak ?? r.streak; r.best_streak = Math.max(pr.best_streak ?? 0, r.best_streak ?? 0); }
+          if (pr) {
+            const progNewer = !r.updated_at || new Date(pr.updated_at) >= new Date(r.updated_at);
+            if (progNewer) { r.streak = pr.streak ?? r.streak; }
+            r.best_streak = Math.max(pr.best_streak ?? 0, r.best_streak ?? 0);
+          }
         });
       }
       rows.sort((a, b) => (b.streak||0)-(a.streak||0) || (b.best_streak||0)-(a.best_streak||0) || (b.level||0)-(a.level||0));

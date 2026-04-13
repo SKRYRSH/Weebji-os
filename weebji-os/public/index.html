@@ -2549,11 +2549,11 @@
     const hexC = color || '#00F5FF';
 
     if (!isWeebjiPlus()) {
-      el.innerHTML = `
+      el.insertAdjacentHTML('beforeend', `
         <div class="analytics-card analytics-locked" style="border-color:${hexRgba(hexC,0.07)}">
           <div class="analytics-header" style="justify-content:center">◆ DEEP ANALYTICS <span class="analytics-plus-tag">WEEBJI+</span></div>
           <div class="analytics-lock-msg">90-day activity heatmaps, session breakdowns, and lifetime stats. Upgrade to unlock.</div>
-        </div>`;
+        </div>`);
       return;
     }
 
@@ -2597,7 +2597,7 @@
     const studyH  = Math.floor((p.totalStudyMins||0) / 60);
     const studyM  = (p.totalStudyMins||0) % 60;
 
-    el.innerHTML = `
+    el.insertAdjacentHTML('beforeend', `
       <div class="analytics-card" style="border-color:${hexRgba(hexC,0.14)}">
         <div class="analytics-header" style="color:${hexRgba(hexC,0.55)}">◆ DEEP ANALYTICS</div>
         <div class="analytics-section-lbl">90-Day Activity</div>
@@ -7255,6 +7255,9 @@
     if (typeof SupabaseSync !== 'undefined') SupabaseSync.renderAuthSection();
     // WEEBJI+ upgrade / active section (shown after user has seen the product)
     renderWeebjiPlusSection(color);
+    // Clear analytics container to prevent duplication on re-render
+    const _analyticsEl = document.getElementById('profile-analytics');
+    if (_analyticsEl) _analyticsEl.innerHTML = '';
     // Weekly report (teased for free, full for WEEBJI+)
     renderWeeklyReport(p, color);
     // Deep analytics (WEEBJI+ gated)
@@ -9572,7 +9575,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
         premiumStatus = !!premiumPlan;
         if (premiumPlan) {
           if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
-          if (document.getElementById('dashboard')?.classList.contains('active')) { renderDungeonCard(); renderBattleCard(); }
+          if (document.getElementById('dashboard')?.classList.contains('active')) {
+            const _pp = loadProgress(), _pcls = localStorage.getItem('weebji_class') || 'monarch';
+            renderDungeonCard(); renderBattleCard(); renderPremiumHypeCard();
+            renderSecondaryPillars(_pp, _pcls);
+          }
           if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
         }
 
@@ -9726,7 +9733,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
         premiumStatus = !!premiumPlan;
         if (premiumPlan) {
           if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
-          if (document.getElementById('dashboard')?.classList.contains('active')) { renderDungeonCard(); renderBattleCard(); }
+          if (document.getElementById('dashboard')?.classList.contains('active')) {
+            const _pp = loadProgress(), _pcls = localStorage.getItem('weebji_class') || 'monarch';
+            renderDungeonCard(); renderBattleCard(); renderPremiumHypeCard();
+            renderSecondaryPillars(_pp, _pcls);
+          }
           if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
         }
       } catch(e) { console.warn('Premium check failed', e); }

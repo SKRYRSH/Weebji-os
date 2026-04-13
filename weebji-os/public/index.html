@@ -7608,11 +7608,13 @@
     el.querySelector('#pm-mode-home').addEventListener('click', () => {
       localStorage.setItem('weebji_workout_mode', 'home');
       renderWorkoutModeToggle(color);
+      renderSecondaryPillars(loadProgress(), localStorage.getItem('weebji_class') || 'monarch');
       spawnDropBanner('🏠  Workout mode → HOME');
     });
     el.querySelector('#pm-mode-gym').addEventListener('click', () => {
       localStorage.setItem('weebji_workout_mode', 'gym');
       renderWorkoutModeToggle(color);
+      renderSecondaryPillars(loadProgress(), localStorage.getItem('weebji_class') || 'monarch');
       spawnDropBanner('🏋️  Workout mode → GYM');
     });
   }

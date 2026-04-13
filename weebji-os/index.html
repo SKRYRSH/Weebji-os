@@ -1625,6 +1625,8 @@
           </div>
           <button class="ritual-clock-save" id="ritual-clock-save-btn">Set Power Window</button>
         </div>
+        <!-- Workout Mode Toggle -->
+        <div id="profile-workout-mode"></div>
         <!-- Custom Workouts (Forge access only) -->
         <div id="profile-custom-workouts"></div>
         <!-- Phase 5: System Voice toggle -->
@@ -7199,6 +7201,8 @@
       }
     }
 
+    // Workout mode toggle
+    renderWorkoutModeToggle(color);
     // Custom workouts (Forge users only)
     renderCustomWorkouts(cls, color, p);
 
@@ -9560,9 +9564,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
         premiumStatus = !!premiumPlan;
         if (premiumPlan) {
           if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
-          if (document.getElementById('dungeon')?.classList.contains('active')) renderDungeonCard();
+          if (document.getElementById('dashboard')?.classList.contains('active')) { renderDungeonCard(); renderBattleCard(); }
           if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
-          if (document.getElementById('battle')?.classList.contains('active')) renderBattleCard();
         }
 
         // Get or create sequential hunter number
@@ -9715,9 +9718,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
         premiumStatus = !!premiumPlan;
         if (premiumPlan) {
           if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
-          if (document.getElementById('dungeon')?.classList.contains('active')) renderDungeonCard();
+          if (document.getElementById('dashboard')?.classList.contains('active')) { renderDungeonCard(); renderBattleCard(); }
           if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
-          if (document.getElementById('battle')?.classList.contains('active')) renderBattleCard();
         }
       } catch(e) { console.warn('Premium check failed', e); }
     }

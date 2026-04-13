@@ -9636,9 +9636,6 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
     async function signOut() {
       if (!client) return;
-      if (typeof OneSignalDeferred !== 'undefined') {
-        OneSignalDeferred.push(function(OneSignal) { OneSignal.logout(); });
-      }
       await client.auth.signOut();
       currentUser = null;
       premiumStatus = false;

@@ -4830,7 +4830,15 @@
       forgeCard.classList.add('dash-card--cyan');
       titleEl.textContent = 'THE FORGE'; subEl.textContent = `${type} DAY`;
       bonusEl.classList.toggle('hidden', !p.workoutBonus);
-      renderExercises(p, WORKOUTS[type]);
+      const wMode = localStorage.getItem('weebji_workout_mode') || 'home';
+      const mw = document.getElementById('forge-mode-wrap');
+      if (mw) {
+        mw.innerHTML = `<div class="forge-mode-toggle"><button class="forge-mode-btn${wMode==='home'?' active':''}" id="forge-home-btn">🏠 Home</button><button class="forge-mode-btn${wMode==='gym'?' active':''}" id="forge-gym-btn">🏋️ Gym</button></div>`;
+        mw.querySelector('#forge-home-btn').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','home'); renderForgeArea(loadProgress(), cls); });
+        mw.querySelector('#forge-gym-btn').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','gym'); renderForgeArea(loadProgress(), cls); });
+      }
+      const customs = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
+      renderExercises(p, [...(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]), ...customs]);
     }
     // Monarch: calendar + PR board appended after exercise list (clear first to prevent duplication)
     requestAnimationFrame(() => {
@@ -7608,13 +7616,15 @@
     el.querySelector('#pm-mode-home').addEventListener('click', () => {
       localStorage.setItem('weebji_workout_mode', 'home');
       renderWorkoutModeToggle(color);
-      renderSecondaryPillars(loadProgress(), localStorage.getItem('weebji_class') || 'monarch');
+      const _pcls = localStorage.getItem('weebji_class') || 'monarch';
+      renderForgeArea(loadProgress(), _pcls);
       spawnDropBanner('🏠  Workout mode → HOME');
     });
     el.querySelector('#pm-mode-gym').addEventListener('click', () => {
       localStorage.setItem('weebji_workout_mode', 'gym');
       renderWorkoutModeToggle(color);
-      renderSecondaryPillars(loadProgress(), localStorage.getItem('weebji_class') || 'monarch');
+      const _pcls = localStorage.getItem('weebji_class') || 'monarch';
+      renderForgeArea(loadProgress(), _pcls);
       spawnDropBanner('🏋️  Workout mode → GYM');
     });
   }

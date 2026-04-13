@@ -16,8 +16,6 @@
   <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_rUZFK8D1ws0J87t0xXS5m2pgivBILx5gXB0fqw52otw',{api_host:'https://us.i.posthog.com',defaults:'2026-01-30',autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true});</script>
   <!-- Supabase JS (jsdelivr with unpkg fallback) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';document.head.appendChild(s)"></script>
-  <!-- Razorpay Checkout (defer — blocks page load outside India without this) -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -2427,7 +2425,6 @@
   }
 
   /* ══ WEEBJI+ ═════════════════════════════════ */
-  const RAZORPAY_KEY_ID = 'rzp_live_SWQ3EqiggroMC5';
 
   function isWeebjiPlus() {
     return SupabaseSync.isPremium();
@@ -2688,84 +2685,13 @@
   }
 
   async function _openCheckout(plan) {
-    // TWA / Android: use Google Play Billing via Digital Goods API
+    // Play Store only — use Google Play Billing via Digital Goods API
     if ('getDigitalGoodsService' in window) {
-      const handled = await _openPlayBilling(plan);
-      if (handled) return;
-    }
-
-    // Block Razorpay inside TWA — Play policy 4.1 requires Play Billing exclusively
-    if (document.referrer.startsWith('android-app://')) {
-      spawnDropBanner('◆  In-app purchase unavailable — please try again later');
+      await _openPlayBilling(plan);
       return;
     }
-
-    const user = SupabaseSync.getUser?.();
-    if (!user) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
-
-    try {
-      const client = SupabaseSync._client();
-      if (!client) throw new Error('Not connected');
-
-      // Ensure session is loaded/refreshed before invoking — client auto-sends fresh token
-      const { data: { session } } = await client.auth.getSession();
-      if (!session?.access_token) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
-
-      const { data, error } = await client.functions.invoke('razorpay-create-order', {
-        body: { plan },
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
-
-      // Only capture after order confirmed — prevents inflated counts from auth-fail retries
-      if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, class: localStorage.getItem('weebji_class') });
-
-      const options = {
-        key:         RAZORPAY_KEY_ID,
-        amount:      data.amount,
-        currency:    'INR',
-        order_id:    data.order_id,
-        name:        'WEEBJI OS',
-        description: data.description,
-        image:       'https://skryrsh.github.io/Weebji-os/icons/icon-192.png',
-        handler: async function(response) {
-          const verifyClient = SupabaseSync._client();
-          const { data: { session: vSess } } = await verifyClient.auth.getSession();
-          const { error: verifyErr } = await verifyClient.functions.invoke('razorpay-verify-payment', {
-            body: {
-              razorpay_order_id:   response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature:  response.razorpay_signature,
-              plan,
-            },
-            ...(vSess?.access_token ? { headers: { Authorization: `Bearer ${vSess.access_token}` } } : {})
-          });
-          if (verifyErr) { spawnDropBanner('◆  Verification failed — contact weebjiglobal@gmail.com'); return; }
-          try { await SupabaseSync.pullProgress(); } catch(e) {
-            if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pullProgress_post_payment', error: e?.message });
-            spawnDropBanner('◆  Payment verified — refresh if Plus features are not active');
-          }
-          spawnDropBanner('◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
-          if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, class: localStorage.getItem('weebji_class') });
-          renderProfile(); initDashboard();
-          if (plan !== 'ghost_token') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');
-        },
-        prefill: { email: user.email },
-        theme:   { color: '#00F5FF' },
-        modal:   { backdropclose: false },
-      };
-
-      if (typeof Razorpay === 'undefined') throw new Error('Payment SDK not loaded — please refresh and try again');
-      const rzp = new Razorpay(options);
-      rzp.on('payment.failed', function(resp) {
-        spawnDropBanner('◆  Payment failed — ' + (resp.error?.description || 'Try again'));
-      });
-      rzp.open();
-
-    } catch(e) {
-      if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'checkout', error: e?.message, plan });
-      spawnDropBanner('◆  Could not start checkout — try again');
-    }
+    // Web browser — direct to Play Store
+    spawnDropBanner('◆  Get WEEBJI OS on Google Play to unlock WEEBJI+');
   }
 
   function renderWeebjiPlusSection(color) {

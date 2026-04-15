@@ -63,11 +63,17 @@ Deno.serve(async (req) => {
         allIds.forEach(id => { if (!hasProgress.has(id)) userIds.push(id); });
       }
     } else if (type === 'comeback_3d') {
+      // Exclude users who joined within the last 3 days — they aren't really "gone dark"
+      const { data: newUsers } = await sb.from('users').select('id').gte('joined_at', threeDaysAgo);
+      const newIds3 = new Set((newUsers || []).map(r => r.id));
       const { data: rows } = await sb.from('progress').select('user_id').lt('updated_at', threeDaysAgo).gte('updated_at', sevenDaysAgo);
-      userIds = (rows || []).map(r => r.user_id);
+      userIds = (rows || []).map(r => r.user_id).filter(id => !newIds3.has(id));
     } else if (type === 'comeback_7d') {
+      // Exclude users who joined within the last 7 days
+      const { data: newUsers } = await sb.from('users').select('id').gte('joined_at', sevenDaysAgo);
+      const newIds7 = new Set((newUsers || []).map(r => r.id));
       const { data: rows } = await sb.from('progress').select('user_id').lt('updated_at', sevenDaysAgo);
-      userIds = (rows || []).map(r => r.user_id);
+      userIds = (rows || []).map(r => r.user_id).filter(id => !newIds7.has(id));
     } else {
       // weekly_* — all subscribed users
       const { data: subs } = await sb.from('push_subscriptions').select('user_id');

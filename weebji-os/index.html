@@ -3876,6 +3876,7 @@
     const next    = document.getElementById(id);
     const current = document.querySelector('.screen.active');
     if (next === current) return;
+    document.getElementById('app').scrollTop = 0;
     next.style.zIndex = '10';
     next.classList.add('active');
     if (current) { current.classList.remove('active'); setTimeout(() => { current.style.zIndex = ''; }, 500); }
@@ -4570,7 +4571,8 @@
     btn.addEventListener('click', () => {
       Sound.play('tap');
       const forgeCard = document.getElementById('forge-card');
-      if (forgeCard) forgeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const dashScroll = document.querySelector('.dash-scroll');
+      if (forgeCard && dashScroll) dashScroll.scrollTo({ top: forgeCard.offsetTop, behavior: 'smooth' });
       // Flash border on forge card briefly
       const prevBorder = forgeCard ? forgeCard.style.borderColor : '';
       if (forgeCard) {
@@ -6920,10 +6922,10 @@
         dashScroll.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (tab === 'forge') {
         const el = document.getElementById('forge-card');
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (el) dashScroll.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
       } else if (tab === 'quests') {
         const el = document.getElementById('quest-card');
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (el) dashScroll.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
       }
     });
   });

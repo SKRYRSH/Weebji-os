@@ -2308,7 +2308,7 @@
         : 0;
 
       // Yesterday's completion: check all class activity types
-      const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0);
+      const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length;
 
       // Apply penalty/reward for yesterday
       if (p.lastDate) {
@@ -3542,7 +3542,7 @@
       if (_active) return;
       _active = true;
       _breachCount = 0;
-      _lastBreachAt = 0;
+      _lastBreachAt = Date.now();
       const overlay = document.getElementById('void-overlay');
       const modeLbl = document.getElementById('void-mode-label');
       if (modeLbl) modeLbl.textContent = modeLabel || 'Session Active';
@@ -7728,7 +7728,7 @@
     v.classList.remove('critical-low','critical-danger');
     if (hp <= 1)      v.classList.add('critical-danger');
     else if (hp <= 2) v.classList.add('critical-low');
-    document.getElementById('app').classList.toggle('system-degraded', hp <= 2);
+    document.getElementById('app').classList.toggle('system-degraded', hp <= 1);
     // Phase 5: System Voice on HP crisis
     if (hp <= 1) setTimeout(() => SystemVoice.onHPCritical(), 1200);
   }
@@ -8333,6 +8333,7 @@
     p.ghostTokens  -= 1;
     p.streak        = p.prevStreak || 0;
     p.streakLostToday = false;
+    p.hp = Math.min(5, p.hp + 1); // ghost token also restores the HP lost from missing
     // Ghost Whisperer: earned when saving a streak of ≥ 7
     if ((p.prevStreak || 0) >= 7) p.ghostWhisperEarned = true;
     checkSecretTitles(p, localStorage.getItem('weebji_class'));

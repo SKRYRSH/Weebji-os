@@ -29,4 +29,40 @@ Thumbs.db
 *.jks
 uber-apk-signer.jar
 WEEBJI-OS.apk
-"WEEBJI OS - Google Play package/"
+WEEBJI OS - Google Play package/
+
+# Android build artifacts
+*.apk
+*.idsig
+*.aab
+aab-fresh/
+aab-patched/
+aapt2-extracted/
+apk-patched/
+build/
+app/
+agents/
+.gradle/
+.claude-flow/
+.swarm/
+gradle/
+gradlew
+gradlew.bat
+aapt2.jar
+apktool.jar
+bundletool.jar
+build.gradle
+gradle.properties
+local.properties
+settings.gradle
+twa-manifest.json
+manifest-checksum.txt
+dump-compiled-item.js
+dump-manifest.js
+patch-aab-inplace.js
+patch-aab-manifest.js
+patch-aab-zip.js
+weebji-os/gen-icons.js
+edit_page_snapshot.md
+supabase/.temp/
+node_modules/

@@ -2629,8 +2629,8 @@
   }
 
   // Play Billing SKU IDs — must match exactly what you create in Play Console
-  const PLAY_SKUS = { monthly: 'weebji_plus_monthly', annual: 'weebji_plus_annual', ghost_token: 'weebji_ghost_token' };
-  const PLAY_PRICES = { monthly: '9.99', annual: '59.99', ghost_token: '0.99' };
+  const PLAY_SKUS = { monthly: 'weebji_plus_monthly', annual: 'weebji_plus_annual', ghost_token: 'weebji_ghost_token', ghost_token_3: 'weebji_ghost_token_3' };
+  const PLAY_PRICES = { monthly: '9.99', annual: '59.99', ghost_token: '0.99', ghost_token_3: '1.99' };
   const _SB_URL = 'https://qpcqbiicomlpsmkgqhsm.supabase.co';
   const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwY3FiaWljb21scHNta2dxaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTU0NjYsImV4cCI6MjA4OTQzMTQ2Nn0.RGHdyTDAea-85XNU5gOJ-lmwVTbGzkeadFXQH5w37aE';
 
@@ -2682,12 +2682,14 @@
         return true;
       }
       await payResponse.complete('success');
-      if (plan === 'ghost_token') { const _p = loadProgress(); _p.ghostTokens = (_p.ghostTokens || 0) + 1; saveProgress(_p); }
+      if (plan === 'ghost_token')   { const _p = loadProgress(); _p.ghostTokens = (_p.ghostTokens || 0) + 1; saveProgress(_p); }
+      if (plan === 'ghost_token_3') { const _p = loadProgress(); _p.ghostTokens = (_p.ghostTokens || 0) + 3; saveProgress(_p); }
       try { await SupabaseSync.pullProgress(); } catch(e) { spawnDropBanner('◆  Payment confirmed — refresh if Plus features are not active'); return true; }
-      spawnDropBanner(plan === 'ghost_token' ? '◆  GHOST TOKEN ACQUIRED — Use it wisely' : '◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
+      const _banners = { ghost_token: '◆  GHOST TOKEN ACQUIRED — Use it wisely', ghost_token_3: '◆  3 GHOST TOKENS ACQUIRED — Your streak is armoured', };
+      spawnDropBanner(_banners[plan] || '◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
       if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, channel: 'play_billing' });
       renderProfile(); initDashboard();
-      if (plan !== 'ghost_token') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');
+      if (plan !== 'ghost_token' && plan !== 'ghost_token_3') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');
       return true;
     } catch(e) {
       if (e.name === 'AbortError') { return true; } // user cancelled — handled
@@ -2712,7 +2714,8 @@
     if (isWeebjiPlus()) {
       el.innerHTML = `
         <div class="profile-plus-active">WEEBJI+ ACTIVE</div>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Buy Ghost Tokens — $0.99 each</button>`;
+        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>`;
     } else {
       const trialActive = isInVoiceTrial();
       const dLeft = voiceTrialDaysLeft();
@@ -2765,7 +2768,8 @@
             </div>
           </div>
         </div>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Need a Ghost Token? — $0.99</button>`;
+        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>`;
       // Async: fill social proof with real premium count
       _fetchPremiumCount();
     }
@@ -7340,7 +7344,15 @@
           myRank = (count || 0) + 1;
         }
       }
-      if (myRank) localStorage.setItem('weebji_lb_rank', String(myRank));
+      if (myRank) {
+        const prevRank = parseInt(localStorage.getItem('weebji_lb_rank') || '0');
+        localStorage.setItem('weebji_lb_rank', String(myRank));
+        if (prevRank && myRank > prevRank + 1) {
+          setTimeout(() => spawnDropBanner(`⚠ RANK DROPPED — #${prevRank} → #${myRank} — Someone is climbing faster`), 600);
+        } else if (prevRank && myRank < prevRank) {
+          setTimeout(() => spawnDropBanner(`◆ RANK CLIMBED — #${prevRank} → #${myRank} — The System acknowledges your ascent`), 600);
+        }
+      }
     }
 
     function renderLbRow(r, rank, isYou) {
@@ -8332,9 +8344,9 @@
       upsell.id = 'ghost-int-upsell';
       upsell.style.cssText = 'width:100%;display:flex;flex-direction:column;gap:8px;margin-top:4px;';
       upsell.innerHTML = `
-        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token')" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(139,92,246,0.5);background:rgba(139,92,246,0.1);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.16em;color:rgba(180,130,255,0.95);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">👻 Buy a Ghost Token — $0.99</button>
-        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200)" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">Get 5 Tokens/mo with WEEBJI+</button>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.18);letter-spacing:0.1em;text-align:center;">$9.99/mo · or $59.99/yr — save 50%</div>`;
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token_3')" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(139,92,246,0.7);background:rgba(139,92,246,0.15);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.16em;color:rgba(200,160,255,1);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;position:relative;">👻 3 Ghost Tokens — $1.99 <span style="font-family:'JetBrains Mono',monospace;font-size:8px;opacity:0.7;margin-left:4px;">SAVE 33%</span></button>
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token')" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(139,92,246,0.3);background:transparent;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:400;letter-spacing:0.14em;color:rgba(139,92,246,0.7);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">👻 1 Token — $0.99</button>
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200)" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">◆ 5 Tokens/mo — WEEBJI+ $9.99</button>`;
       useBtn.parentElement.insertBefore(upsell, useBtn);
     } else {
       useBtn.disabled = false;
@@ -8372,6 +8384,8 @@
     document.getElementById('ghost-intervention').classList.remove('active');
     updateStats(p);
     Sound.play('milestone');
+    if (p.ghostTokens === 1) setTimeout(() => spawnDropBanner('👻 LAST TOKEN REMAINING — Stock up before your next miss'), 1800);
+    if (p.ghostTokens === 0) setTimeout(() => spawnDropBanner('👻 TOKENS DEPLETED — One miss away from PENANCE'), 1800);
     const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
     const cx = window.innerWidth / 2, cy = window.innerHeight * 0.6;
     CinCanvas.rise(cx, cy, 50, '#FFFFFF');

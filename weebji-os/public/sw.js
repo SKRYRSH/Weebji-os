@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v156 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v156';
+// ── WEEBJI OS — Service Worker v157 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v157';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png'];
 
@@ -84,6 +84,7 @@ const NOTIF_CFG = {
   comeback_3d:        { vibrate: [300,200,300,200,300], tag: 'weebji-comeback', requireInteraction: true  },
   comeback_7d:        { vibrate: [300,200,300,200,300], tag: 'weebji-comeback', requireInteraction: true  },
   ghost_token:        { vibrate: [200,100,200,100,400], tag: 'weebji-ghost',    requireInteraction: true  },
+  rank_drop:          { vibrate: [200,100,300,100,200], tag: 'weebji-rank',     requireInteraction: false },
   level_up:           { vibrate: [50,30,50,30,300],     tag: 'weebji-level',    requireInteraction: false },
   secret_title:       { vibrate: [100,50,200,50,100],   tag: 'weebji-title',    requireInteraction: false },
   weekly_summary:     { vibrate: [200,100,200],         tag: 'weebji-weekly',   requireInteraction: false },

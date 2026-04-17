@@ -7,9 +7,10 @@ const CORS = {
 
 // SKU → plan mapping (must match Play Console product IDs)
 const SKU_TO_PLAN: Record<string, string> = {
-  weebji_plus_monthly: 'plus',
-  weebji_plus_annual:  'plus_annual',
-  weebji_ghost_token:  'ghost_token',
+  weebji_plus_monthly:  'plus',
+  weebji_plus_annual:   'plus_annual',
+  weebji_ghost_token:   'ghost_token',
+  weebji_ghost_token_3: 'ghost_token_3',
 };
 
 const SUBSCRIPTION_SKUS = new Set(['weebji_plus_monthly', 'weebji_plus_annual']);
@@ -156,18 +157,14 @@ Deno.serve(async (req) => {
     }
 
     // Activate plan in DB
-    if (dbPlan === 'ghost_token') {
-      // Increment ghost_tokens — check error via destructuring (Supabase client doesn't throw)
-      const { error: rpcError } = await adminClient.rpc('increment_ghost_tokens', { uid: userId });
-      if (rpcError) {
-        // Fallback: manual increment
-        const { data: prog } = await adminClient.from('progress').select('ghost_tokens').eq('user_id', userId).single();
-        const current = (prog?.ghost_tokens as number) || 0;
-        await adminClient.from('progress').upsert(
-          { user_id: userId, ghost_tokens: current + 1, updated_at: new Date().toISOString() },
-          { onConflict: 'user_id' }
-        );
-      }
+    if (dbPlan === 'ghost_token' || dbPlan === 'ghost_token_3') {
+      const addCount = dbPlan === 'ghost_token_3' ? 3 : 1;
+      const { data: prog } = await adminClient.from('progress').select('ghost_tokens').eq('user_id', userId).single();
+      const current = (prog?.ghost_tokens as number) || 0;
+      await adminClient.from('progress').upsert(
+        { user_id: userId, ghost_tokens: current + addCount, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
     } else {
       // Upsert subscription plan with expiry
       await adminClient.from('user_plans').upsert(

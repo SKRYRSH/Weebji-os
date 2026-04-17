@@ -40,11 +40,11 @@ Deno.serve(async (req) => {
     );
 
     const now = new Date();
-    // IST midnight = UTC 18:30 previous day
-    const istMidnightUTC = new Date(now);
-    istMidnightUTC.setUTCHours(18, 30, 0, 0);
-    if (istMidnightUTC > now) istMidnightUTC.setUTCDate(istMidnightUTC.getUTCDate() - 1);
-    const todayISTStart  = istMidnightUTC.toISOString();
+    // Oman midnight = UTC 20:00 previous day (UTC+4)
+    const todayMidnight = new Date(now);
+    todayMidnight.setUTCHours(20, 0, 0, 0);
+    if (todayMidnight > now) todayMidnight.setUTCDate(todayMidnight.getUTCDate() - 1);
+    const todayISTStart  = todayMidnight.toISOString();
     const threeDaysAgo   = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
     const sevenDaysAgo   = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 

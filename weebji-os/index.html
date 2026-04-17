@@ -418,6 +418,10 @@
   .penance__input:focus { border-color:rgba(204,0,0,0.7); box-shadow:0 0 14px rgba(180,0,0,0.2) inset; }
   .penance__input.correct { border-color:#00F5FF; color:#00F5FF; box-shadow:0 0 18px rgba(0,245,255,0.25) inset; }
   .penance__scar { font-family:'JetBrains Mono',monospace; font-size:10px; color:#AA5555; letter-spacing:0.07em; font-style:italic; max-width:260px; line-height:1.7; }
+  .penance__escape { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; margin-top:8px; }
+  .penance__escape-or { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#442222; text-transform:uppercase; }
+  .penance__escape-btn { width:100%; padding:14px; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.3); border-radius:12px; font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:0.14em; color:rgba(180,130,255,0.85); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:background 0.2s; }
+  .penance__escape-btn:active { background:rgba(139,92,246,0.16); transform:scale(0.97); }
 
   /* ══ LEVEL UP OVERLAY ════════════════════════ */
   /* ══ CINEMATIC — GLOBAL CANVAS OVERLAY ══════ */
@@ -568,7 +572,11 @@
   /* ══ PHASE 1 — HP WARNING STATES ════════════ */
   .hp-seg.full.critical-low    { background: #FF4444 !important; animation: kf-seg-pulse-slow 2s ease-in-out infinite !important; }
   .hp-seg.full.critical-danger { background: #FF3333 !important; animation: kf-seg-pulse-fast 0.65s ease-in-out infinite !important; }
-  .hp-warn { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: #FF3333; text-shadow: 0 0 8px rgba(255,0,0,0.5); text-align: right; padding: 2px 20px 6px; animation: kf-fade-up 0.4s ease both; }
+  .hp-warn { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: #FF3333; text-shadow: 0 0 8px rgba(255,0,0,0.5); text-align: right; padding: 2px 20px 4px; animation: kf-fade-up 0.4s ease both; }
+  .hp-shield-wrap { animation: kf-fade-up 0.4s ease both; padding: 0 20px 8px; }
+  .hp-shield-ready { display:block; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(139,92,246,0.7); text-align:right; margin-top:3px; }
+  .hp-shield-btn { display:block; width:100%; padding:10px 16px; margin-top:6px; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.35); border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; color:rgba(180,130,255,0.9); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:background 0.2s; }
+  .hp-shield-btn:active { background:rgba(139,92,246,0.18); transform:scale(0.97); }
 
   /* ══ PHASE 1 — BEST STREAK + RIVAL ══════════ */
   .stat-mini__best { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #2A2A44; letter-spacing: 0.06em; margin-top: 4px; transition: color 0.3s ease; }
@@ -1783,6 +1791,10 @@
       <p class="penance__instruction">Type your pledge to restore access</p>
       <input class="penance__input" id="penance-input" type="text" placeholder="I WILL NOT RETREAT" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
       <p class="penance__scar" id="penance-scar"></p>
+      <div class="penance__escape" id="penance-escape">
+        <span class="penance__escape-or">— or —</span>
+        <button class="penance__escape-btn" id="penance-escape-btn">👻 Use Ghost Token to skip penance</button>
+      </div>
     </div>
 
     <!-- Ghost Token Intervention overlay -->
@@ -4644,14 +4656,23 @@
     // HP vignette cinematic
     updateHPVignette(hp);
 
-    // HP warning text
-    const existingWarn = document.querySelector('.hp-warn');
-    if (existingWarn) existingWarn.remove();
-    if (hp <= 2) {
+    // HP warning text + ghost token CTA
+    document.querySelector('.hp-warn')?.remove();
+    document.querySelector('.hp-shield-wrap')?.remove();
+    const anchor = document.getElementById('hp-row').closest('.dash-header');
+    if (hp <= 1) {
+      const tokens = loadProgress().ghostTokens || 0;
+      const wrap = document.createElement('div');
+      wrap.className = 'hp-shield-wrap';
+      wrap.innerHTML = tokens > 0
+        ? `<p class="hp-warn">System critical. One more miss triggers PENANCE.</p><span class="hp-shield-ready">👻 ${tokens} Ghost Token${tokens !== 1 ? 's' : ''} ready — your streak is protected</span>`
+        : `<p class="hp-warn">System critical. One more miss triggers PENANCE.</p><button class="hp-shield-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Buy Ghost Token — $0.99</button>`;
+      anchor.insertAdjacentElement('afterend', wrap);
+    } else if (hp <= 2) {
       const warnEl = document.createElement('p');
       warnEl.className = 'hp-warn';
-      warnEl.textContent = hp <= 1 ? 'System critical. One more miss and you reset.' : 'Vitality low. The system is watching.';
-      document.getElementById('hp-row').closest('.dash-header').insertAdjacentElement('afterend', warnEl);
+      warnEl.textContent = 'Vitality low. The system is watching.';
+      anchor.insertAdjacentElement('afterend', warnEl);
     }
   }
 
@@ -8388,6 +8409,30 @@
       mEl.classList.remove('show');
     }
     localStorage.setItem('weebji_penance_active', '1');
+    // Wire escape hatch
+    const escBtn = document.getElementById('penance-escape-btn');
+    if (escBtn) {
+      const tokens = p.ghostTokens || 0;
+      if (tokens > 0) {
+        escBtn.textContent = `👻 Use Ghost Token to skip penance (${tokens} left)`;
+        escBtn.onclick = () => {
+          const _p = loadProgress();
+          _p.ghostTokens = Math.max(0, (_p.ghostTokens || 0) - 1);
+          _p.hp = Math.min(5, _p.hp + 1);
+          localStorage.removeItem('weebji_penance_active');
+          _p.penanceSurvived = true;
+          checkSecretTitles(_p, localStorage.getItem('weebji_class'));
+          saveProgress(_p);
+          overlay.classList.remove('active');
+          updateStats(_p); updateXPBar(_p);
+          Sound.play('milestone');
+          SystemVoice.say('Ghost Token consumed. The System forgives this once.');
+        };
+      } else {
+        escBtn.textContent = '👻 Buy a Ghost Token — $0.99';
+        escBtn.onclick = () => { Sound.play('tap'); overlay.classList.remove('active'); _openCheckout('ghost_token'); };
+      }
+    }
     overlay.classList.add('active');
     Sound.play('penanceUnlock');
     // Phase 5: System Voice

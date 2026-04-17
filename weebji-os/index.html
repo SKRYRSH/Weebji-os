@@ -9480,14 +9480,36 @@ DEV.skipSplash()      → go straight to class select (if no session)
           },
           ...(vpSess?.access_token ? { headers: { Authorization: `Bearer ${vpSess.access_token}` } } : {}),
         });
-        // Always upsert leaderboard directly — covers 401s and any edge fn failure
+        // Always upsert leaderboard + progress directly — covers 401s and any edge fn failure
         if (vpError) {
-          await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
+          await Promise.allSettled([
+            client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' }),
+            client.from('progress').upsert({
+              user_id: currentUser.id,
+              level: p.level, xp: p.xp, hp: p.hp,
+              streak: p.streak || 0, best_streak: p.bestStreak || 0,
+              ghost_tokens: p.ghostTokens || 0,
+              total_study_mins: p.totalStudyMins || 0,
+              total_workout_days: p.totalWorkoutDays || 0,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'user_id' }),
+          ]);
         }
       } catch(e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pushProgress_edge_fn', error: e?.message });
         try {
-          await client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' });
+          await Promise.allSettled([
+            client.from('leaderboard').upsert(lbPayload, { onConflict: 'user_id' }),
+            client.from('progress').upsert({
+              user_id: currentUser.id,
+              level: p.level, xp: p.xp, hp: p.hp,
+              streak: p.streak || 0, best_streak: p.bestStreak || 0,
+              ghost_tokens: p.ghostTokens || 0,
+              total_study_mins: p.totalStudyMins || 0,
+              total_workout_days: p.totalWorkoutDays || 0,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'user_id' }),
+          ]);
         } catch(_) {}
       }
     }

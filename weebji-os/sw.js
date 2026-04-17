@@ -1,7 +1,7 @@
-// ── WEEBJI OS — Service Worker v154 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v154';
+// ── WEEBJI OS — Service Worker v155 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v155';
 const BASE = self.registration.scope;
-const SHELL = [BASE, BASE + 'manifest.json'];
+const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
@@ -81,6 +81,8 @@ const NOTIF_CFG = {
   power_window:       { vibrate: [100,50,100],          tag: 'weebji-power',    requireInteraction: false },
   morning_activation: { vibrate: [100,50,100,50,100],   tag: 'weebji-morning',  requireInteraction: false },
   comeback:           { vibrate: [300,200,300,200,300], tag: 'weebji-comeback', requireInteraction: true  },
+  comeback_3d:        { vibrate: [300,200,300,200,300], tag: 'weebji-comeback', requireInteraction: true  },
+  comeback_7d:        { vibrate: [300,200,300,200,300], tag: 'weebji-comeback', requireInteraction: true  },
   ghost_token:        { vibrate: [200,100,200,100,400], tag: 'weebji-ghost',    requireInteraction: true  },
   level_up:           { vibrate: [50,30,50,30,300],     tag: 'weebji-level',    requireInteraction: false },
   secret_title:       { vibrate: [100,50,200,50,100],   tag: 'weebji-title',    requireInteraction: false },

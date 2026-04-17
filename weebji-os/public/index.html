@@ -3898,7 +3898,7 @@
       if (p.level  > 100)           { p.level = 100;     localStorage.setItem('weebji_level',        '100'); }
       if (p.streak > 3650)          { p.streak = 0;      localStorage.setItem('weebji_streak',       '0'); }
       if (p.hp > 5 || p.hp < 0)    { p.hp = 3;          localStorage.setItem('weebji_hp',           '3'); }
-      if (p.ghostTokens > 10)       { p.ghostTokens = 1; localStorage.setItem('weebji_ghost_tokens', '1'); }
+      if (p.ghostTokens > 60)       { p.ghostTokens = 1; localStorage.setItem('weebji_ghost_tokens', '1'); }
       _writeHash(p);
       return false;
     }
@@ -9697,6 +9697,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
               ghost_tokens: p.ghostTokens || 0,
               total_study_mins: p.totalStudyMins || 0,
               total_workout_days: p.totalWorkoutDays || 0,
+              data: richData,
               updated_at: new Date().toISOString(),
             }, { onConflict: 'user_id' }),
           ]);
@@ -9713,6 +9714,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
               ghost_tokens: p.ghostTokens || 0,
               total_study_mins: p.totalStudyMins || 0,
               total_workout_days: p.totalWorkoutDays || 0,
+              data: richData,
               updated_at: new Date().toISOString(),
             }, { onConflict: 'user_id' }),
           ]);

@@ -406,6 +406,25 @@
   #app.system-degraded .screen.active { animation: kf-glitch-tear 9s steps(1) infinite; }
   #app.system-degraded::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(180,0,0,0.022) 3px, rgba(180,0,0,0.022) 4px); pointer-events:none; z-index:9998; }
 
+  /* ══ PRESTIGE MODAL ══════════════════════════ */
+  #prestige-modal { position:absolute; inset:0; background:#000; z-index:901; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:48px 32px; opacity:0; pointer-events:none; transition:opacity 0.5s ease; text-align:center; }
+  #prestige-modal.active { opacity:1; pointer-events:all; }
+  .prestige__eyebrow { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.4em; color:#888866; text-transform:uppercase; }
+  .prestige__badge { font-size:42px; color:#FFD700; text-shadow:0 0 30px rgba(255,215,0,0.8), 0 0 60px rgba(255,215,0,0.3); animation:kf-penance-pulse 2.5s ease-in-out infinite; }
+  .prestige__title { font-family:'Cinzel',serif; font-size:28px; font-weight:900; letter-spacing:0.2em; color:#FFD700; text-shadow:0 0 20px rgba(255,215,0,0.6); }
+  .prestige__desc { font-family:'Inter',sans-serif; font-size:12px; color:#AA9966; line-height:1.8; max-width:270px; }
+  .prestige__keeps { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#666655; }
+  .prestige__keeps span { padding:4px 8px; border:1px solid rgba(255,215,0,0.1); border-radius:6px; }
+  .prestige__harder { font-family:'JetBrains Mono',monospace; font-size:10px; color:#CC9944; letter-spacing:0.12em; }
+  .prestige__confirm { width:100%; padding:16px; border-radius:12px; border:1px solid rgba(255,215,0,0.5); background:rgba(255,215,0,0.07); font-family:'Cinzel',serif; font-size:13px; font-weight:700; letter-spacing:0.18em; color:#FFD700; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:background 0.2s; }
+  .prestige__confirm:active { background:rgba(255,215,0,0.15); }
+  .prestige__cancel { background:transparent; border:none; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#444433; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  /* ══ RIVAL STYLES ════════════════════════════ */
+  .rival-plus { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; line-height:1.6; }
+  .rival-set-prompt { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(139,92,246,0.6); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .lb-rival-btn { background:transparent; border:1px solid rgba(139,92,246,0.3); border-radius:6px; padding:3px 8px; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.1em; color:rgba(139,92,246,0.7); cursor:pointer; margin-left:6px; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+  .lb-rival-btn:active { background:rgba(139,92,246,0.15); }
+
   /* ══ PENANCE PROTOCOL ════════════════════════ */
   #penance-protocol { position:absolute; inset:0; background:#000; z-index:900; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:52px 32px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; text-align:center; }
   #penance-protocol.active { opacity:1; pointer-events:all; }
@@ -1780,6 +1799,20 @@
     </div>
 
     <!-- Penance Protocol overlay -->
+    <!-- Prestige Modal -->
+    <div id="prestige-modal">
+      <p class="prestige__eyebrow">System Message</p>
+      <div class="prestige__badge" id="prestige-badge-display">◈</div>
+      <h2 class="prestige__title">PINNACLE REACHED</h2>
+      <p class="prestige__desc">You have climbed to the summit. Prestige to reset and climb again — harder. The System will demand more from you each time.</p>
+      <div class="prestige__keeps">
+        <span>✓ Streak preserved</span><span>✓ Ghost Tokens kept</span><span>✓ Titles kept</span><span>✗ Level &amp; XP reset</span>
+      </div>
+      <p class="prestige__harder" id="prestige-harder-text"></p>
+      <button class="prestige__confirm" id="prestige-confirm-btn">◈ PRESTIGE NOW</button>
+      <button class="prestige__cancel" id="prestige-cancel-btn">Not yet</button>
+    </div>
+
     <div id="penance-protocol">
       <p class="penance__eyebrow">Dark Night Protocol</p>
       <h2 class="penance__title">RETREATED</h2>
@@ -2283,6 +2316,7 @@
       streak         : parseInt(localStorage.getItem('weebji_streak')     || '0'),
       bestStreak     : parseInt(localStorage.getItem('weebji_best_streak') || '0'),
       ghostTokens    : parseInt(localStorage.getItem('weebji_ghost_tokens')|| '1'),
+      prestige       : parseInt(localStorage.getItem('weebji_prestige')    || '0'),
       prevStreak     : parseInt(localStorage.getItem('weebji_prev_streak') || '0'),
       totalStudyMins : parseInt(localStorage.getItem('weebji_total_study_mins') || '0'),
       totalWorkoutDays: parseInt(localStorage.getItem('weebji_total_workout_days') || '0'),
@@ -2424,6 +2458,7 @@
     if (p.ghostWhisperEarned)           localStorage.setItem('weebji_ghost_whisper',   'true');
     if (p.penanceSurvived)              localStorage.setItem('weebji_penance_survived','true');
     if (p.shadowSlayerEarned)           localStorage.setItem('weebji_shadow_slayer',   'true');
+    localStorage.setItem('weebji_prestige',          p.prestige || 0);
     localStorage.setItem('weebji_streak_lost_today', p.streakLostToday ? 'true' : 'false');
     // Anti-tamper: write integrity hash
     _writeHash(p);
@@ -6469,29 +6504,46 @@
   }
 
   /* ══ XP / LEVEL / STATS ══════════════════════ */
-  function xpForLevel(level) {
-    if (level <= 5)  return 100;
-    if (level <= 10) return 175;
-    if (level <= 20) return 300;
-    if (level <= 35) return 500;
-    if (level <= 50) return 750;
-    if (level <= 65) return 1100;
-    if (level <= 80) return 1600;
-    if (level <= 90) return 2200;
-    return 3000;
+  function xpForLevel(level, prestige) {
+    let base;
+    if (level <= 5)  base = 100;
+    else if (level <= 10) base = 175;
+    else if (level <= 20) base = 300;
+    else if (level <= 35) base = 500;
+    else if (level <= 50) base = 750;
+    else if (level <= 65) base = 1100;
+    else if (level <= 80) base = 1600;
+    else if (level <= 90) base = 2200;
+    else base = 3000;
+    return Math.round(base * Math.pow(1.25, prestige || 0));
   }
 
   function checkLevelUp(p) {
-    const needed = xpForLevel(p.level);
+    if (p.level >= 100) {
+      // At max — accumulate XP, flag prestige when threshold met
+      if (p.xp >= xpForLevel(100, p.prestige)) localStorage.setItem('weebji_prestige_ready', '1');
+      return false;
+    }
+    const needed = xpForLevel(p.level, p.prestige);
     if (p.xp >= needed) { p.xp -= needed; p.level += 1; return true; }
     return false;
   }
 
   function updateXPBar(p) {
-    const needed = xpForLevel(p.level);
-    const pct = Math.min((p.xp / needed) * 100, 100);
-    document.getElementById('xp-fill').style.width  = `${pct}%`;
-    document.getElementById('xp-label').textContent = `${p.xp} / ${needed} XP`;
+    const needed = xpForLevel(p.level, p.prestige);
+    const pct    = Math.min((p.xp / needed) * 100, 100);
+    document.getElementById('xp-fill').style.width = `${pct}%`;
+    if (p.level >= 100 && localStorage.getItem('weebji_prestige_ready') === '1') {
+      document.getElementById('xp-label').textContent = '◈ PRESTIGE READY';
+      document.getElementById('xp-label').style.color = '#FFD700';
+      document.getElementById('xp-label').style.cursor = 'pointer';
+      document.getElementById('xp-label').onclick = () => showPrestigeModal();
+    } else {
+      document.getElementById('xp-label').textContent = `${p.xp} / ${needed} XP${p.prestige > 0 ? ` · P${p.prestige}` : ''}`;
+      document.getElementById('xp-label').style.color = '';
+      document.getElementById('xp-label').style.cursor = '';
+      document.getElementById('xp-label').onclick = null;
+    }
   }
 
   function updateStats(p) {
@@ -6534,21 +6586,13 @@
     }
 
     // Rival line
-    const rivalEl = document.getElementById('rival-line');
-    if (p.bestStreak > 0) {
-      const isAtPeak = p.streak > 0 && p.streak >= p.bestStreak;
-      rivalEl.innerHTML = isAtPeak
-        ? `⟶ RIVAL: You're at your peak — <em>${p.streak}d</em>.`
-        : `⟶ RIVAL: You at your best — <em>${p.bestStreak}d</em>. Beat it.`;
-      rivalEl.style.color = '';
-      rivalEl.classList.remove('hidden');
-    } else if (p.streak === 0 && p.level === 1 && p.xp === 0) {
-      rivalEl.textContent = 'Track sessions to build your arc.';
-      rivalEl.style.color = '#333355';
-      rivalEl.style.fontStyle = 'italic';
-      rivalEl.classList.remove('hidden');
-    } else {
-      rivalEl.classList.add('hidden');
+    updateRivalLine(p);
+    if (isWeebjiPlus()) refreshRival();
+    // Prestige badge next to level
+    const lvlEl = document.getElementById('stat-level');
+    if (lvlEl && p.prestige > 0) {
+      const badges = ['◈','◈◈','◈◈◈','◈◈◈◈','◈◈◈◈◈'];
+      lvlEl.innerHTML = `${p.level} <span style="color:#FFD700;font-size:10px;vertical-align:middle">${badges[Math.min(p.prestige-1,4)]}</span>`;
     }
   }
 
@@ -7361,9 +7405,13 @@
       const rrb = `${rri},${rgi},${rbi}`;
       const plusBadge = r.is_plus ? `<span style="color:#FFD700;font-size:9px;margin-left:4px;opacity:0.8" title="WEEBJI+">◆</span>` : '';
       const rankGlyph = ['▲','▲','▲'];
+      const isCurrentRival = localStorage.getItem('weebji_rival_id') === r.user_id;
+      const rivalBtn = (!isYou && isWeebjiPlus())
+        ? `<button class="lb-rival-btn" onclick="event.stopPropagation();setRival('${r.user_id}','${_esc(r.display_name)}')">${isCurrentRival ? '⚔ Rival' : '⚔'}</button>`
+        : '';
       return `<div class="lb-row${isYou ? ' is-you' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}">
         <span class="lb-rank" style="color:${rank<=3 ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
-        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${_esc(r.display_name)}</span>` : _esc(r.display_name)}${plusBadge}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${parseInt(r.hunter_number)||''}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${_esc(r.dungeon_title)}</span>` : ''}</span>
+        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${_esc(r.display_name)}</span>` : _esc(r.display_name)}${plusBadge}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${parseInt(r.hunter_number)||''}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${_esc(r.dungeon_title)}</span>` : ''}${rivalBtn}</span>
         <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.streak || 0}<span style="font-size:11px;opacity:0.5"> days</span>${r.best_streak > (r.streak||0) ? `<span style="display:block;font-size:9px;opacity:0.4;letter-spacing:0.08em">best ${r.best_streak}</span>` : ''}</span>
       </div>`;
     }
@@ -8400,6 +8448,104 @@
     document.getElementById('ghost-intervention').classList.remove('active');
     triggerPenanceProtocol(p);
   });
+
+  /* ══ PRESTIGE SYSTEM ═════════════════════════ */
+  function showPrestigeModal() {
+    const p = loadProgress();
+    if (!isWeebjiPlus()) { spawnDropBanner('◈ PRESTIGE requires WEEBJI+'); return; }
+    if (p.level < 100)   { return; }
+    const next = (p.prestige || 0) + 1;
+    const badges = ['◈','◈◈','◈◈◈','◈◈◈◈','◈◈◈◈◈'];
+    document.getElementById('prestige-badge-display').textContent = badges[Math.min(next - 1, 4)];
+    document.getElementById('prestige-harder-text').textContent =
+      `Prestige ${next}: XP requirements ${Math.round((Math.pow(1.25, next) - 1) * 100)}% harder`;
+    document.getElementById('prestige-modal').classList.add('active');
+    Sound.play('penanceUnlock');
+  }
+
+  function doPrestige() {
+    const p = loadProgress();
+    if (!isWeebjiPlus() || p.level < 100) return;
+    p.prestige  = (p.prestige || 0) + 1;
+    p.level     = 1;
+    p.xp        = 0;
+    localStorage.removeItem('weebji_prestige_ready');
+    saveProgress(p);
+    document.getElementById('prestige-modal').classList.remove('active');
+    updateStats(p); updateXPBar(p);
+    const badges = ['◈','◈◈','◈◈◈','◈◈◈◈','◈◈◈◈◈'];
+    spawnDropBanner(`${badges[Math.min(p.prestige - 1, 4)]} PRESTIGE ${p.prestige} — The System resets. The path is harder now.`);
+    Sound.play('milestone');
+    SystemVoice.say(`Prestige ${p.prestige}. The System has reset your rank. Climb again — harder.`);
+    if (typeof posthog !== 'undefined') posthog.capture('prestige', { prestige: p.prestige });
+  }
+
+  document.getElementById('prestige-confirm-btn').addEventListener('click', () => doPrestige());
+  document.getElementById('prestige-cancel-btn').addEventListener('click', () => {
+    document.getElementById('prestige-modal').classList.remove('active');
+  });
+
+  /* ══ SHADOW RIVAL SYSTEM ══════════════════════ */
+  function setRival(userId, displayName) {
+    localStorage.setItem('weebji_rival_id',   userId);
+    localStorage.setItem('weebji_rival_name', displayName);
+    localStorage.removeItem('weebji_rival_streak');
+    localStorage.removeItem('weebji_rival_cached_at');
+    spawnDropBanner(`⚔ RIVAL SET — ${displayName} — The hunt begins`);
+    Sound.play('tap');
+    refreshRival();
+  }
+
+  async function refreshRival() {
+    const rivalId = localStorage.getItem('weebji_rival_id');
+    if (!rivalId) return;
+    const cachedAt = parseInt(localStorage.getItem('weebji_rival_cached_at') || '0');
+    if (Date.now() - cachedAt < 5 * 60 * 1000) return; // 5-min cache
+    try {
+      const client = SupabaseSync._client ? SupabaseSync._client() : null;
+      if (!client) return;
+      const { data } = await client.from('leaderboard').select('streak,display_name').eq('user_id', rivalId).maybeSingle();
+      if (data) {
+        localStorage.setItem('weebji_rival_streak',    String(data.streak || 0));
+        localStorage.setItem('weebji_rival_name',      data.display_name || localStorage.getItem('weebji_rival_name') || 'Rival');
+        localStorage.setItem('weebji_rival_cached_at', String(Date.now()));
+        // Re-render rival line with fresh data
+        const p = loadProgress();
+        updateRivalLine(p);
+      }
+    } catch(_) {}
+  }
+
+  function updateRivalLine(p) {
+    const rivalEl = document.getElementById('rival-line');
+    if (!rivalEl) return;
+    const rivalId     = localStorage.getItem('weebji_rival_id');
+    const rivalName   = localStorage.getItem('weebji_rival_name');
+    const rivalStreak = parseInt(localStorage.getItem('weebji_rival_streak') || '-1');
+    if (isWeebjiPlus() && rivalId && rivalName) {
+      const myStreak = p.streak || 0;
+      const diff = myStreak - rivalStreak;
+      const statusColor = diff > 0 ? '#00F5FF' : diff < 0 ? '#FF3333' : '#888888';
+      const statusText  = diff > 0 ? `+${diff}d ahead` : diff < 0 ? `${diff}d behind` : 'tied';
+      rivalEl.innerHTML = `<span class="rival-plus">⚔ RIVAL: <strong style="color:${statusColor}">${rivalName}</strong> — ${rivalStreak >= 0 ? rivalStreak + 'd' : '…'} <span style="color:${statusColor};font-size:9px">(${statusText})</span></span>`;
+      rivalEl.style.color = '';
+      rivalEl.style.fontStyle = '';
+      rivalEl.classList.remove('hidden');
+    } else if (isWeebjiPlus() && !rivalId) {
+      rivalEl.innerHTML = `<span class="rival-set-prompt" onclick="showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-leaderboard')?.scrollIntoView({behavior:'smooth'}),200)">⚔ Set a rival from the leaderboard →</span>`;
+      rivalEl.classList.remove('hidden');
+    } else {
+      // Free user — show own best streak as before
+      if (p.bestStreak > 0) {
+        const isAtPeak = p.streak > 0 && p.streak >= p.bestStreak;
+        rivalEl.innerHTML = isAtPeak ? `⟶ RIVAL: You're at your peak — <em>${p.streak}d</em>.` : `⟶ RIVAL: You at your best — <em>${p.bestStreak}d</em>. Beat it.`;
+        rivalEl.style.color = ''; rivalEl.style.fontStyle = '';
+        rivalEl.classList.remove('hidden');
+      } else {
+        rivalEl.classList.add('hidden');
+      }
+    }
+  }
 
   /* ══ PENANCE PROTOCOL ════════════════════════ */
   function triggerPenanceProtocol(p) {
@@ -9495,6 +9641,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           shadowSlayerEarned: p.shadowSlayerEarned,
           customWorkouts: JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]'),
           penanceActive: localStorage.getItem('weebji_penance_active') === '1',
+          prestige: p.prestige || 0,
           playerName: localStorage.getItem('weebji_name') || null,
           playerClass: localStorage.getItem('weebji_class') || null,
           playerColor: localStorage.getItem('weebji_color') || null,

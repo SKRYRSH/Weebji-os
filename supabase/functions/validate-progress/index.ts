@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     // Get current DB state to validate against
     const { data: cur } = await supabase
       .from('progress')
-      .select('level,xp,streak,best_streak,ghost_tokens,total_study_mins,total_workout_days,hp,updated_at')
+      .select('level,xp,streak,best_streak,ghost_tokens,total_study_mins,total_workout_days,hp,updated_at,data')
       .eq('user_id', user.id)
       .single();
 
@@ -74,14 +74,27 @@ Deno.serve(async (req) => {
     let vLevel = level, vXp = xp, vStreak = streak, vBest = bestStreak;
     let vGhost = ghostTokens, vStudy = studyMins, vWorkout = workoutDays;
 
+    // Sanitise data blob — cap customWorkouts server-side (M11)
+    const safeData = inc.data || {};
+    if (Array.isArray(safeData.customWorkouts) && safeData.customWorkouts.length > 20) {
+      safeData.customWorkouts = safeData.customWorkouts.slice(0, 20);
+    }
+
     if (cur) {
       const cL = cur.level || 1;
       const cX = cur.xp   || 0;
       const cS = cur.streak || 0;
 
-      // Level: max +1 per push, never decrease
-      if (level > cL + 1) { violations.push('level_jump'); vLevel = cL + 1; }
-      vLevel = Math.max(vLevel, cL);
+      // Prestige: allow level reset from 100→1 when prestige count increases
+      const incomingPrestige = parseInt(safeData.prestige) || 0;
+      const currentPrestige  = parseInt((cur.data as Record<string,unknown>)?.prestige as string) || 0;
+      const isPrestige = incomingPrestige === currentPrestige + 1 && cL >= 100 && level === 1;
+
+      // Level: max +1 per push, never decrease (unless prestige)
+      if (!isPrestige) {
+        if (level > cL + 1) { violations.push('level_jump'); vLevel = cL + 1; }
+        vLevel = Math.max(vLevel, cL);
+      }
 
       // XP: cap gain per push (reset to 0 on level-up is fine)
       if (level <= cL && xp > cX + MAX_XP_PER_PUSH) {
@@ -103,12 +116,6 @@ Deno.serve(async (req) => {
         violations.push('ghost_jump');
         vGhost = cG + MAX_GHOST_REFILL;
       }
-    }
-
-    // Sanitise data blob — cap customWorkouts server-side (M11)
-    const safeData = inc.data || {};
-    if (Array.isArray(safeData.customWorkouts) && safeData.customWorkouts.length > 20) {
-      safeData.customWorkouts = safeData.customWorkouts.slice(0, 20);
     }
 
     // Write validated progress

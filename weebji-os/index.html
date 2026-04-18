@@ -419,8 +419,11 @@
   .prestige__confirm { width:100%; padding:16px; border-radius:12px; border:1px solid rgba(255,215,0,0.5); background:rgba(255,215,0,0.07); font-family:'Cinzel',serif; font-size:13px; font-weight:700; letter-spacing:0.18em; color:#FFD700; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:background 0.2s; }
   .prestige__confirm:active { background:rgba(255,215,0,0.15); }
   .prestige__cancel { background:transparent; border:none; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#444433; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  /* ══ PRESTIGE PIP (dashboard level badge) ═══ */
+  .prestige-pip { display:inline-flex; align-items:center; gap:2px; background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.4); border-radius:5px; padding:1px 6px; margin-left:5px; font-family:'Cinzel',serif; font-size:9px; font-weight:900; letter-spacing:0.14em; color:#FFD700; text-shadow:0 0 8px rgba(255,215,0,0.8); animation:kf-prestige-glow 3s ease-in-out infinite; vertical-align:middle; white-space:nowrap; }
+  @keyframes kf-prestige-glow { 0%,100% { box-shadow:0 0 4px rgba(255,215,0,0.15),0 0 10px rgba(255,215,0,0.06); } 50% { box-shadow:0 0 10px rgba(255,215,0,0.5),0 0 22px rgba(255,215,0,0.18); } }
   /* ══ RIVAL STYLES ════════════════════════════ */
-  .rival-plus { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; line-height:1.6; }
+  .rival-plus { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; line-height:1.6; color:rgba(255,255,255,0.45); }
   .rival-set-prompt { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(139,92,246,0.6); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
   .lb-rival-btn { background:transparent; border:1px solid rgba(139,92,246,0.3); border-radius:6px; padding:3px 8px; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.1em; color:rgba(139,92,246,0.7); cursor:pointer; margin-left:6px; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
   .lb-rival-btn:active { background:rgba(139,92,246,0.15); }
@@ -2780,6 +2783,8 @@
               <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,210,60,0.45);line-height:1.4;">
                 <li>◆ System Voice narrator</li>
                 <li>◆ Weekly Dungeon bosses</li>
+                <li>◆ ◈ Prestige (Level 100 reset)</li>
+                <li>◆ Shadow Rival tracking</li>
                 <li>◆ Friend Battles (XP wars)</li>
                 <li>◆ 5 Ghost Tokens/month</li>
                 <li>◆ Deep Analytics &amp; charts</li>
@@ -3371,6 +3376,8 @@
 
     const features = [
       { icon: '⚔', title: 'Weekly Dungeon', desc: 'Mon→Sun boss fights. Defeat them to earn exclusive titles no one else can get.' },
+      { icon: '◈', title: 'Prestige System', desc: 'Hit Level 100 and reset — harder. Each prestige earns a ◈ badge. Free hunters stay capped.' },
+      { icon: '👥', title: 'Shadow Rival', desc: 'Lock onto a leaderboard rival. Their streak shows on your dashboard every day. Chase or be chased.' },
       { icon: '⚡', title: 'Friend Battles', desc: '7-day head-to-head XP wars. Winner earns XP + "Defeated Their Shadow" title.' },
       { icon: '🗣', title: 'System Voice', desc: 'The AI narrator speaks to you by name. References your streak, class, enemy.' },
       { icon: '👻', title: '5 Ghost Tokens/month', desc: 'Save your streak on days you can\'t. Free tier gets 1. Plus gets 5 — every month, no rollover.' },
@@ -3380,7 +3387,7 @@
 
     el.innerHTML = `<div class="premium-hype">
       <div class="premium-hype__eyebrow">◈ System Restrictions Active</div>
-      <div class="premium-hype__title">6 Features Sealed From You</div>
+      <div class="premium-hype__title">8 Features Sealed From You</div>
       <div class="premium-hype__sub">Every day you wait, other hunters are pulling ahead using tools you don't have access to.</div>
       <div class="premium-hype__features">
         ${features.map(f => `<div class="premium-hype__feature">
@@ -6505,17 +6512,16 @@
 
   /* ══ XP / LEVEL / STATS ══════════════════════ */
   function xpForLevel(level, prestige) {
-    let base;
-    if (level <= 5)  base = 100;
-    else if (level <= 10) base = 175;
-    else if (level <= 20) base = 300;
-    else if (level <= 35) base = 500;
-    else if (level <= 50) base = 750;
-    else if (level <= 65) base = 1100;
-    else if (level <= 80) base = 1600;
-    else if (level <= 90) base = 2200;
-    else base = 3000;
-    return Math.round(base * Math.pow(1.25, prestige || 0));
+    const eff = Math.min(level + (prestige || 0) * 45, 100);
+    if (eff <= 5)  return 100;
+    if (eff <= 10) return 175;
+    if (eff <= 20) return 300;
+    if (eff <= 35) return 500;
+    if (eff <= 50) return 750;
+    if (eff <= 65) return 1100;
+    if (eff <= 80) return 1600;
+    if (eff <= 90) return 2200;
+    return 3000;
   }
 
   function checkLevelUp(p) {
@@ -6591,8 +6597,8 @@
     // Prestige badge next to level
     const lvlEl = document.getElementById('stat-level');
     if (lvlEl && p.prestige > 0) {
-      const badges = ['◈','◈◈','◈◈◈','◈◈◈◈','◈◈◈◈◈'];
-      lvlEl.innerHTML = `${p.level} <span style="color:#FFD700;font-size:10px;vertical-align:middle">${badges[Math.min(p.prestige-1,4)]}</span>`;
+      const roman = ['I','II','III','IV','V'];
+      lvlEl.innerHTML = `${p.level} <span class="prestige-pip">◈ ${roman[Math.min(p.prestige-1,4)]}</span>`;
     }
   }
 
@@ -7404,6 +7410,8 @@
       const rri = parseInt(rColor.slice(1,3),16), rgi = parseInt(rColor.slice(3,5),16), rbi = parseInt(rColor.slice(5,7),16);
       const rrb = `${rri},${rgi},${rbi}`;
       const plusBadge = r.is_plus ? `<span style="color:#FFD700;font-size:9px;margin-left:4px;opacity:0.8" title="WEEBJI+">◆</span>` : '';
+      const _roman = ['I','II','III','IV','V'];
+      const prestigeBadge = r.prestige > 0 ? `<span style="color:#FFD700;font-size:8px;margin-left:3px;opacity:0.75" title="Prestige ${_roman[Math.min(r.prestige-1,4)]}">◈${_roman[Math.min(r.prestige-1,4)]}</span>` : '';
       const rankGlyph = ['▲','▲','▲'];
       const isCurrentRival = localStorage.getItem('weebji_rival_id') === r.user_id;
       const rivalBtn = (!isYou && isWeebjiPlus())
@@ -7411,7 +7419,7 @@
         : '';
       return `<div class="lb-row${isYou ? ' is-you' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}">
         <span class="lb-rank" style="color:${rank<=3 ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
-        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${_esc(r.display_name)}</span>` : _esc(r.display_name)}${plusBadge}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${parseInt(r.hunter_number)||''}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${_esc(r.dungeon_title)}</span>` : ''}${rivalBtn}</span>
+        <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${_esc(r.display_name)}</span>` : _esc(r.display_name)}${plusBadge}${prestigeBadge}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${parseInt(r.hunter_number)||''}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${_esc(r.dungeon_title)}</span>` : ''}${rivalBtn}</span>
         <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.streak || 0}<span style="font-size:11px;opacity:0.5"> days</span>${r.best_streak > (r.streak||0) ? `<span style="display:block;font-size:9px;opacity:0.4;letter-spacing:0.08em">best ${r.best_streak}</span>` : ''}</span>
       </div>`;
     }
@@ -8097,7 +8105,9 @@
     }
     ctx.font = '700 26px "JetBrains Mono", monospace';
     ctx.fillStyle = color;
-    ctx.fillText(`LVL ${p.level}  ${tierInfo.rank}-RANK`, W-68, plus ? 176 : 112);
+    const _prestigeRoman = ['I','II','III','IV','V'];
+    const _prestigeSuffix = p.prestige > 0 ? '  ◈ ' + _prestigeRoman[Math.min(p.prestige-1,4)] : '';
+    ctx.fillText(`LVL ${p.level}${_prestigeSuffix}  ${tierInfo.rank}-RANK`, W-68, plus ? 176 : 112);
     ctx.beginPath(); ctx.moveTo(68, plus ? 196 : 136); ctx.lineTo(W-68, plus ? 196 : 136);
     ctx.strokeStyle = plus ? 'rgba(255,200,60,0.35)' : `rgba(${rgb},0.18)`; ctx.lineWidth = 1; ctx.stroke();
     if (plus) {
@@ -8455,10 +8465,10 @@
     if (!isWeebjiPlus()) { spawnDropBanner('◈ PRESTIGE requires WEEBJI+'); return; }
     if (p.level < 100)   { return; }
     const next = (p.prestige || 0) + 1;
-    const badges = ['◈','◈◈','◈◈◈','◈◈◈◈','◈◈◈◈◈'];
-    document.getElementById('prestige-badge-display').textContent = badges[Math.min(next - 1, 4)];
+    const roman = ['I','II','III','IV','V'];
+    document.getElementById('prestige-badge-display').textContent = '◈';
     document.getElementById('prestige-harder-text').textContent =
-      `Prestige ${next}: XP requirements ${Math.round((Math.pow(1.25, next) - 1) * 100)}% harder`;
+      `Prestige ${roman[Math.min(next-1,4)]}: Level 1 begins where Level ${Math.min(next*45+1,100)} once stood.`;
     document.getElementById('prestige-modal').classList.add('active');
     Sound.play('penanceUnlock');
   }
@@ -8473,8 +8483,8 @@
     saveProgress(p);
     document.getElementById('prestige-modal').classList.remove('active');
     updateStats(p); updateXPBar(p);
-    const badges = ['◈','◈◈','◈◈◈','◈◈◈◈','◈◈◈◈◈'];
-    spawnDropBanner(`${badges[Math.min(p.prestige - 1, 4)]} PRESTIGE ${p.prestige} — The System resets. The path is harder now.`);
+    const roman = ['I','II','III','IV','V'];
+    spawnDropBanner(`◈ PRESTIGE ${roman[Math.min(p.prestige-1,4)]} — The System resets. The path is harder now.`);
     Sound.play('milestone');
     SystemVoice.say(`Prestige ${p.prestige}. The System has reset your rank. Climb again — harder.`);
     if (typeof posthog !== 'undefined') posthog.capture('prestige', { prestige: p.prestige });
@@ -8871,7 +8881,8 @@ ${particles}
     const rankEl = document.getElementById('profile-avatar-rank');
     const tierEl = document.getElementById('profile-avatar-tier');
     if (scanEl) scanEl.style.color = color;
-    if (rankEl) { rankEl.textContent = `${rank}-RANK`; rankEl.style.color = color; rankEl.style.background = hexRgba(color, 0.12); rankEl.style.borderColor = hexRgba(color, 0.3); rankEl.style.textShadow = `0 0 10px ${hexRgba(color, 0.65)}`; }
+    const _p = loadProgress(); const _pRoman = ['I','II','III','IV','V']; const _pSuffix = _p.prestige > 0 ? ' ◈' + _pRoman[Math.min(_p.prestige-1,4)] : '';
+    if (rankEl) { rankEl.textContent = `${rank}-RANK${_pSuffix}`; rankEl.style.color = color; rankEl.style.background = hexRgba(color, 0.12); rankEl.style.borderColor = hexRgba(color, 0.3); rankEl.style.textShadow = `0 0 10px ${hexRgba(color, 0.65)}`; }
     if (tierEl) { tierEl.textContent = label; tierEl.style.color = color; }
     // Try loading JPEG avatar — fills card; fallback to SVG
     if (svgEl) {
@@ -9658,6 +9669,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           streak:        p.streak || 0,
           best_streak:   p.bestStreak || 0,
           is_plus:       premiumStatus,
+          prestige:      p.prestige || 0,
         };
         if (p.titles && p.titles.length) {
           const dungeonTitles = p.titles.filter(t => t.startsWith('dungeon_'));
@@ -9680,6 +9692,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
               ghost_tokens: p.ghostTokens,
               total_study_mins: p.totalStudyMins || 0,
               total_workout_days: p.totalWorkoutDays || 0,
+              prestige: p.prestige || 0,
               data: richData,
             },
             leaderboard: lbPayload,
@@ -9737,6 +9750,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
             const _pp = loadProgress(), _pcls = localStorage.getItem('weebji_class') || 'monarch';
             renderDungeonCard(); renderBattleCard(); renderPremiumHypeCard();
             renderSecondaryPillars(_pp, _pcls);
+            renderShadowCard(_pp, _pcls);
+            updateRivalLine(_pp); refreshRival();
           }
           if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
         }
@@ -9892,6 +9907,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
             const _pp = loadProgress(), _pcls = localStorage.getItem('weebji_class') || 'monarch';
             renderDungeonCard(); renderBattleCard(); renderPremiumHypeCard();
             renderSecondaryPillars(_pp, _pcls);
+            renderShadowCard(_pp, _pcls);
+            updateRivalLine(_pp); refreshRival();
           }
           if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
         }

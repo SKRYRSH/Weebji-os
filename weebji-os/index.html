@@ -548,6 +548,9 @@
   .lbox-b { bottom:0; }
   #levelup-overlay.active .lbox-t,
   #levelup-overlay.active .lbox-b { height:52px; }
+  .levelup__share { margin-top:18px; padding:10px 28px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.05); font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:0.2em; color:rgba(255,255,255,0.55); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; display:none; }
+  .levelup__share.visible { display:inline-block; animation:kf-lu-sharein 0.4s ease 2s both; }
+  @keyframes kf-lu-sharein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
   /* ══ CINEMATIC — INK WASH, GOD RAY, STREAK MILESTONE ══
      Canonical definitions are in the Cinematic Engine section below.
@@ -1709,6 +1712,7 @@
       <h2 class="levelup__title" id="levelup-title">LEVEL UP</h2>
       <p class="levelup__num" id="levelup-num">LVL 2</p>
       <p class="levelup__quote" id="levelup-quote">"The weak plateau. You ascend."</p>
+      <button class="levelup__share" id="levelup-share-btn" onclick="document.getElementById('levelup-overlay').classList.remove('active');setTimeout(showArcCard,200)">↗ Share your Arc</button>
     </div>
 
     <!-- Secret Title Unlock cinematic overlay -->
@@ -6816,6 +6820,10 @@
     shakeApp(1.2);
     const cx = luEl.offsetWidth / 2, cy = luEl.offsetHeight * 0.44;
     CinCanvas.ringBurst(cx, cy, color, 3);
+
+    // Show share button at every 5th level or tier change
+    const _shareBtn = document.getElementById('levelup-share-btn');
+    if (_shareBtn) _shareBtn.classList.toggle('visible', newLevel % 5 === 0 || newTier > oldTier);
 
     // t=60ms: overlay appears
     setTimeout(() => {

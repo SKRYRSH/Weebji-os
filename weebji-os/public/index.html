@@ -900,6 +900,14 @@
   .arc-act-share:active { transform: scale(0.96); }
   .arc-act-save { flex: 1; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; color: #555577; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
   .arc-act-close { padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; color: #333355; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #arc-title-picker { width: 100%; max-width: 320px; }
+  .arc-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .arc-title-row-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.28em; color: rgba(255,255,255,0.22); text-transform: uppercase; white-space: nowrap; }
+  .arc-title-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .arc-title-chip { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.08em; padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.025); color: rgba(255,255,255,0.38); cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+  .arc-title-chip.active { background: rgba(255,215,0,0.09); border-color: rgba(255,215,0,0.38); color: #FFD700; }
+  .arc-title-chip:active { transform: scale(0.95); }
+  .arc-title-none { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: rgba(255,255,255,0.18); font-style: italic; padding: 4px 0; }
 
   /* ══ CINEMATIC ENGINE — INK WASH ════════════ */
   @keyframes kf-ink-wash { 0% { clip-path: circle(0% at 50% 105%); opacity: 1; } 55% { opacity: 1; } 100% { clip-path: circle(160% at 50% 105%); opacity: 0; } }
@@ -1609,6 +1617,7 @@
         <div class="profile-stats" id="profile-stats"></div>
         <div class="profile-arc" id="profile-arc"></div>
         <div class="profile-titles" id="profile-titles"></div>
+        <button id="profile-share-arc-btn" style="display:none;width:100%;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:13px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.25em;color:rgba(255,255,255,0.4);text-transform:uppercase;cursor:pointer;-webkit-tap-highlight-color:transparent;" onclick="Sound.play('tap');showArcCard()">↗ Share Your Arc</button>
         <div class="profile-enemy hidden" id="profile-enemy">
           <div class="profile-enemy__label">Sworn Enemy</div>
           <div class="profile-enemy__text" id="profile-enemy-text"></div>
@@ -1771,6 +1780,12 @@
     <div id="arc-card-overlay">
       <div class="arc-card-wrap">
         <canvas id="arc-card-canvas"></canvas>
+      </div>
+      <div id="arc-title-picker">
+        <div class="arc-title-row">
+          <span class="arc-title-row-label">Featured Title</span>
+        </div>
+        <div class="arc-title-chips" id="arc-title-chips"></div>
       </div>
       <div class="arc-card-actions">
         <button class="arc-act-share" id="arc-act-share">Share</button>
@@ -4036,6 +4051,28 @@
     { id: 'pilgrim_path',      glyph: '☯', label: 'Path of the Pilgrim',   desc: 'All eight rituals, fourteen consecutive days. The Monk way is the only way.',      condition: (p,cls) => cls === 'monk' && p.monkGrid && p.monkGrid.length >= 14 },
     { id: 'shadow_slayer',     glyph: '👁', label: 'Shadow Slayer',         desc: 'Your shadow self could not keep up. You outran your own past.',                    condition: (p,_)   => !!p.shadowSlayerEarned },
   ];
+
+  const STREAK_TITLE_DEFS = {
+    streak_7_warrior:      { glyph: '🔥', label: '7-Day Warrior' },
+    streak_14_relentless:  { glyph: '⚡', label: 'The Relentless' },
+    streak_30_iron:        { glyph: '🔱', label: 'Iron Discipline' },
+    streak_60_persistent:  { glyph: '💎', label: 'The Persistent' },
+    streak_100_centurion:  { glyph: '👑', label: 'The Centurion' },
+    the_unbroken:          { glyph: '🔱', label: 'The Unbroken' },
+  };
+
+  function getTitleDef(id) {
+    const secret = SECRET_TITLES.find(t => t.id === id);
+    if (secret) return { glyph: secret.glyph, label: secret.label };
+    return STREAK_TITLE_DEFS[id] || null;
+  }
+
+  function getPickableTitles(p) {
+    return (p.titles || []).map(id => {
+      const def = getTitleDef(id);
+      return def ? { id, glyph: def.glyph, label: def.label } : null;
+    }).filter(Boolean);
+  }
 
   let _titleQueue   = [];
   let _titleBusy    = false;
@@ -7126,6 +7163,14 @@
         `<span class="profile-title-badge" style="color:#333355;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)">No titles yet — keep grinding</span>`;
     }
 
+    // Share Arc button
+    const shareArcBtn = document.getElementById('profile-share-arc-btn');
+    if (shareArcBtn) {
+      shareArcBtn.style.display = 'block';
+      shareArcBtn.style.color = hexRgba(color, 0.55);
+      shareArcBtn.style.borderColor = hexRgba(color, 0.15);
+    }
+
     // Enemy
     const enemyCard = document.getElementById('profile-enemy');
     if (enemy) {
@@ -7903,6 +7948,7 @@
     if (!p.titles) p.titles = [];
     if (!p.titles.includes(reward.title)) p.titles.push(reward.title);
     p.xp += reward.xp;
+    p.pinnedTitle = reward.title;
     const leveled = checkLevelUp(p);
     saveProgress(p);
     closeStreakRewardGate();
@@ -7911,6 +7957,7 @@
     WeebjPush.send('secret_title');
     SupabaseSync.pushProgress();
     spawnDropBanner(`◆  ${reward.display} — Title + ${reward.xp} XP claimed`);
+    setTimeout(() => showArcCard(), 600);
   }
 
   // 5. GHOST SHIMMER — silver sweep on ghost token use
@@ -8188,12 +8235,13 @@
     ctx.fillStyle = `rgba(${rgb},0.45)`;
     ctx.fillText(tierInfo.label.toUpperCase(), W/2, divY + 46);
 
-    // Secret titles — show best one large
-    const secretTitles = (p.titles || []).map(id => SECRET_TITLES.find(t => t.id === id)).filter(Boolean);
+    // Featured title — pinned by user, else last earned secret title
+    const allPickable = getPickableTitles(p);
+    const pinnedDef = p.pinnedTitle ? getTitleDef(p.pinnedTitle) : null;
+    const featuredTitle = pinnedDef || (allPickable.length ? allPickable[allPickable.length - 1] : null);
     const titlesY = divY + 96;
-    if (secretTitles.length > 0) {
-      const best = secretTitles[secretTitles.length - 1];
-      const titleText = `${best.glyph}  ${best.label.toUpperCase()}  ${best.glyph}`;
+    if (featuredTitle) {
+      const titleText = `${featuredTitle.glyph}  ${featuredTitle.label.toUpperCase()}  ${featuredTitle.glyph}`;
       ctx.font = `700 ${plus ? 48 : 32}px "Cinzel", serif`;
       ctx.fillStyle = plus ? '#FFD700' : `rgba(${rgb},0.7)`;
       if (plus) { ctx.shadowColor = 'rgba(255,215,0,0.95)'; ctx.shadowBlur = 32; }
@@ -8202,7 +8250,7 @@
     }
 
     // Streak
-    const streakTopY = titlesY + (secretTitles.length > 0 ? 80 : 26);
+    const streakTopY = titlesY + (featuredTitle ? 80 : 26);
     ctx.font = '500 30px "JetBrains Mono", monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillText('BEST STREAK', W/2, streakTopY);
@@ -8288,16 +8336,38 @@
     }
   }
 
+  function renderArcTitlePicker() {
+    const p = loadProgress();
+    const titles = getPickableTitles(p);
+    const chipsEl = document.getElementById('arc-title-chips');
+    if (!chipsEl) return;
+    if (!titles.length) {
+      chipsEl.innerHTML = `<span class="arc-title-none">No titles yet — keep grinding</span>`;
+      return;
+    }
+    chipsEl.innerHTML = titles.map(t =>
+      `<button class="arc-title-chip${p.pinnedTitle === t.id ? ' active' : ''}" onclick="pinTitle('${t.id}')">${t.glyph} ${t.label}</button>`
+    ).join('');
+  }
+
+  function pinTitle(id) {
+    const p = loadProgress();
+    p.pinnedTitle = (p.pinnedTitle === id) ? null : id;
+    saveProgress(p);
+    renderArcTitlePicker();
+    const canvas = document.getElementById('arc-card-canvas');
+    if (canvas) document.fonts.ready.then(() => drawArcCard(canvas));
+  }
+
   function showArcCard() {
     const overlay = document.getElementById('arc-card-overlay');
     const canvas  = document.getElementById('arc-card-canvas');
     const color   = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
-    // Color the share button to match class
     const shareBtn = document.getElementById('arc-act-share');
     shareBtn.style.color       = color;
     shareBtn.style.borderColor = hexRgba(color, 0.45);
     shareBtn.style.boxShadow   = `0 0 18px ${hexRgba(color, 0.15)}`;
-    // Wait for fonts then draw (async — avatar SVG needs image load)
+    renderArcTitlePicker();
     document.fonts.ready.then(() => {
       drawArcCard(canvas).then(() => overlay.classList.add('active'));
     });

@@ -478,8 +478,8 @@
   }
   @keyframes kf-lu-bloom { from { opacity:0; transform:scale(0.4); } to { opacity:1; transform:scale(1); } }
 
-  #levelup-overlay.active { pointer-events: all; animation: kf-lu-show 3.2s ease forwards; }
-  @keyframes kf-lu-show { 0% { opacity:0; } 4% { opacity:1; } 78% { opacity:1; } 100% { opacity:0; } }
+  #levelup-overlay.active { pointer-events: all; animation: kf-lu-show 0.4s ease forwards; opacity:1; }
+  @keyframes kf-lu-show { from { opacity:0; } to { opacity:1; } }
 
   /* Shockwave ring */
   .lu-shockwave {
@@ -549,8 +549,9 @@
   #levelup-overlay.active .lbox-t,
   #levelup-overlay.active .lbox-b { height:52px; }
   .levelup__share { margin-top:18px; padding:10px 28px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.05); font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:0.2em; color:rgba(255,255,255,0.55); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; display:none; }
-  .levelup__share.visible { display:inline-block; animation:kf-lu-sharein 0.4s ease 2s both; }
+  .levelup__share.visible { display:inline-block; animation:kf-lu-sharein 0.4s ease 0.6s both; }
   @keyframes kf-lu-sharein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  .levelup__tap { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.3em; color:rgba(255,255,255,0.2); text-transform:uppercase; margin-top:8px; animation:kf-lu-sharein 0.4s ease 1s both; }
 
   /* ══ CINEMATIC — INK WASH, GOD RAY, STREAK MILESTONE ══
      Canonical definitions are in the Cinematic Engine section below.
@@ -922,8 +923,10 @@
 
   /* ══ CINEMATIC ENGINE — STREAK MILESTONE ════ */
   #streak-milestone { position: absolute; inset: 0; z-index: 810; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; opacity: 0; }
-  #streak-milestone.active { animation: kf-smilestone 3.8s cubic-bezier(0.16,1,0.3,1) forwards; pointer-events: all; }
-  @keyframes kf-smilestone { 0% { opacity:0; transform:scale(0.9); } 10% { opacity:1; transform:scale(1); } 70% { opacity:1; } 100% { opacity:0; transform:scale(1.04); } }
+  #streak-milestone.active { animation: kf-smilestone 0.5s cubic-bezier(0.16,1,0.3,1) forwards; pointer-events: all; opacity:1; }
+  @keyframes kf-smilestone { 0% { opacity:0; transform:scale(0.9); } 100% { opacity:1; transform:scale(1); } }
+  .smilestone__tap { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.3em; color:rgba(255,215,0,0.35); text-transform:uppercase; animation:kf-smilestone-tap 1.4s ease 1.2s both; }
+  @keyframes kf-smilestone-tap { from{opacity:0} to{opacity:1} }
   .smilestone__bg { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 55% at 50% 40%, rgba(255,215,0,0.13) 0%, transparent 70%); pointer-events: none; }
   .smilestone__label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.4em; color: rgba(255,215,0,0.55); text-transform: uppercase; position: relative; z-index: 1; }
   .smilestone__num   { font-family: 'Cinzel', serif; font-size: clamp(80px,24vw,108px); font-weight: 900; color: #FFD700; text-shadow: 0 0 40px rgba(255,215,0,0.85), 0 0 100px rgba(255,215,0,0.3); position: relative; z-index: 1; line-height: 1; }
@@ -1722,6 +1725,7 @@
       <p class="levelup__num" id="levelup-num">LVL 2</p>
       <p class="levelup__quote" id="levelup-quote">"The weak plateau. You ascend."</p>
       <button class="levelup__share" id="levelup-share-btn" onclick="document.getElementById('levelup-overlay').classList.remove('active');setTimeout(showArcCard,200)">↗ Share your Arc</button>
+      <p class="levelup__tap">tap to continue</p>
     </div>
 
     <!-- Secret Title Unlock cinematic overlay -->
@@ -1742,6 +1746,7 @@
       <div class="smilestone__num"  id="smilestone-num">7</div>
       <p class="smilestone__days">DAYS</p>
       <p class="smilestone__quote" id="smilestone-quote"></p>
+      <p class="smilestone__tap">tap to continue</p>
     </div>
 
     <!-- Streak Reward Gate -->
@@ -2671,7 +2676,8 @@
           <span style="background:rgba(0,245,255,0.4)"></span>Forge
           <span style="background:rgba(255,34,51,0.4)"></span>Focus
           <span style="background:rgba(168,216,168,0.4)"></span>Rituals
-          <span style="background:rgba(255,200,50,0.55)"></span>2+ Classes
+          <span style="background:rgba(255,200,50,0.55)"></span>2 Classes
+          <span style="background:rgba(255,255,255,0.75)"></span>All 3
         </div>
         <div class="analytics-heatmap">${cells}</div>
         <div class="analytics-section-lbl" style="margin-top:16px">Focus Sessions — Last 14 Days</div>
@@ -6890,8 +6896,9 @@
     // Local notification
     WeebjPush.local('level_up', `LEVEL ${newLevel} ACHIEVED`, 'Evolution detected. The System has upgraded your rank.');
 
-    // Clean up
-    luEl.addEventListener('animationend', () => luEl.classList.remove('active'), { once: true });
+    // Tap anywhere to dismiss (share btn has its own handler)
+    const _dismissLU = (e) => { if (e.target.id === 'levelup-share-btn') return; luEl.classList.remove('active'); luEl.removeEventListener('click', _dismissLU); };
+    luEl.addEventListener('click', _dismissLU);
   }
 
   /* ══ PILLAR UNLOCK TOAST ══════════════════════ */
@@ -7891,18 +7898,19 @@
     const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
     CinCanvas.rain(70, '#FFD700');
     CinCanvas.burst(cx, cy, 20, '#FFD700', 8);
-    el.addEventListener('animationend', () => {
+    const STREAK_REWARDS = {
+      7:   { title: 'streak_7_warrior',    display: '7-DAY WARRIOR',    xp: 500  },
+      14:  { title: 'streak_14_relentless', display: 'THE RELENTLESS',   xp: 1000 },
+      30:  { title: 'streak_30_iron',      display: 'IRON DISCIPLINE',  xp: 2500 },
+      60:  { title: 'streak_60_persistent',display: 'THE PERSISTENT',   xp: 3000 },
+      100: { title: 'streak_100_centurion',display: 'THE CENTURION',    xp: 5000 },
+    };
+    const _dismissSM = () => {
       el.classList.remove('active');
-      // Show reward gate after cinematic if this streak has a Plus reward
-      const STREAK_REWARDS = {
-        7:   { title: 'streak_7_warrior',    display: '7-DAY WARRIOR',    xp: 500  },
-        14:  { title: 'streak_14_relentless', display: 'THE RELENTLESS',   xp: 1000 },
-        30:  { title: 'streak_30_iron',      display: 'IRON DISCIPLINE',  xp: 2500 },
-        60:  { title: 'streak_60_persistent',display: 'THE PERSISTENT',   xp: 3000 },
-        100: { title: 'streak_100_centurion',display: 'THE CENTURION',    xp: 5000 },
-      };
+      el.removeEventListener('click', _dismissSM);
       if (STREAK_REWARDS[streak]) showStreakRewardGate(streak, STREAK_REWARDS[streak]);
-    }, { once: true });
+    };
+    el.addEventListener('click', _dismissSM);
     // Phase 5: System Voice
     setTimeout(() => SystemVoice.onStreakMilestone(streak), 800);
     // Push notifications

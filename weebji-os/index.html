@@ -2382,11 +2382,12 @@
 
       // Yesterday's completion: check all class activity types
       const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length;
+      const originalStreak = p.streak || 0; // capture before any modification
 
       // Apply penalty/reward for yesterday
       if (p.lastDate) {
         if (yesterdayDone === 0) {
-          p.prevStreak = p.streak; // save for Ghost Token restoration
+          p.prevStreak = originalStreak; // save for Ghost Token restoration
           const hpFloor = p.level >= 5 ? 0 : 1;
           p.hp = Math.max(hpFloor, p.hp - 1);
           p.streak = 0;
@@ -2401,6 +2402,12 @@
       if (missedDays > 0) {
         const hpFloor = p.level >= 5 ? 0 : 1;
         p.hp = Math.max(hpFloor, p.hp - missedDays);
+        // If streak loss wasn't already flagged (user was active on last session but skipped days since),
+        // flag it now so ghost intervention triggers correctly
+        if (!p.streakLostToday && originalStreak > 0) {
+          p.prevStreak = originalStreak;
+          p.streakLostToday = true;
+        }
         p.streak = 0;
       }
 
@@ -9883,7 +9890,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
         }
         // HP, streak, tokens — always take cloud (authoritative for these)
         p.hp = Math.min(5, Math.max(0, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
-        if ((data.streak || 0) > (p.streak || 0)) p.streak = data.streak;
+        // Don't restore cloud streak when streak was legitimately lost this session
+        if (!p.streakLostToday && (data.streak || 0) > (p.streak || 0)) p.streak = data.streak;
         if ((data.best_streak || 0) > (p.bestStreak || 0)) p.bestStreak = data.best_streak;
         if (data.ghost_tokens != null) p.ghostTokens = data.ghost_tokens;
         if ((data.total_study_mins || 0) > (p.totalStudyMins || 0)) p.totalStudyMins = data.total_study_mins;
@@ -9928,9 +9936,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
             display_name:  resolvedName,
             class:         localStorage.getItem('weebji_class') || 'monarch',
             color:         localStorage.getItem('weebji_color') || '#00F5FF',
-            level:         data?.level       || 1,
-            streak:        data?.streak      || 0,
-            best_streak:   data?.best_streak || 0,
+            level:         p.level           || 1,
+            streak:        p.streak          || 0,
+            best_streak:   p.bestStreak      || 0,
             updated_at:    new Date().toISOString(),
           }, { onConflict: 'user_id' }).catch(e => console.warn('lb upsert:', e));
         }

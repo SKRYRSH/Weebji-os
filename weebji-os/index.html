@@ -396,6 +396,10 @@
   .nav-btn[data-tab="monk"].active svg  { color:#34D399!important; filter:drop-shadow(0 0 4px #34D399) drop-shadow(0 0 8px rgba(52,211,153,0.35))!important; }
   .nav-btn[data-tab="monk"].active span { color:#34D399!important; }
   .nav-btn[data-tab="monk"].active::after { background:#34D399!important; box-shadow:0 0 6px #34D399,0 0 14px rgba(52,211,153,0.4)!important; }
+  .pillar-quote { font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.12em; color:rgba(255,255,255,0.18); text-align:center; padding:2px 28px 14px; font-style:italic; line-height:1.7; }
+  .nav-btn[data-tab="monarch"].active svg  { color:#00F5FF!important; filter:drop-shadow(0 0 4px #00F5FF) drop-shadow(0 0 8px rgba(0,245,255,0.35))!important; }
+  .nav-btn[data-tab="monarch"].active span { color:#00F5FF!important; }
+  .nav-btn[data-tab="monarch"].active::after { background:#00F5FF!important; box-shadow:0 0 6px #00F5FF,0 0 14px rgba(0,245,255,0.4)!important; }
   /* Pillar panels */
   .pillar-panel { flex:1; min-height:0; overflow:hidden; display:none; flex-direction:column; }
   .pillar-locked-screen { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 28px 24px; text-align:center; position:relative; overflow:hidden; }
@@ -1603,6 +1607,8 @@
       <div id="mastermind-panel" class="pillar-panel"></div>
       <!-- Monk pillar panel -->
       <div id="monk-panel" class="pillar-panel"></div>
+      <!-- Monarch pillar panel -->
+      <div id="monarch-panel" class="pillar-panel"></div>
 
       <nav class="bottom-nav">
         <button class="nav-btn active" data-tab="home">
@@ -7087,14 +7093,38 @@
   });
 
   /* ══ BOTTOM NAV ══════════════════════════════ */
+  function _hidePillarPanels() {
+    ['mastermind-panel','monk-panel','monarch-panel'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+  }
+
   function _showDashHome() {
     document.querySelector('.dash-scroll').style.display = '';
-    document.getElementById('mastermind-panel').style.display = 'none';
-    document.getElementById('monk-panel').style.display = 'none';
+    _hidePillarPanels();
     const cls = localStorage.getItem('weebji_class') || 'monarch';
     const dashEl = document.getElementById('dashboard');
     dashEl.classList.remove('bg-monarch','bg-mastermind','bg-monk');
     dashEl.classList.add(`bg-${cls}`);
+  }
+
+  const _PILLAR_NAV = {
+    monarch:    { label:'Forge',   svg:'<path d="M6 12h12M3 8.5h3v7H3zM18 8.5h3v7h-3z"/>' },
+    mastermind: { label:'Mindset', svg:'<path d="M13 2L4 14h7l-2 8L19 10h-7z"/>' },
+    monk:       { label:'Monk',    svg:'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>' },
+  };
+
+  function _initPillarTabs() {
+    const cls = localStorage.getItem('weebji_class') || 'monarch';
+    const secondaries = ['monarch','mastermind','monk'].filter(c => c !== cls);
+    const tabs = document.querySelectorAll('.nav-btn:not([data-tab="home"]):not([data-tab="profile"])');
+    tabs.forEach((btn, i) => {
+      const key = secondaries[i];
+      const def = _PILLAR_NAV[key];
+      btn.dataset.tab = key;
+      btn.querySelector('span').textContent = def.label;
+      btn.querySelector('svg').innerHTML = def.svg;
+    });
   }
 
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -7110,16 +7140,23 @@
       btn.classList.add('active');
       if (tab === 'mastermind') {
         document.querySelector('.dash-scroll').style.display = 'none';
+        _hidePillarPanels();
         document.getElementById('mastermind-panel').style.display = 'flex';
-        document.getElementById('monk-panel').style.display = 'none';
         renderMastermindPillarPanel();
         return;
       }
       if (tab === 'monk') {
         document.querySelector('.dash-scroll').style.display = 'none';
-        document.getElementById('mastermind-panel').style.display = 'none';
+        _hidePillarPanels();
         document.getElementById('monk-panel').style.display = 'flex';
         renderMonkPillarPanel();
+        return;
+      }
+      if (tab === 'monarch') {
+        document.querySelector('.dash-scroll').style.display = 'none';
+        _hidePillarPanels();
+        document.getElementById('monarch-panel').style.display = 'flex';
+        renderMonarchPillarPanel();
         return;
       }
       // Home
@@ -7127,6 +7164,7 @@
       document.querySelector('.dash-scroll').scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
+  _initPillarTabs();
 
   function _setPillarBg(pillarCls) {
     const dashEl = document.getElementById('dashboard');
@@ -7175,6 +7213,7 @@
           <div class="pillar-panel-head__title" style="color:#FF2233;text-shadow:0 0 16px rgba(255,34,51,0.5);font-size:22px">THE WHITE ROOM</div>
           <div class="pillar-panel-head__sub" style="margin-top:6px">Mastermind Protocol</div>
         </div>
+        <div class="pillar-quote">${_pillarQuote('mastermind')}</div>
         <div class="pillar-stats-strip">
           <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
             <div class="pillar-stat__val" style="color:#FF2233">${p.mmSessions || 0}</div>
@@ -7236,6 +7275,7 @@
           <div class="pillar-panel-head__title" style="color:#34D399;text-shadow:0 0 16px rgba(52,211,153,0.5);font-size:22px">THE SANCTUARY</div>
           <div class="pillar-panel-head__sub" style="margin-top:6px">Monk Protocols</div>
         </div>
+        <div class="pillar-quote">${_pillarQuote('monk')}</div>
         <div class="pillar-stats-strip">
           <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
             <div class="pillar-stat__val" style="color:#34D399">${ritualsToday}/${MONK_RITUALS.length}</div>
@@ -7260,6 +7300,97 @@
       </div>`;
     renderMonthCalendar(panel.querySelector('#monk-cal-section'), p.monkGrid || [], false, '52,211,153', 'Monk Days');
     renderSecondaryMonk(p, panel.querySelector('#monk-panel-list'));
+  }
+
+  const _PILLAR_QUOTES = {
+    monarch: [
+      '"The weight does not care about your excuses."',
+      '"Iron breaks minds before it breaks bodies."',
+      '"Every rep is a vote for who you are becoming."',
+      '"Strength is not a goal. It is a language the weak cannot speak."',
+      '"The Forge does not build muscle. It builds character."',
+      '"What the body endures, the mind learns to trust."',
+    ],
+    mastermind: [
+      '"The mind is the weapon. Everything else is ammunition."',
+      '"Deep work is the superpower of a distracted generation."',
+      '"The White Room demands full presence. Nothing else will do."',
+      '"Clarity is not found. It is earned — one unbroken session at a time."',
+      '"Focus is the rarest currency in an age of noise."',
+      '"You are either building something real or consuming something empty."',
+    ],
+    monk: [
+      '"Stillness is not weakness. It is the storm\'s eye."',
+      '"The ritual is not what you do. It is who you become."',
+      '"Discipline without peace is a blade with no hilt."',
+      '"The Monk does not flee chaos. The Monk is untouched by it."',
+      '"What you practice in the Sanctuary shapes who you are in the arena."',
+      '"Peace is not the absence of pressure. It is armor against it."',
+    ],
+  };
+  function _pillarQuote(cls) {
+    const arr = _PILLAR_QUOTES[cls] || _PILLAR_QUOTES.monarch;
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function renderMonarchPillarPanel() {
+    const panel = document.getElementById('monarch-panel');
+    const cls = localStorage.getItem('weebji_class') || 'monarch';
+    const canAccess = cls === 'monarch' || isWeebjiPlus();
+    _setPillarBg('monarch');
+    if (!canAccess) {
+      panel.innerHTML = `
+        <div class="pillar-locked-screen">
+          <div class="pillar-locked-screen__glow" style="background:#00F5FF"></div>
+          <div class="pillar-locked-screen__sigil" style="color:#00F5FF;text-shadow:0 0 24px rgba(0,245,255,0.6)">⚔</div>
+          <div class="pillar-locked-screen__title" style="color:#00F5FF;text-shadow:0 0 20px rgba(0,245,255,0.4)">THE FORGE</div>
+          <div class="pillar-locked-screen__subtitle">MONARCH PROTOCOLS — SEALED</div>
+          <ul class="pillar-locked-screen__features">
+            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Full Workout Protocol</li>
+            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Forge Timer System</li>
+            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Gym + Home Modes</li>
+            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Personal Record Board</li>
+          </ul>
+          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(0,245,255,0.5);background:rgba(0,245,255,0.1);color:#00F5FF;text-shadow:0 0 12px rgba(0,245,255,0.4);box-shadow:0 0 20px rgba(0,245,255,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
+          <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>
+        </div>`;
+      return;
+    }
+    const p = loadProgress();
+    const monarchStreak = _calcGridStreak(p.monarchGrid);
+    const totalWorkoutDays = (p.monarchGrid||[]).length;
+    panel.innerHTML = `
+      <div class="pillar-panel-inner">
+        <div style="text-align:center;padding:52px 20px 8px">
+          <div style="font-size:36px;color:#00F5FF;text-shadow:0 0 28px rgba(0,245,255,0.6);margin-bottom:10px">⚔</div>
+          <div class="pillar-panel-head__title" style="color:#00F5FF;text-shadow:0 0 16px rgba(0,245,255,0.5);font-size:22px">THE FORGE</div>
+          <div class="pillar-panel-head__sub" style="margin-top:6px">Monarch Protocol</div>
+        </div>
+        <div class="pillar-quote">${_pillarQuote('monarch')}</div>
+        <div class="pillar-stats-strip">
+          <div class="pillar-stat" style="border-color:rgba(0,245,255,0.12)">
+            <div class="pillar-stat__val" style="color:#00F5FF">${p.workoutDone ? '✓' : (p.workoutChecked||[]).length}</div>
+            <div class="pillar-stat__lbl">Today</div>
+          </div>
+          <div class="pillar-stat" style="border-color:rgba(0,245,255,0.12)">
+            <div class="pillar-stat__val" style="color:#00F5FF">${monarchStreak}d</div>
+            <div class="pillar-stat__lbl">Streak</div>
+          </div>
+          <div class="pillar-stat" style="border-color:rgba(0,245,255,0.12)">
+            <div class="pillar-stat__val" style="color:#00F5FF">${totalWorkoutDays}</div>
+            <div class="pillar-stat__lbl">Days</div>
+          </div>
+        </div>
+        <div id="monarch-cal-section" class="dopamine-section" style="margin:0 16px 4px;padding-top:12px;border-top:1px solid rgba(0,245,255,0.08)"></div>
+        <div class="dash-card" style="border-color:rgba(0,245,255,0.2);box-shadow:0 0 20px rgba(0,245,255,0.06)">
+          <div class="dash-card__head">
+            <h3 class="dash-card__title" style="color:#00F5FF">WORKOUT</h3>
+          </div>
+          <div id="monarch-panel-list"></div>
+        </div>
+      </div>`;
+    renderMonthCalendar(panel.querySelector('#monarch-cal-section'), p.monarchGrid || [], !!p.workoutDone, '0,245,255', 'Forge Days');
+    renderSecondaryMonarch(p, panel.querySelector('#monarch-panel-list'));
   }
 
   /* ══ PHASE 3 — PROFILE ═══════════════════════ */

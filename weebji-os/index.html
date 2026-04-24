@@ -2500,7 +2500,16 @@
     saveShadowSnapshot(p);
     // Session D: Supabase cloud backup (fire-and-forget, offline-safe)
     // Skip if anticheat just fired — never upload reset data to cloud
-    if (typeof SupabaseSync !== 'undefined' && !_anticheatTriggered) SupabaseSync.pushProgress();
+    if (typeof SupabaseSync !== 'undefined' && !_anticheatTriggered) {
+      SupabaseSync.pushProgress().then(() => {
+        const profileScreen = document.getElementById('profile');
+        if (profileScreen && profileScreen.classList.contains('active')) {
+          const _c = localStorage.getItem('weebji_color') || '#00F5FF';
+          renderLeaderboard(_c);
+          if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(_c);
+        }
+      }).catch(() => {});
+    }
     if (typeof GuildSystem !== 'undefined' && !_anticheatTriggered) GuildSystem.syncMemberStats();
     _anticheatTriggered = false; // reset flag after save cycle
   }

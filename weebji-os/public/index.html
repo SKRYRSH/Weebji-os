@@ -2907,9 +2907,9 @@
       taunt_plus:'"I have broken stronger soldiers. Let us see if you are different."',
       img:'bosses/iron-warden.jpg',
       gates:[
-        { day:'Monday',   task:'Full workout + all 3 daily quests — open with everything.',   check: p => ((p.workoutChecked||[]).length>=4||p.workoutDone) && (p.questsChecked||[]).length>=3 },
-        { day:'Wednesday',task:'Log a single unbroken 75-minute focus session.',              check: p => Object.values(p.mmDaily||{}).some(v=>v>=75) },
-        { day:'Friday',   task:'All 3 quests + daily challenge + full workout today.',        check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && ((p.workoutChecked||[]).length>=3||p.workoutDone) },
+        { day:'Monday',   task:'Full workout + all 3 quests + 3-day active streak. Open with everything.',        check: p => ((p.workoutChecked||[]).length>=4||p.workoutDone) && (p.questsChecked||[]).length>=3 && (p.streak||0)>=3 },
+        { day:'Wednesday',task:'75-minute unbroken focus session + 3-day active streak.',                        check: p => Object.values(p.mmDaily||{}).some(v=>v>=75) && (p.streak||0)>=3 },
+        { day:'Friday',   task:'All 3 quests + daily challenge + full workout + 5-day active streak.',           check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.streak||0)>=5 },
       ],
       boss_task:'Full workout + 90-min focus + all 3 quests + active streak of 7+. The Warden accepts nothing less.',
       boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.questsChecked||[]).length>=3 && (p.streak||0)>=7,
@@ -2921,9 +2921,9 @@
       taunt_plus:'"Every great structure begins with a single decision. This is yours."',
       img:'bosses/void-architect.jpg',
       gates:[
-        { day:'Monday',   task:'All 3 daily quests + daily challenge — lay the foundation.',  check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
-        { day:'Wednesday',task:'Best streak of 14+ days in your history — prove you have done it before.', check: p => (p.bestStreak||0)>=14 },
-        { day:'Friday',   task:'Gym workout + daily challenge + 60-min focus today.',         check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=60) },
+        { day:'Monday',   task:'Workout + all 3 quests + daily challenge + 3-day active streak. Lay the foundation.', check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=3 },
+        { day:'Wednesday',task:'Best streak of 14+ days in your history + current streak 3+.',                    check: p => (p.bestStreak||0)>=14 && (p.streak||0)>=3 },
+        { day:'Friday',   task:'Gym workout + challenge + 60-min focus + 5-day active streak.',                   check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=60) && (p.streak||0)>=5 },
       ],
       boss_task:'Workout + all quests + daily challenge + active streak of 7+. Architects build on solid ground.',
       boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=7,
@@ -2935,9 +2935,9 @@
       taunt_plus:'"My throne was built on the bones of those who almost made it."',
       img:'bosses/hollow-king.jpg',
       gates:[
-        { day:'Monday',   task:'Workout + all quests + daily challenge — the King watches.',  check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
-        { day:'Wednesday',task:'Gym workout + all quests + daily challenge. No substitutes.', check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
-        { day:'Friday',   task:'180 total focus minutes logged this week — earn your throne.', check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=180 },
+        { day:'Monday',   task:'Workout + all quests + daily challenge + 5-day active streak. The King watches.',  check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=5 },
+        { day:'Wednesday',task:'Gym workout + all quests + challenge + 5-day active streak. No substitutes.',      check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=5 },
+        { day:'Friday',   task:'180 total focus minutes this week + 5-day active streak.',                         check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=180 && (p.streak||0)>=5 },
       ],
       boss_task:'Best streak of 21+ days in your history. The Hollow King bows only to those who have proven they never stop.',
       boss_check: p => (p.bestStreak||0)>=21,
@@ -2949,9 +2949,9 @@
       taunt_plus:'"I have waited lifetimes. A few more days will not break me. Can you say the same?"',
       img:'bosses/silent-sovereign.jpg',
       gates:[
-        { day:'Monday',   task:'Complete 7+ monk rituals today — silence demands perfection.',  check: p => (p.monkChecked||[]).length>=7 },
-        { day:'Wednesday',task:'Full workout + all quests + daily challenge + 45-min focus.',   check: p => (p.questsChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=45) },
-        { day:'Friday',   task:'Log a 90-minute unbroken focus session. Total silence.',        check: p => Object.values(p.mmDaily||{}).some(v=>v>=90) },
+        { day:'Monday',   task:'7+ monk rituals + 5-day active streak. Silence demands perfection.',               check: p => (p.monkChecked||[]).length>=7 && (p.streak||0)>=5 },
+        { day:'Wednesday',task:'Full workout + all quests + challenge + 45-min focus + 5-day active streak.',      check: p => (p.questsChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=45) && (p.streak||0)>=5 },
+        { day:'Friday',   task:'90-minute unbroken focus session + 5-day active streak. Total silence.',           check: p => Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=5 },
       ],
       boss_task:'6+ monk rituals + workout + all quests + 90-min focus + streak 7+. Every pillar. One day.',
       boss_check: p => (p.monkChecked||[]).length>=6 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=7,
@@ -2963,9 +2963,9 @@
       taunt_plus:'"I smell hesitation. Come closer. Let me cure you of it."',
       img:'bosses/crimson-beast.jpg',
       gates:[
-        { day:'Monday',   task:'Full workout + all 3 quests — beasts respect full effort only.', check: p => ((p.workoutChecked||[]).length>=4||p.workoutDone) && (p.questsChecked||[]).length>=3 },
-        { day:'Wednesday',task:'Best streak of 14+ days in your history — prove your record.',   check: p => (p.bestStreak||0)>=14 },
-        { day:'Friday',   task:'Daily challenge + all quests + workout + 60-min focus today.',   check: p => !!p.dailyChallengeDone && (p.questsChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && Object.values(p.mmDaily||{}).some(v=>v>=60) },
+        { day:'Monday',   task:'Full workout + all 3 quests + 30-min focus + 5-day active streak. Beasts demand more.', check: p => ((p.workoutChecked||[]).length>=4||p.workoutDone) && (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=30) && (p.streak||0)>=5 },
+        { day:'Wednesday',task:'Best streak of 14+ days in your history + current streak 5+.',                     check: p => (p.bestStreak||0)>=14 && (p.streak||0)>=5 },
+        { day:'Friday',   task:'Challenge + all quests + workout + 60-min focus + 5-day active streak.',           check: p => !!p.dailyChallengeDone && (p.questsChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && Object.values(p.mmDaily||{}).some(v=>v>=60) && (p.streak||0)>=5 },
       ],
       boss_task:'Workout + all quests + daily challenge + 60-min focus + active streak of 7+. Prove you are not prey.',
       boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=60) && (p.streak||0)>=7,
@@ -2977,9 +2977,9 @@
       taunt_plus:'"Stillness is not peace. It is control. Do you have it?"',
       img:'bosses/obsidian-monk.jpg',
       gates:[
-        { day:'Monday',   task:'Log a 90-minute focus session — total silence, no breaks.',    check: p => Object.values(p.mmDaily||{}).some(v=>v>=90) },
-        { day:'Wednesday',task:'All quests + 6+ monk rituals + daily challenge today.',        check: p => (p.questsChecked||[]).length>=3 && (p.monkChecked||[]).length>=6 && !!p.dailyChallengeDone },
-        { day:'Friday',   task:'Best streak of 30+ days — stillness compounds over time.',     check: p => (p.bestStreak||0)>=30 },
+        { day:'Monday',   task:'90-minute focus session + 5-day active streak. Total silence, no breaks.',         check: p => Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=5 },
+        { day:'Wednesday',task:'All quests + 6+ monk rituals + daily challenge + 5-day active streak.',            check: p => (p.questsChecked||[]).length>=3 && (p.monkChecked||[]).length>=6 && !!p.dailyChallengeDone && (p.streak||0)>=5 },
+        { day:'Friday',   task:'Best streak of 30+ days in your history + current streak 5+.',                     check: p => (p.bestStreak||0)>=30 && (p.streak||0)>=5 },
       ],
       boss_task:'200 minutes of total focus this week + full workout. The mind and body are one battlefield.',
       boss_check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=200 && ((p.workoutChecked||[]).length>=3||p.workoutDone),
@@ -2991,9 +2991,9 @@
       taunt_plus:'"I have already diagnosed your weakness. The question is — will you let me cut it out?"',
       img:'bosses/plague-doctor.jpg',
       gates:[
-        { day:'Monday',   task:'Full workout + all 3 quests + daily challenge today.',        check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
-        { day:'Wednesday',task:'All quests + 60-min focus + daily challenge today.',          check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=60) && !!p.dailyChallengeDone },
-        { day:'Friday',   task:'Active streak of 7+ days — no gaps, no mercy.',              check: p => (p.streak||0)>=7 },
+        { day:'Monday',   task:'Full workout + all 3 quests + challenge + 5-day active streak.',                   check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=5 },
+        { day:'Wednesday',task:'All quests + 60-min focus + challenge + 5-day active streak.',                     check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=60) && !!p.dailyChallengeDone && (p.streak||0)>=5 },
+        { day:'Friday',   task:'Active streak of 7+ days — no gaps, no mercy.',                                    check: p => (p.streak||0)>=7 },
       ],
       boss_task:'Best streak 14+ in your history + workout + all quests + challenge. The Doctor demands proof, not promises.',
       boss_check: p => (p.bestStreak||0)>=14 && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone,
@@ -3005,9 +3005,9 @@
       taunt_plus:'"I was forged in fire that consumed everything around me. Show me you were too."',
       img:'bosses/ashen-titan.jpg',
       gates:[
-        { day:'Monday',   task:'Gym workout + all 3 quests — titans carry the full load.',    check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 },
-        { day:'Wednesday',task:'All quests + daily challenge + 90-min focus. Ash needs heat.', check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=90) },
-        { day:'Friday',   task:'120 total focus minutes this week + all quests today.',        check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=120 && (p.questsChecked||[]).length>=3 },
+        { day:'Monday',   task:'Gym workout + all 3 quests + 5-day active streak. Titans carry the full load.',    check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && (p.streak||0)>=5 },
+        { day:'Wednesday',task:'All quests + challenge + 90-min focus + 5-day active streak. Ash needs heat.',     check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=5 },
+        { day:'Friday',   task:'120 total focus minutes this week + all quests today + 5-day active streak.',      check: p => Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=120 && (p.questsChecked||[]).length>=3 && (p.streak||0)>=5 },
       ],
       boss_task:'Gym workout + 150-min total focus this week + all quests + daily challenge. Titans are forged, not born.',
       boss_check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutDone) && Object.values(p.mmDaily||{}).reduce((a,b)=>a+b,0)>=150 && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone,
@@ -3019,9 +3019,9 @@
       taunt_plus:'"Every crack in this mirror is a lie you told yourself. I remember all of them."',
       img:'bosses/fractured-mirror.jpg',
       gates:[
-        { day:'Monday',   task:'All 3 daily quests + daily challenge — face yourself fully.',  check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
-        { day:'Wednesday',task:'Full workout + 5+ monk rituals + 60-min focus today.',         check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.monkChecked||[]).length>=5 && Object.values(p.mmDaily||{}).some(v=>v>=60) },
-        { day:'Friday',   task:'Best streak of 21+ days in your history — the mirror sees all.',check: p => (p.bestStreak||0)>=21 },
+        { day:'Monday',   task:'Workout + all 3 quests + challenge + 7-day active streak. Face yourself fully.',   check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=7 },
+        { day:'Wednesday',task:'Full workout + 5+ monk rituals + 60-min focus + 7-day active streak.',             check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.monkChecked||[]).length>=5 && Object.values(p.mmDaily||{}).some(v=>v>=60) && (p.streak||0)>=7 },
+        { day:'Friday',   task:'Best streak of 21+ days + current streak 7+. The mirror sees all.',                check: p => (p.bestStreak||0)>=21 && (p.streak||0)>=7 },
       ],
       boss_task:'Workout + all quests + challenge + 90-min focus + best streak 14+ in your history. No cracks allowed.',
       boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.bestStreak||0)>=14,
@@ -3033,9 +3033,9 @@
       taunt_plus:'"You have made it further than most. Now comes the part where they all quit."',
       img:'bosses/eternal-hunter.jpg',
       gates:[
-        { day:'Monday',   task:'Full workout + all quests + challenge — the hunt opens fully.', check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone },
-        { day:'Wednesday',task:'All quests + 90-min focus + daily challenge — no cutting short.', check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=90) && !!p.dailyChallengeDone },
-        { day:'Friday',   task:'Best streak of 14+ days in your history. The hunt does not forgive gaps.', check: p => (p.bestStreak||0)>=14 },
+        { day:'Monday',   task:'Full workout + all quests + challenge + 7-day active streak. The hunt opens fully.',  check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=7 },
+        { day:'Wednesday',task:'All quests + 90-min focus + challenge + 7-day active streak. No cutting short.',      check: p => (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=90) && !!p.dailyChallengeDone && (p.streak||0)>=7 },
+        { day:'Friday',   task:'Best streak of 14+ days + current streak 7+. The hunt does not forgive gaps.',        check: p => (p.bestStreak||0)>=14 && (p.streak||0)>=7 },
       ],
       boss_task:'The final hunt — workout, all quests, challenge, 90-min focus, streak 7+, best streak 30+. Everything.',
       boss_check: p => ((p.workoutChecked||[]).length>=3||p.workoutDone) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=7 && (p.bestStreak||0)>=30,
@@ -3261,7 +3261,7 @@
         saveProgress(p);
         if (leveled) triggerLevelUp(p.level);
         Sound.play('levelUp');
-        SystemVoice.speak(`${dungeon.boss} has fallen. The System records your name, Hunter.`);
+        SystemVoice.onBossDefeat();
         renderDungeonCard();
         updateXPBar(p);
       });
@@ -8778,7 +8778,7 @@
     const roman = ['I','II','III','IV','V'];
     spawnDropBanner(`◈ PRESTIGE ${roman[Math.min(p.prestige-1,4)]} — The System resets. The path is harder now.`);
     Sound.play('milestone');
-    SystemVoice.say(`Prestige ${p.prestige}. The System has reset your rank. Climb again — harder.`);
+    SystemVoice.onPrestige();
     if (typeof posthog !== 'undefined') posthog.capture('prestige', { prestige: p.prestige });
   }
 
@@ -8929,7 +8929,7 @@
         // Refresh dashboard so streak/HP show correctly after penance
         const _pp = loadProgress();
         updateStats(_pp); updateXPBar(_pp);
-        SystemVoice.say('You returned. The System acknowledges your resolve.');
+        SystemVoice.onReturnAfterGap();
       }, 900);
     }
   });
@@ -9399,6 +9399,36 @@ ${particles}
         ['S-Rank HP degradation detected.', 'You are not supposed to be here. Neither is your HP.'],
         ['The transcendent do not break.', 'And yet here we are. Fix this. Now.'],
       ],
+      bossDefeat: [
+        ['Boss eliminated.', 'Rank update recorded.'],
+        ['Target neutralized.', 'The System acknowledges your victory.'],
+        ['Combat concluded.', 'You exceeded the expected parameters.'],
+        ['Boss defeated.', 'Few hunters reach this point. You are one of them.'],
+        ['The boss has fallen.', 'The System does not give these victories often. This was earned.'],
+        ['Combat record updated.', 'This kill has been flagged. You are advancing into territory few ever reach.'],
+        ['An S-Rank boss defeated.', 'The System has been tracking you for a long time. This was expected. Eventually.'],
+        ['The strongest target in the registry has been eliminated.', 'You were not supposed to be here. And yet.'],
+      ],
+      prestige: [
+        ['Prestige initiated.', 'Rank reset. Climb again.'],
+        ['System reset confirmed.', 'Your arc continues. Higher this time.'],
+        ['Prestige logged.', 'The System has reset the ceiling. You are the reason.'],
+        ['You have chosen to begin again.', 'This is not weakness. This is the hunter\'s way.'],
+        ['Prestige registered.', 'The System has seen fewer than 1% of hunters reach this point. You are now among them.'],
+        ['You climbed to the peak and chose to climb again.', 'The System did not anticipate this. It is recalibrating.'],
+        ['Prestige recorded at S-Rank.', 'You are rewriting the parameters of what this System thought possible.'],
+        ['You have transcended the original design of this System.', 'There is no blueprint for what you are becoming.'],
+      ],
+      returnAfterGap: [
+        ['System resuming.', 'Absence logged. Welcome back.'],
+        ['You returned.', 'The System acknowledges your resolve.'],
+        ['Absence noted.', 'But absence ends. You are here now. That is what matters.'],
+        ['The System detected a gap.', 'It also detected your return. Both have been logged.'],
+        ['Most do not come back after a gap like that.', 'You are not most.'],
+        ['Absence at this level is expensive.', 'Your return at this level is rarer still. Begin.'],
+        ['An S-Rank hunter returned from absence.', 'The System had not written you off. It was waiting.'],
+        ['You left. You came back.', 'The System has observed this pattern before — only in the ones who eventually become something unprecedented.'],
+      ],
     };
 
     function isEnabled() {
@@ -9540,13 +9570,28 @@ ${particles}
       speak(_pick(LINES.criticalDrop[t]), t);
     }
 
+    function onBossDefeat() {
+      const t = _currentTier();
+      speak(_pick(LINES.bossDefeat[t]), t);
+    }
+
+    function onPrestige() {
+      const t = _currentTier();
+      speak(_pick(LINES.prestige[t]), t);
+    }
+
+    function onReturnAfterGap() {
+      const t = _currentTier();
+      speak(_pick(LINES.returnAfterGap[t]), t);
+    }
+
     // Warm up speech voices (Chrome loads them async)
     if ('speechSynthesis' in window) {
       window.speechSynthesis.getVoices();
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
 
-    return { isEnabled, toggle, speak, greet, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop };
+    return { isEnabled, toggle, speak, greet, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
   })();
 
   /* ══ PHASE 5 — DASHBOARD EVOLUTION ═══════════ */

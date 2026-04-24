@@ -6650,8 +6650,14 @@
 
   function updateStats(p) {
     const prevStreakDisplay = parseInt(document.getElementById('stat-streak').textContent) || 0;
-    // Fire streak milestone cinematic on milestone days (only when streak increases)
-    if (p.streak > prevStreakDisplay && [7, 14, 30, 60, 100].includes(p.streak)) {
+    // Fire streak milestone cinematic — deduplicated via localStorage so it never shows twice for same milestone
+    const _msKey = 'weebji_milestones_seen';
+    const _msSeen = new Set(JSON.parse(localStorage.getItem(_msKey) || '[]'));
+    if (p.streak === 0) {
+      localStorage.removeItem(_msKey);
+    } else if (p.streak > prevStreakDisplay && [7, 14, 30, 60, 100].includes(p.streak) && !_msSeen.has(p.streak)) {
+      _msSeen.add(p.streak);
+      localStorage.setItem(_msKey, JSON.stringify([..._msSeen]));
       setTimeout(() => triggerStreakMilestone(p.streak), 400);
     }
     // Check streak-based secret titles on any streak update
@@ -7128,6 +7134,13 @@
     dashEl.classList.add(`bg-${pillarCls}`);
   }
 
+  function _calcGridStreak(grid) {
+    if (!grid || !grid.length) return 0;
+    const d = new Date(); let streak = 0;
+    while (grid.includes(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); }
+    return streak;
+  }
+
   function renderMastermindPillarPanel() {
     const panel = document.getElementById('mastermind-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
@@ -7153,6 +7166,8 @@
     }
     const p = loadProgress();
     const totalFocusMins = parseInt(localStorage.getItem('weebji_total_study_mins') || '0');
+    const focusStreak = _calcGridStreak(p.mmGrid);
+    const totalFocusHrs = Math.floor(totalFocusMins / 60);
     panel.innerHTML = `
       <div class="pillar-panel-inner">
         <div style="text-align:center;padding:52px 20px 8px">
@@ -7163,17 +7178,18 @@
         <div class="pillar-stats-strip">
           <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
             <div class="pillar-stat__val" style="color:#FF2233">${p.mmSessions || 0}</div>
-            <div class="pillar-stat__lbl">Today</div>
+            <div class="pillar-stat__lbl">Sessions</div>
           </div>
           <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
-            <div class="pillar-stat__val" style="color:#FF2233">${totalFocusMins}</div>
-            <div class="pillar-stat__lbl">Total Mins</div>
+            <div class="pillar-stat__val" style="color:#FF2233">${focusStreak}d</div>
+            <div class="pillar-stat__lbl">Streak</div>
           </div>
           <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
-            <div class="pillar-stat__val" style="color:#FF2233">${(p.mmGrid||[]).length}</div>
-            <div class="pillar-stat__lbl">Focus Days</div>
+            <div class="pillar-stat__val" style="color:#FF2233">${totalFocusHrs}h</div>
+            <div class="pillar-stat__lbl">Total</div>
           </div>
         </div>
+        <div id="mm-cal-section" class="dopamine-section" style="margin:0 16px 4px;padding-top:12px;border-top:1px solid rgba(255,34,51,0.08)"></div>
         <div class="dash-card" style="border-color:rgba(255,34,51,0.2);box-shadow:0 0 20px rgba(255,34,51,0.06)">
           <div class="dash-card__head">
             <h3 class="dash-card__title" style="color:#FF2233">SESSION</h3>
@@ -7181,6 +7197,7 @@
           <div id="mm-panel-list"></div>
         </div>
       </div>`;
+    renderMonthCalendar(panel.querySelector('#mm-cal-section'), p.mmGrid || [], p.mmSessions > 0, '255,34,51', 'Focus Days');
     renderSecondaryMastermind(p, panel.querySelector('#mm-panel-list'));
   }
 
@@ -7209,6 +7226,9 @@
     }
     const p = loadProgress();
     const totalMedMins = parseInt(localStorage.getItem('weebji_total_med_mins') || '0');
+    const monkStreak = _calcGridStreak(p.monkGrid);
+    const totalMedHrs = Math.floor(totalMedMins / 60);
+    const ritualsToday = (p.monkChecked || []).length;
     panel.innerHTML = `
       <div class="pillar-panel-inner">
         <div style="text-align:center;padding:52px 20px 8px">
@@ -7218,18 +7238,19 @@
         </div>
         <div class="pillar-stats-strip">
           <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
-            <div class="pillar-stat__val" style="color:#34D399">${totalMedMins}</div>
-            <div class="pillar-stat__lbl">Mins Med.</div>
+            <div class="pillar-stat__val" style="color:#34D399">${ritualsToday}/${MONK_RITUALS.length}</div>
+            <div class="pillar-stat__lbl">Today</div>
           </div>
           <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
-            <div class="pillar-stat__val" style="color:#34D399">${(p.monkGrid||[]).length}</div>
-            <div class="pillar-stat__lbl">Monk Days</div>
+            <div class="pillar-stat__val" style="color:#34D399">${monkStreak}d</div>
+            <div class="pillar-stat__lbl">Streak</div>
           </div>
           <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
-            <div class="pillar-stat__val" style="color:#34D399">${(p.monkChecked||[]).length}</div>
-            <div class="pillar-stat__lbl">Rituals</div>
+            <div class="pillar-stat__val" style="color:#34D399">${totalMedHrs}h</div>
+            <div class="pillar-stat__lbl">Total</div>
           </div>
         </div>
+        <div id="monk-cal-section" class="dopamine-section" style="margin:0 16px 4px;padding-top:12px;border-top:1px solid rgba(52,211,153,0.08)"></div>
         <div class="dash-card" style="border-color:rgba(52,211,153,0.2);box-shadow:0 0 20px rgba(52,211,153,0.06)">
           <div class="dash-card__head">
             <h3 class="dash-card__title" style="color:#34D399">SESSION</h3>
@@ -7237,6 +7258,7 @@
           <div id="monk-panel-list"></div>
         </div>
       </div>`;
+    renderMonthCalendar(panel.querySelector('#monk-cal-section'), p.monkGrid || [], false, '52,211,153', 'Monk Days');
     renderSecondaryMonk(p, panel.querySelector('#monk-panel-list'));
   }
 

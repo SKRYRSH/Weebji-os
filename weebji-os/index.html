@@ -413,6 +413,11 @@
   .pillar-panel-head { padding:52px 20px 12px; flex-shrink:0; }
   .pillar-panel-head__title { font-family:'Cinzel',serif; font-size:18px; font-weight:700; letter-spacing:0.12em; margin:0 0 2px; }
   .pillar-panel-head__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.25em; opacity:0.4; }
+  #secondary-pillars { display:none !important; }
+  .pillar-stats-strip { display:flex; gap:12px; margin:16px 0 20px; }
+  .pillar-stat { flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:12px 8px; text-align:center; }
+  .pillar-stat__val { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; letter-spacing:0.04em; }
+  .pillar-stat__lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; opacity:0.35; text-transform:uppercase; margin-top:3px; }
 
   /* ══ XP FLOAT ════════════════════════════════ */
   .xp-float { position: fixed; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: #FFD700; text-shadow: 0 0 12px rgba(255,215,0,0.9); pointer-events: none; z-index: 500; white-space: nowrap; transform: translateX(-50%); animation: kf-xp-float 1.3s cubic-bezier(0.16,1,0.3,1) forwards; }
@@ -7080,6 +7085,10 @@
     document.querySelector('.dash-scroll').style.display = '';
     document.getElementById('mastermind-panel').style.display = 'none';
     document.getElementById('monk-panel').style.display = 'none';
+    const cls = localStorage.getItem('weebji_class') || 'monarch';
+    const dashEl = document.getElementById('dashboard');
+    dashEl.classList.remove('bg-monarch','bg-mastermind','bg-monk');
+    dashEl.classList.add(`bg-${cls}`);
   }
 
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -7113,13 +7122,20 @@
     });
   });
 
+  function _setPillarBg(pillarCls) {
+    const dashEl = document.getElementById('dashboard');
+    dashEl.classList.remove('bg-monarch','bg-mastermind','bg-monk');
+    dashEl.classList.add(`bg-${pillarCls}`);
+  }
+
   function renderMastermindPillarPanel() {
     const panel = document.getElementById('mastermind-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
     const canAccess = cls === 'mastermind' || isWeebjiPlus();
+    _setPillarBg('mastermind');
     if (!canAccess) {
       panel.innerHTML = `
-        <div class="pillar-locked-screen" style="background:radial-gradient(ellipse at 50% 0%,rgba(255,34,51,0.07) 0%,transparent 65%),#03030A">
+        <div class="pillar-locked-screen">
           <div class="pillar-locked-screen__glow" style="background:#FF2233"></div>
           <div class="pillar-locked-screen__sigil" style="color:#FF2233;text-shadow:0 0 24px rgba(255,34,51,0.6)">◈</div>
           <div class="pillar-locked-screen__title" style="color:#FF2233;text-shadow:0 0 20px rgba(255,34,51,0.4)">THE WHITE ROOM</div>
@@ -7136,13 +7152,32 @@
       return;
     }
     const p = loadProgress();
+    const totalFocusMins = parseInt(localStorage.getItem('weebji_total_study_mins') || '0');
     panel.innerHTML = `
-      <div class="pillar-panel-head" style="background:radial-gradient(ellipse at 50% 0%,rgba(255,34,51,0.06) 0%,transparent 60%),#03030A">
-        <div class="pillar-panel-head__title" style="color:#FF2233;text-shadow:0 0 14px rgba(255,34,51,0.45)">THE WHITE ROOM</div>
-        <div class="pillar-panel-head__sub">Mastermind Protocol</div>
-      </div>
-      <div class="pillar-panel-inner" style="background:#03030A">
-        <div class="dash-card" style="border-color:rgba(255,34,51,0.18);box-shadow:0 0 14px rgba(255,34,51,0.05)">
+      <div class="pillar-panel-inner">
+        <div style="text-align:center;padding:52px 20px 8px">
+          <div style="font-size:36px;color:#FF2233;text-shadow:0 0 28px rgba(255,34,51,0.6);margin-bottom:10px">◈</div>
+          <div class="pillar-panel-head__title" style="color:#FF2233;text-shadow:0 0 16px rgba(255,34,51,0.5);font-size:22px">THE WHITE ROOM</div>
+          <div class="pillar-panel-head__sub" style="margin-top:6px">Mastermind Protocol</div>
+        </div>
+        <div class="pillar-stats-strip">
+          <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
+            <div class="pillar-stat__val" style="color:#FF2233">${p.mmSessions || 0}</div>
+            <div class="pillar-stat__lbl">Today</div>
+          </div>
+          <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
+            <div class="pillar-stat__val" style="color:#FF2233">${totalFocusMins}</div>
+            <div class="pillar-stat__lbl">Total Mins</div>
+          </div>
+          <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
+            <div class="pillar-stat__val" style="color:#FF2233">${(p.mmGrid||[]).length}</div>
+            <div class="pillar-stat__lbl">Focus Days</div>
+          </div>
+        </div>
+        <div class="dash-card" style="border-color:rgba(255,34,51,0.2);box-shadow:0 0 20px rgba(255,34,51,0.06)">
+          <div class="dash-card__head">
+            <h3 class="dash-card__title" style="color:#FF2233">SESSION</h3>
+          </div>
           <div id="mm-panel-list"></div>
         </div>
       </div>`;
@@ -7153,9 +7188,10 @@
     const panel = document.getElementById('monk-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
     const canAccess = cls === 'monk' || isWeebjiPlus();
+    _setPillarBg('monk');
     if (!canAccess) {
       panel.innerHTML = `
-        <div class="pillar-locked-screen" style="background:radial-gradient(ellipse at 50% 0%,rgba(52,211,153,0.07) 0%,transparent 65%),#03030A">
+        <div class="pillar-locked-screen">
           <div class="pillar-locked-screen__glow" style="background:#34D399"></div>
           <div class="pillar-locked-screen__sigil" style="color:#34D399;text-shadow:0 0 24px rgba(52,211,153,0.6)">☯</div>
           <div class="pillar-locked-screen__title" style="color:#34D399;text-shadow:0 0 20px rgba(52,211,153,0.4)">THE SANCTUARY</div>
@@ -7172,13 +7208,32 @@
       return;
     }
     const p = loadProgress();
+    const totalMedMins = parseInt(localStorage.getItem('weebji_total_med_mins') || '0');
     panel.innerHTML = `
-      <div class="pillar-panel-head" style="background:radial-gradient(ellipse at 50% 0%,rgba(52,211,153,0.06) 0%,transparent 60%),#03030A">
-        <div class="pillar-panel-head__title" style="color:#34D399;text-shadow:0 0 14px rgba(52,211,153,0.45)">THE SANCTUARY</div>
-        <div class="pillar-panel-head__sub">Monk Protocols</div>
-      </div>
-      <div class="pillar-panel-inner" style="background:#03030A">
-        <div class="dash-card" style="border-color:rgba(52,211,153,0.18);box-shadow:0 0 14px rgba(52,211,153,0.05)">
+      <div class="pillar-panel-inner">
+        <div style="text-align:center;padding:52px 20px 8px">
+          <div style="font-size:36px;color:#34D399;text-shadow:0 0 28px rgba(52,211,153,0.6);margin-bottom:10px">☯</div>
+          <div class="pillar-panel-head__title" style="color:#34D399;text-shadow:0 0 16px rgba(52,211,153,0.5);font-size:22px">THE SANCTUARY</div>
+          <div class="pillar-panel-head__sub" style="margin-top:6px">Monk Protocols</div>
+        </div>
+        <div class="pillar-stats-strip">
+          <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
+            <div class="pillar-stat__val" style="color:#34D399">${totalMedMins}</div>
+            <div class="pillar-stat__lbl">Mins Med.</div>
+          </div>
+          <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
+            <div class="pillar-stat__val" style="color:#34D399">${(p.monkGrid||[]).length}</div>
+            <div class="pillar-stat__lbl">Monk Days</div>
+          </div>
+          <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
+            <div class="pillar-stat__val" style="color:#34D399">${(p.monkChecked||[]).length}</div>
+            <div class="pillar-stat__lbl">Rituals</div>
+          </div>
+        </div>
+        <div class="dash-card" style="border-color:rgba(52,211,153,0.2);box-shadow:0 0 20px rgba(52,211,153,0.06)">
+          <div class="dash-card__head">
+            <h3 class="dash-card__title" style="color:#34D399">SESSION</h3>
+          </div>
           <div id="monk-panel-list"></div>
         </div>
       </div>`;

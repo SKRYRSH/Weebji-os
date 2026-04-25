@@ -5405,6 +5405,14 @@
       p.mmDaily[_today] = (p.mmDaily[_today] || 0) + 1;
       // Void session counter
       p.voidSessions = (p.voidSessions || 0) + 1;
+      // Session log (today only)
+      const _logKey = 'weebji_session_log';
+      const _logRaw = JSON.parse(localStorage.getItem(_logKey) || '[]').filter(e => e.date === _today);
+      _logRaw.push({ date: _today, time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }), mode: cfg.label, xp: mmXP, mins: cfg.mins });
+      localStorage.setItem(_logKey, JSON.stringify(_logRaw));
+      // Re-render secondary panel log if visible
+      const _secList = document.getElementById('mm-panel-list');
+      if (_secList) { const _pp = loadProgress(); renderSecondaryMastermind(_pp, _secList); }
       const leveled = checkLevelUp(p);
       checkSecretTitles(p, localStorage.getItem('weebji_class'));
       saveProgress(p); updateXPBar(p); updateStats(p);
@@ -5801,6 +5809,19 @@
       <div class="mm-controls" style="margin-top:14px">
         <button class="mm-btn mm-btn-start" id="mm-start-sec">${Pomo.running ? 'Pause' : (Pomo.remaining < cfg.mins*60 && Pomo.remaining > 0 ? 'Resume' : 'Begin Session')}</button>
       </div>
+      ${(() => {
+        const _today2 = new Date().toDateString();
+        const _log = JSON.parse(localStorage.getItem('weebji_session_log') || '[]').filter(e => e.date === _today2);
+        if (!_log.length) return '';
+        return `<div style="margin-top:16px;border-top:1px solid rgba(255,34,51,0.08);padding-top:12px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.3em;color:rgba(255,34,51,0.3);text-transform:uppercase;margin-bottom:8px">Today's Sessions</div>
+          ${_log.map(e => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,34,51,0.05)">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,34,51,0.45)">${e.time}</span>
+            <span style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.35)">${e.mode} · ${e.mins}m</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,34,51,0.55)">+${e.xp} XP</span>
+          </div>`).join('')}
+        </div>`;
+      })()}
     `;
     el.querySelectorAll('[data-ctx="secondary"]').forEach(b =>
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectMode(b.dataset.mode); renderSecondaryMastermind(p, el); }));

@@ -10419,7 +10419,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
     }
 
     function getUser() { return currentUser; }
-    function isPremium() { return premiumStatus; }
+    function isPremium() {
+      if (new URLSearchParams(location.search).get('_demo') === '1') return true;
+      return premiumStatus;
+    }
 
     async function checkPremiumFromSupabase() {
       if (!client || !currentUser) return;
@@ -10497,7 +10500,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
     function getClient() { return client; }
 
-    return { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, signInWithGoogle, verifyOtp, signOut, getUser, isPremium, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
+    const _ret = { init, pushProgress, pullProgress, upsertPushSub, signInWithEmail, signInWithGoogle, verifyOtp, signOut, getUser, checkPremiumFromSupabase, renderAuthSection, _client: getClient };
+    Object.defineProperty(_ret, 'isPremium', { value: isPremium, writable: false, configurable: false });
+    return _ret;
   })();
 
   /* ══ GUILD SYSTEM ════════════════════════════ */
@@ -10784,10 +10789,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
       weebji_install_dismissed: '1',
     };
     Object.entries(demoData).forEach(([k, v]) => { if (!localStorage.getItem(k)) localStorage.setItem(k, v); });
-    // Patch SupabaseSync so isPremium() returns true and getUser() returns a mock user
-    const _origInit = SupabaseSync.init;
-    Object.defineProperty(SupabaseSync, 'isPremium',  { value: () => true, configurable: true });
-    Object.defineProperty(SupabaseSync, 'getUser',    { value: () => ({ id: 'demo-user', email: 'review@weebji.app' }), configurable: true });
+    // isPremium() returns true automatically when ?_demo=1 (handled inside closure)
+    Object.defineProperty(SupabaseSync, 'getUser', { value: () => ({ id: 'demo-user', email: 'review@weebji.app' }), configurable: true });
     // Skip to dashboard
     setTimeout(() => { showScreen('dashboard'); }, 300);
     console.info('[WEEBJI] Demo mode active — premium unlocked, auth bypassed');

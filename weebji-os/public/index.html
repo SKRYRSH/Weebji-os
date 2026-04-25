@@ -401,10 +401,13 @@
   .nav-btn[data-tab="monarch"].active span { color:#00F5FF!important; }
   .nav-btn[data-tab="monarch"].active::after { background:#00F5FF!important; box-shadow:0 0 6px #00F5FF,0 0 14px rgba(0,245,255,0.4)!important; }
   /* Pillar panels */
-  .pillar-panel { flex:1; min-height:0; overflow:hidden; display:none; flex-direction:column; background-size:cover; background-position:top center; background-repeat:no-repeat; transition:background 0.4s ease; }
-  .pillar-panel.panel-mastermind { background-image: linear-gradient(to bottom, rgba(28,0,2,0.72) 0%, rgba(12,0,1,0.93) 55%), url('assets/bg-mastermind.jpeg'); }
-  .pillar-panel.panel-monk       { background-image: linear-gradient(to bottom, rgba(0,22,10,0.72) 0%, rgba(0,10,4,0.93) 55%), url('assets/bg-monk.jpeg'); }
-  .pillar-panel.panel-monarch    { background-image: linear-gradient(to bottom, rgba(0,10,24,0.72) 0%, rgba(0,5,14,0.93) 55%), url('assets/bg-monarch.jpeg'); }
+  .pillar-panel { flex:1; min-height:0; overflow:hidden; display:none; flex-direction:column; background-size:cover; background-position:top center; background-repeat:no-repeat; position:relative; }
+  .pillar-panel.panel-mastermind { background-image: linear-gradient(to bottom, rgba(50,0,4,0.55) 0%, rgba(14,0,2,0.94) 60%), url('assets/bg-mastermind.jpeg'); }
+  .pillar-panel.panel-monk       { background-image: linear-gradient(to bottom, rgba(0,38,16,0.55) 0%, rgba(0,12,5,0.94) 60%), url('assets/bg-monk.jpeg'); }
+  .pillar-panel.panel-monarch    { background-image: linear-gradient(to bottom, rgba(0,18,42,0.55) 0%, rgba(0,6,18,0.94) 60%), url('assets/bg-monarch.jpeg'); }
+  .pillar-ambient { position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:380px; height:380px; border-radius:50%; filter:blur(90px); pointer-events:none; z-index:0; }
+  .pillar-panel-inner { position:relative; z-index:1; flex:1; overflow-y:auto; scrollbar-width:none; padding:12px 16px 80px; }
+  .pillar-panel-inner::-webkit-scrollbar { display:none; }
   .pillar-locked-screen { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 28px 24px; text-align:center; position:relative; overflow:hidden; }
   .pillar-locked-screen__glow { position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:340px; height:340px; border-radius:50%; opacity:0.1; filter:blur(70px); pointer-events:none; }
   .pillar-locked-screen__sigil { font-size:44px; margin-bottom:18px; }
@@ -415,8 +418,6 @@
   .pillar-locked-screen__btn { padding:15px 28px; border-radius:12px; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.18em; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; width:100%; max-width:300px; transition:transform 0.15s; }
   .pillar-locked-screen__btn:active { transform:scale(0.96); }
   .pillar-locked-screen__price { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; opacity:0.22; margin-top:10px; }
-  .pillar-panel-inner { flex:1; overflow-y:auto; scrollbar-width:none; padding:12px 16px 80px; }
-  .pillar-panel-inner::-webkit-scrollbar { display:none; }
   .pillar-panel-head { padding:52px 20px 12px; flex-shrink:0; }
   .pillar-panel-head__title { font-family:'Cinzel',serif; font-size:18px; font-weight:700; letter-spacing:0.12em; margin:0 0 2px; }
   .pillar-panel-head__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.25em; opacity:0.4; }
@@ -7266,6 +7267,7 @@
     const focusStreak = _calcGridStreak(p.mmGrid);
     const totalFocusHrs = Math.floor(totalFocusMins / 60);
     panel.innerHTML = `
+      <div class="pillar-ambient" style="background:radial-gradient(circle, rgba(255,34,51,0.38) 0%, transparent 65%)"></div>
       <div class="pillar-panel-inner">
         <div style="text-align:center;padding:52px 20px 8px">
           <div style="font-size:36px;color:#FF2233;text-shadow:0 0 28px rgba(255,34,51,0.6);margin-bottom:10px">◈</div>
@@ -7328,6 +7330,7 @@
     const totalMedHrs = Math.floor(totalMedMins / 60);
     const ritualsToday = (p.monkChecked || []).length;
     panel.innerHTML = `
+      <div class="pillar-ambient" style="background:radial-gradient(circle, rgba(52,211,153,0.32) 0%, transparent 65%)"></div>
       <div class="pillar-panel-inner">
         <div style="text-align:center;padding:52px 20px 8px">
           <div style="font-size:36px;color:#34D399;text-shadow:0 0 28px rgba(52,211,153,0.6);margin-bottom:10px">☯</div>
@@ -7419,6 +7422,7 @@
     const monarchStreak = _calcGridStreak(p.monarchGrid);
     const totalWorkoutDays = (p.monarchGrid||[]).length;
     panel.innerHTML = `
+      <div class="pillar-ambient" style="background:radial-gradient(circle, rgba(0,245,255,0.28) 0%, transparent 65%)"></div>
       <div class="pillar-panel-inner">
         <div style="text-align:center;padding:52px 20px 8px">
           <div style="font-size:36px;color:#00F5FF;text-shadow:0 0 28px rgba(0,245,255,0.6);margin-bottom:10px">⚔</div>

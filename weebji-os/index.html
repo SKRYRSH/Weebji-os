@@ -5784,7 +5784,7 @@
     const STATE_LINES = ['Cold start. Enter the Room.','Building momentum.','Signal is forming.','Flow state — do not break.','Maximum protocol active.'];
     const stateText = STATE_LINES[Math.min(sessions, STATE_LINES.length - 1)];
     const dots = Array.from({ length: TARGET }, (_, i) =>
-      `<div style="width:9px;height:9px;border-radius:50%;background:${i < sessions ? '#FF2233' : 'transparent'};border:1px solid rgba(255,34,51,${i < sessions ? '0.55' : '0.18'})"></div>`
+      `<div style="width:9px;height:9px;border-radius:50%;background:${i < sessions ? '#FF2233' : 'transparent'};border:1.5px solid rgba(255,34,51,${i < sessions ? '0.7' : '0.35'})"></div>`
     ).join('');
     el.innerHTML = `
       <div class="mm-modes" style="margin-bottom:14px">
@@ -5796,7 +5796,7 @@
         <div class="mm-timer" style="font-size:clamp(38px,11vw,52px)" id="mm-timer-sec">${Pomo.formatTime(Pomo.remaining)}</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(255,34,51,0.38);margin-top:8px;font-style:italic">${stateText}</div>
         <div style="display:flex;justify-content:center;gap:7px;margin-top:11px">${dots}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.22em;color:rgba(255,34,51,0.2);margin-top:5px">${sessions} / ${TARGET} TODAY</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.22em;color:rgba(255,34,51,0.35);margin-top:5px">${sessions} / ${TARGET} TODAY</div>
       </div>
       <div class="mm-controls" style="margin-top:14px">
         <button class="mm-btn mm-btn-start" id="mm-start-sec">${Pomo.running ? 'Pause' : (Pomo.remaining < cfg.mins*60 && Pomo.remaining > 0 ? 'Resume' : 'Begin Session')}</button>

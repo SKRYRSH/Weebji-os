@@ -5779,17 +5779,26 @@
   function renderSecondaryMastermind(p, el) {
     const cfg = MM_MODES[Pomo.mode];
     if (Pomo.remaining === 0) Pomo.remaining = cfg.mins * 60;
+    const sessions = p.mmSessions || 0;
+    const TARGET = 4;
+    const STATE_LINES = ['Cold start. Enter the Room.','Building momentum.','Signal is forming.','Flow state — do not break.','Maximum protocol active.'];
+    const stateText = STATE_LINES[Math.min(sessions, STATE_LINES.length - 1)];
+    const dots = Array.from({ length: TARGET }, (_, i) =>
+      `<div style="width:9px;height:9px;border-radius:50%;background:${i < sessions ? '#FF2233' : 'transparent'};border:1px solid rgba(255,34,51,${i < sessions ? '0.55' : '0.18'})"></div>`
+    ).join('');
     el.innerHTML = `
       <div class="mm-modes" style="margin-bottom:14px">
         ${Object.entries(MM_MODES).map(([k,v]) =>
           `<button class="mm-mode-btn${Pomo.mode===k?' active':''}" data-mode="${k}" data-ctx="secondary">${v.label}</button>`
         ).join('')}
       </div>
-      <div style="text-align:center;padding:12px 0 16px">
+      <div style="text-align:center;padding:12px 0 4px">
         <div class="mm-timer" style="font-size:clamp(38px,11vw,52px)" id="mm-timer-sec">${Pomo.formatTime(Pomo.remaining)}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#332233;margin-top:6px">${p.mmSessions} sessions today</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(255,34,51,0.38);margin-top:8px;font-style:italic">${stateText}</div>
+        <div style="display:flex;justify-content:center;gap:7px;margin-top:11px">${dots}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.22em;color:rgba(255,34,51,0.2);margin-top:5px">${sessions} / ${TARGET} TODAY</div>
       </div>
-      <div class="mm-controls">
+      <div class="mm-controls" style="margin-top:14px">
         <button class="mm-btn mm-btn-start" id="mm-start-sec">${Pomo.running ? 'Pause' : (Pomo.remaining < cfg.mins*60 && Pomo.remaining > 0 ? 'Resume' : 'Begin Session')}</button>
       </div>
     `;
@@ -5868,12 +5877,31 @@
       ritualWrap.appendChild(row);
     });
     el.appendChild(ritualWrap);
+    if ((p.monkChecked || []).length >= MONK_RITUALS.length) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'margin-top:16px;padding:14px 16px;background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.18);border-radius:14px;text-align:center';
+      banner.innerHTML = `
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.32em;color:rgba(52,211,153,0.4);text-transform:uppercase;margin-bottom:5px">Sanctuary Sealed</div>
+        <div style="font-family:'Cinzel',serif;font-size:13px;color:rgba(52,211,153,0.82);letter-spacing:0.08em">All Rituals Complete</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(52,211,153,0.3);margin-top:5px">+25 XP claimed · The Monk is untouchable today</div>`;
+      el.appendChild(banner);
+    }
   }
 
   function renderSecondaryMonarch(p, el) {
     const type = todayWorkoutType();
     if (type === 'REST') {
-      el.innerHTML = `<p style="font-family:'Inter',sans-serif;font-size:13px;color:#555577;padding:8px 0;font-style:italic">Rest day. Recovery is training.</p>`;
+      el.innerHTML = `
+        <div style="padding:4px 0">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.3em;color:rgba(0,245,255,0.25);text-transform:uppercase;margin-bottom:14px">Recovery Protocol</div>
+          ${[{l:'Active walk — 20 min',x:5},{l:'Full-body stretch — 15 min',x:5},{l:'Hydrate — 3L today',x:3}].map(r=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,245,255,0.05)">
+            <span style="font-family:'Inter',sans-serif;font-size:13px;color:#446666;font-style:italic">${r.l}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(0,245,255,0.22)">+${r.x} XP</span>
+          </div>`).join('')}
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.08em;color:rgba(0,245,255,0.18);margin-top:14px;font-style:italic">The Forge is cold today. Let it rest.</div>
+        </div>`;
+      el.appendChild(renderPRBoard(p));
       return;
     }
     const workoutMode = localStorage.getItem('weebji_workout_mode') || 'home';
@@ -5919,6 +5947,7 @@
       localStorage.setItem('weebji_workout_mode', 'gym');
       renderSecondaryMonarch(p, el);
     });
+    el.appendChild(renderPRBoard(p));
   }
 
   /* ══ SHARED CALENDAR RENDERER ════════════════ */
@@ -7377,7 +7406,7 @@
           </div>
           <div class="pillar-stat" style="border-color:rgba(0,245,255,0.12)">
             <div class="pillar-stat__val" style="color:#00F5FF">${monarchStreak}d</div>
-            <div class="pillar-stat__lbl">Streak</div>
+            <div class="pillar-stat__lbl">Forge Str</div>
           </div>
           <div class="pillar-stat" style="border-color:rgba(0,245,255,0.12)">
             <div class="pillar-stat__val" style="color:#00F5FF">${totalWorkoutDays}</div>

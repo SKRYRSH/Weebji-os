@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v178 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v178';
+// ── WEEBJI OS — Service Worker v179 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v179';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png'];
 

@@ -307,6 +307,17 @@
   .forge-rest__label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:rgba(0,245,255,0.4); text-transform:uppercase; }
   .forge-rest__timer { font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:#00F5FF; text-shadow:0 0 14px rgba(0,245,255,0.5); letter-spacing:0.1em; }
   .forge-rest__skip { padding:7px 13px; border-radius:7px; border:1px solid rgba(0,245,255,0.2); background:transparent; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(0,245,255,0.45); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  .forge-timer-widget { background:rgba(0,245,255,0.04); border:1px solid rgba(0,245,255,0.14); border-radius:14px; padding:16px 16px 14px; margin-bottom:14px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .forge-timer__label { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.35em; color:rgba(0,245,255,0.3); text-transform:uppercase; }
+  .forge-timer__display { font-family:'JetBrains Mono',monospace; font-size:42px; font-weight:700; color:#00F5FF; text-shadow:0 0 18px rgba(0,245,255,0.55),0 0 36px rgba(0,245,255,0.18); letter-spacing:0.06em; }
+  .forge-timer__display.running { animation:kf-timer-pulse 1s ease-in-out infinite; }
+  @keyframes kf-timer-pulse { 0%,100%{text-shadow:0 0 18px rgba(0,245,255,0.55),0 0 36px rgba(0,245,255,0.18);} 50%{text-shadow:0 0 30px rgba(0,245,255,0.95),0 0 60px rgba(0,245,255,0.4);} }
+  .forge-timer__presets { display:flex; gap:7px; }
+  .forge-timer__preset { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.08em; padding:5px 11px; border-radius:7px; border:1px solid rgba(0,245,255,0.15); background:rgba(0,245,255,0.04); color:rgba(0,245,255,0.45); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .forge-timer__preset.active { border-color:rgba(0,245,255,0.55); background:rgba(0,245,255,0.12); color:#00F5FF; }
+  .forge-timer__controls { display:flex; gap:8px; width:100%; }
+  .forge-timer__start-btn { flex:1; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.15em; padding:10px; border-radius:10px; border:1px solid rgba(0,245,255,0.4); background:rgba(0,245,255,0.08); color:#00F5FF; cursor:pointer; -webkit-tap-highlight-color:transparent; text-transform:uppercase; }
+  .forge-timer__reset-btn { flex:0 0 44px; font-family:'JetBrains Mono',monospace; font-size:14px; padding:10px; border-radius:10px; border:1px solid rgba(0,245,255,0.12); background:transparent; color:rgba(0,245,255,0.35); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 
   /* Pillar unlock toast — rises from bottom, lingers, fades */
   @keyframes kf-unlock-toast {
@@ -5068,10 +5079,72 @@
     return { getSets, logSet, reset };
   })();
 
+  /* ── Forge Timer Widget ──────────────────────── */
+  let _ftwTimer = null, _ftwRunning = false, _ftwRemain = 60, _ftwPreset = 60;
+  function _fmtFtw(s) { s = Math.max(0,s); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+  function renderForgeTimerWidget() {
+    if (_ftwTimer) { clearInterval(_ftwTimer); _ftwTimer = null; _ftwRunning = false; }
+    _ftwRemain = _ftwPreset;
+    const wrap = document.createElement('div');
+    wrap.className = 'forge-timer-widget';
+    wrap.innerHTML = `
+      <div class="forge-timer__label">FORGE TIMER</div>
+      <div class="forge-timer__display" id="ftw-display">${_fmtFtw(_ftwRemain)}</div>
+      <div class="forge-timer__presets">
+        ${[{s:60,l:'60s'},{s:90,l:'90s'},{s:120,l:'2:00'},{s:180,l:'3:00'}].map(p=>`<button class="forge-timer__preset${_ftwPreset===p.s?' active':''}" data-secs="${p.s}">${p.l}</button>`).join('')}
+      </div>
+      <div class="forge-timer__controls">
+        <button class="forge-timer__start-btn" id="ftw-start">▶ START</button>
+        <button class="forge-timer__reset-btn" id="ftw-reset">↺</button>
+      </div>`;
+    const display = wrap.querySelector('#ftw-display');
+    const startBtn = wrap.querySelector('#ftw-start');
+    wrap.querySelectorAll('.forge-timer__preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (_ftwRunning) return;
+        Sound.play('tap');
+        _ftwPreset = _ftwRemain = parseInt(btn.dataset.secs);
+        wrap.querySelectorAll('.forge-timer__preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        display.textContent = _fmtFtw(_ftwRemain);
+        display.classList.remove('running');
+      });
+    });
+    startBtn.addEventListener('click', () => {
+      Sound.play('tap');
+      if (_ftwRunning) {
+        clearInterval(_ftwTimer); _ftwTimer = null; _ftwRunning = false;
+        startBtn.textContent = '▶ START'; display.classList.remove('running');
+      } else {
+        _ftwRunning = true; startBtn.textContent = '⏸ PAUSE'; display.classList.add('running');
+        _ftwTimer = setInterval(() => {
+          _ftwRemain--;
+          display.textContent = _fmtFtw(_ftwRemain);
+          if (_ftwRemain <= 0) {
+            clearInterval(_ftwTimer); _ftwTimer = null; _ftwRunning = false;
+            startBtn.textContent = '▶ START'; display.classList.remove('running');
+            _ftwRemain = _ftwPreset; display.textContent = _fmtFtw(_ftwPreset);
+            if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+            Sound.play('check');
+          }
+        }, 1000);
+      }
+    });
+    wrap.querySelector('#ftw-reset').addEventListener('click', () => {
+      Sound.play('tap');
+      if (_ftwTimer) { clearInterval(_ftwTimer); _ftwTimer = null; }
+      _ftwRunning = false; _ftwRemain = _ftwPreset;
+      display.textContent = _fmtFtw(_ftwPreset); display.classList.remove('running');
+      startBtn.textContent = '▶ START';
+    });
+    return wrap;
+  }
+
   function renderExercises(p, exercises) {
     const list = document.getElementById('exercise-list');
     list.innerHTML = '';
     ForgeTimer.reset();
+    list.appendChild(renderForgeTimerWidget());
     const customs = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
     const allExercises = [...exercises, ...customs];
     allExercises.forEach((ex, i) => {
@@ -5968,6 +6041,7 @@
       <button class="forge-mode-btn${workoutMode==='home'?' active':''}" id="sec-mode-home">🏠 Home</button>
       <button class="forge-mode-btn${workoutMode==='gym'?' active':''}" id="sec-mode-gym">🏋️ Gym</button>
     </div>`;
+    el.appendChild(renderForgeTimerWidget());
     allExercises.forEach((ex, i) => {
       const done = p.workoutChecked.includes(i);
       const setsCompleted = ForgeTimer.getSets(i);

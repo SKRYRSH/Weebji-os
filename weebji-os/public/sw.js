@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v181 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v181';
+// ── WEEBJI OS — Service Worker v182 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v182';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png'];
 
@@ -37,6 +37,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
+  // Never cache Supabase API calls — always fetch live
+  if (url.hostname.includes('supabase.co')) return;
   const isHTML = e.request.headers.get('Accept')?.includes('text/html')
     || url.pathname.endsWith('/')
     || url.pathname.endsWith('.html');

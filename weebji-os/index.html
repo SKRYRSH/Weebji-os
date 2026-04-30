@@ -1340,10 +1340,9 @@
   #offline-pill.visible { transform:translateX(-50%) translateY(0); opacity:1; }
 
   /* ══ TOUR GUIDE ═════════════════════════════════ */
-  #tour-overlay { position:fixed; inset:0; z-index:970; pointer-events:none; opacity:0; transition:opacity 0.3s ease; }
-  #tour-overlay.active { opacity:1; pointer-events:all; }
-  #tour-spotlight { position:fixed; border-radius:14px; box-shadow:0 0 0 9999px rgba(0,0,0,0.84); transition:left 0.35s cubic-bezier(0.16,1,0.3,1),top 0.35s cubic-bezier(0.16,1,0.3,1),width 0.35s cubic-bezier(0.16,1,0.3,1),height 0.35s cubic-bezier(0.16,1,0.3,1); pointer-events:none; z-index:971; }
-  #tour-card { position:fixed; left:22px; right:22px; background:rgba(8,8,20,0.97); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:22px 20px 16px; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); z-index:972; }
+  #tour-overlay { position:fixed; inset:0; z-index:970; pointer-events:none; }
+  #tour-spotlight { display:none; position:fixed; border-radius:14px; pointer-events:none; z-index:971; }
+  #tour-card { display:none; position:fixed; left:22px; right:22px; background:rgba(8,8,20,0.97); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:22px 20px 16px; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); z-index:972; }
   .tour-step-lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.32em; color:rgba(255,255,255,0.22); text-transform:uppercase; margin-bottom:10px; }
   .tour-card-title { font-family:'Cinzel',serif; font-size:17px; font-weight:700; letter-spacing:0.08em; color:#fff; margin-bottom:8px; line-height:1.3; }
   .tour-card-body { font-family:'Inter',sans-serif; font-size:13px; color:rgba(255,255,255,0.52); line-height:1.75; margin-bottom:18px; }
@@ -1922,11 +1921,10 @@
       </div>
     </div>
 
-    <!-- Tour Guide overlay -->
-    <div id="tour-overlay">
-      <div id="tour-spotlight"></div>
-      <div id="tour-card"></div>
-    </div>
+    <!-- Tour Guide -->
+    <div id="tour-overlay"></div>
+    <div id="tour-spotlight"></div>
+    <div id="tour-card"></div>
 
     <!-- Arc Share Card overlay -->
     <div id="arc-card-overlay">
@@ -4888,14 +4886,16 @@
       if (el) {
         const r   = el.getBoundingClientRect();
         const PAD = 10;
-        spot.style.cssText = `left:${r.left-PAD}px;top:${r.top-PAD}px;width:${r.width+PAD*2}px;height:${r.height+PAD*2}px;display:block;`;
+        spot.style.cssText = `position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,0.84);z-index:971;pointer-events:none;left:${r.left-PAD}px;top:${r.top-PAD}px;width:${r.width+PAD*2}px;height:${r.height+PAD*2}px;display:block;`;
+        const ov = _ov(); if (ov) ov.style.background = 'transparent';
         if (r.top > vh * 0.5) {
           card.style.top = ''; card.style.bottom = `${vh - r.top + PAD + 14}px`; card.style.transform = '';
         } else {
           card.style.bottom = ''; card.style.top = `${r.bottom + PAD + 14}px`; card.style.transform = '';
         }
       } else {
-        spot.style.cssText = 'left:-2px;top:-2px;width:1px;height:1px;display:block;';
+        spot.style.cssText = 'display:none;';
+        const ov = _ov(); if (ov) ov.style.background = 'rgba(0,0,0,0.84)';
         card.style.bottom = ''; card.style.top = '50%'; card.style.transform = 'translateY(-50%)';
       }
       const isLast = idx === total - 1;
@@ -4919,12 +4919,18 @@
       if (plus) plus.addEventListener('click', () => { end(); const pb = document.getElementById('profile-plus-section'); if (pb) { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab==='profile')); showScreen('profile'); renderProfile(); pb.scrollIntoView({behavior:'smooth'}); } });
     }
     function start() {
-      const ov = _ov(); if (!ov) return;
-      ov.classList.add('active');
+      const ov = _ov(); const sp = _spot(); const cd = _card();
+      if (!ov) return;
+      ov.style.cssText   = 'position:fixed;inset:0;z-index:970;background:rgba(0,0,0,0);pointer-events:all;';
+      sp.style.display   = 'block';
+      cd.style.display   = 'block';
       _go(0);
     }
     function end() {
-      const ov = _ov(); if (ov) ov.classList.remove('active');
+      const ov = _ov(); const sp = _spot(); const cd = _card();
+      if (ov) ov.style.cssText = '';
+      if (sp) sp.style.display = 'none';
+      if (cd) cd.style.display = 'none';
       localStorage.setItem('weebji_tour_done', '1');
     }
     return { start, end };

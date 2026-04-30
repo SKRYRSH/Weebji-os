@@ -451,7 +451,7 @@
   #home-atm { position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
   .home-orb { position:absolute; border-radius:50%; pointer-events:none; opacity:0; background:var(--cls-color,#00F5FF); box-shadow:0 0 10px var(--cls-color,#00F5FF); }
   @keyframes kf-home-orb { 0%{transform:translateY(0) translateX(0) scale(1);opacity:0;} 12%{opacity:0.5;} 88%{opacity:0.2;} 100%{transform:translateY(-560px) translateX(var(--dx,8px)) scale(0.35);opacity:0;} }
-  .pillar-locked-screen { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 28px calc(24px + env(safe-area-inset-bottom, 16px)); text-align:center; position:relative; overflow-y:auto; overflow-x:hidden; }
+  .pillar-locked-screen { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:52px 28px calc(40px + env(safe-area-inset-bottom, 16px)); text-align:center; position:relative; overflow-y:auto; overflow-x:hidden; }
   .pillar-locked-screen__glow { position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:340px; height:340px; border-radius:50%; opacity:0.1; filter:blur(70px); pointer-events:none; }
   .pillar-locked-screen__sigil { font-size:44px; margin-bottom:18px; }
   .pillar-locked-screen__title { font-family:'Cinzel',serif; font-size:22px; font-weight:700; letter-spacing:0.12em; margin-bottom:6px; line-height:1.3; }
@@ -4918,8 +4918,9 @@
       if (plus) plus.addEventListener('click', () => { end(); const pb = document.getElementById('profile-plus-section'); if (pb) { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab==='profile')); showScreen('profile'); renderProfile(); pb.scrollIntoView({behavior:'smooth'}); } });
     }
     function start() {
-      const ov = _ov(); if (!ov) return;
+      const ov = _ov(); const cd = _card(); if (!ov) return;
       ov.style.display = 'block';
+      cd.style.display = 'block';
       _go(0);
     }
     function end() {

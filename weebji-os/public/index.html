@@ -4857,48 +4857,79 @@
   /* ══ TOUR GUIDE ══════════════════════════════════ */
   const Tour = (() => {
     let _idx = 0;
-    function _steps() {
-      const cls = localStorage.getItem('weebji_class') || 'monarch';
-      const pillar = { monarch: ['THE FORGE', 'Log workouts, track PRs, and earn XP through structured training. Hit your daily reps to keep the boss on the back foot.'], mastermind: ['MINDSET ENGINE', 'Seal tasks, complete daily brain challenges, and build deep work streaks. Each session sharpens your edge.'], monk: ['THE SANCTUARY', 'Run guided breathwork, focus sessions, and meditation cycles. Recovery is part of the system.'] }[cls] || ['YOUR PILLAR', 'Your class pillar is your main daily mission. Hit it every day.'];
-      return [
-        { t: null,                       title: 'WEEBJI OS',          body: 'Not a productivity app. A system. You signed the contract. The System trains you every day — no exceptions, no pauses.' },
-        { t: '[data-tab="home"]',        title: 'HOME',               body: 'Mission control. Your daily XP, streak, HP bar, and class pillar. Everything the System tracks about you lives on this screen.' },
-        { t: null,                       title: pillar[0],            body: pillar[1] },
-        { t: null,                       title: 'THE DUNGEON BOSS',   body: 'Every week a new boss spawns. Complete your daily pillar goals to drain its HP. Defeat it before the week resets to claim XP and exclusive titles.' },
-        { t: '[data-tab="mastermind"]',  title: 'MINDSET PILLAR',     body: 'Brain challenges, deep work timers, and task sealing. The Mastermind domain — open it anytime to train your mind alongside your body.' },
-        { t: '[data-tab="monk"]',        title: 'MONK SANCTUARY',     body: 'Guided breathwork, Pomodoro sessions, and meditation cycles. The Monk domain — where you recover, focus, and recalibrate.' },
-        { t: '[data-tab="profile"]',     title: 'YOUR LEGEND',        body: 'Global leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
-        { t: null, promo: true,          title: 'ASCEND FURTHER',     body: 'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — a permanent edge over every free player in the System.' },
-      ];
-    }
     const _ov   = () => document.getElementById('tour-overlay');
     const _spot = () => document.getElementById('tour-spotlight');
     const _card = () => document.getElementById('tour-card');
-    function _go(idx) {
-      _idx = idx;
-      const steps = _steps();
-      const step  = steps[idx];
-      const total = steps.length;
-      const spot  = _spot();
-      const card  = _card();
-      if (!spot || !card) return;
-      const el = step.t ? document.querySelector(step.t) : null;
-      const vh = window.innerHeight;
-      if (el) {
-        const r   = el.getBoundingClientRect();
-        const PAD = 10;
-        spot.style.cssText = `display:block;left:${r.left-PAD}px;top:${r.top-PAD}px;width:${r.width+PAD*2}px;height:${r.height+PAD*2}px;`;
-        if (r.top > vh * 0.5) {
-          card.style.top = ''; card.style.bottom = `${vh - r.top + PAD + 16}px`; card.style.transform = '';
-        } else {
-          card.style.bottom = ''; card.style.top = `${r.bottom + PAD + 16}px`; card.style.transform = '';
-        }
-      } else {
-        spot.style.display = 'none';
-        card.style.bottom = ''; card.style.top = '50%'; card.style.transform = 'translateY(-50%)';
+
+    function _steps() {
+      const cls = localStorage.getItem('weebji_class') || 'monarch';
+      const pillarName = { monarch:'THE FORGE', mastermind:'THE WHITE ROOM', monk:'THE SANCTUARY' }[cls] || 'YOUR PILLAR';
+      const pillarBody = { monarch:'Log workouts, track PRs, earn XP. Hit your daily training goals to drain the boss HP before the week resets.', mastermind:'Seal tasks, complete brain challenges, and build deep work streaks. Your primary weapon.', monk:'Guided breathwork, focus sessions, and meditation cycles. Recovery is part of the grind.' }[cls] || 'Your class pillar is your daily mission.';
+      return [
+        // nav: which tab to switch to before showing. dim: overlay opacity.
+        { nav:null,          t:null,                    dim:0.88, title:'WEEBJI OS',        body:'Not a productivity app. A system. You signed the contract — the System holds you to it every single day.' },
+        { nav:'home',        t:'#forge-card',           dim:0.82, title:pillarName,         body:pillarBody },
+        { nav:'home',        t:'#dungeon-card',         dim:0.82, title:'THE DUNGEON BOSS', body:'A new boss every week. Complete your pillar goals to drain its HP. Defeat it before Sunday to earn XP and exclusive titles.' },
+        { nav:'home',        t:'.bottom-nav',           dim:0.82, title:'NAVIGATION',       body:'Four tabs. Home is your base. Mindset sharpens your mind. Monk trains your focus and recovery. Profile tracks your legend.' },
+        { nav:'mastermind',  t:null,                    dim:0.55, title:'MINDSET PILLAR',   body:'Brain challenges, deep work sessions, task sealing. Navigate here anytime to train your mind alongside your body.' },
+        { nav:'monk',        t:null,                    dim:0.55, title:'MONK SANCTUARY',   body:'Guided breathwork, Pomodoro focus sessions, and meditation. This is where you recover and recalibrate.' },
+        { nav:'profile',     t:'.profile-hero',         dim:0.82, title:'YOUR LEGEND',      body:'Leaderboard rank, earned titles, Prestige, and your full training history. The System records everything.' },
+        { nav:null,          t:null,                    dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
+      ];
+    }
+
+    function _navTo(tab) {
+      if (!tab) return;
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      if (tab === 'home') {
+        document.querySelectorAll('.pillar-panel').forEach(p => p.style.display = 'none');
+        showScreen('dashboard');
+      } else if (tab === 'mastermind') {
+        showScreen('dashboard');
+        document.querySelectorAll('.pillar-panel').forEach(p => p.style.display = 'none');
+        const mp = document.getElementById('mastermind-panel');
+        if (mp) { mp.style.display = 'flex'; renderMastermindPillarPanel(); }
+      } else if (tab === 'monk') {
+        showScreen('dashboard');
+        document.querySelectorAll('.pillar-panel').forEach(p => p.style.display = 'none');
+        const mp = document.getElementById('monk-panel');
+        if (mp) { mp.style.display = 'flex'; renderMonkPillarPanel(); }
+      } else if (tab === 'profile') {
+        showScreen('profile');
+        renderProfile();
       }
+    }
+
+    function _place(step) {
+      const spot = _spot();
+      const card = _card();
+      const ov   = _ov();
+      const vh   = window.innerHeight;
+      if (ov) ov.style.background = `rgba(0,0,0,${step.dim || 0.82})`;
+      const el = step.t ? document.querySelector(step.t) : null;
+      const PAD = 10;
+      if (el) {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.top < vh && r.bottom > 0) {
+          spot.style.cssText = `display:block;left:${r.left-PAD}px;top:${r.top-PAD}px;width:${r.width+PAD*2}px;height:${r.height+PAD*2}px;`;
+          if (r.top > vh * 0.55) {
+            card.style.top = ''; card.style.bottom = `${vh - r.top + PAD + 14}px`; card.style.transform = '';
+          } else {
+            card.style.bottom = ''; card.style.top = `${Math.min(r.bottom + PAD + 14, vh * 0.45)}px`; card.style.transform = '';
+          }
+          return;
+        }
+      }
+      spot.style.display = 'none';
+      card.style.bottom = ''; card.style.top = '50%'; card.style.transform = 'translateY(-50%)';
+    }
+
+    function _render(step, idx) {
+      const steps = _steps();
+      const total = steps.length;
+      const card  = _card();
       const isLast = idx === total - 1;
-      const dots   = steps.map((_, i) => `<div class="tour-dot${i===idx?' on':''}"></div>`).join('');
+      const dots = steps.map((_, i) => `<div class="tour-dot${i===idx?' on':''}"></div>`).join('');
       card.innerHTML = `
         <div class="tour-step-lbl">${step.promo ? 'WEEBJI OS PLUS' : `${idx+1} / ${total}`}</div>
         <div class="tour-card-title">${step.title}</div>
@@ -4911,25 +4942,44 @@
         </div>
         ${!isLast ? `<div id="tour-skip-row"><button class="tour-btn-skip" id="tc-skip">Skip Tour</button></div>` : ''}
       `;
-      card.querySelector('#tc-next').addEventListener('click', () => isLast ? end() : _go(idx+1));
-      const prev = card.querySelector('#tc-prev'); if (prev) prev.addEventListener('click', () => _go(idx-1));
+      card.querySelector('#tc-next').addEventListener('click', () => isLast ? end() : _go(idx + 1));
+      const prev = card.querySelector('#tc-prev'); if (prev) prev.addEventListener('click', () => _go(idx - 1));
       const skip = card.querySelector('#tc-skip'); if (skip) skip.addEventListener('click', end);
       const plus = card.querySelector('#tour-plus-cta');
-      if (plus) plus.addEventListener('click', () => { end(); const pb = document.getElementById('profile-plus-section'); if (pb) { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab==='profile')); showScreen('profile'); renderProfile(); pb.scrollIntoView({behavior:'smooth'}); } });
+      if (plus) plus.addEventListener('click', () => { end(); showScreen('profile'); setTimeout(() => document.getElementById('profile-plus-section')?.scrollIntoView({ behavior:'smooth' }), 120); });
     }
+
+    function _go(idx) {
+      _idx = idx;
+      const steps = _steps();
+      const step  = steps[idx];
+      if (step.nav) {
+        _navTo(step.nav);
+        // Wait for tab render before measuring element positions
+        setTimeout(() => { _place(step); _render(step, idx); }, 380);
+      } else {
+        _place(step);
+        _render(step, idx);
+      }
+    }
+
     function start() {
       const ov = _ov(); const cd = _card(); if (!ov) return;
       ov.style.display = 'block';
       cd.style.display = 'block';
       _go(0);
     }
+
     function end() {
       const ov = _ov(); const sp = _spot(); const cd = _card();
       if (ov) ov.style.display = 'none';
       if (sp) sp.style.display = 'none';
       if (cd) cd.style.display = 'none';
       localStorage.setItem('weebji_tour_done', '1');
+      // Return to home after tour ends
+      _navTo('home');
     }
+
     return { start, end };
   })();
 

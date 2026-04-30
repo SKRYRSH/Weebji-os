@@ -1357,7 +1357,7 @@
   #tour-skip-row { text-align:center; margin-top:10px; }
   #tour-plus-cta { width:100%; margin-top:4px; padding:13px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.05); font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.14em; color:#fff; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:background 0.2s; }
   #tour-plus-cta:active { background:rgba(255,255,255,0.12); }
-  .tour-replay-btn { width:100%; margin-top:10px; padding:11px; border-radius:10px; border:1px solid rgba(255,255,255,0.08); background:transparent; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:rgba(255,255,255,0.28); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  .tour-replay-btn { width:100%; margin-top:10px; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.03); font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:rgba(255,255,255,0.5); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
 
   /* ══ THE VOID ════════════════════════════════════ */
   @keyframes kf-void-bg { 0%,100%{opacity:0.5;} 50%{opacity:1;} }
@@ -4972,9 +4972,9 @@
         showScreen('profile');
         renderProfile();
       }
-      // First-time feature tour (only on fresh onboarding, not every launch)
-      if (fromOnboarding && !localStorage.getItem('weebji_tour_done')) {
-        setTimeout(() => Tour.start(), 1200);
+      // First-time feature tour — fires once for new users and existing users who haven't seen it
+      if (!localStorage.getItem('weebji_tour_done')) {
+        setTimeout(() => Tour.start(), 1400);
       }
     }, 600);
   }

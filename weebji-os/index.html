@@ -1100,6 +1100,9 @@
   .brain-challenge-btn { width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,34,51,0.32); background:rgba(255,34,51,0.05); font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:#FF2233; cursor:pointer; text-transform:uppercase; transition:background 0.2s; -webkit-tap-highlight-color:transparent; }
   .brain-challenge-btn:active { background:rgba(255,34,51,0.13); }
   .brain-challenge-done { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:rgba(255,34,51,0.45); text-transform:uppercase; text-align:center; padding:6px 0; }
+  .brain-answer-btn { background:none; border:none; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.18em; color:rgba(255,34,51,0.38); cursor:pointer; text-transform:uppercase; padding:0; -webkit-tap-highlight-color:transparent; }
+  .brain-answer-text { display:none; margin-top:10px; padding:10px 12px; background:rgba(255,34,51,0.05); border-radius:8px; font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.55); line-height:1.7; border-left:2px solid rgba(255,34,51,0.3); }
+  .brain-answer-text.open { display:block; }
   .mm-complete-banner { margin-top: 14px; padding: 12px 16px; background: rgba(255,34,51,0.06); border: 1px solid rgba(255,34,51,0.3); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #FF2233; text-shadow: 0 0 10px rgba(255,34,51,0.6); text-align: center; animation: kf-bonus-slide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
 
   /* ══ THE SANCTUARY — MONK MEDITATION ENGINE ══ */
@@ -2545,6 +2548,98 @@
     { type:'PATTERN',   text:'What comes next: 2, 5, 11, 23, 47, __ ? Find the rule.' },
     { type:'CREATIVE',  text:'Name one thing technology cannot replace in human connection. Then name one thing it already has replaced, whether people admit it or not.' },
     { type:'FOCUS',     text:'Think of a goal you keep postponing. Spend 3 minutes mentally walking through the actual first day of working on it — in detail.' },
+  ];
+
+  const BRAIN_ANSWERS = [
+    'Light BOTH ends of Rope A and ONE end of Rope B simultaneously. When A burns out (30 min), light the remaining end of Rope B — it now has 15 min left. Total: 45 minutes.',
+    'He is playing Monopoly. He landed on a hotel-owned property and cannot pay the rent.',
+    '8 days. Net gain: 1 ft/day. End of day 7 = 7 ft. Day 8 he climbs 3 ft to reach 10 ft before nightfall — done.',
+    'No single answer. The insight you reached is the reward. What did you observe about your thoughts?',
+    'T, E — for Ten, Eleven. The sequence is first letters of: One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Eleven.',
+    'Roosters don\'t lay eggs. There is no egg, no roll.',
+    '60. First: 3/4 × 240 = 180. Then: 1/3 × 180 = 60.',
+    'Divide 12 into 4-4-4. Weigh two groups: if equal, the odd ball is in group 3 — weigh 2 of those 4. If unequal, take the heavier group and weigh 2 vs 2, then 1 vs 1.',
+    'Reversed: 6, 4, 2, 8, 5, 1, 9, 3, 7.',
+    'All 12. Every month has at least 28 days.',
+    'There is no wrong answer — the value is in pushing past obvious ideas. How many did you reach after "brick as a doorstop"?',
+    '5,050. Gauss\'s trick: pair numbers from each end (1+100=101, 2+99=101... × 50 pairs = 5,050).',
+    'No single answer. The goal was honest thinking about what is actually blocking you.',
+    '21, 34, 55. Each term is the sum of the two before it (Fibonacci sequence).',
+    'Turn on Switch 1 for 5 min, then off. Turn on Switch 2. Enter: hot+off = Switch 1, on = Switch 2, cold+off = Switch 3.',
+    'STRENGTHS — 9 letters, only vowel is E.',
+    '24 trailing zeros. Count factors of 5: ⌊100/5⌋=20, ⌊100/25⌋=4. Total: 24.',
+    'She is a photographer. She "shot" him with a camera, then developed the photo in a darkroom (immersed in chemical solution).',
+    'Alphabetical: Accra, Cairo, Doha, Lima, Minsk, Oslo, Riga, Tokyo.',
+    'No single answer. Strong redesigns are possible — the quality of reasoning matters more than the specific idea.',
+    'A is east of D. Map it: D top-left, C below D, B right of C, A above B — A sits one step east of D.',
+    '7.5°. Minute hand is at 90°. Hour hand moves 0.5° per minute — at 3:15 it has moved 7.5° past 90°. Difference: 7.5°.',
+    'No single answer. The goal was honest identification, not a correct label.',
+    'All are capital letters made using only straight lines — no curves.',
+    'He stood on a block of ice to hang himself from the peg in the ceiling. The ice melted, leaving the puddle.',
+    'MOON STARER.',
+    '≈7.2 years. Rule of 72: divide 72 by the interest rate. 72 ÷ 10 = 7.2.',
+    'No single answer — the measure is whether you thought in real, executable steps rather than vague strategy.',
+    'Fill 5L. Pour into 3L (2L left in 5L). Empty 3L. Pour 2L in. Fill 5L. Pour from 5L into 3L until full (needs 1L). 4L remains in 5L.',
+    'No single answer. The memory you recalled was enough.',
+    '13112221. Read 312211 aloud: "one 3, one 1, two 2s, two 1s" = 13112221.',
+    'Ball = $0.05. Most say $0.10 — wrong. Ball=x, bat=x+$1. x+(x+1)=1.10 → 2x=0.10 → x=$0.05.',
+    'He is too short to reach buttons above floor 15. He can reach 15 but no higher — so he walks the rest.',
+    'TYPEWRITER uses only top-row QWERTY keys. For the 5-letter riddle: the puzzle is intentionally open-ended — "Empty" and "Queue" are commonly cited.',
+    'No single answer — the measure is whether you designed something real, not an idealized fantasy.',
+    'He fell from the first floor. "A 50-story building" doesn\'t mean he fell from floor 50.',
+    'The match. You light the match before anything else.',
+    '204 total squares: 64 unit (1×1), 49 (2×2), 36 (3×3)... down to 1 (8×8). Formula: n(n+1)(2n+1)/6 where n=8.',
+    'He was walking, not driving.',
+    '"Nothing." Nothing is greater than God, nothing is more evil than the devil, the poor have nothing, the rich need nothing, eat nothing and die.',
+    'No smoke. Electric trains produce none.',
+    'Mount Everest — it was still the tallest, simply not yet formally measured or named.',
+    '5 children: 4 daughters and 1 son (the shared brother).',
+    '48 mph — not 50. Harmonic mean: 2(60×40)/(60+40) = 4800/100 = 48. The arithmetic average is wrong here.',
+    '25 primes: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97.',
+    'No single answer. What you chose reveals your actual hierarchy of values.',
+    'No single answer. The insight about what keeps you from starting is worth more than any answer.',
+    'No single answer. Sustained observation — not distraction — is the entire skill being practiced.',
+    'No single answer. Gratitude recalled with specificity compounds over time.',
+    'No single answer. Your future self\'s answer is already forming — follow it.',
+    '49, 64, 81. These are 7², 8², 9².',
+    '96, 192, 384. Each term doubles.',
+    'S, S — Saturday, Sunday.',
+    'V is next (P+6=V). The gap grows by 1 each step: +1,+2,+3,+4,+5,+6. After V the next step exceeds Z.',
+    '216, 343. These are 6³ and 7³ — the sequence is perfect cubes.',
+    'No single answer. The precision of your mental grouping and recall is what matters.',
+    'No single answer. Digit-perfect recall of that number is genuinely impressive if you got it.',
+    'No single answer. The test is whether you can reconstruct the list — not whether it matches exactly.',
+    'The mapping: 7→3, 2→8, 5→1, 4→6, 9→2. So 5 maps to 1. Input 2 maps to output 8.',
+    'No single answer. The quality of the analogy you built is the measure.',
+    'No single answer. A genuinely designed system reveals your real priorities.',
+    'No single answer. What you would truly keep is more honest than what you think you should keep.',
+    'Strong candidates: communication, systems thinking, persuasion, compounding, delayed gratification.',
+    'No single answer. If you identified steps that were real and executable rather than vague, you succeeded.',
+    'Examples: facetious, abstemious, sequoia, audio, cauliflower, education.',
+    'TYPEWRITER — 10 letters, all from the top row Q-W-E-R-T-Y-U-I-O-P.',
+    '"Sporange" (botanical term for spore sac) is a documented rhyme. Also Blorenge — a hill in Wales.',
+    'Your right elbow.',
+    'A map.',
+    'Footsteps.',
+    'Three people: grandfather, father, son. The grandfather is a father AND a son exists — so "two fathers and two sons" from just 3 people.',
+    'It is logically impossible. Working backwards from Friday — no day can satisfy both conditions simultaneously.',
+    'No missing dollar — the framing is a trick. Guests paid $27 total: $25 to the hotel, $2 to the bellhop. Adding the tip to what they paid is the error.',
+    '2nd place. You took the 2nd-place person\'s spot — you did not pass 1st.',
+    'His own son. "My father\'s son" = himself. "This man\'s father is me" — so the photo shows his son.',
+    'No single answer. The movie you built in your head is the plan.',
+    'No single answer. The rule you named is the one worth keeping.',
+    'No single answer. The most important part was being honest with yourself.',
+    'No single answer. Enjoyment without guilt or productivity pressure is its own form of discipline.',
+    'No single answer. The opposite perspective you held even briefly is the most valuable output.',
+    'Divide 8 into 3+3+2. Weigh 3 vs 3: if equal, weigh the remaining 2 against each other. If unequal, take heavier group of 3 and weigh 1 vs 1 (leave 1 out) — unbalanced means heavier, balanced means the one left out.',
+    '2^10=1,024. 2^20≈1,048,576. 2^30≈1,073,741,824. Each +10 powers ≈ ×1,000.',
+    'Pirate 1 proposes: 96 for themselves, 0 for 2 and 4, 1 for 3, 1 for 5. Pirates 3 and 5 vote yes (better than 0 if Pirate 1 is thrown). That\'s 3/5 — proposal passes. Pirate 1 keeps 96.',
+    'August/august, March/march, May/may, Polish/polish, Turkey/turkey, China/china.',
+    'No single answer. The specificity of the intervention is the measure of real thinking.',
+    'He had hiccups. The bartender scared them away by pointing the gun at him. The man thanked him because the hiccups were gone.',
+    'Fill 3L. Pour into 5L. Fill 3L again. Pour into 5L until full (needs only 2L — 1L left in 3L jug). Done.',
+    '95. Rule: multiply by 2 and add 1. 2→5→11→23→47→95.',
+    'No single answer. The goal you mentally walked through is the one most likely to be started.',
   ];
 
   const CLASS_META = {
@@ -5794,6 +5889,7 @@
     listEl.querySelectorAll('.brain-challenge-card').forEach(el => el.remove());
     const _bcIdx  = Math.floor(Date.now() / 86400000) % BRAIN_CHALLENGES.length;
     const _bc     = BRAIN_CHALLENGES[_bcIdx];
+    const _bcAns  = BRAIN_ANSWERS[_bcIdx] || '';
     const _bcDone = !!p.brainChallengeDone;
     const bcCard  = document.createElement('div');
     bcCard.className = 'brain-challenge-card';
@@ -5802,7 +5898,9 @@
       <div class="brain-challenge-type">${_bc.type}</div>
       <div class="brain-challenge-text">${_bc.text}</div>
       ${_bcDone
-        ? `<div class="brain-challenge-done">◆ Sealed</div>`
+        ? `<div class="brain-challenge-done">◆ Sealed</div>
+           <button class="brain-answer-btn" id="brain-ans-btn">▸ See Answer</button>
+           <div class="brain-answer-text" id="brain-ans-text">${_bcAns}</div>`
         : `<button class="brain-challenge-btn" id="brain-done-btn">Mark Complete</button>`}
     `;
     if (!_bcDone) {
@@ -5817,6 +5915,13 @@
         if (leveled) triggerLevelUp(p2.level);
         spawnDropBanner('◆ BRAIN CHALLENGE SEALED — +12 XP');
         renderMastermindUI(p2);
+      });
+    } else {
+      const _ansBtn = bcCard.querySelector('#brain-ans-btn');
+      const _ansTxt = bcCard.querySelector('#brain-ans-text');
+      if (_ansBtn) _ansBtn.addEventListener('click', () => {
+        const open = _ansTxt.classList.toggle('open');
+        _ansBtn.textContent = open ? '▾ Hide Answer' : '▸ See Answer';
       });
     }
     listEl.appendChild(bcCard);
@@ -5961,7 +6066,7 @@
       if (ringInner) ringInner.dataset.phase = _guideOn ? _breathPhase : 2;
       if (sessEl) {
         const totalMins = parseInt(localStorage.getItem('weebji_total_med_mins') || '0');
-        sessEl.textContent = totalMins > 0 ? `${totalMins} mins meditated` : 'No sessions yet';
+        sessEl.textContent = totalMins > 0 ? `${totalMins} min lifetime` : 'No sessions yet';
       }
       document.querySelectorAll('.sanctuary-mode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.mode === _mode);
@@ -6191,6 +6296,14 @@
       <div class="mm-controls" style="margin-top:14px">
         <button class="mm-btn mm-btn-start" id="mm-start-sec">${Pomo.running ? 'Pause' : (Pomo.remaining < cfg.mins*60 && Pomo.remaining > 0 ? 'Resume' : 'Begin Session')}</button>
       </div>
+      <div class="mm-topic-wrap" style="margin-top:12px">
+        <div class="mm-topic-wrap-label">Focus Topic</div>
+        <div class="mm-topic-row">
+          ${['Coding','Language','Math','Reading','Other'].map(t =>
+            `<button class="mm-topic-chip${Pomo.topic===t?' active':''}" data-topic="${t}" data-ctx="sec-topic">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
       ${(() => {
         const _today2 = new Date().toDateString();
         const _log = JSON.parse(localStorage.getItem('weebji_session_log') || '[]').filter(e => e.date === _today2);
@@ -6199,7 +6312,7 @@
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.3em;color:rgba(255,34,51,0.3);text-transform:uppercase;margin-bottom:8px">Today's Sessions</div>
           ${_log.map(e => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,34,51,0.05)">
             <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,34,51,0.45)">${e.time}</span>
-            <span style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.35)">${e.mode} · ${e.mins}m</span>
+            <span style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.35)">${e.mode} · ${e.mins}m${e.topic && e.topic !== 'Other' ? ' · ' + e.topic : ''}</span>
             <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,34,51,0.55)">+${e.xp} XP</span>
           </div>`).join('')}
         </div>`;
@@ -6208,11 +6321,14 @@
     el.querySelectorAll('[data-ctx="secondary"]').forEach(b =>
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectMode(b.dataset.mode); renderSecondaryMastermind(p, el); }));
     el.querySelector('#mm-start-sec').addEventListener('click', () => { Sound.play('tap'); Pomo.toggle(); renderSecondaryMastermind(p, el); });
+    el.querySelectorAll('[data-ctx="sec-topic"]').forEach(b =>
+      b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectTopic(b.dataset.topic); }));
     // Brain Challenge (mini)
-    const _bcIdx2 = Math.floor(Date.now() / 86400000) % BRAIN_CHALLENGES.length;
-    const _bc2    = BRAIN_CHALLENGES[_bcIdx2];
+    const _bcIdx2  = Math.floor(Date.now() / 86400000) % BRAIN_CHALLENGES.length;
+    const _bc2     = BRAIN_CHALLENGES[_bcIdx2];
+    const _bcAns2  = BRAIN_ANSWERS[_bcIdx2] || '';
     const _bcDone2 = !!p.brainChallengeDone;
-    const bcCard2 = document.createElement('div');
+    const bcCard2  = document.createElement('div');
     bcCard2.className = 'brain-challenge-card';
     bcCard2.style.marginTop = '14px';
     bcCard2.innerHTML = `
@@ -6220,7 +6336,9 @@
       <div class="brain-challenge-type">${_bc2.type}</div>
       <div class="brain-challenge-text" style="font-size:12px">${_bc2.text}</div>
       ${_bcDone2
-        ? `<div class="brain-challenge-done">◆ Sealed</div>`
+        ? `<div class="brain-challenge-done">◆ Sealed</div>
+           <button class="brain-answer-btn" id="brain-ans-btn-sec">▸ See Answer</button>
+           <div class="brain-answer-text" id="brain-ans-text-sec">${_bcAns2}</div>`
         : `<button class="brain-challenge-btn" id="brain-done-sec-btn">Mark Complete</button>`}
     `;
     if (!_bcDone2) {
@@ -6235,6 +6353,13 @@
         if (leveled) triggerLevelUp(p2.level);
         spawnDropBanner('◆ BRAIN CHALLENGE SEALED — +12 XP');
         renderSecondaryMastermind(p2, el);
+      });
+    } else {
+      const _ansBtn2 = bcCard2.querySelector('#brain-ans-btn-sec');
+      const _ansTxt2 = bcCard2.querySelector('#brain-ans-text-sec');
+      if (_ansBtn2) _ansBtn2.addEventListener('click', () => {
+        const open = _ansTxt2.classList.toggle('open');
+        _ansBtn2.textContent = open ? '▾ Hide Answer' : '▸ See Answer';
       });
     }
     el.appendChild(bcCard2);

@@ -283,7 +283,14 @@
   .coming-soon__desc { font-family: 'Inter', sans-serif; font-size: 12px; color: #444466; line-height: 1.65; max-width: 240px; }
 
   /* Exercise rows */
-  .ex-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); -webkit-tap-highlight-color: transparent; }
+  .ex-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); -webkit-tap-highlight-color: transparent; flex-wrap: wrap; }
+  .ex-info-btn { flex-shrink:0; width:20px; height:20px; border-radius:50%; border:1px solid rgba(0,245,255,0.18); background:transparent; color:rgba(0,245,255,0.28); font-family:'JetBrains Mono',monospace; font-size:9px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; -webkit-tap-highlight-color:transparent; margin-top:2px; }
+  .ex-info-btn.open { border-color:rgba(0,245,255,0.5); color:#00F5FF; background:rgba(0,245,255,0.07); }
+  .ex-info-panel { display:none; width:100%; padding:10px 0 4px 34px; border-top:1px solid rgba(0,245,255,0.06); margin-top:6px; }
+  .ex-info-panel.open { display:block; }
+  .ex-form-tip { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.42); line-height:1.65; margin-bottom:9px; }
+  .ex-yt-link { display:inline-flex; align-items:center; gap:5px; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.16em; color:rgba(0,245,255,0.38); text-decoration:none; text-transform:uppercase; border:1px solid rgba(0,245,255,0.14); padding:4px 10px; border-radius:6px; -webkit-tap-highlight-color:transparent; }
+  .ex-yt-link:active { background:rgba(0,245,255,0.08); }
   .ex-row:last-child { border-bottom: none; }
   .ex-check { width: 22px; height: 22px; flex-shrink: 0; border: 1.5px solid rgba(0,245,255,0.3); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; margin-top:2px; cursor:pointer; }
   .ex-check svg { width: 12px; height: 12px; display: none; color: #0A0A0F; }
@@ -1074,6 +1081,25 @@
   .mm-btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.05); color: #2A2A44; }
   .mm-btn-cancel:active { transform: scale(0.95); }
   .mm-xp-info { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444466; text-align: center; margin-top: 12px; letter-spacing: 0.08em; }
+  .mm-topic-wrap { text-align:center; margin-top:2px; }
+  .mm-topic-wrap-label { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.25em; color:rgba(255,34,51,0.28); text-transform:uppercase; margin-bottom:7px; }
+  .mm-topic-row { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+  .mm-topic-chip { padding:4px 12px; border-radius:20px; border:1px solid rgba(255,34,51,0.16); background:transparent; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.15em; color:rgba(255,34,51,0.36); cursor:pointer; text-transform:uppercase; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
+  .mm-topic-chip.active { border-color:rgba(255,34,51,0.55); background:rgba(255,34,51,0.1); color:#FF2233; }
+  .mm-topic-breakdown { margin-bottom:4px; padding:12px 14px; background:rgba(255,34,51,0.03); border:1px solid rgba(255,34,51,0.1); border-radius:12px; }
+  .mm-topic-breakdown-title { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.3em; color:rgba(255,34,51,0.35); text-transform:uppercase; margin-bottom:10px; }
+  .mm-topic-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+  .mm-topic-bar-lbl { font-family:'JetBrains Mono',monospace; font-size:8px; color:rgba(255,255,255,0.32); width:58px; text-align:right; }
+  .mm-topic-bar-track { flex:1; height:3px; background:rgba(255,34,51,0.1); border-radius:2px; overflow:hidden; }
+  .mm-topic-bar-fill { height:100%; background:#FF2233; border-radius:2px; }
+  .mm-topic-bar-val { font-family:'JetBrains Mono',monospace; font-size:8px; color:rgba(255,34,51,0.45); width:32px; }
+  .brain-challenge-card { margin-bottom:4px; padding:14px 16px; background:rgba(255,34,51,0.04); border:1px solid rgba(255,34,51,0.18); border-radius:14px; }
+  .brain-challenge-label { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.32em; color:rgba(255,34,51,0.45); text-transform:uppercase; margin-bottom:4px; }
+  .brain-challenge-type { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.2em; color:rgba(255,34,51,0.3); text-transform:uppercase; margin-bottom:9px; }
+  .brain-challenge-text { font-family:'Inter',sans-serif; font-size:13px; color:rgba(255,255,255,0.72); line-height:1.75; margin-bottom:13px; }
+  .brain-challenge-btn { width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,34,51,0.32); background:rgba(255,34,51,0.05); font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:#FF2233; cursor:pointer; text-transform:uppercase; transition:background 0.2s; -webkit-tap-highlight-color:transparent; }
+  .brain-challenge-btn:active { background:rgba(255,34,51,0.13); }
+  .brain-challenge-done { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:rgba(255,34,51,0.45); text-transform:uppercase; text-align:center; padding:6px 0; }
   .mm-complete-banner { margin-top: 14px; padding: 12px 16px; background: rgba(255,34,51,0.06); border: 1px solid rgba(255,34,51,0.3); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #FF2233; text-shadow: 0 0 10px rgba(255,34,51,0.6); text-align: center; animation: kf-bonus-slide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
 
   /* ══ THE SANCTUARY — MONK MEDITATION ENGINE ══ */
@@ -1091,6 +1117,8 @@
   .sanctuary-start { padding:12px 34px; border-radius:12px; border:1px solid rgba(168,216,168,0.38); background:rgba(168,216,168,0.05); font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:0.2em; color:#A8D8A8; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:background 0.2s; }
   .sanctuary-start:active { background:rgba(168,216,168,0.12); }
   .sanctuary-sessions { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.18em; color:rgba(168,216,168,0.28); text-transform:uppercase; }
+  .sanctuary-guide-btn { padding:5px 14px; border-radius:8px; border:1px solid rgba(168,216,168,0.14); background:transparent; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.14em; color:rgba(168,216,168,0.32); cursor:pointer; text-transform:uppercase; transition:all 0.2s; -webkit-tap-highlight-color:transparent; }
+  .sanctuary-guide-btn.active { border-color:rgba(168,216,168,0.45); background:rgba(168,216,168,0.07); color:#A8D8A8; }
 
   /* ══ PHASE 2 — MONK: THE RITUALS ════════════ */
   .monk-ritual-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(168,216,168,0.05); cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -2357,6 +2385,40 @@
     ],
   };
 
+  const EXERCISE_INFO = {
+    'Push-ups':              { tip: 'Hands shoulder-width, body rigid from head to heel. Lower chest to floor, full range.' },
+    'Wide Push-ups':         { tip: 'Hands wider than shoulders. More chest activation, less tricep than standard.' },
+    'Diamond Push-ups':      { tip: 'Thumbs and index fingers form a diamond under chest. Strict tricep focus — elbows back.' },
+    'Pike Push-ups':         { tip: 'Hips high in an upside-down V. Press down and forward. Builds shoulder strength for handstands.' },
+    'Tricep Dips':           { tip: 'Use a chair or surface. Elbows drive straight back — not flared. Keep hips close to the surface.' },
+    'Table Rows':            { tip: 'Lie under a table, hands on edge, body straight. Pull chest up to the surface, squeeze shoulder blades.' },
+    'Superman Holds':        { tip: 'Face down, arms extended. Lift arms and legs simultaneously. Squeeze glutes and upper back hard.' },
+    'Towel Bicep Curls':     { tip: 'Loop towel under one foot. Stand tall, curl using bicep force only — don\'t swing.' },
+    'Reverse Snow Angels':   { tip: 'Face down, arms at sides. Sweep arms overhead along the floor. Full range, control the movement.' },
+    'Wall Pulls':            { tip: 'Grip doorframe or wall edge, lean back. Pull body forward using back muscles. Body stays rigid.' },
+    'Bodyweight Squats':     { tip: 'Feet shoulder-width, toes slightly out. Sit deep until thighs are parallel. Knees track over toes.' },
+    'Jump Squats':           { tip: 'Explode upward from the bottom of the squat. Land softly on the balls of your feet — absorb the impact.' },
+    'Bulgarian Split Squats':{ tip: 'Rear foot elevated behind you. Front knee stays over ankle. Go deep. The hardest leg exercise — respect it.' },
+    'Glute Bridges':         { tip: 'Feet flat, drive hips to the ceiling. Squeeze glutes hard at the top for 1 full second before lowering.' },
+    'Wall Sit':              { tip: 'Thighs parallel to floor, back flat against wall, no hands. Pure isometric quad burn. Don\'t cheat the angle.' },
+    'Calf Raises':           { tip: 'Full stretch at the bottom, full extension at the top. Go slow — 2s up, 2s hold, 2s down.' },
+    'Barbell Bench Press':   { tip: 'Arch back slightly, feet flat. Bar touches lower chest. Path is slightly diagonal — not straight down.' },
+    'Incline DB Press':      { tip: '30–45° incline. Control the dumbbells — don\'t let them drift apart at the bottom.' },
+    'Cable Flyes':           { tip: 'Slight permanent bend in elbows. Squeeze at the center — it\'s a chest exercise, not an arm exercise.' },
+    'Overhead Press':        { tip: 'Bar starts at collarbone. Press straight up, head neutral. Full lockout at top, core braced throughout.' },
+    'Tricep Pushdown':       { tip: 'Elbows pinned tight to sides — they don\'t move. Only forearms move. Full extension at the bottom.' },
+    'Lat Pulldown':          { tip: 'Pull bar to upper chest. Elbows drive down and back — think of putting them in your back pockets.' },
+    'Barbell Rows':          { tip: 'Hinge to ~45°. Pull bar to lower abdomen. Squeeze shoulder blades together at the top. No swinging.' },
+    'Seated Cable Rows':     { tip: 'Sit tall, chest slightly forward on the pull. Row to your navel. Retract shoulder blades fully.' },
+    'Face Pulls':            { tip: 'Pull rope to eye level, external rotate shoulders back. Elbows high and wide. Critical for shoulder health.' },
+    'Dumbbell Curls':        { tip: 'No swinging. Supinate (rotate palm up) at the top. Controlled 3-second negative — that\'s where growth is.' },
+    'Barbell Squats':        { tip: 'Brace your core like you\'re about to take a punch. Break at hips and knees simultaneously. Knees out.' },
+    'Romanian Deadlift':     { tip: 'Hip hinge — push hips back, not down. Bar drags down your legs. Stop when you feel a deep hamstring stretch.' },
+    'Leg Press':             { tip: 'Feet hip-width. Full range of motion — don\'t lock knees at top. Drive through heels, not toes.' },
+    'Leg Curls':             { tip: 'Slow 3s negative. Don\'t hyperextend hips into the pad. Curl to full contraction, toes neutral.' },
+    'Machine Calf Raises':   { tip: 'Full stretch at the bottom — pause there. 2s hold at the top. High reps (15–25) for calf hypertrophy.' },
+  };
+
   // Class-specific daily quests
   const CLASS_QUESTS = {
     monarch: [
@@ -2392,6 +2454,98 @@
     deep:      { label: 'Deep Work',  mins: 50, xp: 30 },
     whiteroom: { label: 'White Room', mins: 90, xp: 55 },
   };
+
+  const BRAIN_CHALLENGES = [
+    { type:'LOGIC',     text:'Two ropes each burn in exactly 60 minutes but unevenly. Using only fire, measure exactly 45 minutes. Work it through mentally.' },
+    { type:'LATERAL',   text:'A man pushes his car to a hotel and immediately goes bankrupt. What is happening? Think before marking done.' },
+    { type:'MATH',      text:'A snail climbs 3 ft each day, slides 2 ft each night. How many days to scale a 10 ft wall? No calculator.' },
+    { type:'FOCUS',     text:'Sit still for 2 minutes with eyes closed. No phone, no movement. Just observe your thoughts without following any of them.' },
+    { type:'PATTERN',   text:'What letter comes next: O, T, T, F, F, S, S, E, N, __ ? (Hint: say the numbers aloud.)' },
+    { type:'LATERAL',   text:'A rooster lays an egg on the peak of a pointed roof. Which side does the egg roll down?' },
+    { type:'MATH',      text:'Without a calculator: what is 1/3 of 3/4 of 240? Solve step by step in your head.' },
+    { type:'LOGIC',     text:'You have 12 identical balls — one is heavier or lighter. Using a balance scale exactly 3 times, identify the odd ball and whether it\'s heavier or lighter.' },
+    { type:'MEMORY',    text:'Memorize once: 7, 3, 9, 1, 5, 8, 2, 4, 6. Close your eyes and recall the sequence in reverse. No peeking.' },
+    { type:'LATERAL',   text:'How many months of the year have 28 days?' },
+    { type:'CREATIVE',  text:'In 2 minutes: list 10 completely different uses for a brick. Practical and absurd count equally. Push past the obvious.' },
+    { type:'MATH',      text:'What is the sum of all integers from 1 to 100? There is a pattern — find it without counting.' },
+    { type:'FOCUS',     text:'For the next 3 minutes: no app switching, no scrolling. Think about one goal you have not acted on. What is the real reason?' },
+    { type:'PATTERN',   text:'Extend the sequence 3 more steps: 1, 1, 2, 3, 5, 8, 13, __, __, __' },
+    { type:'LOGIC',     text:'Three switches outside a sealed room control three bulbs inside. You can enter only once. How do you map every switch to its bulb?' },
+    { type:'WORD',      text:'What single 9-letter word contains only one vowel — and you use it constantly in conversation? Think before looking it up.' },
+    { type:'MATH',      text:'How many trailing zeros does 100! (100 factorial) have? Reason it out using prime factorization logic.' },
+    { type:'LATERAL',   text:'A woman shoots her husband, then holds him underwater for 5 minutes. An hour later they dine together. How?' },
+    { type:'MEMORY',    text:'Read once: Tokyo, Cairo, Oslo, Lima, Riga, Doha, Accra, Minsk. Cover the list. Now sort them alphabetically from memory.' },
+    { type:'CREATIVE',  text:'Redesign the stop sign from scratch — any shape, color, or mechanism. What makes your version better? Think it through fully.' },
+    { type:'LOGIC',     text:'A is north of B. B is east of C. C is south of D. What direction is A from D? Draw it mentally.' },
+    { type:'MATH',      text:'A clock shows 3:15. What is the exact angle between the hour and minute hands? The hour hand has moved — account for it.' },
+    { type:'FOCUS',     text:'Name one thing you have been avoiding. Think for 3 full minutes about exactly why. Not the excuse — the real reason.' },
+    { type:'PATTERN',   text:'What do these letters share: A, E, F, H, I, K, L, M, N, T, V, W, X, Y, Z? Look carefully before answering.' },
+    { type:'LATERAL',   text:'A man is found dead in a locked room. On the floor: a puddle of water and a small wooden peg. No windows, no other clues. How?' },
+    { type:'WORD',      text:'ASTRONOMER is a perfect anagram of a 2-word phrase. Find it without writing anything down.' },
+    { type:'MATH',      text:'You invest $1,000 at 10% annual return. Without a calculator, estimate how many years to double it. There is a mental shortcut.' },
+    { type:'CREATIVE',  text:'Name 5 industries that will not exist in 30 years. Then name 5 that will be entirely new. Think rigorously — not just AI.' },
+    { type:'LOGIC',     text:'You have a 3-liter and a 5-liter jug with no markings and unlimited water. Measure exactly 4 liters. Work through every step.' },
+    { type:'FOCUS',     text:'Recall the last time you felt genuinely proud of yourself. Hold that moment in your mind for 2 full minutes. What made it real?' },
+    { type:'PATTERN',   text:'What comes next: 1, 11, 21, 1211, 111221, 312211, __ ? Say each row aloud — the rule will reveal itself.' },
+    { type:'MATH',      text:'A bat and ball cost $1.10 total. The bat costs $1 more than the ball. How much is the ball? Your first instinct is wrong — prove it.' },
+    { type:'LATERAL',   text:'A man lives on the 30th floor. Every morning he rides the elevator down. He only rides back up to floor 15 — then walks. Why?' },
+    { type:'WORD',      text:'What 5-letter word stays the same when you remove its first letter, its middle letter, and its last letter? Think letter by letter.' },
+    { type:'CREATIVE',  text:'Design the most effective possible daily schedule in 3 minutes. No wasted blocks. What does each hour look like, from wake to sleep?' },
+    { type:'LATERAL',   text:'A man falls from a 50-story building and survives — no equipment, no net, no special landing. How?' },
+    { type:'LOGIC',     text:'You have one match. In a room are a candle, a wood stove, and a gas lamp. What do you light first?' },
+    { type:'MATH',      text:'How many squares are on a standard 8×8 chessboard? It is not 64. Count all possible square sizes.' },
+    { type:'LATERAL',   text:'A truck driver goes the wrong way down a one-way street. A police officer sees him and does nothing. Why?' },
+    { type:'LATERAL',   text:'What is greater than God, more evil than the devil, the poor have it, the rich need it, and eating it kills you?' },
+    { type:'LATERAL',   text:'An electric train heads north. Which way does the smoke blow?' },
+    { type:'LATERAL',   text:'Before Everest was discovered, what was the highest mountain on Earth?' },
+    { type:'MATH',      text:'A car travels 60 mph for the first half of a journey and 40 mph for the second. What is the average speed for the whole trip? Your instinct will be wrong.' },
+    { type:'MATH',      text:'How many prime numbers exist between 1 and 100? Count them mentally before verifying.' },
+    { type:'FOCUS',     text:'Close everything. Write down mentally the 3 most important things you need to accomplish this week, ranked by actual impact.' },
+    { type:'FOCUS',     text:'Think about your biggest current challenge. Name the single next action that would move you forward — just one. Mark done after.' },
+    { type:'FOCUS',     text:'For 3 minutes: notice every physical sensation — tension, temperature, heartbeat. No judgment. Just observe.' },
+    { type:'FOCUS',     text:'Think of one person who genuinely helped you. Thank them in your mind with specific detail — what they did, why it mattered.' },
+    { type:'FOCUS',     text:'Spend 3 minutes with your future self 5 years from now. What would they tell the current you to do differently today?' },
+    { type:'PATTERN',   text:'Continue: 1, 4, 9, 16, 25, 36, __, __, __ (extend 3 more steps)' },
+    { type:'PATTERN',   text:'Continue: 3, 6, 12, 24, 48, __, __, __' },
+    { type:'PATTERN',   text:'What comes next: M, T, W, T, F, __, __ ?' },
+    { type:'PATTERN',   text:'Continue: A, B, D, G, K, P, __, __ (the gap between each letter increases by 1)' },
+    { type:'PATTERN',   text:'Complete: 1, 8, 27, 64, 125, __, __ (what is each term?)' },
+    { type:'MEMORY',    text:'Memorize once: Paris, Alpha, 7, Red, Orchid, 42, Nimbus, Eclipse. Recall them in alphabetical order without rereading.' },
+    { type:'MEMORY',    text:'Look once: 3,141,592,653. Cover it. Write it back from memory digit by digit.' },
+    { type:'MEMORY',    text:'Memorize these 6 words: castle, river, lightning, philosopher, echo, threshold. Try to recall all six in 5 minutes without looking back.' },
+    { type:'MEMORY',    text:'Memorize this map: 7→3, 2→8, 5→1, 4→6, 9→2. What does 5 map to? What input maps to 8?' },
+    { type:'CREATIVE',  text:'How would you explain the internet to someone from 1850 using only concepts they would understand?' },
+    { type:'CREATIVE',  text:'Design an ideal city from scratch. Focus only on the transportation system — what does it look like in detail?' },
+    { type:'CREATIVE',  text:'If you could only keep 3 apps on your phone forever, which would you keep? This reveals your actual priorities.' },
+    { type:'CREATIVE',  text:'What is the single most underrated skill that would change most people\'s lives if they mastered it? Defend your answer.' },
+    { type:'CREATIVE',  text:'How would you double your income in 12 months with zero upfront capital? Think in specific, executable steps — not theory.' },
+    { type:'WORD',      text:'Name 5 English words that contain all 5 vowels: a, e, i, o, u. Harder than it sounds. No repetition.' },
+    { type:'WORD',      text:'What is the longest word you can type using only the top row of a QWERTY keyboard?' },
+    { type:'WORD',      text:'Find a word that rhymes with "orange." Most say it\'s impossible — is that actually true?' },
+    { type:'LATERAL',   text:'What can you hold in your left hand but not in your right?' },
+    { type:'LATERAL',   text:'I have cities but no houses, mountains but no trees, water but no fish. What am I?' },
+    { type:'LATERAL',   text:'The more you take, the more you leave behind. What am I?' },
+    { type:'LATERAL',   text:'Two fathers and two sons go fishing. They catch exactly 3 fish and each person gets one. How?' },
+    { type:'LOGIC',     text:'A professor tells her class: "I will give a surprise test this week — on a day you cannot predict." Why is this logically impossible?' },
+    { type:'LOGIC',     text:'The hotel paradox: 3 men pay $10 each for a $30 room. Manager refunds $5, bellhop keeps $2, guests get $3 back. Each paid $9. 3×$9=$27 + $2 = $29. Where is the missing dollar?' },
+    { type:'LOGIC',     text:'You are in a race and pass the person in 2nd place. What place are you now in?' },
+    { type:'LOGIC',     text:'A man looks at a photo and says: "Brothers and sisters I have none, but this man\'s father is my father\'s son." Who is in the photo?' },
+    { type:'FOCUS',     text:'Pick one habit you want to build. Visualize doing it every day for 3 weeks. What does your life look like at week 3? Build the scene fully.' },
+    { type:'FOCUS',     text:'Think about the last time you wasted 2+ hours. What pattern caused it? Name one rule that would prevent it permanently.' },
+    { type:'FOCUS',     text:'What is the thing you most want to say to someone but haven\'t? You don\'t have to send it. Just compose it mentally.' },
+    { type:'FOCUS',     text:'Spend 3 minutes thinking about one thing you genuinely enjoy — not productivity, just enjoyment. Let the thought expand without guilt.' },
+    { type:'FOCUS',     text:'Name one belief you hold that you have never seriously questioned. Spend 3 minutes arguing the exact opposite perspective.' },
+    { type:'MATH',      text:'You have 8 identical marbles. One is slightly heavier. Using a balance scale exactly TWICE, identify the heavier marble.' },
+    { type:'MATH',      text:'What is 2^10? Now estimate 2^20 and 2^30 without a calculator. How far off are you?' },
+    { type:'LOGIC',     text:'Five pirates rank 1–5 (1 = most senior). They vote on dividing 100 gold coins. 50%+ must approve. If rejected, the proposer is thrown overboard. What should Pirate 1 propose to maximize their gold?' },
+    { type:'WORD',      text:'What word becomes a different word when you capitalize it? Find 3 examples. (Hint: august → August)' },
+    { type:'CREATIVE',  text:'You have 48 hours and unlimited budget to make one city measurably better. What single intervention do you make and why?' },
+    { type:'LATERAL',   text:'A man walks into a bar and asks for water. The bartender pulls out a gun and points it at him. The man thanks him and leaves. Why?' },
+    { type:'LOGIC',     text:'Using a 3-liter and 5-liter jug with no markings, measure exactly 1 liter of water. This is different from the 4-liter solution.' },
+    { type:'PATTERN',   text:'What comes next: 2, 5, 11, 23, 47, __ ? Find the rule.' },
+    { type:'CREATIVE',  text:'Name one thing technology cannot replace in human connection. Then name one thing it already has replaced, whether people admit it or not.' },
+    { type:'FOCUS',     text:'Think of a goal you keep postponing. Spend 3 minutes mentally walking through the actual first day of working on it — in detail.' },
+  ];
 
   const CLASS_META = {
     monarch:    { color: '#00F5FF', label: 'THE MONARCH',    icon: `<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="14,3 26,25 2,25"/></svg>` },
@@ -2458,6 +2612,7 @@
       shadowSlayerEarned: localStorage.getItem('weebji_shadow_slayer') === 'true',
       streakLostToday   : localStorage.getItem('weebji_streak_lost_today') === 'true',
       dailyChallengeDone: (localStorage.getItem('weebji_dc_done') || '').startsWith(today),
+      brainChallengeDone: (localStorage.getItem('weebji_brain_done') || '') === today,
       workoutDone       : localStorage.getItem('weebji_wk_bonus') === 'true',
     };
 
@@ -5156,6 +5311,7 @@
       const dots = done ? '' : Array.from({ length: ex.sets }, (_, s) =>
         `<div class="ex-set-dot${s < setsCompleted ? ' filled' : ''}"></div>`
       ).join('');
+      const _exInfo = EXERCISE_INFO[ex.name];
       row.innerHTML = `
         <div class="ex-check">${done ? CHECK_SVG : ''}</div>
         <div class="ex-middle">
@@ -5164,7 +5320,12 @@
           <div class="ex-set-dots">${dots}</div>
           <button class="ex-log-set">▶ Log Set</button>
         </div>
-        <div class="ex-xp">+${ex.xp} XP</div>`;
+        <div class="ex-xp">+${ex.xp} XP</div>
+        ${_exInfo ? `<button class="ex-info-btn">ℹ</button>
+        <div class="ex-info-panel">
+          <div class="ex-form-tip">${_exInfo.tip}</div>
+          <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' proper form tutorial')}" target="_blank" rel="noopener" class="ex-yt-link">▶ Watch Tutorial</a>
+        </div>` : ''}`;
       // Log set button
       row.querySelector('.ex-log-set').addEventListener('click', (e) => {
         e.stopPropagation();
@@ -5176,6 +5337,15 @@
         e.stopPropagation();
         onExerciseTap(i, row, allExercises);
       });
+      const _infoBtn = row.querySelector('.ex-info-btn');
+      if (_infoBtn) {
+        _infoBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const _panel = row.querySelector('.ex-info-panel');
+          const _open  = _panel.classList.toggle('open');
+          _infoBtn.classList.toggle('open', _open);
+        });
+      }
       list.appendChild(row);
     });
   }
@@ -5420,6 +5590,13 @@
     remaining: 0,
     mode     : 'standard',
     running  : false,
+    topic    : 'Other',
+
+    selectTopic(t) {
+      this.topic = t;
+      document.querySelectorAll('.mm-topic-chip').forEach(b =>
+        b.classList.toggle('active', b.dataset.topic === t));
+    },
 
     render() {
       const cfg = MM_MODES[this.mode];
@@ -5517,8 +5694,13 @@
       // Session log (today only)
       const _logKey = 'weebji_session_log';
       const _logRaw = JSON.parse(localStorage.getItem(_logKey) || '[]').filter(e => e.date === _today);
-      _logRaw.push({ date: _today, time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }), mode: cfg.label, xp: mmXP, mins: cfg.mins });
+      _logRaw.push({ date: _today, time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }), mode: cfg.label, xp: mmXP, mins: cfg.mins, topic: this.topic });
       localStorage.setItem(_logKey, JSON.stringify(_logRaw));
+      // Topic tracking
+      const _topicsRaw = JSON.parse(localStorage.getItem('weebji_mm_topics') || '{}');
+      _topicsRaw[_today] = _topicsRaw[_today] || {};
+      _topicsRaw[_today][this.topic] = (_topicsRaw[_today][this.topic] || 0) + cfg.mins;
+      localStorage.setItem('weebji_mm_topics', JSON.stringify(_topicsRaw));
       // Re-render secondary panel log if visible
       const _secList = document.getElementById('mm-panel-list');
       if (_secList) { const _pp = loadProgress(); renderSecondaryMastermind(_pp, _secList); }
@@ -5551,6 +5733,25 @@
     },
   };
 
+  function renderTopicBreakdown() {
+    const topics = JSON.parse(localStorage.getItem('weebji_mm_topics') || '{}');
+    const last7  = Array.from({length:7}, (_, i) => { const d = new Date(); d.setDate(d.getDate()-i); return d.toDateString(); });
+    const totals = {};
+    last7.forEach(day => { Object.entries(topics[day] || {}).forEach(([t,m]) => { totals[t] = (totals[t]||0)+m; }); });
+    const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]);
+    if (!entries.length) return null;
+    const maxM = entries[0][1];
+    const wrap = document.createElement('div');
+    wrap.className = 'mm-topic-breakdown';
+    wrap.innerHTML = `<div class="mm-topic-breakdown-title">This Week's Focus</div>` +
+      entries.map(([t, m]) => {
+        const pct = Math.round((m/maxM)*100);
+        const val = m >= 60 ? `${Math.floor(m/60)}h${m%60?m%60+'m':''}` : `${m}m`;
+        return `<div class="mm-topic-bar-row"><div class="mm-topic-bar-lbl">${t}</div><div class="mm-topic-bar-track"><div class="mm-topic-bar-fill" style="width:${pct}%"></div></div><div class="mm-topic-bar-val">${val}</div></div>`;
+      }).join('');
+    return wrap;
+  }
+
   function renderMastermindUI(p) {
     const listEl = document.getElementById('exercise-list');
     const cfg    = MM_MODES[Pomo.mode];
@@ -5570,11 +5771,55 @@
         <button class="mm-btn mm-btn-cancel" id="mm-cancel-btn">Cancel</button>
       </div>
       <p class="mm-xp-info">Deep focus mode — leave this screen and The Void drains your HP. Stay. Ascend.</p>
+      <div class="mm-topic-wrap">
+        <div class="mm-topic-wrap-label">Focus Topic</div>
+        <div class="mm-topic-row">
+          ${['Coding','Language','Math','Reading','Other'].map(t =>
+            `<button class="mm-topic-chip${Pomo.topic===t?' active':''}" data-topic="${t}">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
     `;
     document.querySelectorAll('.mm-mode-btn').forEach(b =>
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectMode(b.dataset.mode); }));
     document.getElementById('mm-start-btn').addEventListener('click',  () => { Sound.play('tap'); Pomo.toggle(); });
     document.getElementById('mm-cancel-btn').addEventListener('click', () => { Sound.play('tap'); Pomo.cancel(); });
+    document.querySelectorAll('.mm-topic-chip').forEach(b =>
+      b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectTopic(b.dataset.topic); }));
+    // Topic breakdown
+    listEl.querySelectorAll('.mm-topic-breakdown').forEach(el => el.remove());
+    const _bd = renderTopicBreakdown();
+    if (_bd) listEl.appendChild(_bd);
+    // Brain Challenge card
+    listEl.querySelectorAll('.brain-challenge-card').forEach(el => el.remove());
+    const _bcIdx  = Math.floor(Date.now() / 86400000) % BRAIN_CHALLENGES.length;
+    const _bc     = BRAIN_CHALLENGES[_bcIdx];
+    const _bcDone = !!p.brainChallengeDone;
+    const bcCard  = document.createElement('div');
+    bcCard.className = 'brain-challenge-card';
+    bcCard.innerHTML = `
+      <div class="brain-challenge-label">Daily Brain Challenge · +12 XP</div>
+      <div class="brain-challenge-type">${_bc.type}</div>
+      <div class="brain-challenge-text">${_bc.text}</div>
+      ${_bcDone
+        ? `<div class="brain-challenge-done">◆ Sealed</div>`
+        : `<button class="brain-challenge-btn" id="brain-done-btn">Mark Complete</button>`}
+    `;
+    if (!_bcDone) {
+      bcCard.querySelector('#brain-done-btn').addEventListener('click', () => {
+        Sound.play('check');
+        const _today = new Date().toDateString();
+        localStorage.setItem('weebji_brain_done', _today);
+        const p2 = loadProgress();
+        p2.xp += 12;
+        const leveled = checkLevelUp(p2);
+        saveProgress(p2); updateXPBar(p2); updateStats(p2);
+        if (leveled) triggerLevelUp(p2.level);
+        spawnDropBanner('◆ BRAIN CHALLENGE SEALED — +12 XP');
+        renderMastermindUI(p2);
+      });
+    }
+    listEl.appendChild(bcCard);
     // Heatmap + calendar (clear first to prevent duplication)
     listEl.querySelectorAll('.dopamine-section, .deep-work-heatmap').forEach(el => el.remove());
     listEl.appendChild(renderDeepWorkHeatmap(p));
@@ -5598,12 +5843,16 @@
     let _interval  = null;
     let _breathPhase = 0; // 0=inhale 1=hold-in 2=exhale 3=hold-out
     let _breathTick  = 0;
+    let _guideOn        = localStorage.getItem('weebji_sanctuary_guide') !== '0';
+    let _focusTick      = 0;
+    let _flashRemaining = 0;
     const BREATH_DUR  = 4; // seconds per phase (box breathing: 4-4-4-4)
     const PHASE_LABELS = ['Breathe In', 'Hold', 'Breathe Out', 'Hold'];
     const PHASE_VOICE  = ['Breathe in.', 'Hold.', 'Breathe out.', 'Hold.'];
 
     // Free speech for breathing — no premium gate, always works
     function _breathSpeak(text) {
+      if (!_guideOn) return;
       if (!('speechSynthesis' in window)) return;
       if (localStorage.getItem('weebji_voice') === '0') return; // respect user mute
       window.speechSynthesis.cancel();
@@ -5643,11 +5892,17 @@
 
     function _tick() {
       _remaining--;
-      _breathTick++;
-      if (_breathTick >= BREATH_DUR) {
-        _breathTick = 0;
-        _breathPhase = (_breathPhase + 1) % 4;
-        _breathSpeak(PHASE_VOICE[_breathPhase]);
+      if (_guideOn) {
+        _breathTick++;
+        if (_breathTick >= BREATH_DUR) {
+          _breathTick = 0;
+          _breathPhase = (_breathPhase + 1) % 4;
+          _breathSpeak(PHASE_VOICE[_breathPhase]);
+        }
+      } else {
+        _focusTick++;
+        if (_flashRemaining > 0) _flashRemaining--;
+        if (_focusTick >= 75) { _focusTick = 0; _flashRemaining = 3; }
       }
       _syncUI();
       if (_remaining <= 0) _onComplete();
@@ -5691,22 +5946,37 @@
       const startBtn  = document.getElementById('sanctuary-start')   || document.getElementById('sec-sanctuary-start');
       const sessEl    = document.getElementById('sanctuary-sessions');
       if (timerEl) timerEl.textContent = _fmt(_remaining);
-      if (phaseEl) phaseEl.textContent = _running ? PHASE_LABELS[_breathPhase] : '— awaiting —';
+      if (phaseEl) {
+        if (!_running) phaseEl.textContent = '— awaiting —';
+        else if (_guideOn) phaseEl.textContent = PHASE_LABELS[_breathPhase];
+        else phaseEl.textContent = _flashRemaining > 0 ? 'Focus on your breath' : '—';
+      }
       if (startBtn) startBtn.textContent = _running ? 'Pause' : (_remaining < SANCTUARY_MODES[_mode].mins * 60 ? 'Resume' : 'Begin Session');
       if (ringEl) {
+        const phase = _guideOn ? _breathPhase : 2;
         const scales = [1.18, 1.18, 0.75, 0.75];
-        ringEl.style.transform = `scale(${scales[_breathPhase]})`;
-        ringEl.dataset.phase = _breathPhase;
+        ringEl.style.transform = `scale(${scales[phase]})`;
+        ringEl.dataset.phase = phase;
       }
-      if (ringInner) ringInner.dataset.phase = _breathPhase;
+      if (ringInner) ringInner.dataset.phase = _guideOn ? _breathPhase : 2;
       if (sessEl) {
         const totalMins = parseInt(localStorage.getItem('weebji_total_med_mins') || '0');
         sessEl.textContent = totalMins > 0 ? `${totalMins} mins meditated` : 'No sessions yet';
       }
-      // Update mode buttons
       document.querySelectorAll('.sanctuary-mode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.mode === _mode);
       });
+      document.querySelectorAll('.sanctuary-guide-btn').forEach(b => {
+        b.textContent = _guideOn ? 'Voice Guide: On' : 'Voice Guide: Off';
+        b.classList.toggle('active', _guideOn);
+      });
+    }
+
+    function toggleGuide() {
+      _guideOn = !_guideOn;
+      localStorage.setItem('weebji_sanctuary_guide', _guideOn ? '1' : '0');
+      if (!_guideOn) { _focusTick = 0; _flashRemaining = 0; }
+      _syncUI();
     }
 
     function _fmt(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
@@ -5714,7 +5984,7 @@
     function syncUI() { _syncUI(); }
     function isRunning() { return _running; }
 
-    return { selectMode, toggle, syncUI, isRunning };
+    return { selectMode, toggle, syncUI, isRunning, toggleGuide };
   })();
 
   /* ══ MONK — RITUAL ENGINE ════════════════════ */
@@ -5735,6 +6005,7 @@
         </div>
         <div class="sanctuary-timer" id="sanctuary-timer">10:00</div>
         <button class="sanctuary-start" id="sanctuary-start">Begin Session</button>
+        <button class="sanctuary-guide-btn" id="sanctuary-guide-btn">Voice Guide</button>
         <div class="sanctuary-sessions" id="sanctuary-sessions">No sessions yet</div>
       </div>
     `;
@@ -5775,6 +6046,8 @@
     });
     const startBtn = document.getElementById('sanctuary-start');
     if (startBtn) startBtn.addEventListener('click', () => Sanctuary.toggle());
+    const guideBtn = document.getElementById('sanctuary-guide-btn');
+    if (guideBtn) guideBtn.addEventListener('click', () => { Sound.play('tap'); Sanctuary.toggleGuide(); });
     Sanctuary.syncUI();
     // Update sub-title
     document.getElementById('forge-sub').textContent = `${p.monkChecked.length}/${MONK_RITUALS.length} TODAY`;
@@ -5935,6 +6208,36 @@
     el.querySelectorAll('[data-ctx="secondary"]').forEach(b =>
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectMode(b.dataset.mode); renderSecondaryMastermind(p, el); }));
     el.querySelector('#mm-start-sec').addEventListener('click', () => { Sound.play('tap'); Pomo.toggle(); renderSecondaryMastermind(p, el); });
+    // Brain Challenge (mini)
+    const _bcIdx2 = Math.floor(Date.now() / 86400000) % BRAIN_CHALLENGES.length;
+    const _bc2    = BRAIN_CHALLENGES[_bcIdx2];
+    const _bcDone2 = !!p.brainChallengeDone;
+    const bcCard2 = document.createElement('div');
+    bcCard2.className = 'brain-challenge-card';
+    bcCard2.style.marginTop = '14px';
+    bcCard2.innerHTML = `
+      <div class="brain-challenge-label">Daily Brain Challenge · +12 XP</div>
+      <div class="brain-challenge-type">${_bc2.type}</div>
+      <div class="brain-challenge-text" style="font-size:12px">${_bc2.text}</div>
+      ${_bcDone2
+        ? `<div class="brain-challenge-done">◆ Sealed</div>`
+        : `<button class="brain-challenge-btn" id="brain-done-sec-btn">Mark Complete</button>`}
+    `;
+    if (!_bcDone2) {
+      bcCard2.querySelector('#brain-done-sec-btn').addEventListener('click', () => {
+        Sound.play('check');
+        const _today = new Date().toDateString();
+        localStorage.setItem('weebji_brain_done', _today);
+        const p2 = loadProgress();
+        p2.xp += 12;
+        const leveled = checkLevelUp(p2);
+        saveProgress(p2); updateXPBar(p2); updateStats(p2);
+        if (leveled) triggerLevelUp(p2.level);
+        spawnDropBanner('◆ BRAIN CHALLENGE SEALED — +12 XP');
+        renderSecondaryMastermind(p2, el);
+      });
+    }
+    el.appendChild(bcCard2);
   }
 
   function renderSecondaryMonk(p, el) {
@@ -5956,6 +6259,7 @@
         </div>
         <div class="sanctuary-timer" id="sec-sanctuary-timer" style="font-size:30px">10:00</div>
         <button class="sanctuary-start" id="sec-sanctuary-start" style="padding:10px 24px;font-size:10px">Begin Session</button>
+        <button class="sanctuary-guide-btn" id="sec-sanctuary-guide-btn">Voice Guide</button>
       </div>
     `;
     el.appendChild(sanctuaryMini);
@@ -5974,6 +6278,8 @@
     });
     const secBtn = sanctuaryMini.querySelector('#sec-sanctuary-start');
     if (secBtn) secBtn.addEventListener('click', () => Sanctuary.toggle());
+    const secGuideBtn = sanctuaryMini.querySelector('#sec-sanctuary-guide-btn');
+    if (secGuideBtn) secGuideBtn.addEventListener('click', () => { Sound.play('tap'); Sanctuary.toggleGuide(); });
 
     // ── Rituals ──
     const ritualWrap = document.createElement('div');

@@ -77,14 +77,14 @@
   .class-card:active   { transform: translateY(1px) scale(0.975); }
   .class-card::after   { content: ''; position: absolute; top: 0; left: 12%; width: 76%; height: 1px; background: linear-gradient(90deg, transparent, var(--card-color), transparent); opacity: 0.6; }
   .class-card--monarch    { --card-color: #00F5FF; border: 1px solid rgba(0,245,255,0.45); will-change: box-shadow; animation: kf-breathe-monarch    4s ease-in-out infinite; }
-  .class-card--mastermind { --card-color: #FF2233; border: 1px solid rgba(255,34,51,0.45); will-change: box-shadow; animation: kf-breathe-mastermind 4s ease-in-out infinite; animation-delay: -1.3s; }
+  .class-card--mastermind { --card-color: #E63946; border: 1px solid rgba(230,57,70,0.45); will-change: box-shadow; animation: kf-breathe-mastermind 4s ease-in-out infinite; animation-delay: -1.3s; }
   .class-card--monk       { --card-color: #A8D8A8; border: 1px solid rgba(168,216,168,0.45); will-change: box-shadow; animation: kf-breathe-monk       4s ease-in-out infinite; animation-delay: -2.6s; }
   .class-card__icon, .class-card__name, .class-card__desc, .class-card__arrow { position:relative; z-index:1; }
   .class-card--monarch:hover    { animation: none; border-color: #00F5FF; box-shadow: 0 0 6px rgba(0,245,255,1), 0 0 22px rgba(0,245,255,0.55), 0 0 55px rgba(0,245,255,0.18), 0 0 10px rgba(0,245,255,0.22) inset; }
-  .class-card--mastermind:hover { animation: none; border-color: #FF2233; box-shadow: 0 0 6px rgba(255,34,51,1), 0 0 22px rgba(255,34,51,0.55), 0 0 55px rgba(255,34,51,0.18), 0 0 10px rgba(255,34,51,0.22) inset; }
+  .class-card--mastermind:hover { animation: none; border-color: #E63946; box-shadow: 0 0 6px rgba(230,57,70,1), 0 0 22px rgba(230,57,70,0.55), 0 0 55px rgba(230,57,70,0.18), 0 0 10px rgba(230,57,70,0.22) inset; }
   .class-card--monk:hover       { animation: none; border-color: #A8D8A8; box-shadow: 0 0 6px rgba(168,216,168,1), 0 0 22px rgba(168,216,168,0.55), 0 0 55px rgba(168,216,168,0.18), 0 0 10px rgba(168,216,168,0.22) inset; }
   @keyframes kf-breathe-monarch    { 0%,100% { box-shadow: 0 0 6px rgba(0,245,255,0.2), 0 0 18px rgba(0,245,255,0.06); }   50% { box-shadow: 0 0 14px rgba(0,245,255,0.5), 0 0 35px rgba(0,245,255,0.15); } }
-  @keyframes kf-breathe-mastermind { 0%,100% { box-shadow: 0 0 6px rgba(255,34,51,0.2), 0 0 18px rgba(255,34,51,0.06); }   50% { box-shadow: 0 0 14px rgba(255,34,51,0.5), 0 0 35px rgba(255,34,51,0.15); } }
+  @keyframes kf-breathe-mastermind { 0%,100% { box-shadow: 0 0 6px rgba(230,57,70,0.2), 0 0 18px rgba(230,57,70,0.06); }   50% { box-shadow: 0 0 14px rgba(230,57,70,0.5), 0 0 35px rgba(230,57,70,0.15); } }
   @keyframes kf-breathe-monk       { 0%,100% { box-shadow: 0 0 6px rgba(168,216,168,0.2), 0 0 18px rgba(168,216,168,0.06); } 50% { box-shadow: 0 0 14px rgba(168,216,168,0.5), 0 0 35px rgba(168,216,168,0.15); } }
   .class-card__icon { margin-bottom: 16px; line-height: 1; }
   .class-card__icon svg { display: block; width: 28px; height: 28px; color: var(--card-color); opacity: 0.85; filter: drop-shadow(0 0 6px var(--card-color)); }
@@ -408,9 +408,9 @@
   .nav-btn.active svg  { color: var(--cls-color, #00F5FF); filter: drop-shadow(0 0 4px var(--cls-color, #00F5FF)) drop-shadow(0 0 8px var(--cls-glow, rgba(0,245,255,0.35))); }
   .nav-btn.active span { color: var(--cls-color, #00F5FF); }
   .nav-btn.active::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 18px; height: 2px; background: var(--cls-color, #00F5FF); box-shadow: 0 0 6px var(--cls-color, #00F5FF), 0 0 14px var(--cls-glow, rgba(0,245,255,0.4)); border-radius: 1px; }
-  .nav-btn[data-tab="mastermind"].active svg  { color:#FF2233!important; filter:drop-shadow(0 0 4px #FF2233) drop-shadow(0 0 8px rgba(255,34,51,0.35))!important; }
-  .nav-btn[data-tab="mastermind"].active span { color:#FF2233!important; }
-  .nav-btn[data-tab="mastermind"].active::after { background:#FF2233!important; box-shadow:0 0 6px #FF2233,0 0 14px rgba(255,34,51,0.4)!important; }
+  .nav-btn[data-tab="mastermind"].active svg  { color:#E63946!important; filter:drop-shadow(0 0 4px #E63946) drop-shadow(0 0 8px rgba(230,57,70,0.35))!important; }
+  .nav-btn[data-tab="mastermind"].active span { color:#E63946!important; }
+  .nav-btn[data-tab="mastermind"].active::after { background:#E63946!important; box-shadow:0 0 6px #E63946,0 0 14px rgba(230,57,70,0.4)!important; }
   .nav-btn[data-tab="monk"].active svg  { color:#34D399!important; filter:drop-shadow(0 0 4px #34D399) drop-shadow(0 0 8px rgba(52,211,153,0.35))!important; }
   .nav-btn[data-tab="monk"].active span { color:#34D399!important; }
   .nav-btn[data-tab="monk"].active::after { background:#34D399!important; box-shadow:0 0 6px #34D399,0 0 14px rgba(52,211,153,0.4)!important; }
@@ -428,7 +428,7 @@
   .pillar-panel-inner::-webkit-scrollbar { display:none; }
   /* Mastermind — red scanline sweep */
   .pillar-scan { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
-    background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(255,34,51,0.045) 3px, rgba(255,34,51,0.045) 4px); }
+    background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(230,57,70,0.045) 3px, rgba(230,57,70,0.045) 4px); }
   @keyframes kf-scan-drift { from { background-position: 0 0 } to { background-position: 0 200px } }
   .pillar-scan { animation: kf-scan-drift 7s linear infinite; }
   /* Monk — floating particle drift */
@@ -799,8 +799,8 @@
   .guild-btn { padding: 11px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: rgba(255,255,255,0.5); cursor: pointer; text-transform: uppercase; white-space: nowrap; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
   .guild-btn:active { transform: scale(0.97); }
   .guild-btn.primary { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.07); }
-  .guild-btn.danger { border-color: rgba(255,34,51,0.2); color: rgba(255,34,51,0.55); }
-  .guild-btn.danger:active { background: rgba(255,34,51,0.06); }
+  .guild-btn.danger { border-color: rgba(230,57,70,0.2); color: rgba(230,57,70,0.55); }
+  .guild-btn.danger:active { background: rgba(230,57,70,0.06); }
   .guild-divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 12px 0; }
   .guild-msg { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.25); text-align: center; padding: 4px 0; }
   /* Global Leaderboard */
@@ -1062,48 +1062,48 @@
   /* ══ PHASE 2 — CLASS-AWARE THEMING ══════════ */
   #dashboard { --cls-color: #00F5FF; --cls-glow: rgba(0,245,255,0.35); }
   .xp-fill   { background: linear-gradient(90deg, color-mix(in srgb, var(--cls-color) 70%, #00C8CC), var(--cls-color)); box-shadow: 0 0 8px var(--cls-glow); }
-  .avatar.cls-mastermind { background: rgba(255,34,51,0.07); border-color: #FF2233; box-shadow: 0 0 8px rgba(255,34,51,1), 0 0 20px rgba(255,34,51,0.5), 0 0 40px rgba(255,34,51,0.15), 0 0 4px rgba(255,34,51,0.2) inset; color: #FF2233; text-shadow: 0 0 8px rgba(255,34,51,1), 0 0 16px rgba(255,34,51,0.5); }
+  .avatar.cls-mastermind { background: rgba(230,57,70,0.07); border-color: #E63946; box-shadow: 0 0 8px rgba(230,57,70,1), 0 0 20px rgba(230,57,70,0.5), 0 0 40px rgba(230,57,70,0.15), 0 0 4px rgba(230,57,70,0.2) inset; color: #E63946; text-shadow: 0 0 8px rgba(230,57,70,1), 0 0 16px rgba(230,57,70,0.5); }
   .avatar.cls-monk       { background: rgba(168,216,168,0.07); border-color: #A8D8A8; box-shadow: 0 0 8px rgba(168,216,168,1), 0 0 20px rgba(168,216,168,0.5), 0 0 40px rgba(168,216,168,0.15), 0 0 4px rgba(168,216,168,0.2) inset; color: #A8D8A8; text-shadow: 0 0 8px rgba(168,216,168,1), 0 0 16px rgba(168,216,168,0.5); }
 
   /* ══ PHASE 2 — MASTERMIND: THE WHITE ROOM ═══ */
   .mm-modes { display: flex; gap: 8px; margin-bottom: 22px; }
-  .mm-mode-btn { flex: 1; padding: 10px 6px; border-radius: 10px; border: 1px solid rgba(255,34,51,0.15); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: #444466; cursor: pointer; text-transform: uppercase; transition: all 0.25s ease; -webkit-tap-highlight-color: transparent; }
-  .mm-mode-btn.active { border-color: #FF2233; color: #FF2233; background: rgba(255,34,51,0.08); box-shadow: 0 0 12px rgba(255,34,51,0.2); }
+  .mm-mode-btn { flex: 1; padding: 10px 6px; border-radius: 10px; border: 1px solid rgba(230,57,70,0.15); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: #444466; cursor: pointer; text-transform: uppercase; transition: all 0.25s ease; -webkit-tap-highlight-color: transparent; }
+  .mm-mode-btn.active { border-color: #E63946; color: #E63946; background: rgba(230,57,70,0.08); box-shadow: 0 0 12px rgba(230,57,70,0.2); }
   .mm-timer-wrap { text-align: center; padding: 16px 0 22px; position: relative; }
-  .mm-timer { font-family: 'JetBrains Mono', monospace; font-size: clamp(54px,17vw,76px); font-weight: 700; letter-spacing: 0.04em; color: #FF2233; text-shadow: 0 0 24px rgba(255,34,51,0.6), 0 0 70px rgba(255,34,51,0.15); line-height: 1; transition: text-shadow 0.4s ease; }
+  .mm-timer { font-family: 'JetBrains Mono', monospace; font-size: clamp(54px,17vw,76px); font-weight: 700; letter-spacing: 0.04em; color: #E63946; text-shadow: 0 0 24px rgba(230,57,70,0.6), 0 0 70px rgba(230,57,70,0.15); line-height: 1; transition: text-shadow 0.4s ease; }
   .mm-timer.running { animation: kf-mm-pulse 2.5s ease-in-out infinite; }
-  @keyframes kf-mm-pulse { 0%,100% { text-shadow: 0 0 24px rgba(255,34,51,0.6), 0 0 70px rgba(255,34,51,0.15); } 50% { text-shadow: 0 0 40px rgba(255,34,51,1), 0 0 100px rgba(255,34,51,0.35); } }
+  @keyframes kf-mm-pulse { 0%,100% { text-shadow: 0 0 24px rgba(230,57,70,0.6), 0 0 70px rgba(230,57,70,0.15); } 50% { text-shadow: 0 0 40px rgba(230,57,70,1), 0 0 100px rgba(230,57,70,0.35); } }
   .mm-session-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; color: #555577; text-transform: uppercase; margin-top: 10px; }
   .mm-controls { display: flex; gap: 10px; }
   .mm-btn { flex: 1; padding: 15px; border-radius: 12px; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; -webkit-tap-highlight-color: transparent; text-transform: uppercase; }
-  .mm-btn-start  { background: rgba(255,34,51,0.07); border: 1px solid #FF2233; color: #FF2233; box-shadow: 0 0 18px rgba(255,34,51,0.2); }
+  .mm-btn-start  { background: rgba(230,57,70,0.07); border: 1px solid #E63946; color: #E63946; box-shadow: 0 0 18px rgba(230,57,70,0.2); }
   .mm-btn-start:active  { transform: scale(0.95); }
   .mm-btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.05); color: #2A2A44; }
   .mm-btn-cancel:active { transform: scale(0.95); }
   .mm-xp-info { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444466; text-align: center; margin-top: 12px; letter-spacing: 0.08em; }
   .mm-topic-wrap { text-align:center; margin-top:2px; }
-  .mm-topic-wrap-label { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.25em; color:rgba(255,34,51,0.28); text-transform:uppercase; margin-bottom:7px; }
+  .mm-topic-wrap-label { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.25em; color:rgba(230,57,70,0.28); text-transform:uppercase; margin-bottom:7px; }
   .mm-topic-row { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
-  .mm-topic-chip { padding:4px 12px; border-radius:20px; border:1px solid rgba(255,34,51,0.16); background:transparent; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.15em; color:rgba(255,34,51,0.36); cursor:pointer; text-transform:uppercase; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
-  .mm-topic-chip.active { border-color:rgba(255,34,51,0.55); background:rgba(255,34,51,0.1); color:#FF2233; }
-  .mm-topic-breakdown { margin-bottom:4px; padding:12px 14px; background:rgba(255,34,51,0.03); border:1px solid rgba(255,34,51,0.1); border-radius:12px; }
-  .mm-topic-breakdown-title { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.3em; color:rgba(255,34,51,0.35); text-transform:uppercase; margin-bottom:10px; }
+  .mm-topic-chip { padding:4px 12px; border-radius:20px; border:1px solid rgba(230,57,70,0.16); background:transparent; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.15em; color:rgba(230,57,70,0.36); cursor:pointer; text-transform:uppercase; transition:all 0.15s; -webkit-tap-highlight-color:transparent; }
+  .mm-topic-chip.active { border-color:rgba(230,57,70,0.55); background:rgba(230,57,70,0.1); color:#E63946; }
+  .mm-topic-breakdown { margin-bottom:4px; padding:12px 14px; background:rgba(230,57,70,0.03); border:1px solid rgba(230,57,70,0.1); border-radius:12px; }
+  .mm-topic-breakdown-title { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.3em; color:rgba(230,57,70,0.35); text-transform:uppercase; margin-bottom:10px; }
   .mm-topic-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
   .mm-topic-bar-lbl { font-family:'JetBrains Mono',monospace; font-size:8px; color:rgba(255,255,255,0.32); width:58px; text-align:right; }
-  .mm-topic-bar-track { flex:1; height:3px; background:rgba(255,34,51,0.1); border-radius:2px; overflow:hidden; }
-  .mm-topic-bar-fill { height:100%; background:#FF2233; border-radius:2px; }
-  .mm-topic-bar-val { font-family:'JetBrains Mono',monospace; font-size:8px; color:rgba(255,34,51,0.45); width:32px; }
-  .brain-challenge-card { margin-bottom:4px; padding:14px 16px; background:rgba(255,34,51,0.04); border:1px solid rgba(255,34,51,0.18); border-radius:14px; }
-  .brain-challenge-label { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.32em; color:rgba(255,34,51,0.45); text-transform:uppercase; margin-bottom:4px; }
-  .brain-challenge-type { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.2em; color:rgba(255,34,51,0.3); text-transform:uppercase; margin-bottom:9px; }
+  .mm-topic-bar-track { flex:1; height:3px; background:rgba(230,57,70,0.1); border-radius:2px; overflow:hidden; }
+  .mm-topic-bar-fill { height:100%; background:#E63946; border-radius:2px; }
+  .mm-topic-bar-val { font-family:'JetBrains Mono',monospace; font-size:8px; color:rgba(230,57,70,0.45); width:32px; }
+  .brain-challenge-card { margin-bottom:4px; padding:14px 16px; background:rgba(230,57,70,0.04); border:1px solid rgba(230,57,70,0.18); border-radius:14px; }
+  .brain-challenge-label { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.32em; color:rgba(230,57,70,0.45); text-transform:uppercase; margin-bottom:4px; }
+  .brain-challenge-type { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.2em; color:rgba(230,57,70,0.3); text-transform:uppercase; margin-bottom:9px; }
   .brain-challenge-text { font-family:'Inter',sans-serif; font-size:13px; color:rgba(255,255,255,0.72); line-height:1.75; margin-bottom:13px; }
-  .brain-challenge-btn { width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,34,51,0.32); background:rgba(255,34,51,0.05); font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:#FF2233; cursor:pointer; text-transform:uppercase; transition:background 0.2s; -webkit-tap-highlight-color:transparent; }
-  .brain-challenge-btn:active { background:rgba(255,34,51,0.13); }
-  .brain-challenge-done { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:rgba(255,34,51,0.45); text-transform:uppercase; text-align:center; padding:6px 0; }
-  .brain-answer-btn { background:none; border:none; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.18em; color:rgba(255,34,51,0.38); cursor:pointer; text-transform:uppercase; padding:0; -webkit-tap-highlight-color:transparent; }
-  .brain-answer-text { display:none; margin-top:10px; padding:10px 12px; background:rgba(255,34,51,0.05); border-radius:8px; font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.55); line-height:1.7; border-left:2px solid rgba(255,34,51,0.3); }
+  .brain-challenge-btn { width:100%; padding:10px; border-radius:10px; border:1px solid rgba(230,57,70,0.32); background:rgba(230,57,70,0.05); font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:#E63946; cursor:pointer; text-transform:uppercase; transition:background 0.2s; -webkit-tap-highlight-color:transparent; }
+  .brain-challenge-btn:active { background:rgba(230,57,70,0.13); }
+  .brain-challenge-done { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:rgba(230,57,70,0.45); text-transform:uppercase; text-align:center; padding:6px 0; }
+  .brain-answer-btn { background:none; border:none; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.18em; color:rgba(230,57,70,0.38); cursor:pointer; text-transform:uppercase; padding:0; -webkit-tap-highlight-color:transparent; }
+  .brain-answer-text { display:none; margin-top:10px; padding:10px 12px; background:rgba(230,57,70,0.05); border-radius:8px; font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.55); line-height:1.7; border-left:2px solid rgba(230,57,70,0.3); }
   .brain-answer-text.open { display:block; }
-  .mm-complete-banner { margin-top: 14px; padding: 12px 16px; background: rgba(255,34,51,0.06); border: 1px solid rgba(255,34,51,0.3); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #FF2233; text-shadow: 0 0 10px rgba(255,34,51,0.6); text-align: center; animation: kf-bonus-slide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+  .mm-complete-banner { margin-top: 14px; padding: 12px 16px; background: rgba(230,57,70,0.06); border: 1px solid rgba(230,57,70,0.3); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #E63946; text-shadow: 0 0 10px rgba(230,57,70,0.6); text-align: center; animation: kf-bonus-slide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
 
   /* ══ THE SANCTUARY — MONK MEDITATION ENGINE ══ */
   .sanctuary-panel { display:flex; flex-direction:column; align-items:center; padding:20px 0 16px; gap:14px; border-bottom:1px solid rgba(168,216,168,0.07); margin-bottom:16px; }
@@ -1161,13 +1161,13 @@
   .dw-bars { display: flex; align-items: flex-end; gap: 7px; height: 64px; margin-bottom: 8px; }
   .dw-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
   .dw-bar-fill { width: 100%; border-radius: 4px 4px 2px 2px; min-height: 4px; transition: height 0.8s cubic-bezier(0.16,1,0.3,1); }
-  .dw-bar-fill.empty { background: rgba(255,34,51,0.08); border: 1px solid rgba(255,34,51,0.1); }
-  .dw-bar-fill.has-sessions { background: linear-gradient(180deg, #FF4455, #FF2233); box-shadow: 0 0 10px rgba(255,34,51,0.45); border: none; }
-  .dw-bar-fill.today { box-shadow: 0 0 14px rgba(255,34,51,0.65); }
+  .dw-bar-fill.empty { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.1); }
+  .dw-bar-fill.has-sessions { background: linear-gradient(180deg, #FF4455, #E63946); box-shadow: 0 0 10px rgba(230,57,70,0.45); border: none; }
+  .dw-bar-fill.today { box-shadow: 0 0 14px rgba(230,57,70,0.65); }
   .dw-bar-day { font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #2A2A44; letter-spacing: 0.04em; }
-  .dw-bar-day.today { color: #FF2233; }
+  .dw-bar-day.today { color: #E63946; }
   .dw-focus-line { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444466; letter-spacing: 0.1em; }
-  .dw-focus-line strong { color: #FF2233; }
+  .dw-focus-line strong { color: #E63946; }
 
   /* ── Daily Reflection (Monk) ─────────────── */
   .reflection-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(168,216,168,0.06); }
@@ -1506,7 +1506,7 @@
           <span class="class-card__arrow"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h10M10 5l4 4-4 4"/></svg></span>
         </div>
 
-        <div class="class-card class-card--mastermind" data-class="mastermind" data-color="#FF2233" data-label="THE MASTERMIND">
+        <div class="class-card class-card--mastermind" data-class="mastermind" data-color="#E63946" data-label="THE MASTERMIND">
           <div class="class-card__icon"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="14,2 26,14 14,26 2,14"/></svg></div>
           <div class="class-card__name">THE MASTERMIND</div>
           <p class="class-card__desc">Your mind is the battlefield. Pomodoro sessions, deep work, zero distraction. Build empires.</p>
@@ -1623,7 +1623,10 @@
         </div>
         <div style="display:flex;align-items:center;gap:10px">
           <button class="music-btn" id="music-toggle-btn" title="Toggle music">♪</button>
-          <div class="hp-row" id="hp-row"></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span id="hp-label" style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.18em;color:rgba(255,255,255,0.32);text-transform:uppercase">HP 100</span>
+            <div class="hp-row" id="hp-row"></div>
+          </div>
         </div>
       </div>
 
@@ -2671,7 +2674,7 @@
 
   const CLASS_META = {
     monarch:    { color: '#00F5FF', label: 'THE MONARCH',    icon: `<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="14,3 26,25 2,25"/></svg>` },
-    mastermind: { color: '#FF2233', label: 'THE MASTERMIND', icon: `<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="14,2 26,14 14,26 2,14"/></svg>` },
+    mastermind: { color: '#E63946', label: 'THE MASTERMIND', icon: `<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="14,2 26,14 14,26 2,14"/></svg>` },
     monk:       { color: '#A8D8A8', label: 'THE MONK',       icon: `<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="14" cy="14" r="11"/><circle cx="14" cy="14" r="4"/></svg>` },
   };
 
@@ -3024,7 +3027,7 @@
       let bg = 'rgba(255,255,255,0.04)';
       if (count === 1) {
         if (isMonarch) bg = 'rgba(0,245,255,0.4)';
-        else if (isMm) bg = 'rgba(255,34,51,0.4)';
+        else if (isMm) bg = 'rgba(230,57,70,0.4)';
         else           bg = 'rgba(168,216,168,0.4)';
       } else if (count === 2) bg = 'rgba(255,200,50,0.55)';
       else if (count === 3) bg = 'rgba(255,255,255,0.75)';
@@ -3041,7 +3044,7 @@
       const s = p.mmDaily?.[d.date] || 0;
       const h = Math.max(2, Math.round((s / maxS) * 38));
       return `<div class="analytics-bar-wrap">
-        <div class="analytics-bar" style="height:${h}px;background:${s>0?'rgba(255,34,51,0.55)':'rgba(255,255,255,0.05)'}"></div>
+        <div class="analytics-bar" style="height:${h}px;background:${s>0?'rgba(230,57,70,0.55)':'rgba(255,255,255,0.05)'}"></div>
         <div class="analytics-bar-lbl">${d.lbl}</div>
       </div>`;
     }).join('');
@@ -3056,7 +3059,7 @@
         <div class="analytics-section-lbl">90-Day Activity</div>
         <div class="analytics-legend">
           <span style="background:rgba(0,245,255,0.4)"></span>Forge
-          <span style="background:rgba(255,34,51,0.4)"></span>Focus
+          <span style="background:rgba(230,57,70,0.4)"></span>Focus
           <span style="background:rgba(168,216,168,0.4)"></span>Rituals
           <span style="background:rgba(255,200,50,0.55)"></span>2 Classes
           <span style="background:rgba(255,255,255,0.75)"></span>All 3
@@ -4560,8 +4563,8 @@
     if (existingClass) {
       // Returning user — restore state and go straight to dashboard
       State.selectedClass = existingClass;
-      State.selectedColor = localStorage.getItem('weebji_color') || '#00F5FF';
-      State.selectedLabel = localStorage.getItem('weebji_label') || 'THE MONARCH';
+      State.selectedColor = localStorage.getItem('weebji_color') || (CLASS_META[existingClass]?.color) || '#00F5FF';
+      State.selectedLabel = localStorage.getItem('weebji_label') || (CLASS_META[existingClass]?.label) || 'THE MONARCH';
       State.playerName    = localStorage.getItem('weebji_name')  || 'Hunter';
       enterDashboard(false);
     } else {
@@ -5273,6 +5276,8 @@
   /* ── HP Bar (5 segmented blocks) ──────────── */
   function renderHearts(hp) {
     const c = document.getElementById('hp-row');
+    const lbl = document.getElementById('hp-label');
+    if (lbl) lbl.textContent = `HP ${hp * 20}`;
     c.innerHTML = '';
     for (let i = 0; i < 5; i++) {
       const seg = document.createElement('div');
@@ -5340,7 +5345,8 @@
       pill.className = cls2;
       // Dot indicator for done days
       const dot = isDone && !isToday ? `<span style="width:5px;height:5px;border-radius:50%;background:rgba(${ri},${gi},${bi},0.8);display:block;margin-top:1px;"></span>` : '';
-      pill.innerHTML = `<span class="day-pill__abbr">${abbr}</span><span class="day-pill__type">${type}</span>${dot}`;
+      const typeLabel = cls === 'monarch' ? `<span class="day-pill__type">${type}</span>` : '';
+      pill.innerHTML = `<span class="day-pill__abbr">${abbr}</span>${typeLabel}${dot}`;
       if (isToday && !isRest) {
         pill.style.borderColor = `rgba(${ri},${gi},${bi},0.45)`;
         pill.style.background  = `rgba(${ri},${gi},${bi},0.06)`;
@@ -5375,10 +5381,10 @@
     const _mw = document.getElementById('forge-mode-wrap'); if (_mw) _mw.innerHTML = '';
 
     if (cls === 'mastermind') {
-      forgeCard.style.borderColor = hexRgba('#FF2233', 0.25);
-      forgeCard.style.boxShadow   = `0 0 14px ${hexRgba('#FF2233', 0.08)}`;
+      forgeCard.style.borderColor = hexRgba('#E63946', 0.25);
+      forgeCard.style.boxShadow   = `0 0 14px ${hexRgba('#E63946', 0.08)}`;
       titleEl.textContent = 'THE WHITE ROOM';
-      titleEl.style.color = '#FF2233'; titleEl.style.textShadow = `0 0 14px rgba(255,34,51,0.6)`;
+      titleEl.style.color = '#E63946'; titleEl.style.textShadow = `0 0 14px rgba(230,57,70,0.6)`;
       subEl.textContent = 'FOCUS ENGINE';
       bonusEl.classList.add('hidden');
       renderMastermindUI(p);
@@ -5949,7 +5955,7 @@
       Sound.play('levelup');
       triggerFlash('flash-white', '#FFFFFF', null);
       shakeApp(0.8);
-      const _col2 = localStorage.getItem('weebji_color') || '#FF2233';
+      const _col2 = localStorage.getItem('weebji_color') || '#E63946';
       const _cnv2 = document.getElementById('cinematic-canvas');
       if (_cnv2) {
         const _cx2 = _cnv2.offsetWidth / 2, _cy2 = _cnv2.offsetHeight * 0.4;
@@ -6113,7 +6119,7 @@
     listEl.appendChild(renderDeepWorkHeatmap(p));
     const calSection = document.createElement('div');
     calSection.className = 'dopamine-section';
-    renderMonthCalendar(calSection, p.mmGrid || [], p.mmSessions > 0, '255,34,51', 'Focus Days');
+    renderMonthCalendar(calSection, p.mmGrid || [], p.mmSessions > 0, '230,57,70', 'Focus Days');
     listEl.appendChild(calSection);
   }
 
@@ -6464,7 +6470,7 @@
     const STATE_LINES = ['Cold start. Enter the Room.','Building momentum.','Signal is forming.','Flow state — do not break.','Maximum protocol active.'];
     const stateText = STATE_LINES[Math.min(sessions, STATE_LINES.length - 1)];
     const dots = Array.from({ length: TARGET }, (_, i) =>
-      `<div style="width:9px;height:9px;border-radius:50%;background:${i < sessions ? '#FF2233' : 'transparent'};border:1.5px solid rgba(255,34,51,${i < sessions ? '0.7' : '0.35'})"></div>`
+      `<div style="width:9px;height:9px;border-radius:50%;background:${i < sessions ? '#E63946' : 'transparent'};border:1.5px solid rgba(230,57,70,${i < sessions ? '0.7' : '0.35'})"></div>`
     ).join('');
     el.innerHTML = `
       <div class="mm-modes" style="margin-bottom:14px">
@@ -6474,9 +6480,9 @@
       </div>
       <div style="text-align:center;padding:12px 0 4px">
         <div class="mm-timer" style="font-size:clamp(38px,11vw,52px)" id="mm-timer-sec">${Pomo.formatTime(Pomo.remaining)}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(255,34,51,0.38);margin-top:8px;font-style:italic">${stateText}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(230,57,70,0.38);margin-top:8px;font-style:italic">${stateText}</div>
         <div style="display:flex;justify-content:center;gap:7px;margin-top:11px">${dots}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.22em;color:rgba(255,34,51,0.35);margin-top:5px">${sessions} / ${TARGET} TODAY</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.22em;color:rgba(230,57,70,0.35);margin-top:5px">${sessions} / ${TARGET} TODAY</div>
       </div>
       <div class="mm-controls" style="margin-top:14px">
         <button class="mm-btn mm-btn-start" id="mm-start-sec">${Pomo.running ? 'Pause' : (Pomo.remaining < cfg.mins*60 && Pomo.remaining > 0 ? 'Resume' : 'Begin Session')}</button>
@@ -6493,12 +6499,12 @@
         const _today2 = new Date().toDateString();
         const _log = JSON.parse(localStorage.getItem('weebji_session_log') || '[]').filter(e => e.date === _today2);
         if (!_log.length) return '';
-        return `<div style="margin-top:16px;border-top:1px solid rgba(255,34,51,0.08);padding-top:12px">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.3em;color:rgba(255,34,51,0.3);text-transform:uppercase;margin-bottom:8px">Today's Sessions</div>
-          ${_log.map(e => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,34,51,0.05)">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,34,51,0.45)">${e.time}</span>
+        return `<div style="margin-top:16px;border-top:1px solid rgba(230,57,70,0.08);padding-top:12px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.3em;color:rgba(230,57,70,0.3);text-transform:uppercase;margin-bottom:8px">Today's Sessions</div>
+          ${_log.map(e => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(230,57,70,0.05)">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(230,57,70,0.45)">${e.time}</span>
             <span style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.35)">${e.mode} · ${e.mins}m${e.topic && e.topic !== 'Other' ? ' · ' + e.topic : ''}</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,34,51,0.55)">+${e.xp} XP</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(230,57,70,0.55)">+${e.xp} XP</span>
           </div>`).join('')}
         </div>`;
       })()}
@@ -6720,17 +6726,29 @@
   }
 
   /* ══ MONARCH — PR BOARD ══════════════════════ */
-  const PR_DEFS = [
+  const PR_DEFS_HOME = [
     { key: 'pushups', label: 'Push-ups',   unit: 'reps', prompt: 'New push-up PR (reps):' },
     { key: 'squats',  label: 'Squats',     unit: 'reps', prompt: 'New squat PR (reps):'   },
     { key: 'plank',   label: 'Plank hold', unit: 'sec',  prompt: 'New plank PR (seconds):'},
   ];
+  const PR_DEFS_GYM = [
+    { key: 'bench',    label: 'Bench Press',    unit: 'kg', prompt: 'New bench press 1RM (kg):' },
+    { key: 'squat1rm', label: 'Squat',          unit: 'kg', prompt: 'New squat 1RM (kg):' },
+    { key: 'deadlift', label: 'Deadlift',       unit: 'kg', prompt: 'New deadlift 1RM (kg):' },
+    { key: 'ohp',      label: 'Overhead Press', unit: 'kg', prompt: 'New overhead press 1RM (kg):' },
+  ];
+  const PR_DEFS_ALL = [...PR_DEFS_HOME, ...PR_DEFS_GYM];
+  function getActivePRDefs() {
+    return (localStorage.getItem('weebji_workout_mode') || 'home') === 'gym' ? PR_DEFS_GYM : PR_DEFS_HOME;
+  }
 
   function renderPRBoard(p) {
     const board = document.createElement('div');
     board.className = 'pr-board';
-    board.innerHTML = `<div class="pr-board__label">Personal Records</div>` +
-      PR_DEFS.map(def => {
+    const defs = getActivePRDefs();
+    const mode = (localStorage.getItem('weebji_workout_mode') || 'home') === 'gym' ? 'Gym' : 'Home';
+    board.innerHTML = `<div class="pr-board__label">Personal Records — ${mode}</div>` +
+      defs.map(def => {
         const val = p.prs[def.key] || 0;
         return `<div class="pr-row" id="pr-row-${def.key}">
           <span class="pr-name">${def.label}</span>
@@ -6745,7 +6763,7 @@
   }
 
   function onPRTap(key, btn) {
-    const def = PR_DEFS.find(d => d.key === key);
+    const def = PR_DEFS_ALL.find(d => d.key === key);
     const p   = loadProgress();
     const cur = p.prs[key] || 0;
     const raw = prompt(def.prompt + (cur > 0 ? ` (current: ${cur})` : ''));
@@ -7953,7 +7971,7 @@
   _initPillarTabs();
 
   const _PILLAR_COLORS = {
-    mastermind: { color:'#FF2233', rgb:'255,34,51' },
+    mastermind: { color:'#E63946', rgb:'230,57,70' },
     monk:       { color:'#34D399', rgb:'52,211,153' },
     monarch:    { color:'#00F5FF', rgb:'0,245,255' },
   };
@@ -7992,21 +8010,21 @@
       const _bc    = BRAIN_CHALLENGES[_bcIdx];
       panel.innerHTML = `
         <div class="pillar-locked-screen">
-          <div class="pillar-locked-screen__glow" style="background:#FF2233"></div>
-          <div style="font-size:36px;color:#FF2233;text-shadow:0 0 28px rgba(255,34,51,0.7);margin-bottom:10px">◈</div>
-          <div class="pillar-locked-screen__title" style="color:#FF2233;text-shadow:0 0 20px rgba(255,34,51,0.4)">THE WHITE ROOM</div>
+          <div class="pillar-locked-screen__glow" style="background:#E63946"></div>
+          <div style="font-size:36px;color:#E63946;text-shadow:0 0 28px rgba(230,57,70,0.7);margin-bottom:10px">◈</div>
+          <div class="pillar-locked-screen__title" style="color:#E63946;text-shadow:0 0 20px rgba(230,57,70,0.4)">THE WHITE ROOM</div>
           <div class="pillar-locked-screen__subtitle">YOUR MIND IS AN UNTRAINED MUSCLE</div>
-          <div style="width:100%;max-width:300px;background:rgba(255,34,51,0.05);border:1px solid rgba(255,34,51,0.2);border-radius:12px;padding:14px 16px;margin-bottom:20px;text-align:left">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.3em;color:rgba(255,34,51,0.45);text-transform:uppercase;margin-bottom:8px">Today's Brain Challenge</div>
+          <div style="width:100%;max-width:300px;background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.2);border-radius:12px;padding:14px 16px;margin-bottom:20px;text-align:left">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.3em;color:rgba(230,57,70,0.45);text-transform:uppercase;margin-bottom:8px">Today's Brain Challenge</div>
             <div style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:10px">${_bc.text}</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;color:rgba(255,34,51,0.3)">⊘ Answer sealed — Upgrade to reveal</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;color:rgba(230,57,70,0.3)">⊘ Answer sealed — Upgrade to reveal</div>
           </div>
           <ul class="pillar-locked-screen__features">
-            <li class="pillar-locked-screen__feat" style="background:rgba(255,34,51,0.05);border:1px solid rgba(255,34,51,0.12);color:rgba(255,255,255,0.45)">◆ Daily brain challenge + answer reveal</li>
-            <li class="pillar-locked-screen__feat" style="background:rgba(255,34,51,0.05);border:1px solid rgba(255,34,51,0.12);color:rgba(255,255,255,0.45)">◆ Deep focus sessions with The Void</li>
-            <li class="pillar-locked-screen__feat" style="background:rgba(255,34,51,0.05);border:1px solid rgba(255,34,51,0.12);color:rgba(255,255,255,0.45)">◆ Task sealing + focus streak tracker</li>
+            <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Daily brain challenge + answer reveal</li>
+            <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Deep focus sessions with The Void</li>
+            <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Task sealing + focus streak tracker</li>
           </ul>
-          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(255,34,51,0.5);background:rgba(255,34,51,0.1);color:#FF2233;text-shadow:0 0 12px rgba(255,34,51,0.4);box-shadow:0 0 20px rgba(255,34,51,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
+          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(230,57,70,0.5);background:rgba(230,57,70,0.1);color:#E63946;text-shadow:0 0 12px rgba(230,57,70,0.4);box-shadow:0 0 20px rgba(230,57,70,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
           <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>
         </div>`;
       return;
@@ -8016,38 +8034,38 @@
     const focusStreak = _calcGridStreak(p.mmGrid);
     const totalFocusHrs = Math.floor(totalFocusMins / 60);
     panel.innerHTML = `
-      <div class="pillar-ambient" style="background:radial-gradient(circle, rgba(255,34,51,0.38) 0%, transparent 65%)"></div>
+      <div class="pillar-ambient" style="background:radial-gradient(circle, rgba(230,57,70,0.38) 0%, transparent 65%)"></div>
       <div class="pillar-scan"></div>
       <div class="pillar-panel-inner">
         <div style="text-align:center;padding:52px 20px 8px">
-          <div style="font-size:36px;color:#FF2233;text-shadow:0 0 28px rgba(255,34,51,0.6);margin-bottom:10px">◈</div>
-          <div class="pillar-panel-head__title" style="color:#FF2233;text-shadow:0 0 16px rgba(255,34,51,0.5);font-size:22px">THE WHITE ROOM</div>
+          <div style="font-size:36px;color:#E63946;text-shadow:0 0 28px rgba(230,57,70,0.6);margin-bottom:10px">◈</div>
+          <div class="pillar-panel-head__title" style="color:#E63946;text-shadow:0 0 16px rgba(230,57,70,0.5);font-size:22px">THE WHITE ROOM</div>
           <div class="pillar-panel-head__sub" style="margin-top:6px">Mastermind Protocol</div>
         </div>
         <div class="pillar-quote">${_pillarQuote('mastermind')}</div>
         <div class="pillar-stats-strip">
-          <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
-            <div class="pillar-stat__val" style="color:#FF2233">${p.mmSessions || 0}</div>
+          <div class="pillar-stat" style="border-color:rgba(230,57,70,0.12)">
+            <div class="pillar-stat__val" style="color:#E63946">${p.mmSessions || 0}</div>
             <div class="pillar-stat__lbl">Sessions</div>
           </div>
-          <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
-            <div class="pillar-stat__val" style="color:#FF2233">${focusStreak}d</div>
+          <div class="pillar-stat" style="border-color:rgba(230,57,70,0.12)">
+            <div class="pillar-stat__val" style="color:#E63946">${focusStreak}d</div>
             <div class="pillar-stat__lbl">Streak</div>
           </div>
-          <div class="pillar-stat" style="border-color:rgba(255,34,51,0.12)">
-            <div class="pillar-stat__val" style="color:#FF2233">${totalFocusHrs}h</div>
+          <div class="pillar-stat" style="border-color:rgba(230,57,70,0.12)">
+            <div class="pillar-stat__val" style="color:#E63946">${totalFocusHrs}h</div>
             <div class="pillar-stat__lbl">Total</div>
           </div>
         </div>
-        <div id="mm-cal-section" class="dopamine-section" style="margin:0 16px 4px;padding-top:12px;border-top:1px solid rgba(255,34,51,0.08)"></div>
-        <div class="dash-card" style="border-color:rgba(255,34,51,0.2);box-shadow:0 0 20px rgba(255,34,51,0.06)">
+        <div id="mm-cal-section" class="dopamine-section" style="margin:0 16px 4px;padding-top:12px;border-top:1px solid rgba(230,57,70,0.08)"></div>
+        <div class="dash-card" style="border-color:rgba(230,57,70,0.2);box-shadow:0 0 20px rgba(230,57,70,0.06)">
           <div class="dash-card__head">
-            <h3 class="dash-card__title" style="color:#FF2233">SESSION</h3>
+            <h3 class="dash-card__title" style="color:#E63946">SESSION</h3>
           </div>
           <div id="mm-panel-list"></div>
         </div>
       </div>`;
-    renderMonthCalendar(panel.querySelector('#mm-cal-section'), p.mmGrid || [], p.mmSessions > 0, '255,34,51', 'Focus Days');
+    renderMonthCalendar(panel.querySelector('#mm-cal-section'), p.mmGrid || [], p.mmSessions > 0, '230,57,70', 'Focus Days');
     renderSecondaryMastermind(p, panel.querySelector('#mm-panel-list'));
   }
 
@@ -8250,9 +8268,9 @@
 
   function renderProfile() {
     const cls   = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
-    const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+    const color = State.selectedColor || localStorage.getItem('weebji_color') || (CLASS_META[cls]?.color) || '#00F5FF';
     const name  = State.playerName   || localStorage.getItem('weebji_name')  || 'Hunter';
-    const label = State.selectedLabel|| localStorage.getItem('weebji_label') || 'THE MONARCH';
+    const label = State.selectedLabel|| localStorage.getItem('weebji_label') || (CLASS_META[cls]?.label) || 'THE MONARCH';
     const hunterNum = localStorage.getItem('weebji_hunter_num') || generateHunterNum(name, cls);
     const enemy     = localStorage.getItem('weebji_enemy') || '';
     const p         = loadProgress();
@@ -8943,7 +8961,7 @@
         item.querySelector('#cw-edit-cancel').addEventListener('click', () => renderCustomWorkouts(cls, color, p));
         item.querySelector('#cw-edit-save').addEventListener('click', () => {
           const name = item.querySelector('#cw-edit-name').value.trim();
-          if (!name) { item.querySelector('#cw-edit-name').style.borderColor='rgba(255,34,51,0.6)'; return; }
+          if (!name) { item.querySelector('#cw-edit-name').style.borderColor='rgba(230,57,70,0.6)'; return; }
           const sets = Math.min(20, Math.max(1, parseInt(item.querySelector('#cw-edit-sets').value)||3));
           const reps = item.querySelector('#cw-edit-reps').value.trim()||'10';
           const xp   = Math.min(15, Math.max(1, parseInt(item.querySelector('#cw-edit-xp').value)||10));
@@ -8978,7 +8996,7 @@
           const reps = formEl.querySelector('#cw-reps').value.trim() || '10';
           const xp   = Math.min(15, Math.max(1, parseInt(formEl.querySelector('#cw-xp').value) || 10));
           if (!name) {
-            formEl.querySelector('#cw-name').style.borderColor = 'rgba(255,34,51,0.6)';
+            formEl.querySelector('#cw-name').style.borderColor = 'rgba(230,57,70,0.6)';
             return;
           }
           const list = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
@@ -9163,8 +9181,8 @@
     const ctx = canvas.getContext('2d');
 
     const cls    = State.selectedClass || localStorage.getItem('weebji_class')  || 'monarch';
-    const color  = State.selectedColor || localStorage.getItem('weebji_color')  || '#00F5FF';
-    const label  = State.selectedLabel || localStorage.getItem('weebji_label')  || 'THE MONARCH';
+    const color  = State.selectedColor || localStorage.getItem('weebji_color')  || (CLASS_META[cls]?.color) || '#00F5FF';
+    const label  = State.selectedLabel || localStorage.getItem('weebji_label')  || (CLASS_META[cls]?.label) || 'THE MONARCH';
     const name   = (State.playerName   || localStorage.getItem('weebji_name')   || 'Hunter').toUpperCase();
     const num    = localStorage.getItem('weebji_hunter_num') || '----';
     const p      = loadProgress();
@@ -9951,7 +9969,7 @@
   function renderHunterSVG(cls, tier, w, h) {
     const pal = {
       monarch:    { col: '#00F5FF', dark: '#003A4F' },
-      mastermind: { col: '#FF2233', dark: '#440011' },
+      mastermind: { col: '#E63946', dark: '#440011' },
       monk:       { col: '#A8D8A8', dark: '#1E3A1E' },
     };
     const { col, dark } = pal[cls] || pal.monarch;
@@ -11076,7 +11094,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             renderShadowCard(_pp, _pcls);
             updateRivalLine(_pp); refreshRival();
           }
-          if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
+          if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#E63946':'#A8D8A8'); }
         }
 
         // Get or create sequential hunter number
@@ -11237,7 +11255,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             renderShadowCard(_pp, _pcls);
             updateRivalLine(_pp); refreshRival();
           }
-          if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#FF2233':'#A8D8A8'); }
+          if (document.getElementById('friends')?.classList.contains('active')) { const p=loadProgress(); renderFriends(p.class==='monarch'?'#00F5FF':p.class==='mastermind'?'#E63946':'#A8D8A8'); }
         }
       } catch(e) { console.warn('Premium check failed', e); }
     }

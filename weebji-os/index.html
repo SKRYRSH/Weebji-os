@@ -14,6 +14,34 @@
   <link rel="icon" href="icons/icon-192.png" type="image/png" />
   <!-- PostHog Analytics -->
   <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_rUZFK8D1ws0J87t0xXS5m2pgivBILx5gXB0fqw52otw',{api_host:'https://us.i.posthog.com',defaults:'2026-01-30',autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true});</script>
+  <!-- Global error capture → PostHog (must be early to catch boot errors) -->
+  <script>
+    window.addEventListener('error', (e) => {
+      try {
+        if (typeof posthog !== 'undefined') {
+          posthog.capture('js_error', {
+            message: String(e.message || '').slice(0, 500),
+            filename: String(e.filename || '').slice(0, 200),
+            lineno: e.lineno || 0,
+            colno: e.colno || 0,
+            stack: e.error && e.error.stack ? String(e.error.stack).slice(0, 1500) : null,
+            ua: navigator.userAgent.slice(0, 200)
+          });
+        }
+      } catch (_) {}
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      try {
+        if (typeof posthog !== 'undefined') {
+          posthog.capture('js_promise_rejection', {
+            reason: String(e.reason && e.reason.message || e.reason || '').slice(0, 500),
+            stack: e.reason && e.reason.stack ? String(e.reason.stack).slice(0, 1500) : null,
+            ua: navigator.userAgent.slice(0, 200)
+          });
+        }
+      } catch (_) {}
+    });
+  </script>
   <!-- Supabase JS (jsdelivr with unpkg fallback) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';document.head.appendChild(s)"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -2327,6 +2355,10 @@
     if (Notification.permission !== 'default') return;
     if (sessionStorage.getItem('weebji_notif_shown_this_session')) return;
     if (!SupabaseSync.getUser()) return;
+    // Don't ask permission until user has earned at least 1 streak day —
+    // asking on Day 0 yields permanent denial on Android (~80% deny rate).
+    const _p = loadProgress();
+    if ((_p.streak || 0) < 1) return;
     // Snooze: don't show again if dismissed within last 3 days
     const snoozed = localStorage.getItem('weebji_notif_snoozed');
     if (snoozed && Date.now() - parseInt(snoozed) < 3 * 24 * 60 * 60 * 1000) return;
@@ -3162,6 +3194,7 @@
     if (isWeebjiPlus()) {
       el.innerHTML = `
         <div class="profile-plus-active">WEEBJI+ ACTIVE</div>
+        <button class="ghost-shop-btn" onclick="Sound.play('tap');window.open('https://play.google.com/store/account/subscriptions?package=io.github.skryrsh.twa','_blank','noopener,noreferrer')" style="margin-bottom:8px;border-color:rgba(255,255,255,0.14);color:rgba(255,255,255,0.62);">⚙ Manage Subscription</button>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>`;
     } else {

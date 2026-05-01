@@ -4870,17 +4870,20 @@
         mastermind: 'Seal tasks, complete brain challenges, build deep work streaks. Your primary weapon against mediocrity.',
         monk:       'Guided breathwork, focus sessions, meditation. Recovery is part of the grind — not a break from it.'
       }[cls] || 'Your class pillar is your daily mission. Hit it every day.';
-      // Only show the OTHER class tabs — user already sees their own pillar spotlit on Home
-      const otherTabs = [];
-      if (cls !== 'mastermind') otherTabs.push({ nav:'mastermind', t:null, dim:0.45, title:'MINDSET PILLAR',  body:'Brain challenges, deep work sessions, task sealing — the Mastermind domain. Unlock it to train your mind alongside your body.' });
-      if (cls !== 'monk')       otherTabs.push({ nav:'monk',       t:null, dim:0.45, title:'MONK SANCTUARY',  body:'Guided breathwork, Pomodoro focus timers, meditation cycles — the Monk domain. Where you recover and recalibrate.' });
+      const mmBody  = cls === 'mastermind'
+        ? 'Your primary domain — brain challenges, deep work, task sealing. This is where your real edge is built.'
+        : 'Brain challenges, deep work sessions, task sealing — the Mastermind domain. A second weapon waiting to be unlocked.';
+      const monkBody = cls === 'monk'
+        ? 'Your primary domain — breathwork, Pomodoro focus timers, meditation. Recovery is part of the system.'
+        : 'Guided breathwork, Pomodoro focus timers, meditation cycles — the Monk domain. Where you recover and recalibrate.';
       return [
-        { nav:'home',    t:null,             dim:0.88, title:'WEEBJI OS',   body:'Not a productivity app. A system. You signed the contract — the System holds you to it every single day.' },
-        { nav:'home',    t:'#forge-card',    dim:0.82, title:pillarName,    body:pillarBody },
-        { nav:'home',    t:'.bottom-nav',    dim:0.82, title:'NAVIGATION',  body:'Four tabs. Home is your base. The other two domains are unlockable — tap them to see what you\'re missing.' },
-        ...otherTabs,
-        { nav:'profile', t:'.profile-stats', dim:0.82, title:'YOUR LEGEND', body:'Leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
-        { nav:'home',    t:null,             dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
+        { nav:'home',       t:null,             dim:0.88, title:'WEEBJI OS',        body:'Not a productivity app. A system. You signed the contract — the System holds you to it every single day.' },
+        { nav:'home',       t:'#forge-card',    dim:0.82, title:pillarName,          body:pillarBody },
+        { nav:'home',       t:'.bottom-nav',    dim:0.82, title:'NAVIGATION',        body:'Four tabs. Home is your base. Mastermind and Monk are separate domains — each a different weapon.' },
+        { nav:'mastermind', t:null,             dim:0.45, title:'MINDSET PILLAR',    body:mmBody },
+        { nav:'monk',       t:null,             dim:0.45, title:'MONK SANCTUARY',    body:monkBody },
+        { nav:'profile',    t:'.profile-stats', dim:0.82, title:'YOUR LEGEND',       body:'Leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
+        { nav:'home',       t:null,             dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
       ];
     }
 

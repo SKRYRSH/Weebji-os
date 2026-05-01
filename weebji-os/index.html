@@ -4870,14 +4870,17 @@
         mastermind: 'Seal tasks, complete brain challenges, build deep work streaks. Your primary weapon against mediocrity.',
         monk:       'Guided breathwork, focus sessions, meditation. Recovery is part of the grind — not a break from it.'
       }[cls] || 'Your class pillar is your daily mission. Hit it every day.';
+      // Only show the OTHER class tabs — user already sees their own pillar spotlit on Home
+      const otherTabs = [];
+      if (cls !== 'mastermind') otherTabs.push({ nav:'mastermind', t:null, dim:0.45, title:'MINDSET PILLAR',  body:'Brain challenges, deep work sessions, task sealing — the Mastermind domain. Unlock it to train your mind alongside your body.' });
+      if (cls !== 'monk')       otherTabs.push({ nav:'monk',       t:null, dim:0.45, title:'MONK SANCTUARY',  body:'Guided breathwork, Pomodoro focus timers, meditation cycles — the Monk domain. Where you recover and recalibrate.' });
       return [
-        { nav:'home',       t:null,             dim:0.88, title:'WEEBJI OS',        body:'Not a productivity app. A system. You signed the contract — the System holds you to it every single day.' },
-        { nav:'home',       t:'#forge-card',    dim:0.82, title:pillarName,         body:pillarBody },
-        { nav:'home',       t:'.bottom-nav',    dim:0.82, title:'NAVIGATION',       body:'Four tabs. Home is your base. Mindset and Monk are unlockable domains. Profile is your permanent record.' },
-        { nav:'mastermind', t:null,             dim:0.45, title:'MINDSET PILLAR',   body:'Brain challenges, deep work sessions, task sealing — the Mastermind domain. Tap it any day to train your mind alongside your body.' },
-        { nav:'monk',       t:null,             dim:0.45, title:'MONK SANCTUARY',   body:'Guided breathwork, Pomodoro focus timers, meditation cycles — the Monk domain. Where you recover and recalibrate.' },
-        { nav:'profile',    t:'.profile-stats', dim:0.82, title:'YOUR LEGEND',      body:'Leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
-        { nav:'home',       t:null,             dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
+        { nav:'home',    t:null,             dim:0.88, title:'WEEBJI OS',   body:'Not a productivity app. A system. You signed the contract — the System holds you to it every single day.' },
+        { nav:'home',    t:'#forge-card',    dim:0.82, title:pillarName,    body:pillarBody },
+        { nav:'home',    t:'.bottom-nav',    dim:0.82, title:'NAVIGATION',  body:'Four tabs. Home is your base. The other two domains are unlockable — tap them to see what you\'re missing.' },
+        ...otherTabs,
+        { nav:'profile', t:'.profile-stats', dim:0.82, title:'YOUR LEGEND', body:'Leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
+        { nav:'home',    t:null,             dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
       ];
     }
 
@@ -4948,7 +4951,10 @@
         </div>
         ${!isLast ? `<div id="tour-skip-row"><button class="tour-btn-skip" id="tc-skip">Skip Tour</button></div>` : ''}
       `;
-      card.querySelector('#tc-next').addEventListener('click', () => isLast ? end() : _go(idx + 1));
+      card.querySelector('#tc-next').addEventListener('click', () => {
+        if (isLast) { end(); if (step.promo) { setTimeout(() => { showScreen('profile'); setTimeout(() => document.getElementById('profile-plus-section')?.scrollIntoView({ behavior:'smooth' }), 200); }, 80); } }
+        else _go(idx + 1);
+      });
       const prev = card.querySelector('#tc-prev'); if (prev) prev.addEventListener('click', () => _go(idx - 1));
       const skip = card.querySelector('#tc-skip'); if (skip) skip.addEventListener('click', end);
       const plus = card.querySelector('#tour-plus-cta');

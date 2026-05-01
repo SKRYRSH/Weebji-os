@@ -8213,17 +8213,46 @@
     const canAccess = cls === 'monarch' || isWeebjiPlus();
     _setPillarBg('monarch');
     if (!canAccess) {
+      // Demo preview block — sample stats strip + 7-day grid + sample exercise rows
+      const _demoDots = [1,1,0,1,1,1,0]; // 5 of 7 filled
       panel.innerHTML = `
         <div class="pillar-locked-screen">
           <div class="pillar-locked-screen__glow" style="background:#00F5FF"></div>
           <div class="pillar-locked-screen__sigil" style="color:#00F5FF;text-shadow:0 0 24px rgba(0,245,255,0.6)">⚔</div>
           <div class="pillar-locked-screen__title" style="color:#00F5FF;text-shadow:0 0 20px rgba(0,245,255,0.4)">THE FORGE</div>
           <div class="pillar-locked-screen__subtitle">MONARCH PROTOCOLS — SEALED</div>
-          <ul class="pillar-locked-screen__features">
-            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Full Workout Protocol</li>
-            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Forge Timer System</li>
-            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Gym + Home Modes</li>
-            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Personal Record Board</li>
+          <div style="width:100%;max-width:300px;background:rgba(0,245,255,0.04);border:1px solid rgba(0,245,255,0.16);border-radius:12px;padding:14px 14px 12px;margin-bottom:18px;position:relative;overflow:hidden">
+            <div style="position:absolute;top:8px;right:10px;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.3em;color:rgba(0,245,255,0.32);text-transform:uppercase">Preview</div>
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <div style="flex:1;text-align:center;padding:8px 4px;border-radius:8px;background:rgba(0,245,255,0.04);border:1px solid rgba(0,245,255,0.1)">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:rgba(0,245,255,0.85)">PUSH</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.18em;color:rgba(0,245,255,0.4);text-transform:uppercase;margin-top:2px">Today</div>
+              </div>
+              <div style="flex:1;text-align:center;padding:8px 4px;border-radius:8px;background:rgba(0,245,255,0.04);border:1px solid rgba(0,245,255,0.1)">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:rgba(0,245,255,0.85)">12d</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.18em;color:rgba(0,245,255,0.4);text-transform:uppercase;margin-top:2px">Streak</div>
+              </div>
+              <div style="flex:1;text-align:center;padding:8px 4px;border-radius:8px;background:rgba(0,245,255,0.04);border:1px solid rgba(0,245,255,0.1)">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:rgba(0,245,255,0.85)">47</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.18em;color:rgba(0,245,255,0.4);text-transform:uppercase;margin-top:2px">Days</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:5px;justify-content:center;margin-bottom:10px">
+              ${_demoDots.map(on => `<div style="width:11px;height:11px;border-radius:3px;background:${on?'rgba(0,245,255,0.55)':'rgba(255,255,255,0.05)'};box-shadow:${on?'0 0 6px rgba(0,245,255,0.35)':'none'}"></div>`).join('')}
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:7px;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.08);font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.42)">
+                <span>Push-ups · 3×15</span><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(0,245,255,0.42)">+4 XP</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:7px;background:rgba(0,245,255,0.03);border:1px solid rgba(0,245,255,0.08);font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.42)">
+                <span>Bench Press · 4×8</span><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(0,245,255,0.42)">+8 XP</span>
+              </div>
+            </div>
+          </div>
+          <ul class="pillar-locked-screen__features" style="margin-bottom:20px">
+            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Full Workout Protocol · Gym + Home</li>
+            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Forge Timer + PR Board</li>
+            <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Weekly Boss Raids</li>
           </ul>
           <button class="pillar-locked-screen__btn" style="border:1px solid rgba(0,245,255,0.5);background:rgba(0,245,255,0.1);color:#00F5FF;text-shadow:0 0 12px rgba(0,245,255,0.4);box-shadow:0 0 20px rgba(0,245,255,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
           <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>

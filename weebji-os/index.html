@@ -1359,6 +1359,12 @@
   #tour-plus-cta { width:100%; margin-top:4px; padding:13px; border-radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.05); font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.14em; color:#fff; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; transition:background 0.2s; }
   #tour-plus-cta:active { background:rgba(255,255,255,0.12); }
   .tour-replay-btn { width:100%; margin-top:10px; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.03); font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:rgba(255,255,255,0.5); cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; }
+  .tour-preview { display:flex; flex-direction:column; gap:10px; margin:-4px 0 18px; padding:14px 12px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
+  .tour-preview-row { display:flex; align-items:center; gap:12px; }
+  .tour-preview-icon { width:30px; height:30px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); font-size:14px; color:rgba(255,255,255,0.85); }
+  .tour-preview-text { flex:1; min-width:0; }
+  .tour-preview-label { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; letter-spacing:0.14em; color:rgba(255,255,255,0.78); text-transform:uppercase; margin-bottom:2px; }
+  .tour-preview-desc { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.42); line-height:1.4; }
 
   /* ══ THE VOID ════════════════════════════════════ */
   @keyframes kf-void-bg { 0%,100%{opacity:0.5;} 50%{opacity:1;} }
@@ -4873,7 +4879,11 @@
       const secondarySteps = [];
       if (cls !== 'mastermind') secondarySteps.push({ nav:'mastermind', t:null, dim:0.45, title:'MINDSET PILLAR',  body:'Brain challenges, deep work sessions, task sealing — the Mastermind domain. A second weapon waiting to be unlocked.' });
       if (cls !== 'monk')       secondarySteps.push({ nav:'monk',       t:null, dim:0.45, title:'MONK SANCTUARY',  body:'Guided breathwork, Pomodoro focus timers, meditation cycles — the Monk domain. Where you recover and recalibrate.' });
-      if (cls !== 'monarch')    secondarySteps.push({ nav:'home', t:null, dim:0.88, title:'MONARCH PILLAR', body:'Workouts, PRs, weekly boss raids — the Monarch domain. Where the body is forged into a weapon.' });
+      if (cls !== 'monarch')    secondarySteps.push({ nav:'home', t:null, dim:0.55, title:'MONARCH PILLAR', body:'Workouts, PRs, weekly boss raids — the Monarch domain. Where the body is forged into a weapon.', preview:[
+        { icon:'⚔', label:'Daily Workouts',  desc:'Log lifts, runs, sessions → earn XP' },
+        { icon:'◈', label:'PR Tracking',     desc:'Personal records + streak chains' },
+        { icon:'☠', label:'Weekly Boss Raid', desc:'Drain HP before reset or take damage' }
+      ] });
       return [
         { nav:'home',    t:null,             dim:0.88, title:'WEEBJI OS',        body:'Not a productivity app. A system. You signed the contract — the System holds you to it every single day.' },
         { nav:'home',    t:'#forge-card',    dim:0.82, title:pillarName,          body:pillarBody },
@@ -4945,10 +4955,12 @@
       const card  = _card();
       const isLast = idx === total - 1;
       const dots = steps.map((_, i) => `<div class="tour-dot${i===idx?' on':''}"></div>`).join('');
+      const previewHTML = step.preview ? `<div class="tour-preview">${step.preview.map(p => `<div class="tour-preview-row"><div class="tour-preview-icon">${p.icon}</div><div class="tour-preview-text"><div class="tour-preview-label">${p.label}</div><div class="tour-preview-desc">${p.desc}</div></div></div>`).join('')}</div>` : '';
       card.innerHTML = `
         <div class="tour-step-lbl">${step.promo ? 'WEEBJI OS PLUS' : `${idx+1} / ${total}`}</div>
         <div class="tour-card-title">${step.title}</div>
         <div class="tour-card-body">${step.body}</div>
+        ${previewHTML}
         ${step.promo ? `<button id="tour-plus-cta">◈ Unlock Plus →</button>` : ''}
         <div class="tour-nav" style="margin-top:${step.promo?'14px':'0'}">
           ${idx > 0 ? `<button class="tour-btn-skip" id="tc-prev">← Back</button>` : `<div></div>`}

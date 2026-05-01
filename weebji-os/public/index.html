@@ -4870,37 +4870,39 @@
         mastermind: 'Seal tasks, complete brain challenges, build deep work streaks. Your primary weapon against mediocrity.',
         monk:       'Guided breathwork, focus sessions, meditation. Recovery is part of the grind — not a break from it.'
       }[cls] || 'Your class pillar is your daily mission. Hit it every day.';
-      const mmBody  = cls === 'mastermind'
-        ? 'Your primary domain — brain challenges, deep work, task sealing. This is where your real edge is built.'
-        : 'Brain challenges, deep work sessions, task sealing — the Mastermind domain. A second weapon waiting to be unlocked.';
-      const monkBody = cls === 'monk'
-        ? 'Your primary domain — breathwork, Pomodoro focus timers, meditation. Recovery is part of the system.'
-        : 'Guided breathwork, Pomodoro focus timers, meditation cycles — the Monk domain. Where you recover and recalibrate.';
+      const secondarySteps = [];
+      if (cls !== 'mastermind') secondarySteps.push({ nav:'mastermind', t:null, dim:0.45, title:'MINDSET PILLAR',  body:'Brain challenges, deep work sessions, task sealing — the Mastermind domain. A second weapon waiting to be unlocked.' });
+      if (cls !== 'monk')       secondarySteps.push({ nav:'monk',       t:null, dim:0.45, title:'MONK SANCTUARY',  body:'Guided breathwork, Pomodoro focus timers, meditation cycles — the Monk domain. Where you recover and recalibrate.' });
+      if (cls !== 'monarch')    secondarySteps.push({ nav:'home',       t:null, dim:0.82, title:'MONARCH PILLAR',  body:'Workouts, PRs, weekly boss raids — the Monarch domain. Where the body is forged into a weapon.' });
       return [
-        { nav:'home',       t:null,             dim:0.88, title:'WEEBJI OS',        body:'Not a productivity app. A system. You signed the contract — the System holds you to it every single day.' },
-        { nav:'home',       t:'#forge-card',    dim:0.82, title:pillarName,          body:pillarBody },
-        { nav:'home',       t:'.bottom-nav',    dim:0.82, title:'NAVIGATION',        body:'Four tabs. Home is your base. Mastermind and Monk are separate domains — each a different weapon.' },
-        { nav:'mastermind', t:null,             dim:0.45, title:'MINDSET PILLAR',    body:mmBody },
-        { nav:'monk',       t:null,             dim:0.45, title:'MONK SANCTUARY',    body:monkBody },
-        { nav:'profile',    t:'.profile-stats', dim:0.82, title:'YOUR LEGEND',       body:'Leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
-        { nav:'home',       t:null,             dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
+        { nav:'home',    t:null,             dim:0.88, title:'WEEBJI OS',        body:'Not a productivity app. A system. You signed the contract — the System holds you to it every single day.' },
+        { nav:'home',    t:'#forge-card',    dim:0.82, title:pillarName,          body:pillarBody },
+        { nav:'home',    t:'.bottom-nav',    dim:0.82, title:'NAVIGATION',        body:'Four tabs. Home is your base. Mastermind and Monk are separate domains — each a different weapon.' },
+        ...secondarySteps,
+        { nav:'profile', t:'.profile-stats', dim:0.82, title:'YOUR LEGEND',       body:'Leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
+        { nav:'home',    t:null,             dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
       ];
     }
 
     function _navTo(tab) {
       if (!tab) return;
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      const dashScroll = document.querySelector('.dash-scroll');
+      const hidePanels = () => document.querySelectorAll('.pillar-panel').forEach(p => p.style.display = 'none');
       if (tab === 'home') {
-        document.querySelectorAll('.pillar-panel').forEach(p => p.style.display = 'none');
         showScreen('dashboard');
+        hidePanels();
+        if (dashScroll) dashScroll.style.display = '';
       } else if (tab === 'mastermind') {
         showScreen('dashboard');
-        document.querySelectorAll('.pillar-panel').forEach(p => p.style.display = 'none');
+        hidePanels();
+        if (dashScroll) dashScroll.style.display = 'none';
         const mp = document.getElementById('mastermind-panel');
         if (mp) { mp.style.display = 'flex'; renderMastermindPillarPanel(); }
       } else if (tab === 'monk') {
         showScreen('dashboard');
-        document.querySelectorAll('.pillar-panel').forEach(p => p.style.display = 'none');
+        hidePanels();
+        if (dashScroll) dashScroll.style.display = 'none';
         const mp = document.getElementById('monk-panel');
         if (mp) { mp.style.display = 'flex'; renderMonkPillarPanel(); }
       } else if (tab === 'profile') {
@@ -4917,6 +4919,7 @@
       const el   = step.t ? document.querySelector(step.t) : null;
       const PAD  = 10;
       if (el) {
+        try { el.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' }); } catch(_) {}
         const r = el.getBoundingClientRect();
         if (r.width > 0 && r.top < vh && r.bottom > 0) {
           // Overlay transparent — spotlight's box-shadow creates the darkness around the element
@@ -6298,19 +6301,6 @@
     }).join('');
     const bonusHTML = p.monkBonus
       ? `<div class="monk-bonus">+25 BONUS XP — ALL RITUALS COMPLETE</div>` : '';
-    const today = new Date().toDateString();
-    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
-    const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay();
-    const offset = (firstDay === 0 ? 6 : firstDay - 1);
-    const todayNum = new Date().getDate();
-    let cells = '';
-    for (let i = 0; i < offset; i++) cells += `<div class="dg-cell" style="opacity:.08"></div>`;
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), d).toDateString();
-      const filled  = p.monkGrid && p.monkGrid.includes(dateStr);
-      const isToday = d === todayNum;
-      cells += `<div class="dg-cell${filled?' filled':''}${isToday?' today-cell':''}"></div>`;
-    }
     listEl.innerHTML = `
       ${sanctuaryHTML}
       ${rows}
@@ -6328,8 +6318,14 @@
     const guideBtn = document.getElementById('sanctuary-guide-btn');
     if (guideBtn) guideBtn.addEventListener('click', () => { Sound.play('tap'); Sanctuary.toggleGuide(); });
     Sanctuary.syncUI();
-    // Update sub-title
     document.getElementById('forge-sub').textContent = `${p.monkChecked.length}/${MONK_RITUALS.length} TODAY`;
+    requestAnimationFrame(() => {
+      listEl.querySelectorAll('.dopamine-section').forEach(el => el.remove());
+      const calSection = document.createElement('div');
+      calSection.className = 'dopamine-section';
+      renderMonthCalendar(calSection, p.monkGrid || [], p.monkChecked.length === MONK_RITUALS.length, '52,211,153', 'Monk Days');
+      listEl.appendChild(calSection);
+    });
   }
 
   function onMonkRitualTap(index) {

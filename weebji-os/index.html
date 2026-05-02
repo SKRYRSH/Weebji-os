@@ -442,7 +442,7 @@
   .nav-btn[data-tab="monk"].active svg  { color:#34D399!important; filter:drop-shadow(0 0 4px #34D399) drop-shadow(0 0 8px rgba(52,211,153,0.35))!important; }
   .nav-btn[data-tab="monk"].active span { color:#34D399!important; }
   .nav-btn[data-tab="monk"].active::after { background:#34D399!important; box-shadow:0 0 6px #34D399,0 0 14px rgba(52,211,153,0.4)!important; }
-  .pillar-quote { font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.12em; color:rgba(255,255,255,0.18); text-align:center; padding:2px 28px 14px; font-style:italic; line-height:1.7; }
+  .pillar-quote { font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.5); text-align:center; padding:2px 28px 14px; font-style:italic; line-height:1.7; text-shadow:0 0 12px rgba(255,255,255,0.06); }
   .nav-btn[data-tab="monarch"].active svg  { color:#00F5FF!important; filter:drop-shadow(0 0 4px #00F5FF) drop-shadow(0 0 8px rgba(0,245,255,0.35))!important; }
   .nav-btn[data-tab="monarch"].active span { color:#00F5FF!important; }
   .nav-btn[data-tab="monarch"].active::after { background:#00F5FF!important; box-shadow:0 0 6px #00F5FF,0 0 14px rgba(0,245,255,0.4)!important; }
@@ -2785,43 +2785,49 @@
       const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length;
       const originalStreak = p.streak || 0; // capture before any modification
 
-      // Apply penalty/reward for yesterday
+      // Streak resilience + auto Ghost Token spend (v207)
+      // Consolidated: any streak-loss condition (no activity yesterday OR gap days)
+      // gets auto-saved if user has enough Ghost Tokens. Tokens are the safety net.
       if (p.lastDate) {
-        if (yesterdayDone === 0) {
-          p.prevStreak = originalStreak; // save for Ghost Token restoration
+        const streakWouldDie = (yesterdayDone === 0) || (missedDays > 0);
+        if (streakWouldDie) {
+          const totalDaysMissed = missedDays + (yesterdayDone === 0 ? 1 : 0);
           const hpFloor = p.level >= 5 ? 0 : 1;
-          p.hp = Math.max(hpFloor, p.hp - 1);
-          p.streak = 0;
-          p.streakLostToday = true;
+          p.hp = Math.max(hpFloor, p.hp - Math.min(totalDaysMissed, 2));
+          // Auto-spend Ghost Tokens if streak is worth saving (>=3) and user has enough.
+          // Cap auto-spend at 2 tokens so binge-misses still need manual intervention.
+          const tokensNeeded = Math.min(totalDaysMissed, 2);
+          if (originalStreak >= 3 && (p.ghostTokens || 0) >= tokensNeeded) {
+            p.ghostTokens -= tokensNeeded;
+            p.streak = originalStreak; // streak preserved by token
+            p.streakLostToday = false;
+            try {
+              localStorage.setItem('weebji_ghost_auto_spent', JSON.stringify({
+                streak: originalStreak, tokens: tokensNeeded, when: today,
+              }));
+            } catch(_) {}
+          } else {
+            p.prevStreak = originalStreak; // for manual intervention overlay
+            p.streak = 0;
+            p.streakLostToday = true;
+          }
         } else {
+          // Active yesterday, no gap days → streak grows
           p.streak = (p.streak || 0) + 1;
-          p.hp = Math.min(5, p.hp + 1); // restore 1 HP segment for active day
+          p.hp = Math.min(5, p.hp + 1);
         }
-      }
-
-      // Apply penalty for each additional fully-missed day beyond yesterday
-      if (missedDays > 0) {
-        const hpFloor = p.level >= 5 ? 0 : 1;
-        p.hp = Math.max(hpFloor, p.hp - missedDays);
-        // If streak loss wasn't already flagged (user was active on last session but skipped days since),
-        // flag it now so ghost intervention triggers correctly
-        if (!p.streakLostToday && originalStreak > 0) {
-          p.prevStreak = originalStreak;
-          p.streakLostToday = true;
-        }
-        p.streak = 0;
       }
 
       // Save yesterday's count before wiping
       p.yesterdayCount = yesterdayDone;
 
-      // Monk grid: if all rituals were completed yesterday, mark it
-      if (p.lastDate && p.monkChecked.length === MONK_RITUALS.length) {
+      // Monk grid: mark day done on most rituals (4+/8) — was: all 8 (too punishing)
+      if (p.lastDate && (p.monkChecked || []).length >= Math.max(4, Math.ceil(MONK_RITUALS.length / 2))) {
         const grid = p.monkGrid || [];
         if (!grid.includes(p.lastDate)) { grid.push(p.lastDate); p.monkGrid = grid; }
       }
-      // Monarch grid: if workout bonus was achieved yesterday, mark it
-      if (p.lastDate && p.workoutBonus) {
+      // Monarch grid: mark day done on workoutBonus OR most checks (3+/4) — v207 looser
+      if (p.lastDate && (p.workoutBonus || (p.workoutChecked || []).length >= 3)) {
         const grid = p.monarchGrid || [];
         if (!grid.includes(p.lastDate)) { grid.push(p.lastDate); p.monarchGrid = grid; }
         p.totalWorkoutDays = (p.totalWorkoutDays || 0) + 1;
@@ -5074,6 +5080,21 @@
       const p = loadProgress();
       checkPenanceOnBoot();
       checkGhostIntervention(p);
+      // v207: surface auto-spent Ghost Token banner
+      try {
+        const _autoRaw = localStorage.getItem('weebji_ghost_auto_spent');
+        if (_autoRaw) {
+          const _auto = JSON.parse(_autoRaw);
+          localStorage.removeItem('weebji_ghost_auto_spent');
+          const _msg = _auto.tokens > 1
+            ? `👻 ${_auto.tokens} GHOST TOKENS AUTO-SPENT — ${_auto.streak}-day streak preserved`
+            : `👻 GHOST TOKEN AUTO-SPENT — ${_auto.streak}-day streak preserved`;
+          setTimeout(() => spawnDropBanner(_msg), 900);
+          if (typeof SystemVoice !== 'undefined' && SystemVoice.speak) {
+            setTimeout(() => SystemVoice.speak('Ghost Token consumed. Your streak survives.', 0), 1600);
+          }
+        }
+      } catch(_) {}
       showInstallPromptWhenReady();
       maybeShowNotifPrompt();
       RitualClock.check();
@@ -5393,7 +5414,7 @@
         pill.querySelector('.day-pill__abbr').style.color = `rgba(${ri},${gi},${bi},0.7)`;
       }
       if (isPast && !isDone && !isRest) {
-        pill.style.opacity = '0.35';
+        pill.style.opacity = '0.55';
       }
       bar.appendChild(pill);
     });
@@ -6806,14 +6827,12 @@
     const isNewPR = val > cur;
     p.prs[key] = Math.max(cur, val);
     if (isNewPR) {
-      p.xp += 10;
+      // v207: PRs no longer grant XP — Monarchs felt it inflated levelling.
+      // Keep the cinematic feedback so a new PR still feels earned.
       Sound.play('milestone');
-      spawnXPFloat(10, btn);
       triggerFlash('flash-class', State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF', null);
     }
-    const leveled = checkLevelUp(p);
-    saveProgress(p); updateXPBar(p); updateStats(p);
-    if (leveled) triggerLevelUp(p.level);
+    saveProgress(p); updateStats(p);
     // Update display
     const valEl = document.getElementById(`pr-val-${key}`);
     if (valEl) {
@@ -11214,7 +11233,13 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.monarchGrid?.length) p.monarchGrid = d.monarchGrid;
           if (d.mmGrid?.length)      p.mmGrid      = d.mmGrid;
           if (d.mmDaily && Object.keys(d.mmDaily).length) p.mmDaily = d.mmDaily;
-          if (d.prs)                 p.prs         = d.prs;
+          // v207: merge PRs key-by-key — never let stale cloud wipe a fresh local PR.
+          if (d.prs && typeof d.prs === 'object') {
+            p.prs = p.prs || {};
+            for (const _k in d.prs) {
+              if ((d.prs[_k] || 0) > (p.prs[_k] || 0)) p.prs[_k] = d.prs[_k];
+            }
+          }
           if (d.reflections?.length) p.reflections = d.reflections;
           if (d.titles?.length)      p.titles      = d.titles;
           if (d.mmSessions)          p.mmSessions  = Math.max(p.mmSessions || 0, d.mmSessions);

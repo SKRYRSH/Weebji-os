@@ -3126,16 +3126,21 @@
   async function _openPlayBilling(plan) {
     const sku = PLAY_SKUS[plan];
     if (!sku) return false;
+    const _ph = (evt, props) => { try { if (typeof posthog !== 'undefined') posthog.capture(evt, props); } catch(_) {} };
     try {
       const service = await window.getDigitalGoodsService('https://play.google.com/billing');
       const details = await service.getDetails([sku]);
-      if (!details?.length) { spawnDropBanner('◆  Product not found in Play Store'); return true; }
+      if (!details?.length) {
+        _ph('billing_product_not_found', { sku, plan });
+        spawnDropBanner('◆  Product not found in Play Store');
+        return true;
+      }
       const request = new PaymentRequest(
         [{ supportedMethods: 'https://play.google.com/billing', data: { sku } }],
         { total: { label: 'WEEBJI+', amount: { currency: 'USD', value: PLAY_PRICES[plan] || '9.99' } } }
       );
       const canPay = await request.canMakePayment();
-      if (!canPay) { spawnDropBanner('◆  Google Play Billing unavailable'); return true; }
+      if (!canPay) { _ph('billing_canpay_false', { sku, plan }); spawnDropBanner('◆  Google Play Billing unavailable'); return true; }
       const payResponse = await request.show();
       const { purchaseToken } = payResponse.details;
       // Brief pause — TWA payment sheet needs to release network context
@@ -3181,9 +3186,10 @@
       if (plan !== 'ghost_token' && plan !== 'ghost_token_3') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');
       return true;
     } catch(e) {
-      if (e.name === 'AbortError') { return true; } // user cancelled — handled
+      if (e.name === 'AbortError') { return true; }
+      _ph('billing_error', { sku, plan, error: e?.message, name: e?.name });
       spawnDropBanner('◆  Purchase error — please try again');
-      return true; // don't fall through to Razorpay on Android
+      return true;
     }
   }
 

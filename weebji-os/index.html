@@ -3849,6 +3849,108 @@
     } catch(e) { console.warn('battle render error', e); }
   }
 
+  /* ══ WEEKLY REPORT ══════════════════════════════════════════════ */
+  function _weekNum(d) {
+    const dt = new Date(d); dt.setHours(0,0,0,0);
+    dt.setDate(dt.getDate() + 3 - (dt.getDay() + 6) % 7);
+    const w1 = new Date(dt.getFullYear(), 0, 4);
+    return 1 + Math.round(((dt - w1) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7);
+  }
+
+  function showWeeklyReport() {
+    const now = new Date();
+    if (now.getDay() === 0) return; // Sunday — week still ongoing
+    const thisWeekKey = `${now.getFullYear()}-W${_weekNum(now)}`;
+    if (localStorage.getItem('weebji_last_report_week') === thisWeekKey) return;
+
+    const p = loadProgress();
+    const cls   = localStorage.getItem('weebji_class') || 'monarch';
+    const color = localStorage.getItem('weebji_color') || '#00F5FF';
+    const ri = parseInt(color.slice(1,3),16), gi = parseInt(color.slice(3,5),16), bi = parseInt(color.slice(5,7),16);
+    const plus = isWeebjiPlus();
+
+    // Last week Mon–Sun
+    const dayOfWeek = (now.getDay() + 6) % 7;
+    const monThisWeek = new Date(now); monThisWeek.setDate(now.getDate() - dayOfWeek);
+    const lastWeekDates = Array.from({length:7}, (_,i) => {
+      const d = new Date(monThisWeek); d.setDate(monThisWeek.getDate() - 7 + i); return d.toDateString();
+    });
+
+    const grid = cls === 'monarch' ? (p.monarchGrid||[]) : cls === 'mastermind' ? (p.mmGrid||[]) : (p.monkGrid||[]);
+    const activeDays = lastWeekDates.filter(d => grid.includes(d)).length;
+    const weekStartXP = parseInt(localStorage.getItem('weebji_week_start_xp') || '0');
+    const xpEarned   = weekStartXP > 0 ? Math.max(0, (p.xp||0) - weekStartXP) : 0;
+    const streak     = p.streak || 0;
+
+    const rating      = activeDays >= 6 ? 'ELITE WEEK' : activeDays >= 4 ? 'SOLID GRIND' : activeDays >= 2 ? 'AVERAGE' : 'MISSED';
+    const ratingColor = activeDays >= 6 ? '#FFD700' : activeDays >= 4 ? color : activeDays >= 2 ? 'rgba(255,255,255,0.5)' : 'rgba(255,80,80,0.7)';
+    const msg         = activeDays >= 5 ? 'You showed up. The System recorded every rep.' : activeDays >= 3 ? 'Decent grind. Push harder next week.' : activeDays >= 1 ? 'Weak week. You know what to do.' : 'Ghost week. The System noticed.';
+
+    const DAY_LBLS = ['M','T','W','T','F','S','S'];
+    const dots = lastWeekDates.map((d,i) => {
+      const done = grid.includes(d);
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="width:30px;height:30px;border-radius:50%;background:${done?`rgba(${ri},${gi},${bi},0.25)`:'rgba(255,255,255,0.03)'};border:1px solid ${done?`rgba(${ri},${gi},${bi},0.6)`:'rgba(255,255,255,0.07)'};display:flex;align-items:center;justify-content:center;font-size:10px;color:${done?color:'rgba(255,255,255,0.15)'};">${done?'◆':'·'}</div>
+        <span style="font-size:8px;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace;">${DAY_LBLS[i]}</span>
+      </div>`;
+    }).join('');
+
+    const statsHtml = plus
+      ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px">
+          <div style="text-align:center;padding:10px 6px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)">
+            <div style="font-family:'Cinzel',serif;font-size:20px;color:#FFD700;">${activeDays}/7</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-top:3px">DAYS</div>
+          </div>
+          <div style="text-align:center;padding:10px 6px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)">
+            <div style="font-family:'Cinzel',serif;font-size:20px;color:${color};">${streak}d</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-top:3px">STREAK</div>
+          </div>
+          <div style="text-align:center;padding:10px 6px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)">
+            <div style="font-family:'Cinzel',serif;font-size:20px;color:rgba(255,255,255,0.8);">+${xpEarned}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-top:3px">XP</div>
+          </div>
+        </div>`
+      : `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px">
+          <div style="text-align:center;padding:10px 6px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)">
+            <div style="font-family:'Cinzel',serif;font-size:20px;color:#FFD700;">${activeDays}/7</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-top:3px">DAYS ACTIVE</div>
+          </div>
+          <div style="text-align:center;padding:10px 6px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)">
+            <div style="font-family:'Cinzel',serif;font-size:20px;color:${color};">${streak}d</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.15em;color:rgba(255,255,255,0.3);margin-top:3px">STREAK</div>
+          </div>
+        </div>
+        <div onclick="Sound.play('tap');document.getElementById('weekly-report-overlay').remove();localStorage.setItem('weebji_week_start_xp','${p.xp}');_openCheckout('monthly');" style="margin-top:10px;padding:11px;border-radius:10px;border:1px solid rgba(255,210,60,0.12);background:rgba(255,210,60,0.03);text-align:center;cursor:pointer">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(255,210,60,0.55);margin-bottom:3px">◆ WEEBJI+ UNLOCKS</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.3)">XP earned · Workouts · Focus hours · Full heatmap</div>
+        </div>`;
+
+    const existing = document.getElementById('weekly-report-overlay');
+    if (existing) existing.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'weekly-report-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);animation:kf-fade-in 0.35s ease;';
+    overlay.innerHTML = `
+      <div style="width:100%;max-width:360px;background:#07090F;border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:24px;position:relative;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.4em;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:6px;">Week in Review</div>
+        <div style="font-family:'Cinzel',serif;font-size:24px;font-weight:900;letter-spacing:0.06em;color:${ratingColor};text-shadow:0 0 24px ${ratingColor}55;margin-bottom:4px">${rating}</div>
+        <div style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.38);margin-bottom:20px;line-height:1.5">${msg}</div>
+        <div style="display:flex;justify-content:space-between;gap:2px;margin-bottom:2px">${dots}</div>
+        ${statsHtml}
+        <button id="weekly-report-close" style="width:100%;margin-top:18px;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:rgba(255,255,255,0.6);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">Continue →</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#weekly-report-close').addEventListener('click', () => {
+      Sound.play('tap');
+      overlay.remove();
+      localStorage.setItem('weebji_week_start_xp', p.xp);
+    });
+
+    localStorage.setItem('weebji_last_report_week', thisWeekKey);
+    localStorage.setItem('weebji_week_start_xp', p.xp);
+    if (typeof posthog !== 'undefined') posthog.capture('weekly_report_shown', { activeDays, streak, plus });
+  }
+
   function renderPremiumHypeCard() {
     const el = document.getElementById('premium-hype-card');
     if (!el) return;
@@ -5218,6 +5320,8 @@
     renderBattleCard();
     // Premium hype card (free users only)
     renderPremiumHypeCard();
+    // Weekly report — show once per week on first open after Sunday
+    setTimeout(showWeeklyReport, 1500);
 
     // Best streak: gold pulse if new best was set this session
     if (p.streak > 0 && p.streak >= p.bestStreak) {

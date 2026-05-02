@@ -3129,6 +3129,27 @@
     const _ph = (evt, props) => { try { if (typeof posthog !== 'undefined') posthog.capture(evt, props); } catch(_) {} };
     try {
       const service = await window.getDigitalGoodsService('https://play.google.com/billing');
+
+      // Reconcile any unconsumed/unacknowledged purchases before initiating new one.
+      // Google blocks new purchases of the same consumable if a prior one wasn't consumed.
+      try {
+        const pending = await service.listPurchases();
+        const stale = pending.filter(p => p.itemId === sku);
+        if (stale.length > 0) {
+          const client = SupabaseSync._client();
+          const { data: { session } } = await client.auth.getSession();
+          if (session?.access_token) {
+            for (const p of stale) {
+              await fetch(`${_SB_URL}/functions/v1/verify-play-purchase`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': _SB_KEY },
+                body: JSON.stringify({ purchaseToken: p.purchaseToken, sku, plan })
+              }).catch(() => {});
+            }
+          }
+        }
+      } catch(_) {}
+
       const details = await service.getDetails([sku]);
       if (!details?.length) {
         _ph('billing_product_not_found', { sku, plan });

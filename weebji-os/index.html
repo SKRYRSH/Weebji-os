@@ -5405,13 +5405,19 @@
         pill.style.borderColor = `rgba(${ri},${gi},${bi},0.45)`;
         pill.style.background  = `rgba(${ri},${gi},${bi},0.06)`;
         pill.style.boxShadow   = `0 0 8px rgba(${ri},${gi},${bi},0.1), 0 0 20px rgba(${ri},${gi},${bi},0.04)`;
-        pill.querySelector('.day-pill__abbr').style.color = color;
-        pill.querySelector('.day-pill__type').style.color = `rgba(${ri},${gi},${bi},0.55)`;
+        // v208: guard — .day-pill__type only exists for Monarch users.
+        // Without this guard, non-Monarch users hit TypeError and the rest of
+        // initDashboard (dungeon/battle/daily challenge/etc) never renders.
+        const _abbrEl = pill.querySelector('.day-pill__abbr');
+        const _typeEl = pill.querySelector('.day-pill__type');
+        if (_abbrEl) _abbrEl.style.color = color;
+        if (_typeEl) _typeEl.style.color = `rgba(${ri},${gi},${bi},0.55)`;
       }
       if (isDone && !isToday) {
         pill.style.borderColor = `rgba(${ri},${gi},${bi},0.25)`;
         pill.style.background  = `rgba(${ri},${gi},${bi},0.04)`;
-        pill.querySelector('.day-pill__abbr').style.color = `rgba(${ri},${gi},${bi},0.7)`;
+        const _abbrEl2 = pill.querySelector('.day-pill__abbr');
+        if (_abbrEl2) _abbrEl2.style.color = `rgba(${ri},${gi},${bi},0.7)`;
       }
       if (isPast && !isDone && !isRest) {
         pill.style.opacity = '0.55';
@@ -10676,7 +10682,11 @@ ${particles}
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
 
-    return { isEnabled, toggle, speak, greet, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
+    // v208: `say` and `speakBoss` were called from many places but never exported —
+    // 66+ js_errors in 7 days. `say` is just a thin alias for `speak` (one-liner
+    // System lines). `speakBoss` was defined inside this IIFE but not surfaced.
+    const say = (text) => speak(text, 0);
+    return { isEnabled, toggle, speak, say, speakBoss, greet, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
   })();
 
   /* ══ PHASE 5 — DASHBOARD EVOLUTION ═══════════ */

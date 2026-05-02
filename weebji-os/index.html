@@ -2783,15 +2783,18 @@
 
       // Yesterday's completion: check all class activity types
       const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length;
+      // Guard: if live checks are empty but saved yesterdayCount > 0, a sync/reload
+      // wiped the arrays after the user already completed activities — trust the saved count.
+      const effectiveYesterdayDone = Math.max(yesterdayDone, p.yesterdayCount || 0);
       const originalStreak = p.streak || 0; // capture before any modification
 
       // Streak resilience + auto Ghost Token spend (v207)
       // Consolidated: any streak-loss condition (no activity yesterday OR gap days)
       // gets auto-saved if user has enough Ghost Tokens. Tokens are the safety net.
       if (p.lastDate) {
-        const streakWouldDie = (yesterdayDone === 0) || (missedDays > 0);
+        const streakWouldDie = (effectiveYesterdayDone === 0) || (missedDays > 0);
         if (streakWouldDie) {
-          const totalDaysMissed = missedDays + (yesterdayDone === 0 ? 1 : 0);
+          const totalDaysMissed = missedDays + (effectiveYesterdayDone === 0 ? 1 : 0);
           const hpFloor = p.level >= 5 ? 0 : 1;
           p.hp = Math.max(hpFloor, p.hp - Math.min(totalDaysMissed, 2));
           // Auto-spend Ghost Tokens if streak is worth saving (>=3) and user has enough.

@@ -3083,17 +3083,34 @@
       return `<div class="analytics-cell${ds===todayStr?' today':''}" style="background:${bg}"></div>`;
     }).join('');
 
-    // Last 14 days focus session bars (Mastermind mmDaily)
+    // Last 14 days — build date list once
     const last14 = Array.from({ length: 14 }, (_, i) => {
       const d = new Date(); d.setDate(d.getDate() - (13 - i));
       return { date: d.toDateString(), lbl: d.toLocaleDateString('en',{weekday:'short'}).charAt(0) };
     });
+    // Mastermind: focus minutes per day
     const maxS = Math.max(1, ...last14.map(d => p.mmDaily?.[d.date] || 0));
     const bars = last14.map(d => {
       const s = p.mmDaily?.[d.date] || 0;
       const h = Math.max(2, Math.round((s / maxS) * 38));
       return `<div class="analytics-bar-wrap">
         <div class="analytics-bar" style="height:${h}px;background:${s>0?'rgba(230,57,70,0.55)':'rgba(255,255,255,0.05)'}"></div>
+        <div class="analytics-bar-lbl">${d.lbl}</div>
+      </div>`;
+    }).join('');
+    // Monarch: workout days (binary)
+    const monarchBars = last14.map(d => {
+      const done = monarchSet.has(d.date);
+      return `<div class="analytics-bar-wrap">
+        <div class="analytics-bar" style="height:${done?38:2}px;background:${done?'rgba(0,245,255,0.55)':'rgba(255,255,255,0.05)'}"></div>
+        <div class="analytics-bar-lbl">${d.lbl}</div>
+      </div>`;
+    }).join('');
+    // Monk: ritual days (binary)
+    const monkBars = last14.map(d => {
+      const done = monkSet.has(d.date);
+      return `<div class="analytics-bar-wrap">
+        <div class="analytics-bar" style="height:${done?38:2}px;background:${done?'rgba(52,211,153,0.55)':'rgba(255,255,255,0.05)'}"></div>
         <div class="analytics-bar-lbl">${d.lbl}</div>
       </div>`;
     }).join('');
@@ -3116,6 +3133,10 @@
         <div class="analytics-heatmap">${cells}</div>
         <div class="analytics-section-lbl" style="margin-top:16px">Focus Sessions — Last 14 Days</div>
         <div class="analytics-bars">${bars}</div>
+        <div class="analytics-section-lbl" style="margin-top:14px">Workouts — Last 14 Days</div>
+        <div class="analytics-bars">${monarchBars}</div>
+        <div class="analytics-section-lbl" style="margin-top:14px">Monk Rituals — Last 14 Days</div>
+        <div class="analytics-bars">${monkBars}</div>
         <div class="analytics-totals">
           <div class="analytics-stat"><span>${studyH}h ${studyM}m</span><div class="analytics-stat-lbl">Total Study</div></div>
           <div class="analytics-stat"><span>${(p.totalWorkoutDays||p.monarchGrid?.length||0)+(p.workoutBonus?1:0)}</span><div class="analytics-stat-lbl">Workouts</div></div>

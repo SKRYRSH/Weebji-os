@@ -3068,10 +3068,18 @@
     const monkSet    = new Set(p.monkGrid    || []);
     const todayStr   = new Date().toDateString();
 
+    // Today's live state (grids only update at rollover, so check live progress)
+    const todayMonarch = p.workoutBonus || (p.workoutChecked||[]).length >= 3;
+    const todayMm      = (p.mmSessions||0) > 0;
+    const todayMonk    = (p.monkChecked||[]).length >= Math.max(4, Math.ceil(MONK_RITUALS.length / 2));
+
     const cells = Array.from({ length: 90 }, (_, i) => {
       const d = new Date(); d.setDate(d.getDate() - (89 - i));
       const ds = d.toDateString();
-      const isMonarch = monarchSet.has(ds), isMm = mmSet.has(ds), isMonk = monkSet.has(ds);
+      const isToday = ds === todayStr;
+      const isMonarch = monarchSet.has(ds) || (isToday && todayMonarch);
+      const isMm      = mmSet.has(ds)      || (isToday && todayMm);
+      const isMonk    = monkSet.has(ds)    || (isToday && todayMonk);
       const count = (isMonarch?1:0) + (isMm?1:0) + (isMonk?1:0);
       let bg = 'rgba(255,255,255,0.04)';
       if (count === 1) {
@@ -3098,17 +3106,17 @@
         <div class="analytics-bar-lbl">${d.lbl}</div>
       </div>`;
     }).join('');
-    // Monarch: workout days (binary)
+    // Monarch: workout days (binary, today live)
     const monarchBars = last14.map(d => {
-      const done = monarchSet.has(d.date);
+      const done = monarchSet.has(d.date) || (d.date === todayStr && todayMonarch);
       return `<div class="analytics-bar-wrap">
         <div class="analytics-bar" style="height:${done?38:2}px;background:${done?'rgba(0,245,255,0.55)':'rgba(255,255,255,0.05)'}"></div>
         <div class="analytics-bar-lbl">${d.lbl}</div>
       </div>`;
     }).join('');
-    // Monk: ritual days (binary)
+    // Monk: ritual days (binary, today live)
     const monkBars = last14.map(d => {
-      const done = monkSet.has(d.date);
+      const done = monkSet.has(d.date) || (d.date === todayStr && todayMonk);
       return `<div class="analytics-bar-wrap">
         <div class="analytics-bar" style="height:${done?38:2}px;background:${done?'rgba(52,211,153,0.55)':'rgba(255,255,255,0.05)'}"></div>
         <div class="analytics-bar-lbl">${d.lbl}</div>

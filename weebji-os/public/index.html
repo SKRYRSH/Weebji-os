@@ -1186,16 +1186,16 @@
 
   /* ── Deep Work Heatmap (Mastermind) ─────── */
   .dw-heatmap { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
-  .dw-heatmap__label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.3em; color: #555577; text-transform: uppercase; margin-bottom: 14px; }
+  .dw-heatmap__label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.3em; color: rgba(255,255,255,0.38); text-transform: uppercase; margin-bottom: 14px; }
   .dw-bars { display: flex; align-items: flex-end; gap: 7px; height: 64px; margin-bottom: 8px; }
   .dw-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
   .dw-bar-fill { width: 100%; border-radius: 4px 4px 2px 2px; min-height: 4px; transition: height 0.8s cubic-bezier(0.16,1,0.3,1); }
   .dw-bar-fill.empty { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.1); }
   .dw-bar-fill.has-sessions { background: linear-gradient(180deg, #FF4455, #E63946); box-shadow: 0 0 10px rgba(230,57,70,0.45); border: none; }
   .dw-bar-fill.today { box-shadow: 0 0 14px rgba(230,57,70,0.65); }
-  .dw-bar-day { font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #2A2A44; letter-spacing: 0.04em; }
+  .dw-bar-day { font-family: 'JetBrains Mono', monospace; font-size: 8px; color: rgba(255,255,255,0.32); letter-spacing: 0.04em; }
   .dw-bar-day.today { color: #E63946; }
-  .dw-focus-line { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444466; letter-spacing: 0.1em; }
+  .dw-focus-line { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.1em; }
   .dw-focus-line strong { color: #E63946; }
 
   /* ── Daily Reflection (Monk) ─────────────── */
@@ -2772,6 +2772,7 @@
       dailyChallengeDone: (localStorage.getItem('weebji_dc_done') || '').startsWith(today),
       brainChallengeDone: (localStorage.getItem('weebji_brain_done') || '') === today,
       workoutDone       : localStorage.getItem('weebji_wk_bonus') === 'true',
+      pinnedTitle       : localStorage.getItem('weebji_pinned_title') || null,
     };
 
     if (p.lastDate !== today) {
@@ -2870,6 +2871,10 @@
       saveProgress(p);
     }
 
+    if (!localStorage.getItem('weebji_week_start_xp')) {
+      localStorage.setItem('weebji_week_start_xp', p.xp);
+    }
+
     return p;
   }
 
@@ -2905,6 +2910,8 @@
     if (p.shadowSlayerEarned)           localStorage.setItem('weebji_shadow_slayer',   'true');
     localStorage.setItem('weebji_prestige',          p.prestige || 0);
     localStorage.setItem('weebji_streak_lost_today', p.streakLostToday ? 'true' : 'false');
+    if (p.pinnedTitle) localStorage.setItem('weebji_pinned_title', p.pinnedTitle);
+    else localStorage.removeItem('weebji_pinned_title');
     // Anti-tamper: write integrity hash
     _writeHash(p);
     // Phase 4: save daily shadow snapshot

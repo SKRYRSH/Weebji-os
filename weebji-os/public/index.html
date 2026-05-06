@@ -979,16 +979,6 @@
   /* ══ PHASE 3 — GHOST TOKEN OVERLAY ══════════ */
   #ghost-intervention { position: absolute; inset: 0; background: rgba(8,8,12,0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 860; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
   #ghost-intervention.active { opacity: 1; pointer-events: all; }
-  #ghost-saved-notice { position: absolute; inset: 0; background: rgba(8,8,12,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 861; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
-  #ghost-saved-notice.active { opacity: 1; pointer-events: all; }
-  .gsn__system { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: #336633; text-transform: uppercase; }
-  .gsn__icon { font-size: 52px; line-height: 1; }
-  .gsn__title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: #FFFFFF; }
-  .gsn__body { font-size: 14px; color: #8888AA; line-height: 1.6; max-width: 280px; }
-  .gsn__streak { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #22c55e; letter-spacing: 0.05em; }
-  .gsn__tokens-left { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: #444466; margin-top: 4px; }
-  .gsn__confirm { margin-top: 8px; padding: 16px 32px; border-radius: 12px; border: 1px solid rgba(34,197,94,0.4); background: rgba(34,197,94,0.08); font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #22c55e; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: transform 0.15s; width: 100%; }
-  .gsn__confirm:active { transform: scale(0.96); }
   .ghost-int__system { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: #555577; text-transform: uppercase; }
   .ghost-int__icon { font-size: 52px; line-height: 1; }
   .ghost-int__title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.12em; color: #FFFFFF; }
@@ -2060,16 +2050,6 @@
       </div>
     </div>
 
-    <!-- Ghost Token Auto-Spent Notice -->
-    <div id="ghost-saved-notice">
-      <p class="gsn__system">System — Ghost Protocol</p>
-      <div class="gsn__icon">👻</div>
-      <h2 class="gsn__title">Streak Preserved</h2>
-      <div class="gsn__streak" id="gsn-streak">—</div>
-      <p class="gsn__body" id="gsn-body">A Ghost Token was automatically spent while you were away. Your streak survived.</p>
-      <p class="gsn__tokens-left" id="gsn-tokens-left"></p>
-      <button class="gsn__confirm" id="gsn-confirm-btn">Understood — Continue</button>
-    </div>
 
     <!-- Phase 4: Avatar Evolution Cinematic -->
     <div id="avatar-evolution">
@@ -5258,30 +5238,6 @@
       const p = loadProgress();
       checkPenanceOnBoot();
       checkGhostIntervention(p);
-      // v221: ghost token auto-spent → persistent overlay (not silent banner)
-      try {
-        const _autoRaw = localStorage.getItem('weebji_ghost_auto_spent');
-        if (_autoRaw) {
-          const _auto = JSON.parse(_autoRaw);
-          localStorage.removeItem('weebji_ghost_auto_spent');
-          const notice = document.getElementById('ghost-saved-notice');
-          const tokensLeft = p.ghostTokens || 0;
-          document.getElementById('gsn-streak').textContent = `${_auto.streak} DAYS`;
-          document.getElementById('gsn-body').textContent = _auto.tokens > 1
-            ? `${_auto.tokens} Ghost Tokens were automatically spent while you were away. Your streak survived.`
-            : `A Ghost Token was automatically spent while you were away. Your streak survived.`;
-          document.getElementById('gsn-tokens-left').textContent =
-            tokensLeft === 0 ? '⚠ No Ghost Tokens remaining — don\'t miss tomorrow'
-            : `${tokensLeft} Ghost Token${tokensLeft !== 1 ? 's' : ''} remaining`;
-          document.getElementById('gsn-confirm-btn').addEventListener('click', () => {
-            notice.classList.remove('active');
-          }, { once: true });
-          setTimeout(() => notice.classList.add('active'), 600);
-          if (typeof SystemVoice !== 'undefined' && SystemVoice.speak) {
-            setTimeout(() => SystemVoice.speak('Ghost Token consumed. Your streak survives.', 0), 1400);
-          }
-        }
-      } catch(_) {}
       showInstallPromptWhenReady();
       maybeShowNotifPrompt();
       RitualClock.check();
@@ -8102,7 +8058,7 @@
      'weebji_monarch_grid','weebji_mm_grid','weebji_mm_daily','weebji_prs','weebji_reflections',
      'weebji_ghost_tokens','weebji_prev_streak','weebji_start_date','weebji_shadow_snapshots',
      'weebji_manifest','weebji_voice_enabled','weebji_total_study_mins','weebji_total_workout_days',
-     'weebji_ghost_reset_month','weebji_streak_lost_today',
+     'weebji_ghost_reset_month','weebji_streak_lost_today','weebji_ghost_spend_pending',
      'weebji_titles','weebji_custom_workouts','weebji_void_sessions',
      'weebji_ghost_whisper','weebji_penance_survived','weebji_shadow_slayer',
      'weebji_penance_active','weebji_custom_tasks','weebji_custom_done','weebji_custom_challenge',
@@ -9976,8 +9932,14 @@
     // Ghost Whisperer: earned when saving a streak of ≥ 7
     if ((p.prevStreak || 0) >= 7) p.ghostWhisperEarned = true;
     checkSecretTitles(p, localStorage.getItem('weebji_class'));
+    // v225: track pending spend so pullProgress Math.max doesn't restore spent tokens
+    const _gsp = parseInt(localStorage.getItem('weebji_ghost_spend_pending') || '0');
+    localStorage.setItem('weebji_ghost_spend_pending', _gsp + 1);
     saveProgress(p);
-    // Fire server-side push if ghost tokens now depleted
+    // Immediate push + 6s retry — ensures server gets the spend even if rate-limited (5s window)
+    try { SupabaseSync.pushProgress().catch(()=>{}); } catch(_) {}
+    setTimeout(() => { try { SupabaseSync.pushProgress().catch(()=>{}); } catch(_) {} }, 6000);
+    // Fire server-side push notification if ghost tokens now depleted
     if (p.ghostTokens <= 0) {
       try {
         const _u = SupabaseSync.getUser();
@@ -10164,7 +10126,12 @@
           localStorage.removeItem('weebji_penance_active');
           _p.penanceSurvived = true;
           checkSecretTitles(_p, localStorage.getItem('weebji_class'));
+          // v225: track spend + force push so server reflects the deduct
+          const _pGsp = parseInt(localStorage.getItem('weebji_ghost_spend_pending') || '0');
+          localStorage.setItem('weebji_ghost_spend_pending', _pGsp + 1);
           saveProgress(_p);
+          try { SupabaseSync.pushProgress().catch(()=>{}); } catch(_) {}
+          setTimeout(() => { try { SupabaseSync.pushProgress().catch(()=>{}); } catch(_) {} }, 6000);
           overlay.classList.remove('active');
           updateStats(_p); updateXPBar(_p);
           Sound.play('milestone');
@@ -11305,7 +11272,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
 
         // Route through server-side validation edge function
         const { data: { session: vpSess } } = await client.auth.getSession();
-        const { error: vpError } = await client.functions.invoke('validate-progress', {
+        const { data: vpResult, error: vpError } = await client.functions.invoke('validate-progress', {
           body: {
             progress: {
               level: p.level, xp: p.xp, hp: p.hp,
@@ -11320,6 +11287,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
           },
           ...(vpSess?.access_token ? { headers: { Authorization: `Bearer ${vpSess.access_token}` } } : {}),
         });
+        // v225: clear pending spend counter only when push was accepted (not rate-limited)
+        if (!vpError && !vpResult?.violations?.includes('rate_limited')) {
+          localStorage.removeItem('weebji_ghost_spend_pending');
+        }
         // Always upsert leaderboard + progress directly — covers 401s and any edge fn failure
         if (vpError) {
           await Promise.allSettled([
@@ -11434,7 +11405,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if ((data.best_streak || 0) > (p.bestStreak || 0)) p.bestStreak = data.best_streak;
         // v223: take MAX of local vs server — protects purchased tokens and recently-spent local tokens.
         // Server is authoritative for purchases; local is authoritative for spending not yet pushed.
-        if (data.ghost_tokens != null) p.ghostTokens = Math.max(p.ghostTokens || 0, data.ghost_tokens);
+        if (data.ghost_tokens != null) {
+          // v225: adjust server value down by pending spends not yet confirmed — prevents restoring spent tokens
+          const _pend = parseInt(localStorage.getItem('weebji_ghost_spend_pending') || '0');
+          p.ghostTokens = Math.max(p.ghostTokens || 0, Math.max(0, data.ghost_tokens - _pend));
+        }
         if ((data.total_study_mins || 0) > (p.totalStudyMins || 0)) p.totalStudyMins = data.total_study_mins;
         if ((data.total_workout_days || 0) > (p.totalWorkoutDays || 0)) p.totalWorkoutDays = data.total_workout_days;
         // Always restore rich data from cloud (grids, reflections, PRs, titles, etc.)

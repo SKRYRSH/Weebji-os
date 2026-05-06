@@ -11418,10 +11418,23 @@ DEV.skipSplash()      → go straight to class select (if no session)
         }
         // HP, streak, tokens — always take cloud (authoritative for these)
         p.hp = Math.min(5, Math.max(0, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
-        // Don't restore cloud streak when streak was legitimately lost this session
+        // v223: cross-device streak recovery — if local fired streakLostToday but server
+        // shows lastDate = yesterday, the local check was wrong (user was active on another
+        // device). Cancel the false loss and restore the server streak.
+        if (p.streakLostToday && (data.streak || 0) > 0 && data.data?.lastDate) {
+          const _yest = new Date(); _yest.setDate(_yest.getDate() - 1);
+          const _yStr = _yest.toISOString().slice(0, 10);
+          if (data.data.lastDate === _yStr) {
+            p.streak = data.streak;
+            p.streakLostToday = false;
+            localStorage.setItem('weebji_streak_lost_today', 'false');
+          }
+        }
         if (!p.streakLostToday && (data.streak || 0) > (p.streak || 0)) p.streak = data.streak;
         if ((data.best_streak || 0) > (p.bestStreak || 0)) p.bestStreak = data.best_streak;
-        if (data.ghost_tokens != null) p.ghostTokens = data.ghost_tokens;
+        // v223: take MAX of local vs server — protects purchased tokens and recently-spent local tokens.
+        // Server is authoritative for purchases; local is authoritative for spending not yet pushed.
+        if (data.ghost_tokens != null) p.ghostTokens = Math.max(p.ghostTokens || 0, data.ghost_tokens);
         if ((data.total_study_mins || 0) > (p.totalStudyMins || 0)) p.totalStudyMins = data.total_study_mins;
         if ((data.total_workout_days || 0) > (p.totalWorkoutDays || 0)) p.totalWorkoutDays = data.total_workout_days;
         // Always restore rich data from cloud (grids, reflections, PRs, titles, etc.)

@@ -979,6 +979,16 @@
   /* ══ PHASE 3 — GHOST TOKEN OVERLAY ══════════ */
   #ghost-intervention { position: absolute; inset: 0; background: rgba(8,8,12,0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 860; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
   #ghost-intervention.active { opacity: 1; pointer-events: all; }
+  #ghost-saved-notice { position: absolute; inset: 0; background: rgba(8,8,12,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 861; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+  #ghost-saved-notice.active { opacity: 1; pointer-events: all; }
+  .gsn__system { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: #336633; text-transform: uppercase; }
+  .gsn__icon { font-size: 52px; line-height: 1; }
+  .gsn__title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: #FFFFFF; }
+  .gsn__body { font-size: 14px; color: #8888AA; line-height: 1.6; max-width: 280px; }
+  .gsn__streak { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #22c55e; letter-spacing: 0.05em; }
+  .gsn__tokens-left { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: #444466; margin-top: 4px; }
+  .gsn__confirm { margin-top: 8px; padding: 16px 32px; border-radius: 12px; border: 1px solid rgba(34,197,94,0.4); background: rgba(34,197,94,0.08); font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #22c55e; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: transform 0.15s; width: 100%; }
+  .gsn__confirm:active { transform: scale(0.96); }
   .ghost-int__system { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: #555577; text-transform: uppercase; }
   .ghost-int__icon { font-size: 52px; line-height: 1; }
   .ghost-int__title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.12em; color: #FFFFFF; }
@@ -2050,6 +2060,17 @@
       </div>
     </div>
 
+    <!-- Ghost Token Auto-Spent Notice -->
+    <div id="ghost-saved-notice">
+      <p class="gsn__system">System — Ghost Protocol</p>
+      <div class="gsn__icon">👻</div>
+      <h2 class="gsn__title">Streak Preserved</h2>
+      <div class="gsn__streak" id="gsn-streak">—</div>
+      <p class="gsn__body" id="gsn-body">A Ghost Token was automatically spent while you were away. Your streak survived.</p>
+      <p class="gsn__tokens-left" id="gsn-tokens-left"></p>
+      <button class="gsn__confirm" id="gsn-confirm-btn">Understood — Continue</button>
+    </div>
+
     <!-- Phase 4: Avatar Evolution Cinematic -->
     <div id="avatar-evolution">
       <p class="evo__sys">System Alert — Avatar Evolution</p>
@@ -2775,6 +2796,23 @@
       pinnedTitle       : localStorage.getItem('weebji_pinned_title') || null,
     };
 
+    // Monthly ghost token refill — MUST run before streak check so tokens are available
+    // v221 fix: previously ran after streak check, causing tokens to refill too late to save streaks
+    {
+      const _rd = new Date();
+      const _thisMonth = `${_rd.getFullYear()}-${_rd.getMonth()}`;
+      const _lastRefill = localStorage.getItem('weebji_ghost_reset_month') || '';
+      if (_lastRefill !== _thisMonth) {
+        if (isWeebjiPlus()) {
+          p.ghostTokens = Math.max(p.ghostTokens || 0, 5);
+        } else {
+          p.ghostTokens = Math.max(p.ghostTokens || 0, 1);
+        }
+        localStorage.setItem('weebji_ghost_reset_month', _thisMonth);
+        saveProgress(p);
+      }
+    }
+
     if (p.lastDate !== today) {
       // ── HP Penalty Logic (Master Build Doc §08) ──────────────────────
       // Calculate missed days (user may have been away multiple days)
@@ -2790,34 +2828,19 @@
       const effectiveYesterdayDone = Math.max(yesterdayDone, p.yesterdayCount || 0);
       const originalStreak = p.streak || 0; // capture before any modification
 
-      // Streak resilience + auto Ghost Token spend (v207)
-      // Consolidated: any streak-loss condition (no activity yesterday OR gap days)
-      // gets auto-saved if user has enough Ghost Tokens. Tokens are the safety net.
+      // v222: streak loss always shows the overlay — no silent auto-spend.
+      // User sees the screen, chooses to spend a token or accept the loss.
       if (p.lastDate) {
         const streakWouldDie = (effectiveYesterdayDone === 0) || (missedDays > 0);
         if (streakWouldDie) {
           const totalDaysMissed = missedDays + (effectiveYesterdayDone === 0 ? 1 : 0);
           const hpFloor = p.level >= 5 ? 0 : 1;
           p.hp = Math.max(hpFloor, p.hp - Math.min(totalDaysMissed, 2));
-          // Auto-spend Ghost Tokens if streak is worth saving (>=3) and user has enough.
-          // Cap auto-spend at 2 tokens so binge-misses still need manual intervention.
-          const tokensNeeded = Math.min(totalDaysMissed, 2);
-          if (originalStreak >= 3 && (p.ghostTokens || 0) >= tokensNeeded) {
-            p.ghostTokens -= tokensNeeded;
-            p.streak = originalStreak; // streak preserved by token
-            p.streakLostToday = false;
-            try {
-              localStorage.setItem('weebji_ghost_auto_spent', JSON.stringify({
-                streak: originalStreak, tokens: tokensNeeded, when: today,
-              }));
-            } catch(_) {}
-          } else {
-            p.prevStreak = originalStreak; // for manual intervention overlay
-            p.streak = 0;
-            p.streakLostToday = true;
-          }
+          // Always surface the intervention overlay — user makes the choice
+          p.prevStreak = originalStreak;
+          p.streak = 0;
+          p.streakLostToday = true;
         } else {
-          // Active yesterday, no gap days → streak grows
           p.streak = (p.streak || 0) + 1;
           p.hp = Math.min(5, p.hp + 1);
         }
@@ -2855,20 +2878,6 @@
     if (p.streak > p.bestStreak) {
       p.bestStreak = p.streak;
       localStorage.setItem('weebji_best_streak', p.bestStreak);
-    }
-
-    // Monthly ghost token refill (free: 1/month; WEEBJI+: 5/month)
-    const _d = new Date();
-    const thisMonth = `${_d.getFullYear()}-${_d.getMonth()}`;
-    const lastRefillMonth = localStorage.getItem('weebji_ghost_reset_month') || '';
-    if (lastRefillMonth !== thisMonth) {
-      if (isWeebjiPlus()) {
-        p.ghostTokens = Math.max(p.ghostTokens || 0, 5);
-      } else {
-        p.ghostTokens = Math.max(p.ghostTokens || 0, 1);
-      }
-      localStorage.setItem('weebji_ghost_reset_month', thisMonth);
-      saveProgress(p);
     }
 
     if (!localStorage.getItem('weebji_week_start_xp')) {
@@ -5249,18 +5258,27 @@
       const p = loadProgress();
       checkPenanceOnBoot();
       checkGhostIntervention(p);
-      // v207: surface auto-spent Ghost Token banner
+      // v221: ghost token auto-spent → persistent overlay (not silent banner)
       try {
         const _autoRaw = localStorage.getItem('weebji_ghost_auto_spent');
         if (_autoRaw) {
           const _auto = JSON.parse(_autoRaw);
           localStorage.removeItem('weebji_ghost_auto_spent');
-          const _msg = _auto.tokens > 1
-            ? `👻 ${_auto.tokens} GHOST TOKENS AUTO-SPENT — ${_auto.streak}-day streak preserved`
-            : `👻 GHOST TOKEN AUTO-SPENT — ${_auto.streak}-day streak preserved`;
-          setTimeout(() => spawnDropBanner(_msg), 900);
+          const notice = document.getElementById('ghost-saved-notice');
+          const tokensLeft = p.ghostTokens || 0;
+          document.getElementById('gsn-streak').textContent = `${_auto.streak} DAYS`;
+          document.getElementById('gsn-body').textContent = _auto.tokens > 1
+            ? `${_auto.tokens} Ghost Tokens were automatically spent while you were away. Your streak survived.`
+            : `A Ghost Token was automatically spent while you were away. Your streak survived.`;
+          document.getElementById('gsn-tokens-left').textContent =
+            tokensLeft === 0 ? '⚠ No Ghost Tokens remaining — don\'t miss tomorrow'
+            : `${tokensLeft} Ghost Token${tokensLeft !== 1 ? 's' : ''} remaining`;
+          document.getElementById('gsn-confirm-btn').addEventListener('click', () => {
+            notice.classList.remove('active');
+          }, { once: true });
+          setTimeout(() => notice.classList.add('active'), 600);
           if (typeof SystemVoice !== 'undefined' && SystemVoice.speak) {
-            setTimeout(() => SystemVoice.speak('Ghost Token consumed. Your streak survives.', 0), 1600);
+            setTimeout(() => SystemVoice.speak('Ghost Token consumed. Your streak survives.', 0), 1400);
           }
         }
       } catch(_) {}
@@ -9917,7 +9935,7 @@
     if (localStorage.getItem('weebji_penance_active') === '1') return; // penance takes over
     const overlay = document.getElementById('ghost-intervention');
     document.getElementById('ghost-streak-text').textContent =
-      `Your ${p.prevStreak}-day streak ended. The System watched it fall.`;
+      `You missed a day. Your ${p.prevStreak}-day streak is on the line.`;
     document.getElementById('ghost-tokens-count').textContent =
       `${p.ghostTokens} Ghost Token${p.ghostTokens !== 1 ? 's' : ''} remaining`;
     const useBtn = document.getElementById('ghost-use-btn');
@@ -9939,7 +9957,7 @@
     } else {
       useBtn.disabled = false;
       useBtn.textContent = `Use Ghost Token  (${p.ghostTokens} left)`;
-      if (subEl) subEl.textContent = 'You have Ghost Tokens. Use one to restore your streak before it\'s gone.';
+      if (subEl) subEl.textContent = 'Use a Ghost Token now to save it. Your streak stays intact — like nothing happened.';
     }
     overlay.classList.add('active');
     Sound.play('ghostCrisis');

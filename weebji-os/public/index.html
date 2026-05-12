@@ -9751,11 +9751,11 @@
     if (plus) {
       ctx.fillStyle = 'rgba(255,200,60,0.45)';
       ctx.shadowColor = 'rgba(255,180,0,0.3)'; ctx.shadowBlur = 12;
-      ctx.fillText('WEEBJI+ ◆  skryrsh.github.io/Weebji-os/landing', W/2, arcY + 50);
+      ctx.fillText('WEEBJI+ ◆  skryrsh.github.io/Weebji-os/', W/2, arcY + 50);
       ctx.shadowBlur = 0;
     } else {
       ctx.fillStyle = 'rgba(255,255,255,0.12)';
-      ctx.fillText('skryrsh.github.io/Weebji-os/landing', W/2, arcY + 50);
+      ctx.fillText('skryrsh.github.io/Weebji-os/', W/2, arcY + 50);
     }
   }
 
@@ -9808,7 +9808,7 @@
       const file = new File([blob], `weebji-arc-${num}.png`, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         const streakTxt = (p.streak || 0) > 0 ? `${p.streak}-day streak. ` : '';
-      const shareText = `${streakTxt}Level ${p.level} Hunter. This is my arc.\n\nskryrsh.github.io/Weebji-os/landing`;
+      const shareText = `${streakTxt}Level ${p.level} Hunter. This is my arc.\n\nskryrsh.github.io/Weebji-os/`;
       navigator.share({ files: [file], title: 'WEEBJI OS — My Arc', text: shareText }).catch(()=>{});
       } else {
         // Fallback: download + copy text

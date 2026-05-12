@@ -105,11 +105,11 @@ Deno.serve(async (req) => {
     let expiresAt: string | null = null;
 
     if (isSubscription) {
-      // Verify subscription
+      // Verify subscription via subscriptionsv2 API (new Play Console subscriptions)
       let verifyRes: Response;
       try {
         verifyRes = await fetch(
-          `${playBase}/${packageName}/purchases/subscriptions/${sku}/tokens/${purchaseToken}`,
+          `${playBase}/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}`,
           { headers: authBearerH }
         );
       } catch(e) {
@@ -120,19 +120,21 @@ Deno.serve(async (req) => {
         throw new Error(`Play verify failed (${verifyRes.status}): ${err}`);
       }
       const purchase = await verifyRes.json();
-      // paymentState 1 = payment received, 2 = free trial
-      if (purchase.paymentState !== 1 && purchase.paymentState !== 2) {
-        return new Response(JSON.stringify({ error: 'Payment not received' }), { status: 402, headers: CORS });
+      const state = purchase.subscriptionState as string;
+      const isActive = state === 'SUBSCRIPTION_STATE_ACTIVE' || state === 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD';
+      if (!isActive) {
+        return new Response(JSON.stringify({ error: 'Payment not received', state }), { status: 402, headers: CORS });
       }
-      // Store expiry time from Google Play
-      if (purchase.expiryTimeMillis) {
-        expiresAt = new Date(parseInt(purchase.expiryTimeMillis)).toISOString();
+      // expiryTime is ISO 8601 in v2 (from lineItems)
+      const lineItem = purchase.lineItems?.[0];
+      if (lineItem?.expiryTime) {
+        expiresAt = new Date(lineItem.expiryTime).toISOString();
       }
       // Acknowledge if not yet acknowledged
-      if (purchase.acknowledgementState === 0) {
+      if (purchase.acknowledgementState !== 'ACKNOWLEDGEMENT_STATE_ACKNOWLEDGED') {
         await fetch(
-          `${playBase}/${packageName}/purchases/subscriptions/${sku}/tokens/${purchaseToken}:acknowledge`,
-          { method: 'POST', headers: authBearerH }
+          `${playBase}/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}:acknowledge`,
+          { method: 'POST', headers: authBearerH, body: '{}' }
         );
       }
     } else {

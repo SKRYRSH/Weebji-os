@@ -90,12 +90,12 @@ Deno.serve(async (req) => {
 
       try {
         const res = await fetch(
-          `${playBase}/${packageName}/purchases/subscriptions/${sku}/tokens/${row.payment_id}`,
+          `${playBase}/${packageName}/purchases/subscriptionsv2/tokens/${row.payment_id}`,
           { headers: authHeader }
         );
 
         if (!res.ok) {
-          // 404 = token gone (cancelled long ago), treat as cancelled
+          // 404/410 = token gone (cancelled long ago), treat as cancelled
           if (res.status === 404 || res.status === 410) {
             await sb.from('user_plans').update({ status: 'cancelled', updated_at: new Date().toISOString() }).eq('id', row.id);
             cancelled++;
@@ -106,14 +106,17 @@ Deno.serve(async (req) => {
         }
 
         const purchase = await res.json();
-        const expMs = parseInt(purchase.expiryTimeMillis || '0');
+        const state = purchase.subscriptionState as string;
+        const lineItem = purchase.lineItems?.[0];
+        const expiryIso = lineItem?.expiryTime;
 
-        if (!expMs) { errors++; continue; }
+        if (!expiryIso) { errors++; continue; }
 
-        const newExpiry = new Date(expMs).toISOString();
+        const expMs = new Date(expiryIso).getTime();
+        const newExpiry = new Date(expiryIso).toISOString();
+        const isActive = state === 'SUBSCRIPTION_STATE_ACTIVE' || state === 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD';
 
-        // Still active (paymentState 1=paid, 2=free trial) and not expired
-        if ((purchase.paymentState === 1 || purchase.paymentState === 2) && expMs > Date.now()) {
+        if (isActive && expMs > Date.now()) {
           await sb.from('user_plans').update({
             expires_at: newExpiry,
             status:     'active',

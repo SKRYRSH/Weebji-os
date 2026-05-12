@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v225 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v225';
+// ── WEEBJI OS — Service Worker v226 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v226';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png'];
 
@@ -115,7 +115,7 @@ self.addEventListener('push', e => {
     self.registration.showNotification(title, {
       body,
       icon:               BASE + 'icons/icon-192.png',
-      badge:              BASE + 'icons/icon-192.png',
+      badge:              BASE + 'icons/badge-96.png',
       tag:                cfg.tag,
       renotify:           true,
       vibrate:            cfg.vibrate,

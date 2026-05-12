@@ -40,27 +40,34 @@ Deno.serve(async (req) => {
     );
 
     const now = new Date();
-    // Oman midnight = UTC 20:00 previous day (UTC+4)
-    const todayMidnight = new Date(now);
-    todayMidnight.setUTCHours(20, 0, 0, 0);
-    if (todayMidnight > now) todayMidnight.setUTCDate(todayMidnight.getUTCDate() - 1);
-    const todayISTStart  = todayMidnight.toISOString();
-    const threeDaysAgo   = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    const sevenDaysAgo   = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const todayUTC        = now.toISOString().slice(0, 10); // YYYY-MM-DD
+    const threeDaysAgo    = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    const sevenDaysAgo    = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Returns YYYY-MM-DD in the given IANA timezone (falls back to UTC)
+    function localToday(tz: string | null): string {
+      try {
+        if (!tz) return todayUTC;
+        return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(now);
+      } catch { return todayUTC; }
+    }
 
     // Find target user_ids — pull from push_subscriptions directly so streak=0 users still get notified
     let userIds: string[] = [];
 
     if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check') {
-      // All subscribed users who haven't trained today — regardless of streak
-      const { data: subs } = await sb.from('push_subscriptions').select('user_id');
+      // Subscribed users who haven't trained today in their local timezone
+      const { data: subs } = await sb.from('push_subscriptions').select('user_id, timezone');
       const allIds = (subs || []).map(r => r.user_id);
       if (allIds.length) {
-        const { data: prog } = await sb.from('progress').select('user_id').in('user_id', allIds).lt('updated_at', todayISTStart);
-        userIds = (prog || []).map(r => r.user_id);
-        // Include subscribed users with no progress row at all (brand new)
-        const hasProgress = new Set(userIds);
-        allIds.forEach(id => { if (!hasProgress.has(id)) userIds.push(id); });
+        const { data: prog } = await sb.from('progress').select('user_id, last_trained_date').in('user_id', allIds);
+        const trainedMap = new Map((prog || []).map(r => [r.user_id, r.last_trained_date as string | null]));
+        const tzMap = new Map((subs || []).map(r => [r.user_id, r.timezone as string | null]));
+        userIds = allIds.filter(id => {
+          const trained = trainedMap.get(id);
+          if (!trained) return true; // never trained or new user
+          return trained < localToday(tzMap.get(id) ?? null);
+        });
       }
     } else if (type === 'comeback_3d') {
       // Exclude users who joined within the last 3 days — they aren't really "gone dark"

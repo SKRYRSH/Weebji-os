@@ -118,6 +118,13 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Set last_trained_date when user actually earned progress
+    const didTrain = vXp > (cur?.xp || 0)
+      || vStreak > (cur?.streak || 0)
+      || vWorkout > (cur?.total_workout_days || 0)
+      || vStudy > (cur?.total_study_mins || 0);
+    const todayDate = new Date().toISOString().slice(0, 10);
+
     // Write validated progress
     const { error: writeErr } = await supabase.from('progress').upsert({
       user_id:            user.id,
@@ -131,6 +138,7 @@ Deno.serve(async (req) => {
       total_workout_days: vWorkout,
       data:               safeData,
       updated_at:         new Date().toISOString(),
+      ...(didTrain ? { last_trained_date: todayDate } : {}),
     }, { onConflict: 'user_id' });
 
     if (writeErr) throw writeErr;

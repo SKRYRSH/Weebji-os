@@ -1492,10 +1492,54 @@
   #dashboard.evolved-20 .xp-fill { box-shadow: 0 0 14px var(--cls-glow), 0 0 28px rgba(var(--cls-rgb),0.12); }
   #dashboard.evolved-20 .hp-seg.full { box-shadow: 0 0 5px rgba(var(--cls-rgb),0.55); }
 
+  /* ══ APK UPDATE OVERLAY ══════════════════════ */
+  #apk-update-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(7,9,15,0.92); backdrop-filter: blur(12px);
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  #apk-update-overlay.visible { display: flex; }
+  #apk-update-box {
+    background: #0D1017; border: 1px solid rgba(0,245,255,0.25);
+    border-radius: 16px; padding: 32px 24px 24px; max-width: 340px;
+    width: 100%; text-align: center;
+    box-shadow: 0 0 40px rgba(0,245,255,0.08);
+  }
+  #apk-update-box .upd-icon { font-size: 36px; margin-bottom: 12px; }
+  #apk-update-box .upd-title {
+    font-family: 'Cinzel', serif; font-size: 15px; letter-spacing: 2px;
+    color: #00F5FF; margin-bottom: 8px;
+  }
+  #apk-update-box .upd-sub {
+    font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 24px; line-height: 1.5;
+  }
+  #apk-update-box .upd-btn {
+    display: block; width: 100%; padding: 14px;
+    background: #00F5FF; color: #07090F;
+    font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 1.5px;
+    border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px;
+    font-weight: 700;
+  }
+  #apk-update-box .upd-later {
+    font-size: 12px; color: rgba(255,255,255,0.3);
+    background: none; border: none; cursor: pointer; padding: 6px;
+  }
+
   /* ══ DEV PANEL ═══════════════════════════════ */
   </style>
 </head>
 <body>
+
+<!-- APK UPDATE OVERLAY -->
+<div id="apk-update-overlay">
+  <div id="apk-update-box">
+    <div class="upd-icon">⬆</div>
+    <div class="upd-title">NEW VERSION AVAILABLE</div>
+    <div class="upd-sub">A new version of WEEBJI OS is ready on the Play Store. Update now for the latest fixes and improvements.</div>
+    <button class="upd-btn" onclick="window.open('https://play.google.com/store/apps/details?id=io.github.skryrsh.twa','_blank')">UPDATE NOW</button>
+    <button class="upd-later" onclick="document.getElementById('apk-update-overlay').classList.remove('visible');localStorage.setItem('weebji_upd_dismissed','1')">Maybe later</button>
+  </div>
+</div>
 
   <!-- Static crawlable content for Google OAuth verification — hidden visually -->
   <div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">
@@ -2188,6 +2232,7 @@
           endpoint:   j.endpoint,
           p256dh:     j.keys?.p256dh,
           auth:       j.keys?.auth,
+          timezone:   Intl.DateTimeFormat().resolvedOptions().timeZone,
           updated_at: new Date().toISOString(),
         });
       } catch(_) {}
@@ -11963,6 +12008,25 @@ DEV.skipSplash()      → go straight to class select (if no session)
   window.addEventListener('error', e => {
     if (typeof posthog !== 'undefined') posthog.capture('js_error', { type: 'uncaught', message: e.message?.slice(0, 200), file: e.filename, line: e.lineno });
   });
+
+  /* ══ APK UPDATE CHECK ════════════════════════
+     Only runs inside TWA. Fetches /version.json,
+     shows overlay if remote apk_version > local.
+  ════════════════════════════════════════════ */
+  (function checkApkUpdate() {
+    const APK_VERSION = 6;
+    const isTWA = document.referrer.startsWith('android-app://');
+    if (!isTWA) return;
+    if (localStorage.getItem('weebji_upd_dismissed') === '1') return;
+    fetch('/Weebji-os/version.json?_=' + Date.now())
+      .then(r => r.json())
+      .then(data => {
+        if ((data.apk_version || 0) > APK_VERSION) {
+          document.getElementById('apk-update-overlay').classList.add('visible');
+        }
+      })
+      .catch(() => {});
+  })();
 
 </script>
 

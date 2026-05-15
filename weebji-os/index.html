@@ -2086,7 +2086,7 @@
       <div class="ghost-int__icon">👻</div>
       <h2 class="ghost-int__title">Streak Lost</h2>
       <p class="ghost-int__streak" id="ghost-streak-text"></p>
-      <p class="ghost-int__sub">You have Ghost Tokens. Use one to restore your streak before it's gone.</p>
+      <p class="ghost-int__sub">A Ghost Token can undo this. Use it now, or your streak becomes ash.</p>
       <p class="ghost-int__tokens" id="ghost-tokens-count"></p>
       <div class="ghost-int__btns">
         <button class="ghost-int__use" id="ghost-use-btn">Use Ghost Token</button>
@@ -4031,8 +4031,8 @@
       { icon: '◈', title: 'Prestige System', desc: 'Hit Level 100 and reset — harder. Each prestige earns a ◈ badge. Free hunters stay capped.' },
       { icon: '👥', title: 'Shadow Rival', desc: 'Lock onto a leaderboard rival. Their streak shows on your dashboard every day. Chase or be chased.' },
       { icon: '⚡', title: 'Friend Battles', desc: '7-day head-to-head XP wars. Winner earns XP + "Defeated Their Shadow" title.' },
-      { icon: '🗣', title: 'System Voice', desc: 'The AI narrator speaks to you by name. References your streak, class, enemy.' },
-      { icon: '👻', title: '5 Ghost Tokens/month', desc: 'Save your streak on days you can\'t. Free tier gets 1. Plus gets 5 — every month, no rollover.' },
+      { icon: '🗣', title: 'System Voice', desc: 'The System speaks your name. Knows your streak, your class, your enemy. Personal. Unsettling. Effective.' },
+      { icon: '👻', title: '5 Ghost Tokens/month', desc: 'One missed day can erase months of progress. Free tier gets 1 token. Plus hunters get 5, refreshed every month.' },
       { icon: '📊', title: 'Deep Analytics', desc: '90-day streak heatmap. See your arc. Know when you peak and when you fall.' },
       { icon: '🏰', title: 'Guild Creation', desc: 'Build your own faction. Lead a squad. Free hunters can join — only Plus can lead.' },
     ];
@@ -4040,7 +4040,7 @@
     el.innerHTML = `<div class="premium-hype">
       <div class="premium-hype__eyebrow">◈ System Restrictions Active</div>
       <div class="premium-hype__title">8 Features Sealed From You</div>
-      <div class="premium-hype__sub">Every day you wait, other hunters are pulling ahead using tools you don't have access to.</div>
+      <div class="premium-hype__sub">The hunters ranked above you didn't just grind harder. They had tools you can't touch yet. Every day this stays sealed, the gap widens.</div>
       <div class="premium-hype__features">
         ${features.map(f => `<div class="premium-hype__feature">
           <div class="premium-hype__feature-icon">${f.icon}</div>
@@ -8273,7 +8273,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Task sealing + focus streak tracker</li>
           </ul>
           <button class="pillar-locked-screen__btn" style="border:1px solid rgba(230,57,70,0.5);background:rgba(230,57,70,0.1);color:#E63946;text-shadow:0 0 12px rgba(230,57,70,0.4);box-shadow:0 0 20px rgba(230,57,70,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>
+          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
     }
@@ -8328,7 +8328,7 @@
           <div class="pillar-locked-screen__glow" style="background:#34D399"></div>
           <div style="font-size:36px;color:#34D399;text-shadow:0 0 28px rgba(52,211,153,0.7);margin-bottom:10px">☯</div>
           <div class="pillar-locked-screen__title" style="color:#34D399;text-shadow:0 0 20px rgba(52,211,153,0.4)">THE SANCTUARY</div>
-          <div class="pillar-locked-screen__subtitle">RECOVERY IS PART OF THE SYSTEM</div>
+          <div class="pillar-locked-screen__subtitle">STILLNESS IS POWER</div>
           <div style="width:100%;max-width:300px;background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.18);border-radius:12px;padding:18px 16px;margin-bottom:20px;display:flex;flex-direction:column;align-items:center;gap:10px">
             <div style="width:72px;height:72px;border-radius:50%;border:2px solid rgba(52,211,153,0.35);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(52,211,153,0.15)">
               <div style="width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(52,211,153,0.55);background:rgba(52,211,153,0.06);box-shadow:0 0 14px rgba(52,211,153,0.2)"></div>
@@ -8342,7 +8342,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.11);color:rgba(255,255,255,0.45)">◆ Daily ritual checklist + streak grid</li>
           </ul>
           <button class="pillar-locked-screen__btn" style="border:1px solid rgba(52,211,153,0.45);background:rgba(52,211,153,0.08);color:#34D399;text-shadow:0 0 12px rgba(52,211,153,0.4);box-shadow:0 0 20px rgba(52,211,153,0.07)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>
+          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
     }
@@ -8470,7 +8470,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Weekly Boss Raids</li>
           </ul>
           <button class="pillar-locked-screen__btn" style="border:1px solid rgba(0,245,255,0.5);background:rgba(0,245,255,0.1);color:#00F5FF;text-shadow:0 0 12px rgba(0,245,255,0.4);box-shadow:0 0 20px rgba(0,245,255,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>
+          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
     }

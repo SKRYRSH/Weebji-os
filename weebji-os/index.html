@@ -976,6 +976,19 @@
   .cw-form__save:active { transform: scale(0.97); }
   .cw-max-note { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #333355; text-align: center; margin-top: 6px; letter-spacing: 0.1em; }
 
+  /* ══ RATING PROMPT OVERLAY ══════════════════ */
+  #rating-prompt { position: absolute; inset: 0; background: rgba(8,8,12,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 855; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
+  #rating-prompt.active { opacity: 1; pointer-events: all; }
+  .rate__system { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: #555577; text-transform: uppercase; }
+  .rate__stars { font-size: 32px; letter-spacing: 4px; line-height: 1; }
+  .rate__title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.12em; color: #FFFFFF; }
+  .rate__sub { font-family: 'Inter', sans-serif; font-size: 13px; color: #8888AA; line-height: 1.6; max-width: 260px; }
+  .rate__btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 4px; }
+  .rate__yes { padding: 16px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.4); background: rgba(255,215,0,0.07); font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #FFD700; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: transform 0.15s; }
+  .rate__yes:active { transform: scale(0.96); }
+  .rate__done { padding: 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.07); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; color: rgba(255,255,255,0.35); cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
+  .rate__later { padding: 10px; border: none; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: #333355; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
+
   /* ══ PHASE 3 — GHOST TOKEN OVERLAY ══════════ */
   #ghost-intervention { position: absolute; inset: 0; background: rgba(8,8,12,0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 860; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
   #ghost-intervention.active { opacity: 1; pointer-events: all; }
@@ -2077,6 +2090,19 @@
       <div class="penance__escape" id="penance-escape">
         <span class="penance__escape-or">— or —</span>
         <button class="penance__escape-btn" id="penance-escape-btn">👻 Use Ghost Token to skip penance</button>
+      </div>
+    </div>
+
+    <!-- Rating Prompt Overlay -->
+    <div id="rating-prompt">
+      <p class="rate__system">System Log</p>
+      <div class="rate__stars">⭐⭐⭐⭐⭐</div>
+      <h2 class="rate__title">You're Making Progress</h2>
+      <p class="rate__sub">If WEEBJI OS has earned a place in your daily grind — a rating helps other hunters find it.</p>
+      <div class="rate__btns">
+        <button class="rate__yes" id="rate-yes-btn">Rate on Play Store ↗</button>
+        <button class="rate__done" id="rate-done-btn">Already Rated</button>
+        <button class="rate__later" id="rate-later-btn">Remind Me Later</button>
       </div>
     </div>
 
@@ -5287,6 +5313,7 @@
       maybeShowNotifPrompt();
       RitualClock.check();
       maybeShowSignInNudge();
+      maybeShowRatingPrompt();
       // Handle shortcut action (?action=profile from manifest shortcuts)
       if (window._shortcutAction === 'profile') {
         window._shortcutAction = null;
@@ -9929,6 +9956,38 @@
   });
 
   // Push is always-on and server-controlled — no manual toggle
+
+  /* ══ RATING PROMPT ═══════════════════════════ */
+  function maybeShowRatingPrompt() {
+    const state = localStorage.getItem('weebji_rating_state');
+    if (state === 'done') return;
+    if (state) {
+      const snoozeUntil = parseInt(state, 10);
+      if (Date.now() < snoozeUntil) return;
+    }
+    const p = loadProgress();
+    const streak = p.streak || 0;
+    const level  = p.level  || 1;
+    if (streak < 3 && level < 5) return;
+    setTimeout(() => {
+      const el = document.getElementById('rating-prompt');
+      if (!el) return;
+      el.classList.add('active');
+      document.getElementById('rate-yes-btn').onclick = () => {
+        localStorage.setItem('weebji_rating_state', 'done');
+        el.classList.remove('active');
+        window.open('https://play.google.com/store/apps/details?id=io.github.skryrsh.twa', '_blank');
+      };
+      document.getElementById('rate-done-btn').onclick = () => {
+        localStorage.setItem('weebji_rating_state', 'done');
+        el.classList.remove('active');
+      };
+      document.getElementById('rate-later-btn').onclick = () => {
+        localStorage.setItem('weebji_rating_state', String(Date.now() + 7 * 24 * 60 * 60 * 1000));
+        el.classList.remove('active');
+      };
+    }, 3000);
+  }
 
   /* ══ PHASE 3 — GHOST TOKEN INTERVENTION ══════ */
   function checkGhostIntervention(p) {

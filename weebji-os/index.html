@@ -267,11 +267,11 @@
   .day-pill { flex: 1; min-width: 40px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.015); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
   .day-pill.today { border-color: rgba(0,245,255,0.45); background: rgba(0,245,255,0.06); box-shadow: 0 0 8px rgba(0,245,255,0.1), 0 0 20px rgba(0,245,255,0.04); }
   .day-pill.today.rest-day { border-color: rgba(136,136,170,0.35); background: rgba(136,136,170,0.04); box-shadow: 0 0 8px rgba(136,136,170,0.08); }
-  .day-pill__abbr { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: rgba(255,255,255,0.22); }
-  .day-pill.done .day-pill__abbr { color: rgba(255,255,255,0.45); }
+  .day-pill__abbr { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: rgba(255,255,255,0.45); }
+  .day-pill.done .day-pill__abbr { color: rgba(255,255,255,0.65); }
   .day-pill.today .day-pill__abbr { color: #00F5FF; }
   .day-pill.today.rest-day .day-pill__abbr { color: #8888AA; }
-  .day-pill__type { font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(255,255,255,0.1); }
+  .day-pill__type { font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
   .day-pill.today .day-pill__type { color: rgba(0,245,255,0.55); }
   .day-pill.today.rest-day .day-pill__type { color: rgba(136,136,170,0.5); }
 
@@ -401,7 +401,7 @@
   .custom-task-edit:active { color: rgba(0,245,255,0.7); }
   .custom-task-delete { background: none; border: none; color: rgba(255,255,255,0.12); font-size: 18px; line-height: 1; cursor: pointer; padding: 4px 0 4px 10px; flex-shrink: 0; transition: color 0.2s; -webkit-tap-highlight-color: transparent; }
   .custom-task-delete:active { color: rgba(255,80,80,0.6); }
-  .custom-task-add { display: flex; align-items: center; gap: 8px; padding: 11px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.18); cursor: pointer; border-top: 1px dashed rgba(255,255,255,0.06); margin-top: 6px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
+  .custom-task-add { display: flex; align-items: center; gap: 8px; padding: 11px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.38); cursor: pointer; border-top: 1px dashed rgba(255,255,255,0.06); margin-top: 6px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
   .custom-task-add span { font-size: 18px; line-height: 1; font-weight: 300; }
   .custom-task-add:active { color: rgba(255,255,255,0.4); }
   .custom-task-locked { color: rgba(255,200,50,0.3); }
@@ -417,7 +417,7 @@
   .stats-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
   .stat-mini { position: relative; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 14px 10px; text-align: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); overflow: hidden; }
   .stat-mini::after { content: ''; position: absolute; top: -14px; right: -14px; width: 46px; height: 46px; background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%); pointer-events: none; }
-  .stat-mini__label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-bottom: 6px; }
+  .stat-mini__label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; }
   .stat-mini__value { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--cls-color, #00F5FF); text-shadow: 0 0 6px var(--cls-glow, rgba(0,245,255,0.5)), 0 0 18px var(--cls-glow, rgba(0,245,255,0.15)); }
 
   /* Streak pulse */
@@ -484,20 +484,20 @@
   .pillar-locked-screen__glow { position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:340px; height:340px; border-radius:50%; opacity:0.1; filter:blur(70px); pointer-events:none; }
   .pillar-locked-screen__sigil { font-size:44px; margin-bottom:18px; }
   .pillar-locked-screen__title { font-family:'Cinzel',serif; font-size:22px; font-weight:700; letter-spacing:0.12em; margin-bottom:6px; line-height:1.3; }
-  .pillar-locked-screen__subtitle { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.28em; margin-bottom:28px; opacity:0.35; }
+  .pillar-locked-screen__subtitle { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.28em; margin-bottom:28px; opacity:0.55; }
   .pillar-locked-screen__features { list-style:none; padding:0; margin:0 0 28px; display:flex; flex-direction:column; gap:8px; width:100%; max-width:300px; }
   .pillar-locked-screen__feat { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; padding:10px 16px; border-radius:8px; text-align:left; }
   .pillar-locked-screen__btn { padding:15px 28px; border-radius:12px; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.18em; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; width:100%; max-width:300px; transition:transform 0.15s; }
   .pillar-locked-screen__btn:active { transform:scale(0.96); }
-  .pillar-locked-screen__price { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; opacity:0.22; margin-top:10px; }
+  .pillar-locked-screen__price { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; opacity:0.45; margin-top:10px; }
   .pillar-panel-head { padding:52px 20px 12px; flex-shrink:0; }
   .pillar-panel-head__title { font-family:'Cinzel',serif; font-size:18px; font-weight:700; letter-spacing:0.12em; margin:0 0 2px; }
-  .pillar-panel-head__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.25em; opacity:0.4; }
+  .pillar-panel-head__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.25em; opacity:0.6; }
   #secondary-pillars { display:none !important; }
   .pillar-stats-strip { display:flex; gap:12px; margin:16px 0 20px; }
   .pillar-stat { flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:12px 8px; text-align:center; }
   .pillar-stat__val { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; letter-spacing:0.04em; }
-  .pillar-stat__lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; opacity:0.35; text-transform:uppercase; margin-top:3px; }
+  .pillar-stat__lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; opacity:0.55; text-transform:uppercase; margin-top:3px; }
 
   /* ══ XP FLOAT ════════════════════════════════ */
   .xp-float { position: fixed; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: #FFD700; text-shadow: 0 0 12px rgba(255,215,0,0.9); pointer-events: none; z-index: 500; white-space: nowrap; transform: translateX(-50%); animation: kf-xp-float 1.3s cubic-bezier(0.16,1,0.3,1) forwards; }
@@ -752,7 +752,7 @@
   .profile-hunter-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.22em; color: #555577; margin-bottom: 8px; position: relative; z-index: 1; }
   .profile-name { font-family: 'Cinzel', serif; font-size: clamp(22px, 8vw, 34px); font-weight: 900; letter-spacing: 0.12em; margin-bottom: 7px; position: relative; z-index: 1; }
   .profile-class-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; position: relative; z-index: 1; }
-  .profile-hero__quote { font-family: 'Inter', sans-serif; font-size: 12px; font-style: italic; color: rgba(255,255,255,0.3); text-align: center; max-width: 240px; line-height: 1.7; margin-top: 14px; position: relative; z-index: 1; letter-spacing: 0.02em; }
+  .profile-hero__quote { font-family: 'Inter', sans-serif; font-size: 12px; font-style: italic; color: rgba(255,255,255,0.5); text-align: center; max-width: 240px; line-height: 1.7; margin-top: 14px; position: relative; z-index: 1; letter-spacing: 0.02em; }
   .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 12px; }
   .profile-stat { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 8px; text-align: center; }
   .profile-stat__label { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.2em; color: #555577; text-transform: uppercase; margin-bottom: 6px; }
@@ -781,14 +781,14 @@
   .lock-icon { display: inline-block; font-size: 11px; opacity: 0.4; }
   .profile-auth-btn { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; cursor: pointer; color: rgba(255,255,255,0.35); text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; transition: transform 0.15s; -webkit-tap-highlight-color: transparent; }
   .profile-auth-btn:active { transform: scale(0.97); }
-  .profile-auth-user { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: rgba(255,255,255,0.22); text-align: center; padding: 10px 0 6px; text-transform: uppercase; }
-  .profile-auth-user span { color: rgba(255,255,255,0.45); }
+  .profile-auth-user { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: rgba(255,255,255,0.45); text-align: center; padding: 10px 0 6px; text-transform: uppercase; }
+  .profile-auth-user span { color: rgba(255,255,255,0.65); }
 
   /* ── DEEP ANALYTICS ── */
   .analytics-card { background:rgba(10,10,20,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:18px 16px; margin-bottom:12px; }
-  .analytics-header { font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.22em; color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .analytics-header { font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.22em; color:rgba(255,255,255,0.5); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
   .analytics-plus-tag { font-family:'JetBrains Mono',monospace; font-size:7px; color:rgba(255,200,50,0.55); border:1px solid rgba(255,200,50,0.2); padding:1px 5px; border-radius:3px; letter-spacing:0.12em; }
-  .analytics-section-lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.18em; color:rgba(255,255,255,0.22); text-transform:uppercase; margin-bottom:8px; }
+  .analytics-section-lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.18em; color:rgba(255,255,255,0.45); text-transform:uppercase; margin-bottom:8px; }
   .analytics-legend { display:flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-size:7px; color:rgba(255,255,255,0.3); letter-spacing:0.08em; margin-bottom:8px; flex-wrap:wrap; }
   .analytics-legend span { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:3px; }
   .analytics-heatmap { display:grid; grid-template-columns:repeat(15,1fr); gap:3px; margin-bottom:4px; }
@@ -801,27 +801,27 @@
   .analytics-totals { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
   .analytics-stat { background:rgba(255,255,255,0.03); border-radius:10px; padding:10px 8px; text-align:center; }
   .analytics-stat span { display:block; font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:rgba(255,255,255,0.8); margin-bottom:3px; }
-  .analytics-stat-lbl { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.14em; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+  .analytics-stat-lbl { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.14em; color:rgba(255,255,255,0.5); text-transform:uppercase; }
   .analytics-locked { text-align:center; padding:8px 0 4px; }
-  .analytics-lock-msg { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.28); line-height:1.6; margin-top:4px; }
+  .analytics-lock-msg { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.5); line-height:1.6; margin-top:4px; }
 
   /* ── GUILDS ── */
   .guild-card { background: rgba(10,10,20,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px 16px; margin-bottom: 12px; }
-  .guild-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 14px; }
+  .guild-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 14px; }
   .guild-banner { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
   .guild-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; padding: 5px 10px; border-radius: 6px; border: 1px solid; opacity: 0.9; }
   .guild-name-text { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.85); }
-  .guild-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 0.12em; margin-top: 2px; }
-  .guild-rank-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: rgba(255,255,255,0.35); text-align: center; padding: 8px 0 12px; text-transform: uppercase; }
+  .guild-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 0.12em; margin-top: 2px; }
+  .guild-rank-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: rgba(255,255,255,0.55); text-align: center; padding: 8px 0 12px; text-transform: uppercase; }
   .guild-rank-badge span { font-size: 18px; font-weight: 700; display: block; color: rgba(255,255,255,0.75); letter-spacing: 0; margin-bottom: 2px; }
   .guild-lb { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
   .guild-lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,0.03); }
   .guild-lb-row.is-you { background: rgba(255,255,255,0.06); outline: 1px solid rgba(255,255,255,0.08); }
-  .guild-lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.25); width: 20px; text-align: center; }
+  .guild-lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.5); width: 20px; text-align: center; }
   .guild-lb-rank.top { color: gold; }
   .guild-lb-name { flex: 1; font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.7); }
   .guild-lb-name small { font-size: 9px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.12em; opacity: 0.45; display: block; }
-  .guild-lb-xp { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.35); }
+  .guild-lb-xp { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.55); }
   .guild-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .guild-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 11px 13px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.7); letter-spacing: 0.12em; text-transform: uppercase; outline: none; }
   .guild-input::placeholder { color: rgba(255,255,255,0.2); }
@@ -831,22 +831,22 @@
   .guild-btn.danger { border-color: rgba(230,57,70,0.2); color: rgba(230,57,70,0.55); }
   .guild-btn.danger:active { background: rgba(230,57,70,0.06); }
   .guild-divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 12px 0; }
-  .guild-msg { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.25); text-align: center; padding: 4px 0; }
+  .guild-msg { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.45); text-align: center; padding: 4px 0; }
   /* Global Leaderboard */
   .lb-card { background: rgba(10,10,20,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px 16px; margin-bottom: 12px; }
-  .lb-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
-  .lb-share-btn { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .lb-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .lb-share-btn { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .lb-share-btn:active { background: rgba(255,255,255,0.08); }
   .lb-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; background: rgba(255,255,255,0.02); margin-bottom: 4px; }
   .lb-row.is-you { background: rgba(255,255,255,0.06); outline: 1px solid rgba(255,255,255,0.1); }
   .lb-row.is-you-gap { background: transparent; justify-content: center; padding: 4px; margin: 2px 0; }
-  .lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.25); width: 22px; text-align: center; flex-shrink: 0; }
+  .lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.5); width: 22px; text-align: center; flex-shrink: 0; }
   .lb-rank.top { color: gold; font-weight: 700; }
   .lb-name { flex: 1; font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lb-name small { font-size: 9px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; opacity: 0.4; display: block; }
-  .lb-streak { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+  .lb-streak { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); flex-shrink: 0; }
   .lb-streak span { color: #FFD700; font-weight: 700; }
-  .lb-my-rank { text-align: center; padding: 10px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.14em; color: rgba(255,255,255,0.3); }
+  .lb-my-rank { text-align: center; padding: 10px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.14em; color: rgba(255,255,255,0.5); }
   .lb-my-rank strong { font-size: 22px; font-family: 'Cinzel', serif; color: rgba(255,255,255,0.7); display: block; letter-spacing: 0; }
   .guild-plus-lock { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.14em; color: rgba(255,200,50,0.45); margin-left: 6px; }
   .profile-share-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
@@ -859,7 +859,7 @@
   .dungeon-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(139,0,255,0.12) 0%, transparent 65%); pointer-events:none; }
   .dungeon-card__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(139,0,255,0.6); text-transform:uppercase; margin-bottom:6px; }
   .dungeon-card__boss { font-family:'Cinzel',serif; font-size:18px; font-weight:900; letter-spacing:0.1em; color:#fff; text-shadow:0 0 20px rgba(139,0,255,0.7), 0 0 40px rgba(139,0,255,0.3); margin-bottom:4px; }
-  .dungeon-card__quote { font-family:'Inter',sans-serif; font-size:11px; font-style:italic; color:rgba(255,255,255,0.3); margin-bottom:16px; line-height:1.5; }
+  .dungeon-card__quote { font-family:'Inter',sans-serif; font-size:11px; font-style:italic; color:rgba(255,255,255,0.55); margin-bottom:16px; line-height:1.5; }
   .dungeon-boss-img { width:100%; height:220px; border-radius:14px; overflow:hidden; margin:12px 0 18px; position:relative; }
   .dungeon-boss-img img { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; }
   .dungeon-boss-img::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent,#07090F); pointer-events:none; }
@@ -893,11 +893,11 @@
   .dungeon-locked-overlay__reward { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:8px; }
   .dungeon-locked-overlay__xp { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; color:#FFD700; text-shadow:0 0 14px rgba(255,215,0,0.6); }
   .dungeon-locked-overlay__title-badge { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(204,68,255,0.7); padding:3px 8px; border:1px solid rgba(139,0,255,0.3); border-radius:6px; background:rgba(139,0,255,0.06); text-transform:uppercase; }
-  .dungeon-locked-overlay__pitch { font-size:12px; color:rgba(255,255,255,0.4); line-height:1.6; margin:0 0 8px; }
+  .dungeon-locked-overlay__pitch { font-size:12px; color:rgba(255,255,255,0.6); line-height:1.6; margin:0 0 8px; }
   .dungeon-locked-overlay__pitch strong { color:rgba(255,255,255,0.75); }
   .dungeon-locked-overlay__urgency { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(255,180,0,0.5); margin-bottom:12px; }
   .dungeon-locked-overlay__btn { display:inline-block; padding:12px 24px; border-radius:10px; border:1px solid rgba(139,0,255,0.5); background:rgba(139,0,255,0.12); font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.15em; color:#CC44FF; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; text-shadow:0 0 12px rgba(204,68,255,0.4); box-shadow:0 0 18px rgba(139,0,255,0.12); margin-bottom:8px; }
-  .dungeon-locked-overlay__price { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.2); letter-spacing:0.1em; }
+  .dungeon-locked-overlay__price { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.45); letter-spacing:0.1em; }
   .dungeon-defeated { text-align:center; padding:16px 0 8px; }
   .dungeon-defeated__glyph { font-size:32px; margin-bottom:8px; }
   .dungeon-defeated__title { font-family:'Cinzel',serif; font-size:14px; font-weight:900; color:#CC44FF; text-shadow:0 0 16px rgba(139,0,255,0.6); letter-spacing:0.12em; margin-bottom:4px; }
@@ -908,21 +908,21 @@
   .battle-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(255,60,60,0.08) 0%, transparent 65%); pointer-events:none; }
   .battle-card__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(255,80,80,0.6); text-transform:uppercase; margin-bottom:8px; }
   .battle-card__title { font-family:'Cinzel',serif; font-size:18px; font-weight:900; letter-spacing:0.12em; color:#fff; text-shadow:0 0 20px rgba(255,60,60,0.6); margin-bottom:6px; }
-  .battle-card__pitch { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.35); line-height:1.6; margin-bottom:14px; }
+  .battle-card__pitch { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.55); line-height:1.6; margin-bottom:14px; }
   .battle-card__pitch em { font-style:normal; color:rgba(255,215,0,0.7); }
-  .battle-card__empty { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.2); text-align:center; line-height:2; padding:8px 0; letter-spacing:0.1em; }
+  .battle-card__empty { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.45); text-align:center; line-height:2; padding:8px 0; letter-spacing:0.1em; }
   .battle-card__empty span { color:rgba(255,255,255,0.1); display:block; font-size:9px; }
   .battle-versus { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
   .battle-versus__side { flex:1; text-align:center; overflow:hidden; }
   .battle-versus__name { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.06em; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .battle-versus__xp { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; letter-spacing:0.05em; }
-  .battle-versus__class { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; color:rgba(255,255,255,0.2); margin-top:3px; }
+  .battle-versus__class { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; color:rgba(255,255,255,0.4); margin-top:3px; }
   .battle-versus__vs { font-family:'Cinzel',serif; font-size:11px; font-weight:900; color:rgba(255,255,255,0.2); letter-spacing:0.2em; flex-shrink:0; }
   .battle-bar { width:100%; height:8px; border-radius:99px; overflow:hidden; display:flex; background:rgba(255,255,255,0.05); margin-bottom:10px; }
   .battle-bar__fill { height:100%; transition:width 1s cubic-bezier(0.16,1,0.3,1); }
   .battle-bar__fill--you { border-radius:99px 0 0 99px; }
   .battle-bar__fill--opp { border-radius:0 99px 99px 0; }
-  .battle-status { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-align:center; margin-bottom:8px; }
+  .battle-status { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(255,255,255,0.55); text-align:center; margin-bottom:8px; }
   .battle-reward-hint { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(255,215,0,0.3); text-align:center; }
   .battle-reward-hint span { color:rgba(255,215,0,0.6); }
   .battle-actions { display:flex; gap:8px; margin-top:4px; }

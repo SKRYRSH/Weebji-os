@@ -267,11 +267,11 @@
   .day-pill { flex: 1; min-width: 40px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.015); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
   .day-pill.today { border-color: rgba(0,245,255,0.45); background: rgba(0,245,255,0.06); box-shadow: 0 0 8px rgba(0,245,255,0.1), 0 0 20px rgba(0,245,255,0.04); }
   .day-pill.today.rest-day { border-color: rgba(136,136,170,0.35); background: rgba(136,136,170,0.04); box-shadow: 0 0 8px rgba(136,136,170,0.08); }
-  .day-pill__abbr { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: rgba(255,255,255,0.22); }
-  .day-pill.done .day-pill__abbr { color: rgba(255,255,255,0.45); }
+  .day-pill__abbr { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: rgba(255,255,255,0.45); }
+  .day-pill.done .day-pill__abbr { color: rgba(255,255,255,0.65); }
   .day-pill.today .day-pill__abbr { color: #00F5FF; }
   .day-pill.today.rest-day .day-pill__abbr { color: #8888AA; }
-  .day-pill__type { font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(255,255,255,0.1); }
+  .day-pill__type { font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
   .day-pill.today .day-pill__type { color: rgba(0,245,255,0.55); }
   .day-pill.today.rest-day .day-pill__type { color: rgba(136,136,170,0.5); }
 
@@ -401,7 +401,7 @@
   .custom-task-edit:active { color: rgba(0,245,255,0.7); }
   .custom-task-delete { background: none; border: none; color: rgba(255,255,255,0.12); font-size: 18px; line-height: 1; cursor: pointer; padding: 4px 0 4px 10px; flex-shrink: 0; transition: color 0.2s; -webkit-tap-highlight-color: transparent; }
   .custom-task-delete:active { color: rgba(255,80,80,0.6); }
-  .custom-task-add { display: flex; align-items: center; gap: 8px; padding: 11px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.18); cursor: pointer; border-top: 1px dashed rgba(255,255,255,0.06); margin-top: 6px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
+  .custom-task-add { display: flex; align-items: center; gap: 8px; padding: 11px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.38); cursor: pointer; border-top: 1px dashed rgba(255,255,255,0.06); margin-top: 6px; -webkit-tap-highlight-color: transparent; transition: color 0.2s; }
   .custom-task-add span { font-size: 18px; line-height: 1; font-weight: 300; }
   .custom-task-add:active { color: rgba(255,255,255,0.4); }
   .custom-task-locked { color: rgba(255,200,50,0.3); }
@@ -417,7 +417,7 @@
   .stats-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
   .stat-mini { position: relative; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 14px 10px; text-align: center; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); overflow: hidden; }
   .stat-mini::after { content: ''; position: absolute; top: -14px; right: -14px; width: 46px; height: 46px; background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%); pointer-events: none; }
-  .stat-mini__label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-bottom: 6px; }
+  .stat-mini__label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; }
   .stat-mini__value { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--cls-color, #00F5FF); text-shadow: 0 0 6px var(--cls-glow, rgba(0,245,255,0.5)), 0 0 18px var(--cls-glow, rgba(0,245,255,0.15)); }
 
   /* Streak pulse */
@@ -484,20 +484,20 @@
   .pillar-locked-screen__glow { position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:340px; height:340px; border-radius:50%; opacity:0.1; filter:blur(70px); pointer-events:none; }
   .pillar-locked-screen__sigil { font-size:44px; margin-bottom:18px; }
   .pillar-locked-screen__title { font-family:'Cinzel',serif; font-size:22px; font-weight:700; letter-spacing:0.12em; margin-bottom:6px; line-height:1.3; }
-  .pillar-locked-screen__subtitle { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.28em; margin-bottom:28px; opacity:0.35; }
+  .pillar-locked-screen__subtitle { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.28em; margin-bottom:28px; opacity:0.55; }
   .pillar-locked-screen__features { list-style:none; padding:0; margin:0 0 28px; display:flex; flex-direction:column; gap:8px; width:100%; max-width:300px; }
   .pillar-locked-screen__feat { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; padding:10px 16px; border-radius:8px; text-align:left; }
   .pillar-locked-screen__btn { padding:15px 28px; border-radius:12px; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.18em; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; width:100%; max-width:300px; transition:transform 0.15s; }
   .pillar-locked-screen__btn:active { transform:scale(0.96); }
-  .pillar-locked-screen__price { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; opacity:0.22; margin-top:10px; }
+  .pillar-locked-screen__price { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; opacity:0.45; margin-top:10px; }
   .pillar-panel-head { padding:52px 20px 12px; flex-shrink:0; }
   .pillar-panel-head__title { font-family:'Cinzel',serif; font-size:18px; font-weight:700; letter-spacing:0.12em; margin:0 0 2px; }
-  .pillar-panel-head__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.25em; opacity:0.4; }
+  .pillar-panel-head__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.25em; opacity:0.6; }
   #secondary-pillars { display:none !important; }
   .pillar-stats-strip { display:flex; gap:12px; margin:16px 0 20px; }
   .pillar-stat { flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:12px 8px; text-align:center; }
   .pillar-stat__val { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; letter-spacing:0.04em; }
-  .pillar-stat__lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; opacity:0.35; text-transform:uppercase; margin-top:3px; }
+  .pillar-stat__lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; opacity:0.55; text-transform:uppercase; margin-top:3px; }
 
   /* ══ XP FLOAT ════════════════════════════════ */
   .xp-float { position: fixed; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: #FFD700; text-shadow: 0 0 12px rgba(255,215,0,0.9); pointer-events: none; z-index: 500; white-space: nowrap; transform: translateX(-50%); animation: kf-xp-float 1.3s cubic-bezier(0.16,1,0.3,1) forwards; }
@@ -752,7 +752,7 @@
   .profile-hunter-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.22em; color: #555577; margin-bottom: 8px; position: relative; z-index: 1; }
   .profile-name { font-family: 'Cinzel', serif; font-size: clamp(22px, 8vw, 34px); font-weight: 900; letter-spacing: 0.12em; margin-bottom: 7px; position: relative; z-index: 1; }
   .profile-class-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; position: relative; z-index: 1; }
-  .profile-hero__quote { font-family: 'Inter', sans-serif; font-size: 12px; font-style: italic; color: rgba(255,255,255,0.3); text-align: center; max-width: 240px; line-height: 1.7; margin-top: 14px; position: relative; z-index: 1; letter-spacing: 0.02em; }
+  .profile-hero__quote { font-family: 'Inter', sans-serif; font-size: 12px; font-style: italic; color: rgba(255,255,255,0.5); text-align: center; max-width: 240px; line-height: 1.7; margin-top: 14px; position: relative; z-index: 1; letter-spacing: 0.02em; }
   .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 12px; }
   .profile-stat { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 8px; text-align: center; }
   .profile-stat__label { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.2em; color: #555577; text-transform: uppercase; margin-bottom: 6px; }
@@ -781,14 +781,14 @@
   .lock-icon { display: inline-block; font-size: 11px; opacity: 0.4; }
   .profile-auth-btn { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; cursor: pointer; color: rgba(255,255,255,0.35); text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; transition: transform 0.15s; -webkit-tap-highlight-color: transparent; }
   .profile-auth-btn:active { transform: scale(0.97); }
-  .profile-auth-user { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: rgba(255,255,255,0.22); text-align: center; padding: 10px 0 6px; text-transform: uppercase; }
-  .profile-auth-user span { color: rgba(255,255,255,0.45); }
+  .profile-auth-user { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: rgba(255,255,255,0.45); text-align: center; padding: 10px 0 6px; text-transform: uppercase; }
+  .profile-auth-user span { color: rgba(255,255,255,0.65); }
 
   /* ── DEEP ANALYTICS ── */
   .analytics-card { background:rgba(10,10,20,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:18px 16px; margin-bottom:12px; }
-  .analytics-header { font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.22em; color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .analytics-header { font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.22em; color:rgba(255,255,255,0.5); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
   .analytics-plus-tag { font-family:'JetBrains Mono',monospace; font-size:7px; color:rgba(255,200,50,0.55); border:1px solid rgba(255,200,50,0.2); padding:1px 5px; border-radius:3px; letter-spacing:0.12em; }
-  .analytics-section-lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.18em; color:rgba(255,255,255,0.22); text-transform:uppercase; margin-bottom:8px; }
+  .analytics-section-lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.18em; color:rgba(255,255,255,0.45); text-transform:uppercase; margin-bottom:8px; }
   .analytics-legend { display:flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-size:7px; color:rgba(255,255,255,0.3); letter-spacing:0.08em; margin-bottom:8px; flex-wrap:wrap; }
   .analytics-legend span { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:3px; }
   .analytics-heatmap { display:grid; grid-template-columns:repeat(15,1fr); gap:3px; margin-bottom:4px; }
@@ -801,27 +801,27 @@
   .analytics-totals { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
   .analytics-stat { background:rgba(255,255,255,0.03); border-radius:10px; padding:10px 8px; text-align:center; }
   .analytics-stat span { display:block; font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:rgba(255,255,255,0.8); margin-bottom:3px; }
-  .analytics-stat-lbl { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.14em; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+  .analytics-stat-lbl { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.14em; color:rgba(255,255,255,0.5); text-transform:uppercase; }
   .analytics-locked { text-align:center; padding:8px 0 4px; }
-  .analytics-lock-msg { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.28); line-height:1.6; margin-top:4px; }
+  .analytics-lock-msg { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.5); line-height:1.6; margin-top:4px; }
 
   /* ── GUILDS ── */
   .guild-card { background: rgba(10,10,20,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px 16px; margin-bottom: 12px; }
-  .guild-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 14px; }
+  .guild-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 14px; }
   .guild-banner { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
   .guild-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; padding: 5px 10px; border-radius: 6px; border: 1px solid; opacity: 0.9; }
   .guild-name-text { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.85); }
-  .guild-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 0.12em; margin-top: 2px; }
-  .guild-rank-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: rgba(255,255,255,0.35); text-align: center; padding: 8px 0 12px; text-transform: uppercase; }
+  .guild-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 0.12em; margin-top: 2px; }
+  .guild-rank-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: rgba(255,255,255,0.55); text-align: center; padding: 8px 0 12px; text-transform: uppercase; }
   .guild-rank-badge span { font-size: 18px; font-weight: 700; display: block; color: rgba(255,255,255,0.75); letter-spacing: 0; margin-bottom: 2px; }
   .guild-lb { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
   .guild-lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,0.03); }
   .guild-lb-row.is-you { background: rgba(255,255,255,0.06); outline: 1px solid rgba(255,255,255,0.08); }
-  .guild-lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.25); width: 20px; text-align: center; }
+  .guild-lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.5); width: 20px; text-align: center; }
   .guild-lb-rank.top { color: gold; }
   .guild-lb-name { flex: 1; font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.7); }
   .guild-lb-name small { font-size: 9px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.12em; opacity: 0.45; display: block; }
-  .guild-lb-xp { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.35); }
+  .guild-lb-xp { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.55); }
   .guild-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .guild-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 11px 13px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.7); letter-spacing: 0.12em; text-transform: uppercase; outline: none; }
   .guild-input::placeholder { color: rgba(255,255,255,0.2); }
@@ -831,22 +831,22 @@
   .guild-btn.danger { border-color: rgba(230,57,70,0.2); color: rgba(230,57,70,0.55); }
   .guild-btn.danger:active { background: rgba(230,57,70,0.06); }
   .guild-divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 12px 0; }
-  .guild-msg { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.25); text-align: center; padding: 4px 0; }
+  .guild-msg { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.45); text-align: center; padding: 4px 0; }
   /* Global Leaderboard */
   .lb-card { background: rgba(10,10,20,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px 16px; margin-bottom: 12px; }
-  .lb-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
-  .lb-share-btn { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .lb-card__header { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .lb-share-btn { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .lb-share-btn:active { background: rgba(255,255,255,0.08); }
   .lb-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; background: rgba(255,255,255,0.02); margin-bottom: 4px; }
   .lb-row.is-you { background: rgba(255,255,255,0.06); outline: 1px solid rgba(255,255,255,0.1); }
   .lb-row.is-you-gap { background: transparent; justify-content: center; padding: 4px; margin: 2px 0; }
-  .lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.25); width: 22px; text-align: center; flex-shrink: 0; }
+  .lb-rank { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.5); width: 22px; text-align: center; flex-shrink: 0; }
   .lb-rank.top { color: gold; font-weight: 700; }
   .lb-name { flex: 1; font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lb-name small { font-size: 9px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; opacity: 0.4; display: block; }
-  .lb-streak { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+  .lb-streak { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); flex-shrink: 0; }
   .lb-streak span { color: #FFD700; font-weight: 700; }
-  .lb-my-rank { text-align: center; padding: 10px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.14em; color: rgba(255,255,255,0.3); }
+  .lb-my-rank { text-align: center; padding: 10px 0 4px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.14em; color: rgba(255,255,255,0.5); }
   .lb-my-rank strong { font-size: 22px; font-family: 'Cinzel', serif; color: rgba(255,255,255,0.7); display: block; letter-spacing: 0; }
   .guild-plus-lock { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.14em; color: rgba(255,200,50,0.45); margin-left: 6px; }
   .profile-share-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
@@ -859,7 +859,7 @@
   .dungeon-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(139,0,255,0.12) 0%, transparent 65%); pointer-events:none; }
   .dungeon-card__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(139,0,255,0.6); text-transform:uppercase; margin-bottom:6px; }
   .dungeon-card__boss { font-family:'Cinzel',serif; font-size:18px; font-weight:900; letter-spacing:0.1em; color:#fff; text-shadow:0 0 20px rgba(139,0,255,0.7), 0 0 40px rgba(139,0,255,0.3); margin-bottom:4px; }
-  .dungeon-card__quote { font-family:'Inter',sans-serif; font-size:11px; font-style:italic; color:rgba(255,255,255,0.3); margin-bottom:16px; line-height:1.5; }
+  .dungeon-card__quote { font-family:'Inter',sans-serif; font-size:11px; font-style:italic; color:rgba(255,255,255,0.55); margin-bottom:16px; line-height:1.5; }
   .dungeon-boss-img { width:100%; height:220px; border-radius:14px; overflow:hidden; margin:12px 0 18px; position:relative; }
   .dungeon-boss-img img { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; }
   .dungeon-boss-img::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent,#07090F); pointer-events:none; }
@@ -893,11 +893,11 @@
   .dungeon-locked-overlay__reward { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:8px; }
   .dungeon-locked-overlay__xp { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; color:#FFD700; text-shadow:0 0 14px rgba(255,215,0,0.6); }
   .dungeon-locked-overlay__title-badge { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(204,68,255,0.7); padding:3px 8px; border:1px solid rgba(139,0,255,0.3); border-radius:6px; background:rgba(139,0,255,0.06); text-transform:uppercase; }
-  .dungeon-locked-overlay__pitch { font-size:12px; color:rgba(255,255,255,0.4); line-height:1.6; margin:0 0 8px; }
+  .dungeon-locked-overlay__pitch { font-size:12px; color:rgba(255,255,255,0.6); line-height:1.6; margin:0 0 8px; }
   .dungeon-locked-overlay__pitch strong { color:rgba(255,255,255,0.75); }
   .dungeon-locked-overlay__urgency { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(255,180,0,0.5); margin-bottom:12px; }
   .dungeon-locked-overlay__btn { display:inline-block; padding:12px 24px; border-radius:10px; border:1px solid rgba(139,0,255,0.5); background:rgba(139,0,255,0.12); font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.15em; color:#CC44FF; cursor:pointer; text-transform:uppercase; -webkit-tap-highlight-color:transparent; text-shadow:0 0 12px rgba(204,68,255,0.4); box-shadow:0 0 18px rgba(139,0,255,0.12); margin-bottom:8px; }
-  .dungeon-locked-overlay__price { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.2); letter-spacing:0.1em; }
+  .dungeon-locked-overlay__price { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.45); letter-spacing:0.1em; }
   .dungeon-defeated { text-align:center; padding:16px 0 8px; }
   .dungeon-defeated__glyph { font-size:32px; margin-bottom:8px; }
   .dungeon-defeated__title { font-family:'Cinzel',serif; font-size:14px; font-weight:900; color:#CC44FF; text-shadow:0 0 16px rgba(139,0,255,0.6); letter-spacing:0.12em; margin-bottom:4px; }
@@ -908,21 +908,21 @@
   .battle-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(255,60,60,0.08) 0%, transparent 65%); pointer-events:none; }
   .battle-card__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(255,80,80,0.6); text-transform:uppercase; margin-bottom:8px; }
   .battle-card__title { font-family:'Cinzel',serif; font-size:18px; font-weight:900; letter-spacing:0.12em; color:#fff; text-shadow:0 0 20px rgba(255,60,60,0.6); margin-bottom:6px; }
-  .battle-card__pitch { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.35); line-height:1.6; margin-bottom:14px; }
+  .battle-card__pitch { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.55); line-height:1.6; margin-bottom:14px; }
   .battle-card__pitch em { font-style:normal; color:rgba(255,215,0,0.7); }
-  .battle-card__empty { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.2); text-align:center; line-height:2; padding:8px 0; letter-spacing:0.1em; }
+  .battle-card__empty { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.45); text-align:center; line-height:2; padding:8px 0; letter-spacing:0.1em; }
   .battle-card__empty span { color:rgba(255,255,255,0.1); display:block; font-size:9px; }
   .battle-versus { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
   .battle-versus__side { flex:1; text-align:center; overflow:hidden; }
   .battle-versus__name { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.06em; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .battle-versus__xp { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; letter-spacing:0.05em; }
-  .battle-versus__class { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; color:rgba(255,255,255,0.2); margin-top:3px; }
+  .battle-versus__class { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; color:rgba(255,255,255,0.4); margin-top:3px; }
   .battle-versus__vs { font-family:'Cinzel',serif; font-size:11px; font-weight:900; color:rgba(255,255,255,0.2); letter-spacing:0.2em; flex-shrink:0; }
   .battle-bar { width:100%; height:8px; border-radius:99px; overflow:hidden; display:flex; background:rgba(255,255,255,0.05); margin-bottom:10px; }
   .battle-bar__fill { height:100%; transition:width 1s cubic-bezier(0.16,1,0.3,1); }
   .battle-bar__fill--you { border-radius:99px 0 0 99px; }
   .battle-bar__fill--opp { border-radius:0 99px 99px 0; }
-  .battle-status { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-align:center; margin-bottom:8px; }
+  .battle-status { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(255,255,255,0.55); text-align:center; margin-bottom:8px; }
   .battle-reward-hint { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(255,215,0,0.3); text-align:center; }
   .battle-reward-hint span { color:rgba(255,215,0,0.6); }
   .battle-actions { display:flex; gap:8px; margin-top:4px; }
@@ -975,6 +975,19 @@
   .cw-form__save { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid; background: rgba(0,245,255,0.05); font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease; }
   .cw-form__save:active { transform: scale(0.97); }
   .cw-max-note { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #333355; text-align: center; margin-top: 6px; letter-spacing: 0.1em; }
+
+  /* ══ RATING PROMPT OVERLAY ══════════════════ */
+  #rating-prompt { position: absolute; inset: 0; background: rgba(8,8,12,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 855; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
+  #rating-prompt.active { opacity: 1; pointer-events: all; }
+  .rate__system { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: #555577; text-transform: uppercase; }
+  .rate__stars { font-size: 32px; letter-spacing: 4px; line-height: 1; }
+  .rate__title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.12em; color: #FFFFFF; }
+  .rate__sub { font-family: 'Inter', sans-serif; font-size: 13px; color: #8888AA; line-height: 1.6; max-width: 260px; }
+  .rate__btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 4px; }
+  .rate__yes { padding: 16px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.4); background: rgba(255,215,0,0.07); font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #FFD700; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: transform 0.15s; }
+  .rate__yes:active { transform: scale(0.96); }
+  .rate__done { padding: 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.07); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; color: rgba(255,255,255,0.35); cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
+  .rate__later { padding: 10px; border: none; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: #333355; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
 
   /* ══ PHASE 3 — GHOST TOKEN OVERLAY ══════════ */
   #ghost-intervention { position: absolute; inset: 0; background: rgba(8,8,12,0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 860; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
@@ -1753,7 +1766,7 @@
             <p class="stat-mini__value" id="stat-streak">0d</p>
             <p class="stat-mini__best" id="stat-best-streak"></p>
           </div>
-          <div class="stat-mini"><p class="stat-mini__label">HP</p><p class="stat-mini__value" id="stat-hp">100/100</p></div>
+          <div class="stat-mini" onclick="Sound.play('tap');_showHpInfo()" style="cursor:pointer;"><p class="stat-mini__label">HP ⓘ</p><p class="stat-mini__value" id="stat-hp">100/100</p></div>
           <div class="stat-mini"><p class="stat-mini__label">Level</p><p class="stat-mini__value" id="stat-level">1</p></div>
         </div>
 
@@ -2080,13 +2093,26 @@
       </div>
     </div>
 
+    <!-- Rating Prompt Overlay -->
+    <div id="rating-prompt">
+      <p class="rate__system">System Log</p>
+      <div class="rate__stars">⭐⭐⭐⭐⭐</div>
+      <h2 class="rate__title">You're Making Progress</h2>
+      <p class="rate__sub">If WEEBJI OS has earned a place in your daily grind — a rating helps other hunters find it.</p>
+      <div class="rate__btns">
+        <button class="rate__yes" id="rate-yes-btn">Rate on Play Store ↗</button>
+        <button class="rate__done" id="rate-done-btn">Already Rated</button>
+        <button class="rate__later" id="rate-later-btn">Remind Me Later</button>
+      </div>
+    </div>
+
     <!-- Ghost Token Intervention overlay -->
     <div id="ghost-intervention">
       <p class="ghost-int__system">System Intervention</p>
       <div class="ghost-int__icon">👻</div>
       <h2 class="ghost-int__title">Streak Lost</h2>
       <p class="ghost-int__streak" id="ghost-streak-text"></p>
-      <p class="ghost-int__sub">You have Ghost Tokens. Use one to restore your streak before it's gone.</p>
+      <p class="ghost-int__sub">A Ghost Token can undo this. Use it now, or your streak becomes ash.</p>
       <p class="ghost-int__tokens" id="ghost-tokens-count"></p>
       <div class="ghost-int__btns">
         <button class="ghost-int__use" id="ghost-use-btn">Use Ghost Token</button>
@@ -4031,8 +4057,8 @@
       { icon: '◈', title: 'Prestige System', desc: 'Hit Level 100 and reset — harder. Each prestige earns a ◈ badge. Free hunters stay capped.' },
       { icon: '👥', title: 'Shadow Rival', desc: 'Lock onto a leaderboard rival. Their streak shows on your dashboard every day. Chase or be chased.' },
       { icon: '⚡', title: 'Friend Battles', desc: '7-day head-to-head XP wars. Winner earns XP + "Defeated Their Shadow" title.' },
-      { icon: '🗣', title: 'System Voice', desc: 'The AI narrator speaks to you by name. References your streak, class, enemy.' },
-      { icon: '👻', title: '5 Ghost Tokens/month', desc: 'Save your streak on days you can\'t. Free tier gets 1. Plus gets 5 — every month, no rollover.' },
+      { icon: '🗣', title: 'System Voice', desc: 'The System speaks your name. Knows your streak, your class, your enemy. Personal. Unsettling. Effective.' },
+      { icon: '👻', title: '5 Ghost Tokens/month', desc: 'One missed day can erase months of progress. Free tier gets 1 token. Plus hunters get 5, refreshed every month.' },
       { icon: '📊', title: 'Deep Analytics', desc: '90-day streak heatmap. See your arc. Know when you peak and when you fall.' },
       { icon: '🏰', title: 'Guild Creation', desc: 'Build your own faction. Lead a squad. Free hunters can join — only Plus can lead.' },
     ];
@@ -4040,7 +4066,7 @@
     el.innerHTML = `<div class="premium-hype">
       <div class="premium-hype__eyebrow">◈ System Restrictions Active</div>
       <div class="premium-hype__title">8 Features Sealed From You</div>
-      <div class="premium-hype__sub">Every day you wait, other hunters are pulling ahead using tools you don't have access to.</div>
+      <div class="premium-hype__sub">The hunters ranked above you didn't just grind harder. They had tools you can't touch yet. Every day this stays sealed, the gap widens.</div>
       <div class="premium-hype__features">
         ${features.map(f => `<div class="premium-hype__feature">
           <div class="premium-hype__feature-icon">${f.icon}</div>
@@ -4245,14 +4271,16 @@
     let _active = false;
     let _breachCount = 0;
     let _lastBreachAt = 0;
+    let _leftAt = 0;
     let _breachTimer = null;
-    const GRACE_MS = 15000; // 15s grace — checking notifications won't trigger penalty
+    const GRACE_MS = 45000; // 45s grace — quick notification checks won't trigger penalty
 
     function enter(modeLabel) {
       if (_active) return;
       _active = true;
       _breachCount = 0;
       _lastBreachAt = Date.now();
+      _leftAt = 0;
       const overlay = document.getElementById('void-overlay');
       const modeLbl = document.getElementById('void-mode-label');
       if (modeLbl) modeLbl.textContent = modeLabel || 'Session Active';
@@ -4273,6 +4301,8 @@
       if (el) el.textContent = timeStr;
     }
 
+    function recordLeave() { _leftAt = Date.now(); }
+
     function cancelPendingBreach() {
       if (_breachTimer) { clearTimeout(_breachTimer); _breachTimer = null; }
     }
@@ -4281,7 +4311,9 @@
       if (!_active) return;
       _breachCount++;
       const now = Date.now();
-      const drain = (now - _lastBreachAt) > 180000;
+      // Drain HP only if away for 3+ min — not just for being briefly distracted
+      const awayMs = _leftAt ? (now - _leftAt) : (now - _lastBreachAt);
+      const drain = awayMs > 180000;
       if (drain) {
         _lastBreachAt = now;
         const p = loadProgress();
@@ -4297,17 +4329,17 @@
 
     function isActive() { return _active; }
 
-    return { enter, exit, syncTimer, onBreach, cancelPendingBreach, isActive };
+    return { enter, exit, syncTimer, onBreach, recordLeave, cancelPendingBreach, isActive };
   })();
 
-  // Tab visibility breach detection — 15s grace period so notifications don't trigger penalty
+  // Tab visibility breach detection — 45s grace so quick notification checks never trigger penalty
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && TheVoid.isActive()) {
-      // Start grace period timer — only breach if still away after 15s
+      TheVoid.recordLeave(); // track exact leave time for accurate away-duration check
       TheVoid._breachTimer = setTimeout(() => {
         if (document.hidden) TheVoid.onBreach();
         TheVoid._breachTimer = null;
-      }, 15000);
+      }, 45000);
     }
     if (!document.hidden && TheVoid.isActive()) {
       // Returned within grace period — cancel pending breach
@@ -4582,6 +4614,23 @@
   _verifyIntegrity();
 
   /* ══ SCREEN MANAGER ══════════════════════════ */
+  function _showHpInfo() {
+    const existing = document.getElementById('hp-info-toast');
+    if (existing) { existing.remove(); return; }
+    const t = document.createElement('div');
+    t.id = 'hp-info-toast';
+    t.style.cssText = 'position:fixed;top:72px;left:16px;right:16px;z-index:99999;background:rgba(4,4,14,0.97);border:1px solid rgba(255,60,60,0.25);border-radius:16px;padding:16px 18px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:0.1em;color:rgba(255,255,255,0.75);line-height:1.8;animation:kf-fade-in 0.2s ease;';
+    t.innerHTML = `<div style="font-size:11px;letter-spacing:0.18em;color:rgba(255,80,80,0.9);margin-bottom:8px;">◆ HP — HOW IT WORKS</div>
+<div>Each missed day <span style="color:rgba(255,80,80,0.7)">−20 HP</span></div>
+<div>Abandoning a focus session (3+ min away) <span style="color:rgba(255,80,80,0.7)">−20 HP</span></div>
+<div>Multiple missed days stack the drain</div>
+<div style="margin-top:8px;color:rgba(139,92,246,0.8);">👻 Ghost Token shields your streak &amp; restores HP</div>
+<div style="margin-top:6px;color:rgba(100,200,100,0.7);">Completing daily activity restores HP</div>`;
+    t.onclick = () => t.remove();
+    document.body.appendChild(t);
+    setTimeout(() => { if (document.getElementById('hp-info-toast')) t.remove(); }, 5000);
+  }
+
   function showScreen(id) {
     const next    = document.getElementById(id);
     const current = document.querySelector('.screen.active');
@@ -5125,6 +5174,7 @@
         { nav:'home',    t:'.bottom-nav',    dim:0.82, title:'NAVIGATION',        body:'Four tabs. Home is your base. Mastermind and Monk are separate domains — each a different weapon.' },
         ...secondarySteps,
         { nav:'profile', t:'.profile-stats', dim:0.82, title:'YOUR LEGEND',       body:'Leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
+        { nav:'profile', t:null,             dim:0.88, title:'WARFARE & GUILDS',     body:'Friend Battles — challenge a rival to a 7-day XP war. Guilds — build a squad, share a private leaderboard. Both live in your Profile. Both locked behind WEEBJI+. Upgrade and declare war.' },
         { nav:'home',    t:null,             dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
       ];
     }
@@ -5287,6 +5337,7 @@
       maybeShowNotifPrompt();
       RitualClock.check();
       maybeShowSignInNudge();
+      maybeShowRatingPrompt();
       // Handle shortcut action (?action=profile from manifest shortcuts)
       if (window._shortcutAction === 'profile') {
         window._shortcutAction = null;
@@ -8273,7 +8324,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Task sealing + focus streak tracker</li>
           </ul>
           <button class="pillar-locked-screen__btn" style="border:1px solid rgba(230,57,70,0.5);background:rgba(230,57,70,0.1);color:#E63946;text-shadow:0 0 12px rgba(230,57,70,0.4);box-shadow:0 0 20px rgba(230,57,70,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>
+          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
     }
@@ -8328,7 +8379,7 @@
           <div class="pillar-locked-screen__glow" style="background:#34D399"></div>
           <div style="font-size:36px;color:#34D399;text-shadow:0 0 28px rgba(52,211,153,0.7);margin-bottom:10px">☯</div>
           <div class="pillar-locked-screen__title" style="color:#34D399;text-shadow:0 0 20px rgba(52,211,153,0.4)">THE SANCTUARY</div>
-          <div class="pillar-locked-screen__subtitle">RECOVERY IS PART OF THE SYSTEM</div>
+          <div class="pillar-locked-screen__subtitle">STILLNESS IS POWER</div>
           <div style="width:100%;max-width:300px;background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.18);border-radius:12px;padding:18px 16px;margin-bottom:20px;display:flex;flex-direction:column;align-items:center;gap:10px">
             <div style="width:72px;height:72px;border-radius:50%;border:2px solid rgba(52,211,153,0.35);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(52,211,153,0.15)">
               <div style="width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(52,211,153,0.55);background:rgba(52,211,153,0.06);box-shadow:0 0 14px rgba(52,211,153,0.2)"></div>
@@ -8342,7 +8393,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.11);color:rgba(255,255,255,0.45)">◆ Daily ritual checklist + streak grid</li>
           </ul>
           <button class="pillar-locked-screen__btn" style="border:1px solid rgba(52,211,153,0.45);background:rgba(52,211,153,0.08);color:#34D399;text-shadow:0 0 12px rgba(52,211,153,0.4);box-shadow:0 0 20px rgba(52,211,153,0.07)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>
+          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
     }
@@ -8470,7 +8521,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Weekly Boss Raids</li>
           </ul>
           <button class="pillar-locked-screen__btn" style="border:1px solid rgba(0,245,255,0.5);background:rgba(0,245,255,0.1);color:#00F5FF;text-shadow:0 0 12px rgba(0,245,255,0.4);box-shadow:0 0 20px rgba(0,245,255,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Access all 3 pillars. Cancel anytime.</div>
+          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
     }
@@ -9929,6 +9980,38 @@
   });
 
   // Push is always-on and server-controlled — no manual toggle
+
+  /* ══ RATING PROMPT ═══════════════════════════ */
+  function maybeShowRatingPrompt() {
+    const state = localStorage.getItem('weebji_rating_state');
+    if (state === 'done') return;
+    if (state) {
+      const snoozeUntil = parseInt(state, 10);
+      if (Date.now() < snoozeUntil) return;
+    }
+    const p = loadProgress();
+    const streak = p.streak || 0;
+    const level  = p.level  || 1;
+    if (streak < 3 && level < 5) return;
+    setTimeout(() => {
+      const el = document.getElementById('rating-prompt');
+      if (!el) return;
+      el.classList.add('active');
+      document.getElementById('rate-yes-btn').onclick = () => {
+        localStorage.setItem('weebji_rating_state', 'done');
+        el.classList.remove('active');
+        window.open('https://play.google.com/store/apps/details?id=io.github.skryrsh.twa', '_blank');
+      };
+      document.getElementById('rate-done-btn').onclick = () => {
+        localStorage.setItem('weebji_rating_state', 'done');
+        el.classList.remove('active');
+      };
+      document.getElementById('rate-later-btn').onclick = () => {
+        localStorage.setItem('weebji_rating_state', String(Date.now() + 7 * 24 * 60 * 60 * 1000));
+        el.classList.remove('active');
+      };
+    }, 3000);
+  }
 
   /* ══ PHASE 3 — GHOST TOKEN INTERVENTION ══════ */
   function checkGhostIntervention(p) {

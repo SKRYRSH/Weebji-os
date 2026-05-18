@@ -1766,7 +1766,7 @@
             <p class="stat-mini__value" id="stat-streak">0d</p>
             <p class="stat-mini__best" id="stat-best-streak"></p>
           </div>
-          <div class="stat-mini"><p class="stat-mini__label">HP</p><p class="stat-mini__value" id="stat-hp">100/100</p></div>
+          <div class="stat-mini" onclick="Sound.play('tap');_showHpInfo()" style="cursor:pointer;"><p class="stat-mini__label">HP ⓘ</p><p class="stat-mini__value" id="stat-hp">100/100</p></div>
           <div class="stat-mini"><p class="stat-mini__label">Level</p><p class="stat-mini__value" id="stat-level">1</p></div>
         </div>
 
@@ -4271,14 +4271,16 @@
     let _active = false;
     let _breachCount = 0;
     let _lastBreachAt = 0;
+    let _leftAt = 0;
     let _breachTimer = null;
-    const GRACE_MS = 15000; // 15s grace — checking notifications won't trigger penalty
+    const GRACE_MS = 45000; // 45s grace — quick notification checks won't trigger penalty
 
     function enter(modeLabel) {
       if (_active) return;
       _active = true;
       _breachCount = 0;
       _lastBreachAt = Date.now();
+      _leftAt = 0;
       const overlay = document.getElementById('void-overlay');
       const modeLbl = document.getElementById('void-mode-label');
       if (modeLbl) modeLbl.textContent = modeLabel || 'Session Active';
@@ -4299,6 +4301,8 @@
       if (el) el.textContent = timeStr;
     }
 
+    function recordLeave() { _leftAt = Date.now(); }
+
     function cancelPendingBreach() {
       if (_breachTimer) { clearTimeout(_breachTimer); _breachTimer = null; }
     }
@@ -4307,7 +4311,9 @@
       if (!_active) return;
       _breachCount++;
       const now = Date.now();
-      const drain = (now - _lastBreachAt) > 180000;
+      // Drain HP only if away for 3+ min — not just for being briefly distracted
+      const awayMs = _leftAt ? (now - _leftAt) : (now - _lastBreachAt);
+      const drain = awayMs > 180000;
       if (drain) {
         _lastBreachAt = now;
         const p = loadProgress();
@@ -4323,17 +4329,17 @@
 
     function isActive() { return _active; }
 
-    return { enter, exit, syncTimer, onBreach, cancelPendingBreach, isActive };
+    return { enter, exit, syncTimer, onBreach, recordLeave, cancelPendingBreach, isActive };
   })();
 
-  // Tab visibility breach detection — 15s grace period so notifications don't trigger penalty
+  // Tab visibility breach detection — 45s grace so quick notification checks never trigger penalty
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && TheVoid.isActive()) {
-      // Start grace period timer — only breach if still away after 15s
+      TheVoid.recordLeave(); // track exact leave time for accurate away-duration check
       TheVoid._breachTimer = setTimeout(() => {
         if (document.hidden) TheVoid.onBreach();
         TheVoid._breachTimer = null;
-      }, 15000);
+      }, 45000);
     }
     if (!document.hidden && TheVoid.isActive()) {
       // Returned within grace period — cancel pending breach
@@ -4608,6 +4614,23 @@
   _verifyIntegrity();
 
   /* ══ SCREEN MANAGER ══════════════════════════ */
+  function _showHpInfo() {
+    const existing = document.getElementById('hp-info-toast');
+    if (existing) { existing.remove(); return; }
+    const t = document.createElement('div');
+    t.id = 'hp-info-toast';
+    t.style.cssText = 'position:fixed;top:72px;left:16px;right:16px;z-index:99999;background:rgba(4,4,14,0.97);border:1px solid rgba(255,60,60,0.25);border-radius:16px;padding:16px 18px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:0.1em;color:rgba(255,255,255,0.75);line-height:1.8;animation:kf-fade-in 0.2s ease;';
+    t.innerHTML = `<div style="font-size:11px;letter-spacing:0.18em;color:rgba(255,80,80,0.9);margin-bottom:8px;">◆ HP — HOW IT WORKS</div>
+<div>Each missed day <span style="color:rgba(255,80,80,0.7)">−20 HP</span></div>
+<div>Abandoning a focus session (3+ min away) <span style="color:rgba(255,80,80,0.7)">−20 HP</span></div>
+<div>Multiple missed days stack the drain</div>
+<div style="margin-top:8px;color:rgba(139,92,246,0.8);">👻 Ghost Token shields your streak &amp; restores HP</div>
+<div style="margin-top:6px;color:rgba(100,200,100,0.7);">Completing daily activity restores HP</div>`;
+    t.onclick = () => t.remove();
+    document.body.appendChild(t);
+    setTimeout(() => { if (document.getElementById('hp-info-toast')) t.remove(); }, 5000);
+  }
+
   function showScreen(id) {
     const next    = document.getElementById(id);
     const current = document.querySelector('.screen.active');
@@ -5151,6 +5174,7 @@
         { nav:'home',    t:'.bottom-nav',    dim:0.82, title:'NAVIGATION',        body:'Four tabs. Home is your base. Mastermind and Monk are separate domains — each a different weapon.' },
         ...secondarySteps,
         { nav:'profile', t:'.profile-stats', dim:0.82, title:'YOUR LEGEND',       body:'Leaderboard rank, earned titles, Prestige level, and your full training history. The System records everything.' },
+        { nav:'profile', t:null,             dim:0.88, title:'WARFARE & GUILDS',     body:'Friend Battles — challenge a rival to a 7-day XP war. Guilds — build a squad, share a private leaderboard. Both live in your Profile. Both locked behind WEEBJI+. Upgrade and declare war.' },
         { nav:'home',    t:null,             dim:0.88, promo:true, title:'ASCEND FURTHER', body:'Unlock every pillar. Shadow Rival. Ghost Tokens. Prestige. One upgrade — permanent edge over every free player.' },
       ];
     }

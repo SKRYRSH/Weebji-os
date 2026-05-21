@@ -1460,6 +1460,38 @@
   .ghost-shop-btn { width:100%; padding:12px; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.35); border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:rgba(139,92,246,0.9); text-transform:uppercase; cursor:pointer; transition:border-color 0.2s, background 0.2s; -webkit-tap-highlight-color:transparent; }
   .ghost-shop-btn:active { transform:scale(0.97); background:rgba(139,92,246,0.15); }
 
+  /* ══ PLUS SHEET (inline paywall drawer) ════════ */
+  #plus-sheet-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:980; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+  #plus-sheet-backdrop.active { opacity:1; pointer-events:all; }
+  #plus-sheet { position:fixed; bottom:0; left:0; right:0; z-index:981; background:#0A0A14; border-top:1px solid rgba(255,210,60,0.2); border-radius:24px 24px 0 0; padding:0 20px calc(28px + env(safe-area-inset-bottom,0px)); max-height:90vh; overflow-y:auto; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.32,0.72,0,1); }
+  #plus-sheet.active { transform:translateY(0); }
+  .plus-sheet__handle { width:36px; height:4px; background:rgba(255,255,255,0.12); border-radius:2px; margin:12px auto 20px; }
+  .plus-sheet__close { position:absolute; top:14px; right:18px; font-size:18px; color:rgba(255,255,255,0.25); cursor:pointer; -webkit-tap-highlight-color:transparent; line-height:1; padding:4px; }
+  /* ══ TRIAL URGENCY BAR ══════════════════════════ */
+  .trial-urgency-bar { display:flex; align-items:center; gap:10px; background:rgba(255,60,60,0.06); border:1px solid rgba(255,80,80,0.2); border-radius:10px; padding:10px 14px; margin-bottom:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .trial-urgency-bar__icon { font-size:14px; flex-shrink:0; }
+  .trial-urgency-bar__text { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(255,120,120,0.85); line-height:1.5; flex:1; }
+  .trial-urgency-bar__cta { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(255,210,60,0.7); white-space:nowrap; }
+  /* ══ PROTOCOL COMPLETE BANNER ═══════════════════ */
+  .protocol-complete-banner { position:fixed; top:0; left:0; right:0; z-index:970; background:linear-gradient(135deg,rgba(0,245,255,0.12),rgba(139,0,255,0.08)); border-bottom:1px solid rgba(0,245,255,0.2); padding:14px 20px; display:flex; align-items:center; gap:14px; transform:translateY(-100%); transition:transform 0.4s cubic-bezier(0.32,0.72,0,1); }
+  .protocol-complete-banner.active { transform:translateY(0); }
+  .protocol-complete-banner__icon { font-size:22px; flex-shrink:0; }
+  .protocol-complete-banner__text { flex:1; }
+  .protocol-complete-banner__title { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.15em; color:rgba(0,245,255,0.9); }
+  .protocol-complete-banner__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(255,255,255,0.35); margin-top:2px; }
+  .protocol-complete-banner__close { font-size:16px; color:rgba(255,255,255,0.2); cursor:pointer; -webkit-tap-highlight-color:transparent; padding:4px; }
+  /* ══ GOODWILL OVERLAY ════════════════════════ */
+  #goodwill-overlay { position:fixed; inset:0; z-index:9999; background:#0A0A0F; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 28px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; }
+  #goodwill-overlay.active { opacity:1; pointer-events:all; }
+  .goodwill__override { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.35em; color:rgba(255,200,60,0.5); text-transform:uppercase; margin-bottom:28px; }
+  .goodwill__seal { font-size:52px; margin-bottom:20px; filter:drop-shadow(0 0 20px rgba(255,200,60,0.6)); animation:gw-pulse 2.4s ease-in-out infinite; }
+  @keyframes gw-pulse { 0%,100%{filter:drop-shadow(0 0 18px rgba(255,200,60,0.5))} 50%{filter:drop-shadow(0 0 38px rgba(255,200,60,0.9))} }
+  .goodwill__decree { font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:0.25em; color:rgba(255,200,60,0.65); text-transform:uppercase; margin-bottom:24px; }
+  .goodwill__name { font-family:'Cinzel',serif; font-size:clamp(28px,8vw,48px); font-weight:900; color:#FFD700; text-shadow:0 0 40px rgba(255,200,60,0.9); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:18px; text-align:center; }
+  .goodwill__msg { font-family:'Inter',sans-serif; font-size:14px; line-height:1.7; color:rgba(255,255,255,0.55); text-align:center; max-width:320px; margin-bottom:12px; }
+  .goodwill__access { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:rgba(255,200,60,0.8); text-transform:uppercase; margin-bottom:48px; background:rgba(255,200,60,0.06); border:1px solid rgba(255,200,60,0.2); border-radius:8px; padding:10px 20px; }
+  .goodwill__btn { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.2em; color:#0A0A0F; background:linear-gradient(135deg,#FFD700,#FFA500); border:none; border-radius:12px; padding:16px 48px; cursor:pointer; text-transform:uppercase; box-shadow:0 0 40px rgba(255,180,0,0.35); -webkit-tap-highlight-color:transparent; }
+  .goodwill__btn:active { transform:scale(0.97); }
   /* ══ DAILY CHALLENGE ══════════════════════════ */
   .daily-challenge-card { padding:14px 16px; border-radius:14px; border:1px solid; margin-bottom:12px; position:relative; overflow:hidden; }
   .daily-challenge-card::before { content:''; position:absolute; inset:0; opacity:0.04; pointer-events:none; background:var(--dc-color,#00F5FF); }
@@ -1758,6 +1790,7 @@
         <div id="battle-card" style="display:none;"></div>
 
         <!-- Premium hype (free users only) -->
+        <div id="trial-urgency-bar" style="display:none"></div>
         <div id="premium-hype-card"></div>
 
 <div class="stats-strip">
@@ -1765,6 +1798,7 @@
             <p class="stat-mini__label">Streak</p>
             <p class="stat-mini__value" id="stat-streak">0d</p>
             <p class="stat-mini__best" id="stat-best-streak"></p>
+            <p id="streak5-hint" style="display:none;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.1em;color:rgba(255,210,60,0.45);margin-top:2px;line-height:1.4">5d = 7 days Plus free</p>
           </div>
           <div class="stat-mini" onclick="Sound.play('tap');_showHpInfo()" style="cursor:pointer;"><p class="stat-mini__label">HP ⓘ</p><p class="stat-mini__value" id="stat-hp">100/100</p></div>
           <div class="stat-mini"><p class="stat-mini__label">Level</p><p class="stat-mini__value" id="stat-level">1</p></div>
@@ -1996,7 +2030,7 @@
           </div>
         </div>
         <button class="srg__claim-btn" id="srg-claim-btn" onclick="claimStreakReward()">CLAIM REWARD</button>
-        <button class="srg__upgrade-btn" id="srg-upgrade-btn" onclick="closeStreakRewardGate();showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WITH WEEBJI+ — $9.99/mo →</button>
+        <button class="srg__upgrade-btn" id="srg-upgrade-btn" onclick="closeStreakRewardGate();showPlusSheet()">UNLOCK WITH WEEBJI+ — $9.99/mo →</button>
       </div>
     </div>
 
@@ -2159,6 +2193,35 @@
 
   </div><!-- /app -->
 
+  <!-- Plus Sheet (inline paywall) -->
+  <div id="plus-sheet-backdrop" onclick="closePlusSheet()"></div>
+  <div id="plus-sheet">
+    <div class="plus-sheet__handle"></div>
+    <span class="plus-sheet__close" onclick="closePlusSheet()">✕</span>
+    <div id="plus-sheet-content"></div>
+  </div>
+
+  <!-- Goodwill Overlay -->
+  <div id="goodwill-overlay">
+    <div class="goodwill__override">SYSTEM OVERRIDE — ARCHITECT DECREE</div>
+    <div class="goodwill__seal">◆</div>
+    <div class="goodwill__decree">By Order of the Architect</div>
+    <div class="goodwill__name" id="goodwill-name">HUNTER</div>
+    <p class="goodwill__msg">Your contribution to WEEBJI OS has been recognized. You were here before the world knew this existed. The System does not forget.</p>
+    <div class="goodwill__access">◆ WEEBJI+ — FULL ACCESS GRANTED ◆</div>
+    <button class="goodwill__btn" onclick="dismissGoodwillOverlay()">I ACCEPT</button>
+  </div>
+
+  <!-- Protocol Complete Banner -->
+  <div class="protocol-complete-banner" id="protocol-complete-banner">
+    <div class="protocol-complete-banner__icon">◆</div>
+    <div class="protocol-complete-banner__text">
+      <div class="protocol-complete-banner__title">PROTOCOL COMPLETE</div>
+      <div class="protocol-complete-banner__sub" id="protocol-complete-sub">Full protocol executed. The System acknowledges.</div>
+    </div>
+    <div class="protocol-complete-banner__close" onclick="dismissProtocolBanner()">✕</div>
+  </div>
+
   <!-- ══ DEV PANEL (remove before launch) ══════ -->
 
   <script>
@@ -2216,13 +2279,21 @@
     const VAPID_PUBLIC_KEY = 'BCTCR_us8hqiBRfTz4-xewx052OpKbBzXG34cEptiN6XEcW0sL5pM1jvUTE4qkEkagWVex-dK9FnLd2fd0R6w6M';
 
     const _msgs = {
-      hp_critical:  { title: '⚠ CRITICAL HP',           body: 'One HP remaining. Miss today and the System resets you.' },
-      ghost_token:  { title: '👻 GHOST TOKENS DEPLETED', body: 'No protection remains. Miss today and your streak becomes ash.' },
-      streak_7:     { title: '🔥 7-DAY STREAK',          body: 'One week of unbroken discipline. The System has noticed.' },
-      streak_30:    { title: '⚡ 30-DAY STREAK',          body: 'One month. Very few reach this. The System promotes your standing.' },
-      streak_100:   { title: '💎 100-DAY STREAK',         body: 'Triple digits. You are no longer ordinary. The System acknowledges.' },
-      streak_365:   { title: '👑 ONE FULL YEAR',          body: '365 days. The System has never met your equal. Legend confirmed.' },
-      secret_title: { title: '◆ SECRET TITLE UNLOCKED',  body: 'The System has granted you a new designation.' },
+      hp_critical:  [
+        { title: '⚠ CRITICAL HP',        body: 'One HP remaining. Miss today and the System resets you.' },
+        { title: '🔴 WARNING: ONE HIT',   body: 'Your arc is one missed day from collapse. Do not let it end here.' },
+        { title: '⚠ HP CRITICAL',         body: 'The System has detected weakness. One HP left. Show up today.' },
+      ],
+      ghost_token:  [
+        { title: '👻 GHOST TOKENS DEPLETED', body: 'No protection remains. Miss today and your streak becomes ash.' },
+        { title: '👻 NO SHIELDS LEFT',        body: 'You are exposed. One missed day and everything resets.' },
+        { title: '👻 UNPROTECTED',            body: 'Ghost Tokens exhausted. The System offers no forgiveness today.' },
+      ],
+      streak_7:     [{ title: '🔥 7-DAY STREAK',   body: 'One week of unbroken discipline. The System has noticed.' }],
+      streak_30:    [{ title: '⚡ 30-DAY STREAK',   body: 'One month. Very few reach this. The System promotes your standing.' }],
+      streak_100:   [{ title: '💎 100-DAY STREAK',  body: 'Triple digits. You are no longer ordinary. The System acknowledges.' }],
+      streak_365:   [{ title: '👑 ONE FULL YEAR',   body: '365 days. The System has never met your equal. Legend confirmed.' }],
+      secret_title: [{ title: '◆ SECRET TITLE UNLOCKED', body: 'The System has granted you a new designation.' }],
     };
 
     function local(notifType, title, body) {
@@ -2232,7 +2303,7 @@
       }).catch(() => {});
     }
 
-    function send(type) { const m = _msgs[type]; if (m) local(type, m.title, m.body); }
+    function send(type) { const arr = _msgs[type]; if (!arr) return; const m = arr[Math.floor(Math.random()*arr.length)]; local(type, m.title, m.body); }
 
     function _urlB64ToUint8(b) {
       const p = (b + '==='.slice((b.length + 3) % 4)).replace(/-/g, '+').replace(/_/g, '/');
@@ -2886,7 +2957,7 @@
         if (streakWouldDie) {
           const totalDaysMissed = missedDays + (effectiveYesterdayDone === 0 ? 1 : 0);
           const hpFloor = p.level >= 5 ? 0 : 1;
-          p.hp = Math.max(hpFloor, p.hp - Math.min(totalDaysMissed, 2));
+          p.hp = Math.max(hpFloor, p.hp - totalDaysMissed);
           // Always surface the intervention overlay — user makes the choice
           p.prevStreak = originalStreak;
           p.streak = 0;
@@ -2995,7 +3066,14 @@
   /* ══ WEEBJI+ ═════════════════════════════════ */
 
   function isWeebjiPlus() {
-    return SupabaseSync.isPremium();
+    if (SupabaseSync.isPremium()) return true;
+    const ts = parseInt(localStorage.getItem('weebji_streak5_trial_start') || '0');
+    return ts > 0 && Date.now() - ts < 7 * 86400000;
+  }
+  function streak5TrialDaysLeft() {
+    const ts = parseInt(localStorage.getItem('weebji_streak5_trial_start') || '0');
+    if (!ts) return 0;
+    return Math.max(0, Math.ceil(7 - (Date.now() - ts) / 86400000));
   }
 
   // Returns days remaining in voice trial (0 = expired/no trial)
@@ -3076,7 +3154,7 @@
         ${!plus ? `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;gap:10px;background:rgba(7,9,15,0.55);backdrop-filter:blur(2px)">
           <div style="color:${hexC};font-family:Cinzel,serif;font-size:13px;letter-spacing:2px;">UNLOCK FULL REPORT</div>
           <div style="color:rgba(255,255,255,0.45);font-size:12px;font-family:Inter,sans-serif;text-align:center;max-width:220px">7-day breakdown of every session, streak data, and progress vs last week</div>
-          <button onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)" style="background:${hexRgba(hexC,0.12)};border:1px solid ${hexRgba(hexC,0.35)};color:${hexC};font-family:Cinzel,serif;font-size:11px;letter-spacing:1.5px;padding:8px 18px;border-radius:8px;cursor:pointer">UPGRADE TO WEEBJI+</button>
+          <button onclick="showPlusSheet()" style="background:${hexRgba(hexC,0.12)};border:1px solid ${hexRgba(hexC,0.35)};color:${hexC};font-family:Cinzel,serif;font-size:11px;letter-spacing:1.5px;padding:8px 18px;border-radius:8px;cursor:pointer">UPGRADE TO WEEBJI+</button>
         </div>` : ''}
         <div style="${blur}">
           <div class="analytics-totals" style="margin-top:12px">
@@ -3401,6 +3479,139 @@
     } catch (_) { /* silent fail */ }
   }
 
+  /* ══ PLUS SHEET ══════════════════════════════════ */
+  function showPlusSheet() {
+    Sound.play('tap');
+    const el = document.getElementById('plus-sheet-content');
+    if (!el) return;
+    const trialActive = isInVoiceTrial();
+    const dLeft = voiceTrialDaysLeft();
+    const trialBanner = trialActive
+      ? `<div class="plus-paywall__trial-notice">◈ System Voice trial active — ${dLeft} day${dLeft===1?'':'s'} left. Upgrade to keep it forever.</div>`
+      : `<div class="plus-paywall__trial-expired">◈ Your System Voice trial ended. You know what it sounds like now.</div>`;
+    const pitch = trialActive
+      ? `Your arc is incomplete. You've heard the System Voice — now it's about to go silent.`
+      : `Most hunters stop here. The ones who don't — they're the ones you'll never catch up to.`;
+    el.innerHTML = `
+      <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:900;letter-spacing:0.1em;color:rgba(255,210,60,0.9);margin-bottom:6px;text-align:center">◆ WEEBJI+</div>
+      ${!localStorage.getItem('weebji_streak5_trial_used') ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(0,245,255,0.65);background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.12);border-radius:6px;padding:7px 10px;margin-bottom:10px;text-align:center">⭐ Reach a 5-day streak → 7 days of WEEBJI+ free. No card needed.</div>` : ''}
+      ${trialBanner}
+      <p style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;margin-bottom:16px;text-align:center;font-style:italic">${pitch}</p>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <div style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.015);">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.25em;color:rgba(255,255,255,0.25);margin-bottom:6px">FREE TIER</div>
+          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.3);line-height:1.4">
+            <li>◇ Daily quests &amp; XP system</li><li>◇ Streak tracking &amp; HP</li>
+            <li>◇ 1 Ghost Token/month</li><li>◇ 5 custom exercises</li>
+          </ul>
+        </div>
+        <div style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,210,60,0.18);background:rgba(255,210,60,0.04);">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.25em;color:rgba(255,210,60,0.6);margin-bottom:6px">WEEBJI+</div>
+          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,210,60,0.5);line-height:1.4">
+            <li>◆ System Voice narrator</li><li>◆ Weekly Dungeon bosses</li>
+            <li>◆ Prestige &amp; Shadow Rival</li><li>◆ Friend Battles (XP wars)</li>
+            <li>◆ 5 Ghost Tokens/month</li><li>◆ Deep Analytics</li>
+            <li>◆ Guild Creation</li>
+          </ul>
+        </div>
+      </div>
+      <div class="plus-social-proof" id="plus-sheet-social">◆ hunters upgraded this week</div>
+      <div class="plus-plans" style="margin-bottom:16px">
+        <div class="plus-plan" onclick="closePlusSheet();Sound.play('tap');_openCheckout('monthly')">
+          <div class="plus-plan__period">Monthly</div>
+          <div class="plus-plan__price">$9.99</div>
+          <div class="plus-plan__unit">/month</div>
+        </div>
+        <div class="plus-plan featured" onclick="closePlusSheet();Sound.play('tap');_openCheckout('annual')">
+          <div class="plus-plan__badge">BEST VALUE</div>
+          <div class="plus-plan__period">Annual</div>
+          <div class="plus-plan__price">$59.99</div>
+          <div class="plus-plan__unit">/year — save 50%</div>
+        </div>
+      </div>
+      <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95)">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px">SAVE 33%</span></button>
+      <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token')" style="margin-bottom:8px">👻 1 Ghost Token — $0.99</button>`;
+    document.getElementById('plus-sheet').classList.add('active');
+    document.getElementById('plus-sheet-backdrop').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    // async social proof
+    (async () => {
+      try {
+        const c = SupabaseSync._client ? SupabaseSync._client() : null;
+        if (!c) return;
+        const { count } = await c.from('user_plans').select('*',{count:'exact',head:true}).eq('plan','plus').gte('created_at',new Date(Date.now()-7*86400000).toISOString());
+        const se = document.getElementById('plus-sheet-social');
+        if (se && count != null) se.textContent = `◆ ${count>0?count:'—'} hunter${count!==1?'s':''} upgraded this week`;
+      } catch(_) {}
+    })();
+  }
+  function closePlusSheet() {
+    document.getElementById('plus-sheet')?.classList.remove('active');
+    document.getElementById('plus-sheet-backdrop')?.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  /* ══ GOODWILL OVERLAY ════════════════════════════ */
+  function showGoodwillOverlay(displayName) {
+    const el = document.getElementById('goodwill-overlay');
+    const nameEl = document.getElementById('goodwill-name');
+    if (!el) return;
+    if (nameEl) nameEl.textContent = (displayName || 'HUNTER').toUpperCase();
+    // Stagger: fade in slightly after page settles
+    setTimeout(() => el.classList.add('active'), 800);
+  }
+
+  function dismissGoodwillOverlay() {
+    const el = document.getElementById('goodwill-overlay');
+    if (!el) return;
+    el.style.transition = 'opacity 0.5s ease';
+    el.style.opacity = '0';
+    setTimeout(() => { el.classList.remove('active'); el.style.opacity = ''; el.style.transition = ''; }, 500);
+    localStorage.setItem('weebji_goodwill_shown', '1');
+  }
+
+  async function checkGoodwillOverlay() {
+    if (localStorage.getItem('weebji_goodwill_shown')) return;
+    if (!SupabaseSync._client?.()) return;
+    try {
+      const { data } = await SupabaseSync._client().rpc('get_goodwill_status');
+      if (data?.is_goodwill) {
+        const name = localStorage.getItem('weebji_name') || data.display_name || 'Hunter';
+        showGoodwillOverlay(name);
+      }
+    } catch(e) {}
+  }
+
+  /* ══ PROTOCOL COMPLETE BANNER ════════════════════ */
+  function checkDayComplete(p) {
+    const today = new Date().toISOString().slice(0,10);
+    if (localStorage.getItem('weebji_protocol_done') === today) return;
+    const workoutDone = p.workoutBonus || (p.workoutChecked||[]).length >= 3;
+    const questsDone  = (p.questsChecked||[]).length >= 3;
+    if (!workoutDone || !questsDone) return;
+    localStorage.setItem('weebji_protocol_done', today);
+    const streak = p.streak || 0;
+    const sub = streak > 0 ? `Day ${streak} streak locked in. Come back tomorrow.` : 'Full protocol executed. The System acknowledges.';
+    const subEl = document.getElementById('protocol-complete-sub');
+    if (subEl) subEl.textContent = sub;
+    const banner = document.getElementById('protocol-complete-banner');
+    if (banner) {
+      banner.classList.add('active');
+      Sound.play('milestone');
+      setTimeout(() => banner.classList.remove('active'), 5000);
+    }
+    // Post-great-day conversion pitch after 2.5s delay
+    if (!isWeebjiPlus()) {
+      setTimeout(() => {
+        spawnDropBanner('◆ PLUS — Your arc is real. Don\'t let a paywall stop it. Tap to unlock →');
+        document.querySelector('.drop-banner')?.addEventListener('click', () => showPlusSheet(), {once:true});
+      }, 2500);
+    }
+  }
+  function dismissProtocolBanner() {
+    document.getElementById('protocol-complete-banner')?.classList.remove('active');
+  }
+
   /* ══ WEEKLY DUNGEON ══════════════════════════════ */
   const DUNGEONS = [
     {
@@ -3649,7 +3860,7 @@
         </div>
         <p class="dungeon-locked-overlay__pitch">Defeat <strong>${dungeon.boss}</strong> this week. Claim the title. Most hunters never make it past Gate 1.</p>
         <div class="dungeon-locked-overlay__urgency">⏳ ${timerTxt} — dungeon resets next week</div>
-        <div class="dungeon-locked-overlay__btn" onclick="document.querySelector('.profile-scroll')&&document.getElementById('profile-plus-section').scrollIntoView({behavior:'smooth'});Sound.play('tap');showScreen('profile');renderProfile();">UNLOCK WEEBJI+ — ENTER NOW →</div>
+        <div class="dungeon-locked-overlay__btn" onclick="showPlusSheet()">UNLOCK WEEBJI+ — ENTER NOW →</div>
         <div class="dungeon-locked-overlay__price">From $9.99/mo · Cancel anytime</div>
       </div>` : '';
 
@@ -3671,7 +3882,7 @@
       <div class="dungeon-boss-img"><img src="${dungeon.img}" alt="${dungeon.boss}" loading="lazy"></div>
       <div style="margin:10px 0 4px;padding:10px 14px;border-left:2px solid rgba(255,255,255,${plus?'0.18':'0.08'});background:rgba(255,255,255,0.02);border-radius:0 8px 8px 0">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:rgba(255,255,255,${plus?'0.55':'0.25'});line-height:1.6;font-style:italic">${plus ? dungeon.taunt_plus : dungeon.taunt_free}</div>
-        ${!plus ? `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,200,50,0.4);margin-top:5px;cursor:pointer" onclick="showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">— ${dungeon.boss} · WEEBJI+ TO ENTER →</div>` : `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,255,255,0.18);margin-top:5px">— ${dungeon.boss}</div>`}
+        ${!plus ? `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,200,50,0.4);margin-top:5px;cursor:pointer" onclick="showPlusSheet()">— ${dungeon.boss} · WEEBJI+ TO ENTER →</div>` : `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,255,255,0.18);margin-top:5px">— ${dungeon.boss}</div>`}
       </div>
       <div class="dungeon-reward">
         <div>
@@ -3794,7 +4005,7 @@
             <div style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4">Exclusive <strong style="color:rgba(255,255,255,0.8)">"Defeated Their Shadow"</strong> title</div>
           </div>
         </div>
-        <div class="battle-locked-btn" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — Enter the War →</div>
+        <div class="battle-locked-btn" onclick="showPlusSheet()">Unlock WEEBJI+ — Enter the War →</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;text-align:center;margin-top:10px">$9.99/mo · or $59.99/yr — save 50%</div>
       </div>`;
       return;
@@ -4050,7 +4261,20 @@
   function renderPremiumHypeCard() {
     const el = document.getElementById('premium-hype-card');
     if (!el) return;
-    if (isWeebjiPlus()) { el.innerHTML = ''; return; }
+    if (isWeebjiPlus()) { el.innerHTML = ''; document.getElementById('trial-urgency-bar').style.display='none'; return; }
+    // Trial urgency bar
+    const tBar = document.getElementById('trial-urgency-bar');
+    if (tBar && isInVoiceTrial()) {
+      const dLeft = voiceTrialDaysLeft();
+      if (dLeft <= 3) {
+        tBar.style.display = '';
+        tBar.innerHTML = `<div class="trial-urgency-bar" onclick="showPlusSheet()">
+          <div class="trial-urgency-bar__icon">⚠</div>
+          <div class="trial-urgency-bar__text">System Voice trial ends in <strong>${dLeft} day${dLeft===1?'':'s'}</strong>. After that — silence.</div>
+          <div class="trial-urgency-bar__cta">Upgrade →</div>
+        </div>`;
+      } else { tBar.style.display = 'none'; }
+    } else if (tBar) { tBar.style.display = 'none'; }
 
     const features = [
       { icon: '⚔', title: 'Weekly Dungeon', desc: 'Mon→Sun boss fights. Defeat them to earn exclusive titles no one else can get.' },
@@ -4073,7 +4297,7 @@
           <div class="premium-hype__feature-text"><strong>${f.title}</strong> — ${f.desc}</div>
         </div>`).join('')}
       </div>
-      <button class="premium-hype__cta" onclick="Sound.play('tap');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200);">Unlock WEEBJI+ — $9.99/mo</button>
+      <button class="premium-hype__cta" onclick="showPlusSheet()">Unlock WEEBJI+ — $9.99/mo</button>
       <div class="premium-hype__price">or $59.99/yr — save 50% · cancel anytime</div>
     </div>`;
   }
@@ -5259,13 +5483,13 @@
         ${!isLast ? `<div id="tour-skip-row"><button class="tour-btn-skip" id="tc-skip">Skip Tour</button></div>` : ''}
       `;
       card.querySelector('#tc-next').addEventListener('click', () => {
-        if (isLast) { end(); if (step.promo) { setTimeout(() => { showScreen('profile'); setTimeout(() => document.getElementById('profile-plus-section')?.scrollIntoView({ behavior:'smooth' }), 200); }, 80); } }
+        if (isLast) { end(); if (step.promo) { setTimeout(() => showPlusSheet(), 80); } }
         else _go(idx + 1);
       });
       const prev = card.querySelector('#tc-prev'); if (prev) prev.addEventListener('click', () => _go(idx - 1));
       const skip = card.querySelector('#tc-skip'); if (skip) skip.addEventListener('click', end);
       const plus = card.querySelector('#tour-plus-cta');
-      if (plus) plus.addEventListener('click', () => { end(); showScreen('profile'); setTimeout(() => document.getElementById('profile-plus-section')?.scrollIntoView({ behavior:'smooth' }), 120); });
+      if (plus) plus.addEventListener('click', () => { end(); showPlusSheet(); });
     }
 
     function _go(idx) {
@@ -7766,6 +7990,17 @@
     if (p.streak > prevStreakDisplay) {
       if (p.streak > (p.bestStreak || 0)) p.bestStreak = p.streak;
       checkSecretTitles(p, localStorage.getItem('weebji_class'));
+      // 5-day streak → 7-day WEEBJI+ trial
+      if (p.streak === 5 && !localStorage.getItem('weebji_streak5_trial_used') && !SupabaseSync.isPremium()) {
+        localStorage.setItem('weebji_streak5_trial_start', String(Date.now()));
+        localStorage.setItem('weebji_streak5_trial_used', '1');
+        setTimeout(() => {
+          spawnDropBanner('◆ 5-DAY STREAK — WEEBJI+ unlocked free for 7 days. The System rewards discipline.');
+          Sound.play('milestone');
+          WeebjPush.local('streak5_trial', '◆ 7 DAYS OF WEEBJI+ UNLOCKED', '5-day streak achieved. Full access granted for 7 days. The System rewards the disciplined.');
+          renderPremiumHypeCard();
+        }, 600);
+      }
     }
     const streakEl = document.getElementById('stat-streak');
     if (p.streak === 0) {
@@ -7778,6 +8013,9 @@
     document.getElementById('stat-hp').textContent     = `${p.hp * 20}/100`;
     document.getElementById('stat-level').textContent  = `${p.level}`;
     document.getElementById('dash-level').textContent  = `LVL ${p.level}`;
+    // 5-day streak hint
+    const s5hint = document.getElementById('streak5-hint');
+    if (s5hint) s5hint.style.display = (!isWeebjiPlus() && !localStorage.getItem('weebji_streak5_trial_used') && p.streak < 5) ? '' : 'none';
 
     // Best streak sub-label
     const bestEl = document.getElementById('stat-best-streak');
@@ -7798,6 +8036,8 @@
     // Rival line
     updateRivalLine(p);
     if (isWeebjiPlus()) refreshRival();
+    // Day complete check
+    checkDayComplete(p);
     // Prestige badge next to level
     const lvlEl = document.getElementById('stat-level');
     if (lvlEl && p.prestige > 0) {
@@ -8323,7 +8563,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Deep focus sessions with The Void</li>
             <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Task sealing + focus streak tracker</li>
           </ul>
-          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(230,57,70,0.5);background:rgba(230,57,70,0.1);color:#E63946;text-shadow:0 0 12px rgba(230,57,70,0.4);box-shadow:0 0 20px rgba(230,57,70,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
+          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(230,57,70,0.5);background:rgba(230,57,70,0.1);color:#E63946;text-shadow:0 0 12px rgba(230,57,70,0.4);box-shadow:0 0 20px rgba(230,57,70,0.08)" onclick="showPlusSheet()">UNLOCK WEEBJI+ — $9.99/mo →</button>
           <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
@@ -8392,7 +8632,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.11);color:rgba(255,255,255,0.45)">◆ Pomodoro focus sessions + XP</li>
             <li class="pillar-locked-screen__feat" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.11);color:rgba(255,255,255,0.45)">◆ Daily ritual checklist + streak grid</li>
           </ul>
-          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(52,211,153,0.45);background:rgba(52,211,153,0.08);color:#34D399;text-shadow:0 0 12px rgba(52,211,153,0.4);box-shadow:0 0 20px rgba(52,211,153,0.07)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
+          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(52,211,153,0.45);background:rgba(52,211,153,0.08);color:#34D399;text-shadow:0 0 12px rgba(52,211,153,0.4);box-shadow:0 0 20px rgba(52,211,153,0.07)" onclick="showPlusSheet()">UNLOCK WEEBJI+ — $9.99/mo →</button>
           <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
@@ -8520,7 +8760,7 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Forge Timer + PR Board</li>
             <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Weekly Boss Raids</li>
           </ul>
-          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(0,245,255,0.5);background:rgba(0,245,255,0.1);color:#00F5FF;text-shadow:0 0 12px rgba(0,245,255,0.4);box-shadow:0 0 20px rgba(0,245,255,0.08)" onclick="Sound.play('tap');showScreen('profile');setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),100)">UNLOCK WEEBJI+ — $9.99/mo →</button>
+          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(0,245,255,0.5);background:rgba(0,245,255,0.1);color:#00F5FF;text-shadow:0 0 12px rgba(0,245,255,0.4);box-shadow:0 0 20px rgba(0,245,255,0.08)" onclick="showPlusSheet()">UNLOCK WEEBJI+ — $9.99/mo →</button>
           <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
         </div>`;
       return;
@@ -8908,7 +9148,7 @@
 
     const { data: rows } = await client
       .from('leaderboard')
-      .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title,is_plus,updated_at')
+      .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title,is_plus,updated_at,last_active')
       .order('level', { ascending: false })
       .limit(50);
 
@@ -8988,10 +9228,16 @@
       const rivalBtn = !isYou
         ? `<button class="lb-rival-btn" onclick="event.stopPropagation();setRival('${r.user_id}','${_esc(r.display_name)}')">${isCurrentRival ? '⚔ Rival' : '⚔'}</button>`
         : '';
-      return `<div class="lb-row${isYou ? ' is-you' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}">
-        <span class="lb-rank" style="color:${rank<=3 ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
+      // Stale detection: last_active or updated_at > 48h ago with streak > 0
+      const lastSeen = r.last_active || r.updated_at;
+      const isStale = !isYou && (r.streak||0) > 0 && lastSeen && (Date.now() - new Date(lastSeen).getTime()) > 48 * 3600000;
+      const streakDisplay = isStale
+        ? `<span style="color:rgba(255,255,255,0.2);text-decoration:line-through">${r.streak}</span><span style="display:block;font-size:8px;color:rgba(255,80,80,0.4);letter-spacing:0.1em">away</span>`
+        : `${r.streak || 0}<span style="font-size:11px;opacity:0.5"> days</span>${r.best_streak > (r.streak||0) ? `<span style="display:block;font-size:9px;opacity:0.4;letter-spacing:0.08em">best ${r.best_streak}</span>` : ''}`;
+      return `<div class="lb-row${isYou ? ' is-you' : ''}${isStale ? ' lb-row--stale' : ''}" style="${isYou ? `border-color:rgba(${rgb},0.35);background:rgba(${rgb},0.06)` : ''}${isStale ? ';opacity:0.55' : ''}">
+        <span class="lb-rank" style="color:${rank<=3 && !isStale ? rColor : 'rgba(255,255,255,0.28)'}">${rank<=3 ? rankGlyph[rank-1]+' '+rank : rank}</span>
         <span class="lb-name">${isYou ? `<span style="color:${color};font-weight:600">${_esc(r.display_name)}</span>` : _esc(r.display_name)}${plusBadge}${prestigeBadge}${r.hunter_number ? `<span style="color:rgba(255,255,255,0.2);font-size:11px"> #${parseInt(r.hunter_number)||''}</span>` : ''}${r.dungeon_title ? `<span style="display:block;font-size:9px;letter-spacing:0.12em;color:rgba(${rrb},0.55);margin-top:1px">${_esc(r.dungeon_title)}</span>` : ''}${rivalBtn}</span>
-        <span class="lb-streak" style="color:rgba(${rrb},0.9)">${r.streak || 0}<span style="font-size:11px;opacity:0.5"> days</span>${r.best_streak > (r.streak||0) ? `<span style="display:block;font-size:9px;opacity:0.4;letter-spacing:0.08em">best ${r.best_streak}</span>` : ''}</span>
+        <span class="lb-streak" style="color:rgba(${rrb},${isStale?'0.3':'0.9'})">${streakDisplay}</span>
       </div>`;
     }
 
@@ -9847,11 +10093,11 @@
     if (plus) {
       ctx.fillStyle = 'rgba(255,200,60,0.45)';
       ctx.shadowColor = 'rgba(255,180,0,0.3)'; ctx.shadowBlur = 12;
-      ctx.fillText('WEEBJI+ ◆  skryrsh.github.io/Weebji-os/', W/2, arcY + 50);
+      ctx.fillText('WEEBJI+ ◆  WEEBJI OS on Play Store', W/2, arcY + 50);
       ctx.shadowBlur = 0;
     } else {
       ctx.fillStyle = 'rgba(255,255,255,0.12)';
-      ctx.fillText('skryrsh.github.io/Weebji-os/', W/2, arcY + 50);
+      ctx.fillText('WEEBJI OS — Search on Play Store', W/2, arcY + 50);
     }
   }
 
@@ -9904,7 +10150,7 @@
       const file = new File([blob], `weebji-arc-${num}.png`, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         const streakTxt = (p.streak || 0) > 0 ? `${p.streak}-day streak. ` : '';
-      const shareText = `${streakTxt}Level ${p.level} Hunter. This is my arc.\n\nskryrsh.github.io/Weebji-os/`;
+      const shareText = `${streakTxt}Level ${p.level} Hunter. This is my arc.\n\nGet WEEBJI OS on the Play Store!`;
       navigator.share({ files: [file], title: 'WEEBJI OS — My Arc', text: shareText }).catch(()=>{});
       } else {
         // Fallback: download + copy text
@@ -10036,7 +10282,7 @@
       upsell.innerHTML = `
         <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token_3')" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(139,92,246,0.7);background:rgba(139,92,246,0.15);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.16em;color:rgba(200,160,255,1);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;position:relative;">👻 3 Ghost Tokens — $1.99 <span style="font-family:'JetBrains Mono',monospace;font-size:8px;opacity:0.7;margin-left:4px;">SAVE 33%</span></button>
         <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token')" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(139,92,246,0.3);background:transparent;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:400;letter-spacing:0.14em;color:rgba(139,92,246,0.7);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">👻 1 Token — $0.99</button>
-        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200)" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">◆ 5 Tokens/mo — WEEBJI+ $9.99</button>`;
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showPlusSheet()" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">◆ 5 Tokens/mo — WEEBJI+ $9.99</button>`;
       useBtn.parentElement.insertBefore(upsell, useBtn);
     } else {
       useBtn.disabled = false;
@@ -10136,9 +10382,7 @@
   /* ══ SHADOW RIVAL SYSTEM ══════════════════════ */
   function setRival(userId, displayName) {
     if (!isWeebjiPlus()) {
-      spawnDropBanner('◆ PLUS — Lock onto a real rival. Their streak on your dashboard daily.');
-      showScreen('profile'); renderProfile();
-      setTimeout(() => document.getElementById('profile-plus-section')?.scrollIntoView({ behavior: 'smooth' }), 200);
+      showPlusSheet();
       return;
     }
     localStorage.setItem('weebji_rival_id',   userId);
@@ -10173,12 +10417,20 @@
       if (!client) return;
       const { data } = await client.from('leaderboard').select('streak,display_name,level').eq('user_id', rivalId).maybeSingle();
       if (data) {
-        localStorage.setItem('weebji_rival_streak',    String(data.streak || 0));
+        const prevRivalStreak = parseInt(localStorage.getItem('weebji_rival_streak') || '-1');
+        const newRivalStreak  = data.streak || 0;
+        localStorage.setItem('weebji_rival_streak',    String(newRivalStreak));
         localStorage.setItem('weebji_rival_name',      data.display_name || localStorage.getItem('weebji_rival_name') || 'Rival');
         if (data.level) localStorage.setItem('weebji_rival_level', String(data.level));
         localStorage.setItem('weebji_rival_cached_at', String(Date.now()));
-        // Re-render rival line with fresh data
+        // Rival overtake push — fire when rival just passed our streak
         const p = loadProgress();
+        const myStreak = p.streak || 0;
+        if (prevRivalStreak >= 0 && prevRivalStreak <= myStreak && newRivalStreak > myStreak) {
+          const rName = data.display_name || 'Your rival';
+          WeebjPush.local('rival_overtake', '⚔ RIVAL OVERTOOK YOU', `${rName} now leads ${newRivalStreak}d vs your ${myStreak}d. The System is watching.`);
+        }
+        // Re-render rival line with fresh data
         updateRivalLine(p);
       }
     } catch(_) {}
@@ -10209,11 +10461,11 @@
       if (p.bestStreak > 0) {
         const isAtPeak = p.streak > 0 && p.streak >= p.bestStreak;
         const peakLine = isAtPeak ? `⟶ SHADOW: You're at your peak — <em>${p.streak}d</em>.` : `⟶ SHADOW: Your best was <em>${p.bestStreak}d</em>. Beat it.`;
-        rivalEl.innerHTML = `${peakLine}<br><span class="rival-free-hint" onclick="showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200)">◆ PLUS: Lock onto a real leaderboard rival →</span>`;
+        rivalEl.innerHTML = `${peakLine}<br><span class="rival-free-hint" onclick="showPlusSheet()">◆ PLUS: Lock onto a real leaderboard rival →</span>`;
         rivalEl.style.color = ''; rivalEl.style.fontStyle = '';
         rivalEl.classList.remove('hidden');
       } else {
-        rivalEl.innerHTML = `<span class="rival-free-hint" onclick="showScreen('profile');renderProfile();setTimeout(()=>document.getElementById('profile-plus-section')?.scrollIntoView({behavior:'smooth'}),200)">◆ PLUS: Lock onto a leaderboard rival — their streak on your dashboard daily →</span>`;
+        rivalEl.innerHTML = `<span class="rival-free-hint" onclick="showPlusSheet()">◆ PLUS: Lock onto a leaderboard rival — their streak on your dashboard daily →</span>`;
         rivalEl.classList.remove('hidden');
       }
     }
@@ -11386,6 +11638,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           best_streak:   p.bestStreak || 0,
           is_plus:       premiumStatus,
           prestige:      p.prestige || 0,
+          last_active:   new Date().toISOString(),
         };
         if (p.titles && p.titles.length) {
           const dungeonTitles = p.titles.filter(t => t.startsWith('dungeon_'));
@@ -11464,6 +11717,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
         // Restore premium status via secure server-side RPC (bypasses RLS)
         const { data: premiumPlan } = await client.rpc('get_premium_status');
         premiumStatus = !!premiumPlan;
+        if (premiumPlan) localStorage.setItem('weebji_plus_cached', '1');
+        else localStorage.removeItem('weebji_plus_cached');
         if (premiumPlan) {
           if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
           if (document.getElementById('dashboard')?.classList.contains('active')) {
@@ -11593,6 +11848,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           }, { onConflict: 'user_id' }).catch(e => console.warn('lb upsert:', e));
         }
         saveProgress(p);
+        if (typeof checkGoodwillOverlay === 'function') checkGoodwillOverlay();
         // Always refresh visible stats immediately — user may be on any screen
         if (typeof updateStats === 'function') updateStats(p);
         if (typeof updateXPBar === 'function') updateXPBar(p);
@@ -11640,7 +11896,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
     function getUser() { return currentUser; }
     function isPremium() {
       if (new URLSearchParams(location.search).get('_demo') === '1') return true;
-      return premiumStatus;
+      if (premiumStatus) return true;
+      return localStorage.getItem('weebji_plus_cached') === '1';
     }
 
     async function checkPremiumFromSupabase() {
@@ -11648,6 +11905,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
       try {
         const { data: premiumPlan } = await client.rpc('get_premium_status');
         premiumStatus = !!premiumPlan;
+        if (premiumPlan) localStorage.setItem('weebji_plus_cached', '1');
+        else localStorage.removeItem('weebji_plus_cached');
         if (premiumPlan) {
           if (document.getElementById('profile')?.classList.contains('active')) renderProfile();
           if (document.getElementById('dashboard')?.classList.contains('active')) {

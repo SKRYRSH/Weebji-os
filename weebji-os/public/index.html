@@ -2251,7 +2251,8 @@
       document.body.appendChild(banner);
       document.getElementById('sw-update-btn').addEventListener('click', () => {
         banner.querySelector('#sw-update-btn').textContent = 'Installing…';
-        // Tell waiting SW to take over → triggers controllerchange → auto-reload
+        // Fallback: force reload after 5s if controllerchange never fires
+        setTimeout(() => window.location.reload(), 5000);
         const waitingSW = reg.waiting;
         if (waitingSW) waitingSW.postMessage({ type: 'SKIP_WAITING' });
         else window.location.reload();

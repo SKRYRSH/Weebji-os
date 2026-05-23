@@ -1480,6 +1480,8 @@
   .protocol-complete-banner__title { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.15em; color:rgba(0,245,255,0.9); }
   .protocol-complete-banner__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(255,255,255,0.35); margin-top:2px; }
   .protocol-complete-banner__close { font-size:16px; color:rgba(255,255,255,0.2); cursor:pointer; -webkit-tap-highlight-color:transparent; padding:4px; }
+  .protocol-complete-banner__share { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(0,245,255,0.7); background:rgba(0,245,255,0.07); border:1px solid rgba(0,245,255,0.2); border-radius:6px; padding:5px 10px; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; flex-shrink:0; }
+  .protocol-complete-banner__share:active { background:rgba(0,245,255,0.14); }
   /* ══ GOODWILL OVERLAY ════════════════════════ */
   #goodwill-overlay { position:fixed; inset:0; z-index:9999; background:#0A0A0F; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 28px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; }
   #goodwill-overlay.active { opacity:1; pointer-events:all; }
@@ -2219,6 +2221,7 @@
       <div class="protocol-complete-banner__title">PROTOCOL COMPLETE</div>
       <div class="protocol-complete-banner__sub" id="protocol-complete-sub">Full protocol executed. The System acknowledges.</div>
     </div>
+    <button class="protocol-complete-banner__share" onclick="dismissProtocolBanner();setTimeout(showArcCard,200)">↗ Share</button>
     <div class="protocol-complete-banner__close" onclick="dismissProtocolBanner()">✕</div>
   </div>
 
@@ -3599,6 +3602,15 @@
       banner.classList.add('active');
       Sound.play('milestone');
       setTimeout(() => banner.classList.remove('active'), 5000);
+    }
+    // Push permission prompt — contextual ask at peak motivation (just completed protocol)
+    if (Notification.permission === 'default' && SupabaseSync.getUser()) {
+      const snoozed = localStorage.getItem('weebji_notif_snoozed');
+      const notSnoozed = !snoozed || Date.now() - parseInt(snoozed) > 3 * 86400000;
+      if (notSnoozed && !sessionStorage.getItem('weebji_notif_shown_this_session')) {
+        sessionStorage.setItem('weebji_notif_shown_this_session', '1');
+        setTimeout(() => document.getElementById('notif-prompt').classList.add('visible'), 3000);
+      }
     }
     // Post-great-day conversion pitch after 2.5s delay
     if (!isWeebjiPlus()) {

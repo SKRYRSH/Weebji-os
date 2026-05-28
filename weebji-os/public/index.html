@@ -2911,6 +2911,7 @@
       reflections    : JSON.parse(localStorage.getItem('weebji_reflections')   || '[]'),
       lastDate          : localStorage.getItem('weebji_last_date') || '',
       yesterdayCount    : parseInt(localStorage.getItem('weebji_yesterday_count') || '0'),
+      yesterdayCountDate: localStorage.getItem('weebji_yesterday_count_date') || '',
       voidSessions      : parseInt(localStorage.getItem('weebji_void_sessions')   || '0'),
       ghostWhisperEarned: localStorage.getItem('weebji_ghost_whisper') === 'true',
       penanceSurvived   : localStorage.getItem('weebji_penance_survived') === 'true',
@@ -2949,9 +2950,11 @@
 
       // Yesterday's completion: check all class activity types
       const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length;
-      // Guard: if live checks are empty but saved yesterdayCount > 0, a sync/reload
-      // wiped the arrays after the user already completed activities — trust the saved count.
-      const effectiveYesterdayDone = Math.max(yesterdayDone, p.yesterdayCount || 0);
+      // Guard: only use yesterdayCount as fallback if it was saved for this same lastDate.
+      // Using a stale count (from two days ago) would silently skip streak loss.
+      const effectiveYesterdayDone = (p.yesterdayCountDate === p.lastDate)
+        ? Math.max(yesterdayDone, p.yesterdayCount || 0)
+        : yesterdayDone;
       const originalStreak = p.streak || 0; // capture before any modification
 
       // v222: streak loss always shows the overlay — no silent auto-spend.
@@ -2972,8 +2975,9 @@
         }
       }
 
-      // Save yesterday's count before wiping
+      // Save yesterday's count + the date it belongs to before wiping
       p.yesterdayCount = yesterdayDone;
+      p.yesterdayCountDate = p.lastDate;
 
       // Monk grid: mark day done on most rituals (4+/8) — was: all 8 (too punishing)
       if (p.lastDate && (p.monkChecked || []).length >= Math.max(4, Math.ceil(MONK_RITUALS.length / 2))) {
@@ -3034,6 +3038,7 @@
     localStorage.setItem('weebji_reflections',      JSON.stringify(p.reflections  || []));
     localStorage.setItem('weebji_last_date',        p.lastDate);
     localStorage.setItem('weebji_yesterday_count',  p.yesterdayCount || 0);
+    localStorage.setItem('weebji_yesterday_count_date', p.yesterdayCountDate || '');
     localStorage.setItem('weebji_ghost_tokens',     p.ghostTokens !== undefined ? p.ghostTokens : 3);
     localStorage.setItem('weebji_prev_streak',      p.prevStreak  || 0);
     localStorage.setItem('weebji_total_study_mins', p.totalStudyMins  || 0);
@@ -10339,8 +10344,9 @@
     document.getElementById('ghost-intervention').classList.remove('active');
     updateStats(p);
     Sound.play('milestone');
-    if (p.ghostTokens === 1) setTimeout(() => spawnDropBanner('👻 LAST TOKEN REMAINING — Stock up before your next miss'), 1800);
-    if (p.ghostTokens === 0) setTimeout(() => spawnDropBanner('👻 TOKENS DEPLETED — One miss away from PENANCE'), 1800);
+    spawnDropBanner(`👻 GHOST TOKEN CONSUMED — ${p.streak}-DAY STREAK PRESERVED`);
+    if (p.ghostTokens === 1) setTimeout(() => spawnDropBanner('👻 LAST TOKEN REMAINING — Stock up before your next miss'), 2400);
+    if (p.ghostTokens === 0) setTimeout(() => spawnDropBanner('👻 TOKENS DEPLETED — One miss away from PENANCE'), 2400);
     const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
     const cx = window.innerWidth / 2, cy = window.innerHeight * 0.6;
     CinCanvas.rise(cx, cy, 50, '#FFFFFF');

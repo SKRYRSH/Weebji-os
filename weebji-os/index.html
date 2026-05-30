@@ -11833,7 +11833,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.titles?.length)      p.titles      = d.titles;
           if (d.mmSessions)          p.mmSessions  = Math.max(p.mmSessions || 0, d.mmSessions);
           if (d.voidSessions)        p.voidSessions = Math.max(p.voidSessions || 0, d.voidSessions);
-          if (d.prevStreak)          p.prevStreak  = d.prevStreak;
+          if (d.prevStreak && !p.streakLostToday) p.prevStreak = d.prevStreak;
           if (d.lastDate && !p.lastDate) p.lastDate = d.lastDate;
           if (d.ghostWhisperEarned)  p.ghostWhisperEarned  = true;
           if (d.penanceSurvived)     p.penanceSurvived     = true;

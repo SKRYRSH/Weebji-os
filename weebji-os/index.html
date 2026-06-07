@@ -639,7 +639,7 @@
   }
   .levelup__quote {
     font-family:'Inter',sans-serif; font-size:13px; font-style:italic;
-    color:rgba(255,255,255,0.25); margin-top:22px; max-width:260px; line-height:1.7;
+    color:rgba(255,255,255,0.45); margin-top:22px; max-width:260px; line-height:1.7;
     position:relative; z-index:1;
     animation: kf-lu-fade-up 0.5s 0.85s ease both;
   }
@@ -939,7 +939,7 @@
   .premium-hype::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 100%, rgba(255,215,0,0.06) 0%, transparent 65%); pointer-events:none; }
   .premium-hype__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(255,215,0,0.45); text-transform:uppercase; margin-bottom:8px; }
   .premium-hype__title { font-family:'Cinzel',serif; font-size:15px; font-weight:900; letter-spacing:0.1em; color:rgba(255,255,255,0.85); margin-bottom:4px; }
-  .premium-hype__sub { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.25); line-height:1.5; margin-bottom:16px; }
+  .premium-hype__sub { font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.45); line-height:1.5; margin-bottom:16px; }
   .premium-hype__features { display:flex; flex-direction:column; gap:7px; margin-bottom:18px; }
   .premium-hype__feature { display:flex; align-items:flex-start; gap:10px; }
   .premium-hype__feature-icon { font-size:13px; flex-shrink:0; margin-top:1px; }
@@ -1085,7 +1085,7 @@
   .tunlock__label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:var(--tu-color-dim, rgba(0,245,255,0.3)); text-transform:uppercase; position:relative; z-index:1; }
   .tunlock__glyph { font-size:42px; line-height:1; position:relative; z-index:1; opacity:0.8; }
   .tunlock__title { font-family:'Cinzel',serif; font-size:clamp(24px,8vw,34px); font-weight:900; letter-spacing:0.18em; color:var(--tu-color, #00F5FF); text-shadow:0 0 30px var(--tu-color-glow, rgba(0,245,255,0.6)); position:relative; z-index:1; }
-  .tunlock__desc { font-family:'Inter',sans-serif; font-size:12px; font-style:italic; color:rgba(255,255,255,0.28); max-width:250px; line-height:1.8; position:relative; z-index:1; }
+  .tunlock__desc { font-family:'Inter',sans-serif; font-size:12px; font-style:italic; color:rgba(255,255,255,0.45); max-width:250px; line-height:1.8; position:relative; z-index:1; }
   .tunlock__share { margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.22em; color:var(--tu-color-dim, rgba(0,245,255,0.45)); text-transform:uppercase; background:none; border:1px solid var(--tu-color-border, rgba(0,245,255,0.18)); border-radius:8px; padding:10px 22px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform 0.15s; position:relative; z-index:1; }
   .tunlock__share:active { transform:scale(0.96); }
 
@@ -1594,7 +1594,7 @@
   <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:900;letter-spacing:0.15em;color:#fff;">Not Medical Advice</div>
   <p style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.8;max-width:300px;">WEEBJI OS is a gamified habit and productivity tool — not a medical, psychological, or nutritional service. Always consult a qualified professional before starting any fitness or wellness program.</p>
   <button onclick="window._ackHealthDisc()" style="width:100%;max-width:300px;padding:14px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.3);border-radius:12px;font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:0.2em;color:#00F5FF;cursor:pointer;text-transform:uppercase;">I Understand — Enter</button>
-  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);max-width:280px;line-height:1.6;">Continuing means you agree to our <a href="terms.html" target="_blank" style="color:rgba(0,245,255,0.4);">Terms</a> and <a href="privacy.html" target="_blank" style="color:rgba(0,245,255,0.4);">Privacy Policy</a>.</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);max-width:280px;line-height:1.6;">Continuing means you agree to our <a href="terms.html" target="_blank" style="color:rgba(0,245,255,0.4);">Terms</a> and <a href="privacy.html" target="_blank" style="color:rgba(0,245,255,0.4);">Privacy Policy</a>.</div>
 </div>
 
 <!-- AGE GATE (new users only) -->
@@ -1924,7 +1924,7 @@
           <div style="flex:1">
             <div class="profile-tokens__label">Ghost Tokens</div>
             <div class="profile-tokens__count" id="profile-tokens-count">3 remaining</div>
-            <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px;">Skip one day without breaking your streak</div>
+            <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;">Skip one day without breaking your streak</div>
           </div>
         </div>
         <!-- Phase 5: Manifest display -->
@@ -2342,6 +2342,18 @@
       }).catch(() => {});
     }
 
+    // Dismiss stale "you haven't trained yet" reminders from the tray once the
+    // protocol is actually completed — the push was true when sent, but the tray
+    // keeps showing it as if it's still waiting.
+    function clearStale(tags) {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.ready.then(reg => {
+        return reg.getNotifications();
+      }).then(list => {
+        (list || []).forEach(n => { if (tags.includes(n.tag)) n.close(); });
+      }).catch(() => {});
+    }
+
     function send(type) { const arr = _msgs[type]; if (!arr) return; const m = arr[Math.floor(Math.random()*arr.length)]; local(type, m.title, m.body); }
 
     function _urlB64ToUint8(b) {
@@ -2434,7 +2446,7 @@
       } catch(_) {}
     }
 
-    return { subscribe, unsubscribe, isOptedOut, autoSubscribe, send, local, init, setUser, linkUser, testPush };
+    return { subscribe, unsubscribe, isOptedOut, autoSubscribe, send, local, clearStale, init, setUser, linkUser, testPush };
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
@@ -3466,7 +3478,7 @@
         <button class="ghost-shop-btn" onclick="Sound.play('tap');window.open('https://play.google.com/store/account/subscriptions?package=io.github.skryrsh.twa','_blank','noopener,noreferrer')" style="margin-bottom:8px;border-color:rgba(255,255,255,0.14);color:rgba(255,255,255,0.62);">⚙ Manage Subscription</button>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.15);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
     } else {
       const trialActive = isInVoiceTrial();
       const dLeft = voiceTrialDaysLeft();
@@ -3484,7 +3496,7 @@
           <div style="display:flex;gap:10px;margin-bottom:14px;">
             <div style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.015);">
               <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.25em;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:6px;">Free Tier</div>
-              <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.3);line-height:1.4;">
+              <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.42);line-height:1.4;">
                 <li>◇ Daily quests &amp; XP system</li>
                 <li>◇ Streak tracking &amp; HP</li>
                 <li>◇ 1 Ghost Token/month</li>
@@ -3524,7 +3536,7 @@
         </div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.15);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
       // Async: fill social proof with real premium count
       _fetchPremiumCount();
     }
@@ -3561,7 +3573,7 @@
       <div style="display:flex;gap:10px;margin-bottom:16px;">
         <div style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.015);">
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.25em;color:rgba(255,255,255,0.25);margin-bottom:6px">FREE TIER</div>
-          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.3);line-height:1.4">
+          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.42);line-height:1.4">
             <li>◇ Daily quests &amp; XP system</li><li>◇ Streak tracking &amp; HP</li>
             <li>◇ 1 Ghost Token/month</li><li>◇ 5 custom exercises</li>
           </ul>
@@ -3651,6 +3663,7 @@
     const questsDone  = (p.questsChecked||[]).length >= 3;
     if (!workoutDone || !questsDone) return;
     localStorage.setItem('weebji_protocol_done', today);
+    WeebjPush.clearStale(['weebji-morning', 'weebji-streak']);
     const streak = p.streak || 0;
     const sub = streak > 0 ? `Day ${streak} streak locked in. Come back tomorrow.` : 'Full protocol executed. The System acknowledges.';
     const subEl = document.getElementById('protocol-complete-sub');
@@ -9323,7 +9336,7 @@
     }
 
     if (!rows || rows.length === 0) {
-      el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px 16px;color:rgba(255,255,255,0.25);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;line-height:2;">No hunters ranked yet.<br><span style="color:rgba(255,255,255,0.12);font-size:9px;">Complete a workout or quest to claim your spot.<br>Sign in to sync your progress.</span></div></div>`;
+      el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px 16px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;line-height:2;">No hunters ranked yet.<br><span style="color:rgba(255,255,255,0.32);font-size:9px;">Complete a workout or quest to claim your spot.<br>Sign in to sync your progress.</span></div></div>`;
       return;
     }
 
@@ -9427,7 +9440,7 @@
       const { data: friendRows } = await client.from('friends').select('friend_user_id').eq('user_id', me.id);
       if (!friendRows || !friendRows.length) {
         const myNum = localStorage.getItem('weebji_hunter_num') || '----';
-        return `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:rgba(255,255,255,0.25);text-align:center;padding:20px 0;line-height:2;">No hunters in your squad yet.<br><span style="font-size:9px;color:rgba(255,255,255,0.12);">Your Hunter # to share:</span><br><span style="font-size:16px;font-weight:700;color:${color};letter-spacing:0.18em;">#${myNum}</span><br><span style="font-size:9px;color:rgba(255,255,255,0.1);">Send it to a friend — they add you, you add them back.</span></div>`;
+        return `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:rgba(255,255,255,0.4);text-align:center;padding:20px 0;line-height:2;">No hunters in your squad yet.<br><span style="font-size:9px;color:rgba(255,255,255,0.32);">Your Hunter # to share:</span><br><span style="font-size:16px;font-weight:700;color:${color};letter-spacing:0.18em;">#${myNum}</span><br><span style="font-size:9px;color:rgba(255,255,255,0.3);">Send it to a friend — they add you, you add them back.</span></div>`;
       }
 
       const ids = friendRows.map(r => r.friend_user_id);
@@ -9509,7 +9522,7 @@
         <span>◈ SQUAD</span>
         <span id="friend-count" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:rgba(255,255,255,0.25);">—/${MAX_FRIENDS}</span>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.18);margin-bottom:10px;line-height:1.7;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.4);margin-bottom:10px;line-height:1.7;">
         Add hunters by their <span style="color:rgba(${rgb},0.6)">Hunter #</span>. Your # is shown at the top of this profile.<br>
         Free: view squad streaks &amp; levels. <span style="color:rgba(${rgb},0.5)">WEEBJI+: challenge them to 7-day XP battles.</span>
       </div>

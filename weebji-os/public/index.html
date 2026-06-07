@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" type="image/png" />
   <!-- PostHog Analytics -->
-  <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_rUZFK8D1ws0J87t0xXS5m2pgivBILx5gXB0fqw52otw',{api_host:'https://us.i.posthog.com',defaults:'2026-01-30',autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true});</script>
+  <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);window._initPostHog=function(){posthog.init('phc_rUZFK8D1ws0J87t0xXS5m2pgivBILx5gXB0fqw52otw',{api_host:'https://us.i.posthog.com',defaults:'2026-01-30',autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true})};if(localStorage.getItem('weebji_analytics_ok')==='1')window._initPostHog();</script>
   <!-- Global error capture → PostHog (must be early to catch boot errors) -->
   <script>
     window.addEventListener('error', (e) => {
@@ -1588,6 +1588,33 @@
   </div>
 </div>
 
+<!-- HEALTH DISCLAIMER (one-time for all users) -->
+<div id="health-disc-overlay" style="position:fixed;inset:0;background:rgba(3,3,10,0.97);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;gap:16px;">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.4em;color:rgba(255,255,255,0.25);text-transform:uppercase;">WEEBJI OS · System Notice</div>
+  <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:900;letter-spacing:0.15em;color:#fff;">Not Medical Advice</div>
+  <p style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.8;max-width:300px;">WEEBJI OS is a gamified habit and productivity tool — not a medical, psychological, or nutritional service. Always consult a qualified professional before starting any fitness or wellness program.</p>
+  <button onclick="window._ackHealthDisc()" style="width:100%;max-width:300px;padding:14px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.3);border-radius:12px;font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:0.2em;color:#00F5FF;cursor:pointer;text-transform:uppercase;">I Understand — Enter</button>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.15);max-width:280px;line-height:1.6;">Continuing means you agree to our <a href="terms.html" target="_blank" style="color:rgba(0,245,255,0.4);">Terms</a> and <a href="privacy.html" target="_blank" style="color:rgba(0,245,255,0.4);">Privacy Policy</a>.</div>
+</div>
+
+<!-- AGE GATE (new users only) -->
+<div id="age-gate-overlay" style="position:fixed;inset:0;background:rgba(3,3,10,0.97);z-index:9998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;gap:16px;">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.4em;color:rgba(255,255,255,0.25);text-transform:uppercase;">WEEBJI OS · Access Check</div>
+  <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:900;letter-spacing:0.15em;color:#fff;">Age Verification</div>
+  <p style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.8;max-width:300px;">WEEBJI OS is for users 13 years of age and older.</p>
+  <button onclick="window._confirmAge(true)" style="width:100%;max-width:300px;padding:14px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.3);border-radius:12px;font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:0.2em;color:#00F5FF;cursor:pointer;text-transform:uppercase;">I am 13 or older</button>
+  <button onclick="window._confirmAge(false)" style="width:100%;max-width:300px;padding:14px;background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;color:rgba(255,255,255,0.25);cursor:pointer;text-transform:uppercase;">I am under 13</button>
+</div>
+
+<!-- ANALYTICS CONSENT BAR -->
+<div id="analytics-consent-bar" style="position:fixed;bottom:0;left:0;right:0;z-index:9997;background:rgba(7,9,15,0.97);border-top:1px solid rgba(255,255,255,0.07);padding:12px 20px;display:none;align-items:center;justify-content:space-between;gap:12px;">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:0.08em;line-height:1.5;">We use anonymous analytics (PostHog) to improve the app. No personal data sold. <a href="privacy.html" target="_blank" style="color:rgba(0,245,255,0.35);">Privacy Policy</a></span>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button onclick="window._analyticsConsent(true)" style="padding:7px 12px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.25);border-radius:6px;color:#00F5FF;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;cursor:pointer;">Accept</button>
+    <button onclick="window._analyticsConsent(false)" style="padding:7px 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;cursor:pointer;">Decline</button>
+  </div>
+</div>
+
   <!-- Static crawlable content for Google OAuth verification — hidden visually -->
   <div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">
     <h1>WEEBJI OS</h1>
@@ -1953,6 +1980,14 @@
           </div>
           <span class="profile-voice__toggle off" id="notif-toggle-state">OFF</span>
         </div>
+        <button class="profile-voice" id="penance-toggle-btn" onclick="window._togglePenanceMode && window._togglePenanceMode()">
+          <span class="profile-voice__icon">⚠</span>
+          <div class="profile-voice__info">
+            <span class="profile-voice__label">Penance Mode</span>
+            <span class="profile-voice__sub" id="penance-toggle-sub">HP loss triggers penance protocol</span>
+          </div>
+          <span class="profile-voice__toggle" id="penance-toggle-state">ON</span>
+        </button>
         <button class="profile-share-btn" id="profile-share-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Share Your Arc
@@ -2668,6 +2703,15 @@
     whiteroom: { label: 'White Room', mins: 90, xp: 55 },
   };
 
+  // Stable per-local-day index — UTC-day math (Date.now()/86400000) flips mid-day for non-UTC users,
+  // desyncing the displayed challenge from its cached answer/done-flag (both keyed to local date).
+  function _localDayIndex(len) {
+    const d = new Date().toDateString();
+    let h = 0;
+    for (let i = 0; i < d.length; i++) h = (h * 31 + d.charCodeAt(i)) >>> 0;
+    return h % len;
+  }
+
   const BRAIN_CHALLENGES = [
     { type:'LOGIC',     text:'Two ropes each burn in exactly 60 minutes but unevenly. Using only fire, measure exactly 45 minutes. Work it through mentally.' },
     { type:'LATERAL',   text:'A man pushes his car to a hotel and immediately goes bankrupt. What is happening? Think before marking done.' },
@@ -2794,7 +2838,7 @@
     '13112221. Read 312211 aloud: "one 3, one 1, two 2s, two 1s" = 13112221.',
     'Ball = $0.05. Most say $0.10 — wrong. Ball=x, bat=x+$1. x+(x+1)=1.10 → 2x=0.10 → x=$0.05.',
     'He is too short to reach buttons above floor 15. He can reach 15 but no higher — so he walks the rest.',
-    'TYPEWRITER uses only top-row QWERTY keys. For the 5-letter riddle: the puzzle is intentionally open-ended — "Empty" and "Queue" are commonly cited.',
+    'Open-ended — the puzzle has no single agreed solution. "Empty" and "Queue" are the words most commonly cited as fitting.',
     'No single answer — the measure is whether you designed something real, not an idealized fantasy.',
     'He fell from the first floor. "A 50-story building" doesn\'t mean he fell from floor 50.',
     'The match. You light the match before anything else.',
@@ -2803,7 +2847,6 @@
     '"Nothing." Nothing is greater than God, nothing is more evil than the devil, the poor have nothing, the rich need nothing, eat nothing and die.',
     'No smoke. Electric trains produce none.',
     'Mount Everest — it was still the tallest, simply not yet formally measured or named.',
-    '5 children: 4 daughters and 1 son (the shared brother).',
     '48 mph — not 50. Harmonic mean: 2(60×40)/(60+40) = 4800/100 = 48. The arithmetic average is wrong here.',
     '25 primes: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97.',
     'No single answer. What you chose reveals your actual hierarchy of values.',
@@ -2849,6 +2892,7 @@
     'He had hiccups. The bartender scared them away by pointing the gun at him. The man thanked him because the hiccups were gone.',
     'Fill 3L. Pour into 5L. Fill 3L again. Pour into 5L until full (needs only 2L — 1L left in 3L jug). Done.',
     '95. Rule: multiply by 2 and add 1. 2→5→11→23→47→95.',
+    'No single answer. The contrast between what feels irreplaceable and what has already been quietly replaced is the real insight here.',
     'No single answer. The goal you mentally walked through is the one most likely to be started.',
   ];
 
@@ -2863,6 +2907,12 @@
     mastermind: ['monk', 'monarch'],
     monk:       ['monarch', 'mastermind'],
   };
+
+  // Level required to unlock a secondary class for a given primary class (1st = Lv3, 2nd = Lv7)
+  function _secondaryUnlockLevel(primaryCls, secondaryCls) {
+    const idx = (CLASS_UNLOCK_ORDER[primaryCls] || []).indexOf(secondaryCls);
+    return idx === 0 ? 3 : idx === 1 ? 7 : 1;
+  }
 
   const CHECK_SVG = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6l3 3 5-5"/></svg>`;
 
@@ -3000,7 +3050,7 @@
       p.monkChecked = []; p.monkBonus = false; p.mmSessions = 0;
       p.lastDate = today;
       // Level 5+: HP can hit 0 → flag for penance on boot
-      if (p.hp === 0 && p.level >= 5) localStorage.setItem('weebji_penance_active', '1');
+      if (p.hp === 0 && p.level >= 5 && localStorage.getItem('weebji_penance_mode') !== '0') localStorage.setItem('weebji_penance_active', '1');
       saveProgress(p);
     }
 
@@ -3416,7 +3466,8 @@
         <div class="profile-plus-active">WEEBJI+ ACTIVE</div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');window.open('https://play.google.com/store/account/subscriptions?package=io.github.skryrsh.twa','_blank','noopener,noreferrer')" style="margin-bottom:8px;border-color:rgba(255,255,255,0.14);color:rgba(255,255,255,0.62);">⚙ Manage Subscription</button>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>`;
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.15);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
     } else {
       const trialActive = isInVoiceTrial();
       const dLeft = voiceTrialDaysLeft();
@@ -3470,9 +3521,11 @@
               <div class="plus-plan__unit">/year — save 50%</div>
             </div>
           </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.2);text-align:center;padding:6px 0 2px;line-height:1.7;">Billed via Google Play. Cancel anytime: Google Play → Subscriptions.<br>Monthly $9.99/mo · Annual $59.99/yr billed as one payment.</div>
         </div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>`;
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.15);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
       // Async: fill social proof with real premium count
       _fetchPremiumCount();
     }
@@ -3595,7 +3648,7 @@
   function checkDayComplete(p) {
     const today = new Date().toISOString().slice(0,10);
     if (localStorage.getItem('weebji_protocol_done') === today) return;
-    const workoutDone = p.workoutBonus || (p.workoutChecked||[]).length >= 3;
+    const workoutDone = p.workoutDone || (p.workoutChecked||[]).length >= 3;
     const questsDone  = (p.questsChecked||[]).length >= 3;
     if (!workoutDone || !questsDone) return;
     localStorage.setItem('weebji_protocol_done', today);
@@ -3862,7 +3915,7 @@
       </div>`;
     }).join('');
 
-    const bossHtml = (bossUnlocked || gatesDone >= 3) && plus ? bossDone ? '' : `
+    const bossHtml = gatesDone >= 3 && plus ? bossDone ? '' : `
       <div class="dungeon-boss-fight">
         <div class="dungeon-boss-fight__label">⚔ Final Confrontation — Boss Fight</div>
         <div class="dungeon-boss-fight__task">${dungeon.boss_task}</div>
@@ -5090,6 +5143,68 @@
     }
   }
 
+  /* ══ LEGAL COMPLIANCE ════════════════════════ */
+  // Health disclaimer (shown once to all users)
+  (function() {
+    const discEl = document.getElementById('health-disc-overlay');
+    if (!discEl) return;
+    if (localStorage.getItem('weebji_disc_seen') !== '1') {
+      discEl.style.display = 'flex';
+    }
+  })();
+
+  window._ackHealthDisc = function() {
+    localStorage.setItem('weebji_disc_seen', '1');
+    const el = document.getElementById('health-disc-overlay');
+    if (el) el.style.display = 'none';
+    // Show analytics consent bar if not yet answered
+    if (localStorage.getItem('weebji_analytics_ok') === null) {
+      const bar = document.getElementById('analytics-consent-bar');
+      if (bar) bar.style.display = 'flex';
+    }
+  };
+
+  window._analyticsConsent = function(accept) {
+    localStorage.setItem('weebji_analytics_ok', accept ? '1' : '0');
+    const bar = document.getElementById('analytics-consent-bar');
+    if (bar) bar.style.display = 'none';
+    if (accept && window._initPostHog) window._initPostHog();
+  };
+
+  // Show analytics consent bar for returning users who haven't seen disclaimer yet
+  (function() {
+    if (localStorage.getItem('weebji_disc_seen') === '1' && localStorage.getItem('weebji_analytics_ok') === null) {
+      const bar = document.getElementById('analytics-consent-bar');
+      if (bar) bar.style.display = 'flex';
+    }
+  })();
+
+  window._confirmAge = function(isOldEnough) {
+    const el = document.getElementById('age-gate-overlay');
+    if (!isOldEnough) {
+      if (el) el.innerHTML = '<div style="font-family:\'Inter\',sans-serif;font-size:14px;color:rgba(255,255,255,0.4);text-align:center;padding:60px 40px;">WEEBJI OS is not available for users under 13.</div>';
+      return;
+    }
+    localStorage.setItem('weebji_age_ok', '1');
+    if (el) el.style.display = 'none';
+    playInkWash(() => {
+      showScreen('class-select');
+      document.querySelectorAll('.class-card').forEach((card, i) =>
+        setTimeout(() => card.classList.add('visible'), 120 + i * 130));
+    });
+  };
+
+  window._togglePenanceMode = function() {
+    const cur = localStorage.getItem('weebji_penance_mode') !== '0';
+    const next = !cur;
+    localStorage.setItem('weebji_penance_mode', next ? '1' : '0');
+    const stateEl = document.getElementById('penance-toggle-state');
+    if (stateEl) {
+      stateEl.textContent = next ? 'ON' : 'OFF';
+      stateEl.className = next ? 'profile-voice__toggle' : 'profile-voice__toggle off';
+    }
+  };
+
   /* ══ FLOW: S01 → S02 ══════════════════════════ */
   const splashTimer = setTimeout(() => {
     const existingClass = localStorage.getItem('weebji_class');
@@ -5101,11 +5216,16 @@
       State.playerName    = localStorage.getItem('weebji_name')  || 'Hunter';
       enterDashboard(false);
     } else {
-      playInkWash(() => {
-        showScreen('class-select');
-        document.querySelectorAll('.class-card').forEach((card, i) =>
-          setTimeout(() => card.classList.add('visible'), 120 + i * 130));
-      });
+      if (!localStorage.getItem('weebji_age_ok')) {
+        const ageEl = document.getElementById('age-gate-overlay');
+        if (ageEl) ageEl.style.display = 'flex';
+      } else {
+        playInkWash(() => {
+          showScreen('class-select');
+          document.querySelectorAll('.class-card').forEach((card, i) =>
+            setTimeout(() => card.classList.add('visible'), 120 + i * 130));
+        });
+      }
     }
   }, 3000);
 
@@ -6619,7 +6739,7 @@
     if (_bd) listEl.appendChild(_bd);
     // Brain Challenge card
     listEl.querySelectorAll('.brain-challenge-card').forEach(el => el.remove());
-    const _bcIdx  = Math.floor(Date.now() / 86400000) % BRAIN_CHALLENGES.length;
+    const _bcIdx  = _localDayIndex(BRAIN_CHALLENGES.length);
     const _bc     = BRAIN_CHALLENGES[_bcIdx];
     const _bcAns  = BRAIN_ANSWERS[_bcIdx] || '';
     const _bcDone = !!p.brainChallengeDone;
@@ -7058,7 +7178,7 @@
     el.querySelectorAll('[data-ctx="sec-topic"]').forEach(b =>
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectTopic(b.dataset.topic); }));
     // Brain Challenge (mini)
-    const _bcIdx2  = Math.floor(Date.now() / 86400000) % BRAIN_CHALLENGES.length;
+    const _bcIdx2  = _localDayIndex(BRAIN_CHALLENGES.length);
     const _bc2     = BRAIN_CHALLENGES[_bcIdx2];
     const _bcAns2  = BRAIN_ANSWERS[_bcIdx2] || '';
     const _bcDone2 = !!p.brainChallengeDone;
@@ -8560,10 +8680,10 @@
   function renderMastermindPillarPanel() {
     const panel = document.getElementById('mastermind-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'mastermind' || isWeebjiPlus();
+    const canAccess = cls === 'mastermind' || (isWeebjiPlus() && (loadProgress().level || 1) >= _secondaryUnlockLevel(cls, 'mastermind'));
     _setPillarBg('mastermind');
     if (!canAccess) {
-      const _bcIdx = Math.floor(Date.now() / 86400000) % BRAIN_CHALLENGES.length;
+      const _bcIdx = _localDayIndex(BRAIN_CHALLENGES.length);
       const _bc    = BRAIN_CHALLENGES[_bcIdx];
       panel.innerHTML = `
         <div class="pillar-locked-screen">
@@ -8629,7 +8749,7 @@
   function renderMonkPillarPanel() {
     const panel = document.getElementById('monk-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'monk' || isWeebjiPlus();
+    const canAccess = cls === 'monk' || (isWeebjiPlus() && (loadProgress().level || 1) >= _secondaryUnlockLevel(cls, 'monk'));
     _setPillarBg('monk');
     if (!canAccess) {
       panel.innerHTML = `
@@ -8734,7 +8854,7 @@
   function renderMonarchPillarPanel() {
     const panel = document.getElementById('monarch-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'monarch' || isWeebjiPlus();
+    const canAccess = cls === 'monarch' || (isWeebjiPlus() && (loadProgress().level || 1) >= _secondaryUnlockLevel(cls, 'monarch'));
     _setPillarBg('monarch');
     if (!canAccess) {
       // Demo preview block — sample stats strip + 7-day grid + sample exercise rows
@@ -9080,6 +9200,13 @@
       };
     }
 
+    // Penance mode toggle state
+    const penanceStateEl = document.getElementById('penance-toggle-state');
+    if (penanceStateEl) {
+      const isOn = localStorage.getItem('weebji_penance_mode') !== '0';
+      penanceStateEl.textContent = isOn ? 'ON' : 'OFF';
+      penanceStateEl.className = isOn ? 'profile-voice__toggle' : 'profile-voice__toggle off';
+    }
     // Ritual Clock settings
     RitualClock.renderSettings();
     // Supabase auth section (sign in — appears before WEEBJI+ upsell)
@@ -10492,6 +10619,7 @@
 
   /* ══ PENANCE PROTOCOL ════════════════════════ */
   function triggerPenanceProtocol(p) {
+    if (localStorage.getItem('weebji_penance_mode') === '0') return;
     const overlay = document.getElementById('penance-protocol');
     const scarEl  = document.getElementById('penance-scar');
     const date    = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });

@@ -3994,9 +3994,12 @@
         const text = (plus ? dungeon.taunt_plus : dungeon.taunt_free).replace(/^"|"$/g, '');
         window.speechSynthesis.cancel();
         const utt = new SpeechSynthesisUtterance(text);
-        utt.rate = 0.82; utt.pitch = 0.4; utt.volume = 1.0;
+        utt.rate = 0.86; utt.pitch = 0.78; utt.volume = 1.0;
         const voices = window.speechSynthesis.getVoices();
-        const male = voices.find(v => /male/i.test(v.name) || /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed/i.test(v.name))
+        const _isMale = v => /male/i.test(v.name) || /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed/i.test(v.name);
+        const _isQuality = v => /natural|neural|online|enhanced|premium/i.test(v.name);
+        const male = voices.find(v => _isQuality(v) && _isMale(v))
+          || voices.find(v => _isMale(v))
           || voices.find(v => v.lang.startsWith('en') && !/female|zira|samantha|karen|victoria|fiona|moira|tessa|veena/i.test(v.name));
         if (male) utt.voice = male;
         const ind = document.getElementById('voice-indicator');
@@ -7994,7 +7997,11 @@
         });
       };
       if (_ctx.state === 'suspended') {
-        _ctx.resume().then(_doPlay).catch(_doPlay); // always attempt to play
+        // Two-arg form: runs _doPlay exactly once on resolve OR reject. The previous
+        // .then(_doPlay).catch(_doPlay) chain re-caught exceptions THROWN BY _doPlay itself
+        // (e.g. DOMException from touching _ctx mid-transition), firing it twice and
+        // spawning duplicate oscillator layers — the source of the phasing/"breaking" audio.
+        _ctx.resume().then(_doPlay, _doPlay);
       } else {
         _doPlay();
       }
@@ -11261,16 +11268,18 @@ ${particles}
       window.speechSynthesis.cancel();
 
       const utt = new SpeechSynthesisUtterance(text);
-      utt.rate   = 0.82;
-      utt.pitch  = 0.4;
+      utt.rate   = 0.86;
+      utt.pitch  = 0.78;
       utt.volume = 1.0;
 
-      // Aggressive male voice search — covers Chrome/Android/Windows/iOS
+      // Prefer high-quality Natural/Neural/Online engines (Chrome/Edge expose these —
+      // they sound far less robotic than legacy SAPI voices), then fall back to any male voice.
       const voices = window.speechSynthesis.getVoices();
-      const male = voices.find(v =>
-        /male/i.test(v.name) ||
-        /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed|rock/i.test(v.name)
-      ) || voices.find(v => v.lang.startsWith('en') && !/female|zira|samantha|karen|victoria|fiona|moira|tessa|veena/i.test(v.name));
+      const _isMale = v => /male/i.test(v.name) || /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed|rock/i.test(v.name);
+      const _isQuality = v => /natural|neural|online|enhanced|premium/i.test(v.name);
+      const male = voices.find(v => _isQuality(v) && _isMale(v))
+        || voices.find(v => _isMale(v))
+        || voices.find(v => v.lang.startsWith('en') && !/female|zira|samantha|karen|victoria|fiona|moira|tessa|veena/i.test(v.name));
       if (male) utt.voice = male;
 
       const ind = document.getElementById('voice-indicator');

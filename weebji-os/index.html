@@ -11970,7 +11970,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
     }
 
     async function pullProgress() {
-      if (!client || !currentUser) return;
+      // Snapshot currentUser locally — onAuthStateChange can reassign the shared closure
+      // variable (e.g. a TOKEN_REFRESHED firing mid-flight) which would otherwise null out
+      // `currentUser.id` partway through this async chain and silently abort the whole pull.
+      const user = currentUser;
+      if (!client || !user) return;
       try {
         // Claim any plan purchased before account existed (email match → assign user_id)
         await client.rpc('claim_user_plan').catch(() => {});
@@ -11997,9 +12001,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
         }
 
         // Get or create sequential hunter number
-        let { data: hn } = await client.from('hunter_numbers').select('number').eq('user_id', currentUser.id).maybeSingle();
+        let { data: hn } = await client.from('hunter_numbers').select('number').eq('user_id', user.id).maybeSingle();
         if (!hn) {
-          const { data: newHn } = await client.from('hunter_numbers').insert({ user_id: currentUser.id }).select('number').single();
+          const { data: newHn } = await client.from('hunter_numbers').insert({ user_id: user.id }).select('number').single();
           hn = newHn;
         }
         if (hn?.number) {
@@ -12009,15 +12013,19 @@ DEV.skipSplash()      → go straight to class select (if no session)
         }
 
         // Restore progress
-        const { data } = await client.from('progress').select('*').eq('user_id', currentUser.id).single();
+        const { data, error: progErr } = await client.from('progress').select('*').eq('user_id', user.id).single();
         if (!data) {
+          if (typeof posthog !== 'undefined') posthog.capture('pull_progress_no_row', { uid: user.id, login_mode: !!State._loginMode, err: progErr ? String(progErr.message || progErr) : null });
+          // Returning-user login found no cloud row for this account — don't push fresh
+          // local data over a real account that may just be a transient query hiccup.
+          if (State._loginMode) return;
           // First sign-in — no cloud record yet. Back up whatever the user has locally right now.
           await pushProgress();
           // Ensure new user appears on leaderboard immediately
           if (hn?.number) {
             const name = localStorage.getItem('weebji_name') || 'Hunter';
             await client.from('leaderboard').upsert({
-              user_id:       currentUser.id,
+              user_id:       user.id,
               hunter_number: hn.number,
               display_name:  name,
               class:         localStorage.getItem('weebji_class') || 'monarch',
@@ -12104,7 +12112,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
             ? data.data.playerName
             : (localStorage.getItem('weebji_name') || 'Hunter');
           await client.from('leaderboard').upsert({
-            user_id:       currentUser.id,
+            user_id:       user.id,
             hunter_number: hn.number,
             display_name:  resolvedName,
             class:         localStorage.getItem('weebji_class') || 'monarch',
@@ -12126,7 +12134,10 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (document.getElementById('profile')?.classList.contains('active')) {
           if (typeof renderProfile === 'function') renderProfile();
         }
-      } catch(e) { console.warn('[WEEBJI] Cloud sync failed:', e); }
+      } catch(e) {
+        console.warn('[WEEBJI] Cloud sync failed:', e);
+        if (typeof posthog !== 'undefined') posthog.capture('pull_progress_threw', { uid: user?.id, login_mode: !!State._loginMode, msg: String(e) });
+      }
     }
 
     async function signInWithEmail(email) {

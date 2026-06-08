@@ -3513,8 +3513,7 @@
                 <li>◆ System Voice narrator</li>
                 <li>◆ Weekly Dungeon bosses</li>
                 <li>◆ ◈ Prestige (Level 100 reset)</li>
-                <li>◆ Shadow Rival tracking</li>
-                <li>◆ Friend Battles (XP wars)</li>
+                <li>◆ 2 extra classes unlocked</li>
                 <li>◆ 5 Ghost Tokens/month</li>
                 <li>◆ Deep Analytics &amp; charts</li>
                 <li>◆ 20 custom exercises</li>
@@ -3538,6 +3537,10 @@
           </div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.2);text-align:center;padding:6px 0 2px;line-height:1.7;">Billed via Google Play. Cancel anytime: Google Play → Subscriptions.<br>Monthly $9.99/mo · Annual $59.99/yr billed as one payment.</div>
         </div>
+        <div style="text-align:center;margin:4px 0 8px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(255,255,255,0.22);text-transform:uppercase">— or start small —</div>
+          <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.38);margin-top:3px;font-style:italic">Not ready for WEEBJI+? Grab a Ghost Token and feel what saving your streak is like.</div>
+        </div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
@@ -3550,9 +3553,11 @@
     try {
       const client = SupabaseSync._client ? SupabaseSync._client() : null;
       if (!client) return;
-      const { count } = await client.from('user_plans').select('*', { count: 'exact', head: true }).eq('plan', 'plus').gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString());
+      const { count } = await client.from('user_plans').select('*', { count: 'exact', head: true }).eq('plan', 'plus').gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString());
       const el = document.getElementById('plus-social-proof');
-      if (el && count != null) el.textContent = `◆ ${count > 0 ? count : '—'} hunter${count !== 1 ? 's' : ''} upgraded this week`;
+      if (!el) return;
+      if (count != null && count >= 3) el.textContent = `◆ ${count} hunters upgraded this month`;
+      else el.style.display = 'none';
     } catch (_) { /* silent fail */ }
   }
 
@@ -3586,7 +3591,7 @@
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.25em;color:rgba(255,210,60,0.6);margin-bottom:6px">WEEBJI+</div>
           <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,210,60,0.5);line-height:1.4">
             <li>◆ System Voice narrator</li><li>◆ Weekly Dungeon bosses</li>
-            <li>◆ Prestige &amp; Shadow Rival</li><li>◆ Friend Battles (XP wars)</li>
+            <li>◆ ◈ Prestige (Level 100 reset)</li><li>◆ 2 extra classes unlocked</li>
             <li>◆ 5 Ghost Tokens/month</li><li>◆ Deep Analytics</li>
             <li>◆ Guild Creation</li>
           </ul>
@@ -3606,6 +3611,10 @@
           <div class="plus-plan__unit">/year — save 50%</div>
         </div>
       </div>
+      <div style="text-align:center;margin:2px 0 8px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(255,255,255,0.22);text-transform:uppercase">— or start small —</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.38);margin-top:3px;font-style:italic">Not ready for WEEBJI+? Grab a Ghost Token and feel what saving your streak is like.</div>
+      </div>
       <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95)">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px">SAVE 33%</span></button>
       <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token')" style="margin-bottom:8px">👻 1 Ghost Token — $0.99</button>`;
     document.getElementById('plus-sheet').classList.add('active');
@@ -3616,9 +3625,11 @@
       try {
         const c = SupabaseSync._client ? SupabaseSync._client() : null;
         if (!c) return;
-        const { count } = await c.from('user_plans').select('*',{count:'exact',head:true}).eq('plan','plus').gte('created_at',new Date(Date.now()-7*86400000).toISOString());
+        const { count } = await c.from('user_plans').select('*',{count:'exact',head:true}).eq('plan','plus').gte('created_at',new Date(Date.now()-30*86400000).toISOString());
         const se = document.getElementById('plus-sheet-social');
-        if (se && count != null) se.textContent = `◆ ${count>0?count:'—'} hunter${count!==1?'s':''} upgraded this week`;
+        if (!se) return;
+        if (count != null && count >= 3) se.textContent = `◆ ${count} hunters upgraded this month`;
+        else se.style.display = 'none';
       } catch(_) {}
     })();
   }
@@ -4078,29 +4089,6 @@
     const el = document.getElementById('battle-card');
     if (!el) return;
     el.style.display = 'block';
-    const plus = isWeebjiPlus();
-
-    if (!plus) {
-      el.innerHTML = `<div class="battle-card">
-        <div class="battle-card__eyebrow">⚡ Friend Battles — WEEBJI+</div>
-        <div class="battle-card__title">SHADOW WAR</div>
-        <div class="battle-card__pitch">Pick any hunter on the leaderboard. 7 days. Whoever earns more XP wins. Right now, Plus users are already inside — you can't see it.</div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0 16px">
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,60,60,0.05);border:1px solid rgba(255,60,60,0.12)">
-            <span style="font-size:16px">⚡</span>
-            <div style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4"><strong style="color:rgba(255,255,255,0.8)">+200 XP</strong> to the winner — every week</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,60,60,0.05);border:1px solid rgba(255,60,60,0.12)">
-            <span style="font-size:16px">👑</span>
-            <div style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4">Exclusive <strong style="color:rgba(255,255,255,0.8)">"Defeated Their Shadow"</strong> title</div>
-          </div>
-        </div>
-        <div class="battle-locked-btn" onclick="showPlusSheet()">Unlock WEEBJI+ — Enter the War →</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;text-align:center;margin-top:10px">$9.99/mo · or $59.99/yr — save 50%</div>
-      </div>`;
-      return;
-    }
-
     const client = SupabaseSync._client();
     const me = SupabaseSync.getUser();
     if (!client || !me) { el.style.display = 'none'; return; }
@@ -4368,10 +4356,9 @@
     } else if (tBar) { tBar.style.display = 'none'; }
 
     const features = [
+      { icon: '◈', title: 'The White Room & The Sanctuary', desc: 'Two more entire classes — Mastermind and Monk. Walk every path, not just one.' },
       { icon: '⚔', title: 'Weekly Dungeon', desc: 'Mon→Sun boss fights. Defeat them to earn exclusive titles no one else can get.' },
       { icon: '◈', title: 'Prestige System', desc: 'Hit Level 100 and reset — harder. Each prestige earns a ◈ badge. Free hunters stay capped.' },
-      { icon: '👥', title: 'Shadow Rival', desc: 'Lock onto a leaderboard rival. Their streak shows on your dashboard every day. Chase or be chased.' },
-      { icon: '⚡', title: 'Friend Battles', desc: '7-day head-to-head XP wars. Winner earns XP + "Defeated Their Shadow" title.' },
       { icon: '🗣', title: 'System Voice', desc: 'The System speaks your name. Knows your streak, your class, your enemy. Personal. Unsettling. Effective.' },
       { icon: '👻', title: '5 Ghost Tokens/month', desc: 'One missed day can erase months of progress. Free tier gets 1 token. Plus hunters get 5, refreshed every month.' },
       { icon: '📊', title: 'Deep Analytics', desc: '90-day streak heatmap. See your arc. Know when you peak and when you fall.' },
@@ -4380,7 +4367,7 @@
 
     el.innerHTML = `<div class="premium-hype">
       <div class="premium-hype__eyebrow">◈ System Restrictions Active</div>
-      <div class="premium-hype__title">8 Features Sealed From You</div>
+      <div class="premium-hype__title">${features.length} Features Sealed From You</div>
       <div class="premium-hype__sub">The hunters ranked above you didn't just grind harder. They had tools you can't touch yet. Every day this stays sealed, the gap widens.</div>
       <div class="premium-hype__features">
         ${features.map(f => `<div class="premium-hype__feature">
@@ -4394,10 +4381,6 @@
   }
 
   async function issueBattle(friendId, friendName, friendClass, friendColor) {
-    if (!isWeebjiPlus()) {
-      SystemVoice.say('Friend Battles are WEEBJI+ exclusive. Upgrade to unlock.');
-      return;
-    }
     const client = SupabaseSync._client();
     const me = SupabaseSync.getUser();
     if (!client || !me) return;

@@ -9269,7 +9269,7 @@
           const _lbClient = SupabaseSync._client();
           const _lbUser   = SupabaseSync.getUser();
           if (_lbClient && _lbUser) {
-            _lbClient.from('leaderboard').update({ display_name: newName }).eq('user_id', _lbUser.id).catch(() => {});
+            _lbClient.from('leaderboard').update({ display_name: newName }).eq('user_id', _lbUser.id).then(() => {}, () => {});
           }
         }
         renderProfile();
@@ -11977,8 +11977,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const user = currentUser;
       if (!client || !user) return;
       try {
-        // Claim any plan purchased before account existed (email match → assign user_id)
-        await client.rpc('claim_user_plan').catch(() => {});
+        // Claim any plan purchased before account existed (email match → assign user_id).
+        // NOTE: client.rpc() returns a thenable PostgrestFilterBuilder — it has .then()
+        // but NOT .catch()/.finally(). Calling .catch directly throws a TypeError that
+        // aborts this whole function before it ever restores anything. Use try/await.
+        try { await client.rpc('claim_user_plan'); } catch {}
 
         // Restore premium status via secure server-side RPC (bypasses RLS).
         // Wrapped — an RPC hiccup here must NOT abort the rest of the restore
@@ -12025,17 +12028,20 @@ DEV.skipSplash()      → go straight to class select (if no session)
           // Ensure new user appears on leaderboard immediately
           if (hn?.number) {
             const name = localStorage.getItem('weebji_name') || 'Hunter';
-            await client.from('leaderboard').upsert({
-              user_id:       user.id,
-              hunter_number: hn.number,
-              display_name:  name,
-              class:         localStorage.getItem('weebji_class') || 'monarch',
-              color:         localStorage.getItem('weebji_color') || '#00F5FF',
-              level:         1,
-              streak:        0,
-              best_streak:   0,
-              updated_at:    new Date().toISOString(),
-            }, { onConflict: 'user_id' }).catch(() => {});
+            // NOTE: .upsert() returns a thenable PostgrestFilterBuilder — no .catch(). try/await instead.
+            try {
+              await client.from('leaderboard').upsert({
+                user_id:       user.id,
+                hunter_number: hn.number,
+                display_name:  name,
+                class:         localStorage.getItem('weebji_class') || 'monarch',
+                color:         localStorage.getItem('weebji_color') || '#00F5FF',
+                level:         1,
+                streak:        0,
+                best_streak:   0,
+                updated_at:    new Date().toISOString(),
+              }, { onConflict: 'user_id' });
+            } catch {}
           }
           return;
         }
@@ -12112,17 +12118,21 @@ DEV.skipSplash()      → go straight to class select (if no session)
           const resolvedName = (data?.data?.playerName && data.data.playerName !== 'Hunter')
             ? data.data.playerName
             : (localStorage.getItem('weebji_name') || 'Hunter');
-          await client.from('leaderboard').upsert({
-            user_id:       user.id,
-            hunter_number: hn.number,
-            display_name:  resolvedName,
-            class:         localStorage.getItem('weebji_class') || 'monarch',
-            color:         localStorage.getItem('weebji_color') || '#00F5FF',
-            level:         p.level           || 1,
-            streak:        p.streak          || 0,
-            best_streak:   p.bestStreak      || 0,
-            updated_at:    new Date().toISOString(),
-          }, { onConflict: 'user_id' }).catch(e => console.warn('lb upsert:', e));
+          // NOTE: .upsert() returns a thenable PostgrestFilterBuilder — no .catch(). try/await instead.
+          // CRITICAL: this must not throw — saveProgress(p) right below depends on reaching it.
+          try {
+            await client.from('leaderboard').upsert({
+              user_id:       user.id,
+              hunter_number: hn.number,
+              display_name:  resolvedName,
+              class:         localStorage.getItem('weebji_class') || 'monarch',
+              color:         localStorage.getItem('weebji_color') || '#00F5FF',
+              level:         p.level           || 1,
+              streak:        p.streak          || 0,
+              best_streak:   p.bestStreak      || 0,
+              updated_at:    new Date().toISOString(),
+            }, { onConflict: 'user_id' });
+          } catch (e) { console.warn('lb upsert:', e); }
         }
         saveProgress(p);
         if (typeof checkGoodwillOverlay === 'function') checkGoodwillOverlay();

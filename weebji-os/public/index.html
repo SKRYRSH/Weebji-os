@@ -5225,6 +5225,22 @@
 
   /* ══ FLOW: S01 → S02 ══════════════════════════ */
   const splashTimer = setTimeout(async () => {
+    // A returning-user login is in flight (e.g. mid Google OAuth redirect) —
+    // don't race it with our own routing guess. onAuthStateChange owns this case
+    // and will call enterDashboard once the real account is restored.
+    if (sessionStorage.getItem('weebji_login_mode_pending') === '1') {
+      // Safety net — if onAuthStateChange never fires (OAuth cancelled/failed),
+      // don't leave the user stuck staring at the splash screen forever.
+      setTimeout(() => {
+        if (sessionStorage.getItem('weebji_login_mode_pending') === '1'
+            && document.getElementById('splash')?.classList.contains('active')) {
+          sessionStorage.removeItem('weebji_login_mode_pending');
+          State._loginMode = false;
+          location.reload();
+        }
+      }, 8000);
+      return;
+    }
     let existingClass = localStorage.getItem('weebji_class');
     // No local identity (logout / reinstall / new device / cleared cache) — before
     // treating this as a brand-new user, check if they're already signed in to a
@@ -5433,6 +5449,9 @@
     const gate  = document.getElementById('sign-in-gate');
     gate.style.setProperty('--gate-accent', color);
     State._loginMode = isLoginMode;
+    // Persist intent across full-page redirects (Google OAuth nukes in-memory State)
+    if (isLoginMode) sessionStorage.setItem('weebji_login_mode_pending', '1');
+    else sessionStorage.removeItem('weebji_login_mode_pending');
     // Context-aware copy
     if (isLoginMode) {
       document.getElementById('gate-eyebrow').textContent = 'Returning Hunter';
@@ -5758,8 +5777,10 @@
         showScreen('profile');
         renderProfile();
       }
-      // First-time feature tour — fires once for new users and existing users who haven't seen it
-      if (!localStorage.getItem('weebji_tour_done')) {
+      // First-time feature tour — fires once for new users and existing users who haven't seen it.
+      // Skip here if the mission briefing overlay is about to cover the screen — its "Begin"
+      // button kicks off the tour instead, so they never race each other.
+      if (!localStorage.getItem('weebji_tour_done') && localStorage.getItem('weebji_mission_done')) {
         setTimeout(() => Tour.start(), 1400);
       }
     }, 600);
@@ -5966,6 +5987,8 @@
       overlay.classList.remove('active');
       if (typeof posthog !== 'undefined') posthog.capture('onboarding_completed', { class: cls });
       Sound.play('tap');
+      // Mission briefing was covering the screen — start the tour now that it's gone
+      if (!localStorage.getItem('weebji_tour_done')) setTimeout(() => Tour.start(), 500);
     };
   }
 
@@ -11775,26 +11798,40 @@ DEV.skipSplash()      → go straight to class select (if no session)
             }
             checkPremiumFromSupabase();
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
-            if (gateActive) {
-              if (State._loginMode) {
-                // Returning-user login: pull cloud progress & restore identity BEFORE routing —
-                // prevents the local fresh "Level 1" state from ever overwriting the real account.
-                await pullProgress().catch(() => {});
-                const restoredClass = localStorage.getItem('weebji_class');
-                State._loginMode = false;
-                if (restoredClass) {
-                  State.selectedClass = restoredClass;
-                  State.selectedColor = localStorage.getItem('weebji_color') || (CLASS_META[restoredClass]?.color) || '#00F5FF';
-                  State.selectedLabel = localStorage.getItem('weebji_label') || (CLASS_META[restoredClass]?.label) || 'THE MONARCH';
-                  State.playerName    = localStorage.getItem('weebji_name')  || 'Hunter';
-                  enterDashboard(false);
-                } else {
-                  const msgEl = document.getElementById('gate-code-msg') || document.getElementById('gate-msg');
-                  if (msgEl) msgEl.textContent = 'No Hunter account found for this email — go back and create your class.';
-                }
-              } else {
+            // Google OAuth does a full-page redirect — wipes in-memory State._loginMode.
+            // The pending flag survives in sessionStorage; consume it once here.
+            if (sessionStorage.getItem('weebji_login_mode_pending') === '1') {
+              State._loginMode = true;
+              sessionStorage.removeItem('weebji_login_mode_pending');
+            }
+            if (State._loginMode) {
+              // Returning-user login: pull cloud progress & restore identity BEFORE routing —
+              // prevents the local fresh "Level 1" state from ever overwriting the real account.
+              if (typeof posthog !== 'undefined') posthog.capture('login_mode_pull_start', { uid: currentUser.id, email: currentUser.email, gate_active: !!gateActive, local_class_before: localStorage.getItem('weebji_class'), local_level_before: localStorage.getItem('weebji_level') });
+              await pullProgress().catch(e => { if (typeof posthog !== 'undefined') posthog.capture('login_mode_pull_error', { msg: String(e) }); });
+              const restoredClass = localStorage.getItem('weebji_class');
+              const restoredLevel = localStorage.getItem('weebji_level');
+              if (typeof posthog !== 'undefined') posthog.capture('login_mode_pull_done', { restored_class: restoredClass, restored_level: restoredLevel });
+              State._loginMode = false;
+              if (restoredClass) {
+                State.selectedClass = restoredClass;
+                State.selectedColor = localStorage.getItem('weebji_color') || (CLASS_META[restoredClass]?.color) || '#00F5FF';
+                State.selectedLabel = localStorage.getItem('weebji_label') || (CLASS_META[restoredClass]?.label) || 'THE MONARCH';
+                State.playerName    = localStorage.getItem('weebji_name')  || 'Hunter';
                 enterDashboard(false);
+              } else if (gateActive) {
+                const msgEl = document.getElementById('gate-code-msg') || document.getElementById('gate-msg');
+                if (msgEl) msgEl.textContent = 'No Hunter account found for this email — go back and create your class.';
+              } else {
+                spawnDropBanner('◆ No Hunter account found for this email');
+                playInkWash(() => {
+                  showScreen('class-select');
+                  document.querySelectorAll('.class-card').forEach((card, i) =>
+                    setTimeout(() => card.classList.add('visible'), 120 + i * 130));
+                });
               }
+            } else if (gateActive) {
+              enterDashboard(false);
             }
             // Auto-subscribe push on every sign-in — no manual opt-in needed
             if (typeof WeebjPush !== 'undefined') {
@@ -11939,8 +11976,12 @@ DEV.skipSplash()      → go straight to class select (if no session)
         // Claim any plan purchased before account existed (email match → assign user_id)
         await client.rpc('claim_user_plan').catch(() => {});
 
-        // Restore premium status via secure server-side RPC (bypasses RLS)
-        const { data: premiumPlan } = await client.rpc('get_premium_status');
+        // Restore premium status via secure server-side RPC (bypasses RLS).
+        // Wrapped — an RPC hiccup here must NOT abort the rest of the restore
+        // (that would leave a returning hunter stuck on their fresh local Level 1 data).
+        let premiumPlan = null;
+        try { ({ data: premiumPlan } = await client.rpc('get_premium_status')); }
+        catch (e) { console.warn('[WEEBJI] get_premium_status failed:', e); }
         premiumStatus = !!premiumPlan;
         if (premiumPlan) localStorage.setItem('weebji_plus_cached', '1');
         else localStorage.removeItem('weebji_plus_cached');
@@ -12044,10 +12085,13 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.ghostWhisperEarned)  p.ghostWhisperEarned  = true;
           if (d.penanceSurvived)     p.penanceSurvived     = true;
           if (d.shadowSlayerEarned)  p.shadowSlayerEarned  = true;
-          // Restore identity on new device — name/class/color live in localStorage, sync from DB if missing
-          if (d.playerName && (!localStorage.getItem('weebji_name') || localStorage.getItem('weebji_name') === 'Hunter'))  localStorage.setItem('weebji_name',  d.playerName);
-          if (d.playerClass && !localStorage.getItem('weebji_class')) localStorage.setItem('weebji_class', d.playerClass);
-          if (d.playerColor && !localStorage.getItem('weebji_color')) localStorage.setItem('weebji_color', d.playerColor);
+          // Restore identity on new device — name/class/color live in localStorage, sync from DB if missing.
+          // Returning-user login (_loginMode) ALWAYS wins with cloud identity — the local copy
+          // is from a fresh/different profile (e.g. they walked through class-select before
+          // clicking "Already a Hunter? Log in") and must not block the real account's class.
+          if (d.playerName  && (State._loginMode || !localStorage.getItem('weebji_name')  || localStorage.getItem('weebji_name') === 'Hunter'))  localStorage.setItem('weebji_name',  d.playerName);
+          if (d.playerClass && (State._loginMode || !localStorage.getItem('weebji_class'))) localStorage.setItem('weebji_class', d.playerClass);
+          if (d.playerColor && (State._loginMode || !localStorage.getItem('weebji_color'))) localStorage.setItem('weebji_color', d.playerColor);
           // Custom workouts — restore on new device (never overwrite existing local list)
           if (d.customWorkouts?.length && !JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]').length)
             localStorage.setItem('weebji_custom_workouts', JSON.stringify(d.customWorkouts));
@@ -12112,6 +12156,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
       await client.auth.signOut();
       currentUser = null;
       premiumStatus = false;
+      sessionStorage.removeItem('weebji_login_mode_pending');
+      State._loginMode = false;
       // Wipe local progress so next user on same device starts clean
       const keep = ['weebji_install_dismissed','weebji_notif_dismissed'];
       Object.keys(localStorage).filter(k => k.startsWith('weebji_') && !keep.includes(k)).forEach(k => localStorage.removeItem(k));

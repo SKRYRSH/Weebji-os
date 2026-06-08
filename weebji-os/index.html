@@ -2523,6 +2523,7 @@
 
   /* ══ NOTIFICATION PERMISSION PROMPT ══════════ */
   function maybeShowSignInNudge() {
+    if (!localStorage.getItem('weebji_tour_done')) return; // don't stack on the onboarding tour
     if (SupabaseSync.getUser()) return; // already signed in
     const today = new Date().toDateString();
     if (localStorage.getItem('weebji_signin_nudge_date') === today) return; // shown today
@@ -2549,6 +2550,7 @@
   }
 
   function maybeShowNotifPrompt() {
+    if (!localStorage.getItem('weebji_tour_done')) return; // don't stack on the onboarding tour
     if (Notification.permission !== 'default') return;
     if (sessionStorage.getItem('weebji_notif_shown_this_session')) return;
     if (!SupabaseSync.getUser()) return;
@@ -4253,6 +4255,7 @@
   }
 
   function showWeeklyReport() {
+    if (!localStorage.getItem('weebji_tour_done')) return; // don't stack on the onboarding tour
     const now = new Date();
     if (now.getDay() === 0) return; // Sunday — week still ongoing
     const thisWeekKey = `${now.getFullYear()}-W${_weekNum(now)}`;
@@ -10451,6 +10454,7 @@
 
   /* ══ RATING PROMPT ═══════════════════════════ */
   function maybeShowRatingPrompt() {
+    if (!localStorage.getItem('weebji_tour_done')) return; // don't stack on the onboarding tour
     const state = localStorage.getItem('weebji_rating_state');
     if (state === 'done') return;
     if (state) {

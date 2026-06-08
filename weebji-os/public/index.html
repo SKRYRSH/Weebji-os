@@ -3489,9 +3489,15 @@
       const trialBanner = trialActive
         ? `<div class="plus-paywall__trial-notice">◈ System Voice trial active — ${dLeft} day${dLeft === 1 ? '' : 's'} left. Upgrade to keep it forever.</div>`
         : `<div class="plus-paywall__trial-expired">◈ Your System Voice trial ended. You know what it sounds like now.</div>`;
+      const _manifest = localStorage.getItem('weebji_manifest') || '';
+      const _enemy    = localStorage.getItem('weebji_enemy') || '';
       const pitch = trialActive
         ? `Your arc is incomplete. You've heard the System Voice — now it's about to go silent. Don't let that happen.`
-        : `Most hunters stop here. The ones who don't — they're the ones you'll never catch up to.`;
+        : _manifest
+          ? `You told the System: "${_manifest}." That's still why you're here. WEEBJI+ is how you keep that promise.`
+          : _enemy
+            ? `You said you were running from ${_enemy}. That doesn't stop because the trial did.`
+            : `Most hunters stop here. The ones who don't — they're the ones you'll never catch up to.`;
       el.innerHTML = `
         <div class="plus-paywall">
           <div class="plus-paywall__header">◆ WEEBJI+</div>
@@ -3571,9 +3577,15 @@
     const trialBanner = trialActive
       ? `<div class="plus-paywall__trial-notice">◈ System Voice trial active — ${dLeft} day${dLeft===1?'':'s'} left. Upgrade to keep it forever.</div>`
       : `<div class="plus-paywall__trial-expired">◈ Your System Voice trial ended. You know what it sounds like now.</div>`;
+    const _manifest = localStorage.getItem('weebji_manifest') || '';
+    const _enemy    = localStorage.getItem('weebji_enemy') || '';
     const pitch = trialActive
       ? `Your arc is incomplete. You've heard the System Voice — now it's about to go silent.`
-      : `Most hunters stop here. The ones who don't — they're the ones you'll never catch up to.`;
+      : _manifest
+        ? `You told the System: "${_manifest}." That's still why you're here. WEEBJI+ is how you keep that promise.`
+        : _enemy
+          ? `You said you were running from ${_enemy}. That doesn't stop because the trial did.`
+          : `Most hunters stop here. The ones who don't — they're the ones you'll never catch up to.`;
     el.innerHTML = `
       <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:900;letter-spacing:0.1em;color:rgba(255,210,60,0.9);margin-bottom:6px;text-align:center">◆ WEEBJI+</div>
       ${!localStorage.getItem('weebji_streak5_trial_used') ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(0,245,255,0.65);background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.12);border-radius:6px;padding:7px 10px;margin-bottom:10px;text-align:center">⭐ Reach a 5-day streak → 7 days of WEEBJI+ free. No card needed.</div>` : ''}

@@ -9706,7 +9706,7 @@
             <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.1em;">BEST</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-            ${isWeebjiPlus() ? `<button class="battle-challenge-btn" data-fid="${_esc(f.user_id)}" data-fname="${_esc(f.display_name)}" data-fcls="${_esc(f.class||'hunter')}" data-fcol="${_esc(f.color||'#FF4444')}">⚔</button>` : ''}
+            ${isWeebjiPlus() ? `<button class="battle-challenge-btn" data-fid="${_esc(f.user_id)}" data-fname="${_esc(f.display_name)}" data-fcls="${_esc(f.class||'hunter')}" data-fcol="${_esc(f.color||'#FF4444')}">⚔</button>` : `<div style="text-align:center;border:1px solid rgba(255,60,60,0.12);border-radius:8px;padding:4px 6px;line-height:1;"><div style="font-size:12px;color:rgba(255,80,80,0.25);">⚔</div><div class="guild-plus-lock" style="margin:2px 0 0">WEEBJI+</div></div>`}
             <button data-remove-fid="${_esc(f.user_id)}" style="background:none;border:none;color:rgba(255,255,255,0.15);font-size:14px;cursor:pointer;padding:4px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
           </div>
         </div>`;

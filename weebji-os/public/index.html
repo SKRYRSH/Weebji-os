@@ -5222,8 +5222,25 @@
   };
 
   /* ══ FLOW: S01 → S02 ══════════════════════════ */
-  const splashTimer = setTimeout(() => {
-    const existingClass = localStorage.getItem('weebji_class');
+  const splashTimer = setTimeout(async () => {
+    let existingClass = localStorage.getItem('weebji_class');
+    // No local identity (logout / reinstall / new device / cleared cache) — before
+    // treating this as a brand-new user, check if they're already signed in to a
+    // cloud account and restore their real identity from there. Without this,
+    // returning users get shoved through onboarding again and their fresh
+    // "Level 1" picks overwrite their real cloud progress.
+    if (!existingClass && typeof SupabaseSync !== 'undefined') {
+      try {
+        const client = SupabaseSync._client();
+        if (client) {
+          const { data: { session } } = await client.auth.getSession();
+          if (session?.user) {
+            await SupabaseSync.pullProgress();
+            existingClass = localStorage.getItem('weebji_class');
+          }
+        }
+      } catch (e) { /* fall through to onboarding */ }
+    }
     if (existingClass) {
       // Returning user — restore state and go straight to dashboard
       State.selectedClass = existingClass;

@@ -1668,6 +1668,8 @@
         </div>
 
       </div>
+
+      <button id="returning-login-btn" type="button" style="margin-top:18px;background:none;border:none;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;font-size:13px;text-decoration:underline;cursor:pointer;">Already a Hunter? Log in →</button>
     </div>
 
     <!-- ══ S03: CONTRACT ════════════════════════ -->
@@ -5276,6 +5278,11 @@
     });
   });
 
+  document.getElementById('returning-login-btn')?.addEventListener('click', () => {
+    Sound.play('tap');
+    showSignInGate(false, true);
+  });
+
   function enterContract() {
     const { selectedColor, selectedLabel } = State;
     const glow = hexRgba(selectedColor, 0.25);
@@ -5421,12 +5428,20 @@
   }
 
   /* ══ FLOW: S04B — SIGN-IN GATE ═══════════════ */
-  function showSignInGate(isReturning = false) {
+  function showSignInGate(isReturning = false, isLoginMode = false) {
     const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
     const gate  = document.getElementById('sign-in-gate');
     gate.style.setProperty('--gate-accent', color);
+    State._loginMode = isLoginMode;
     // Context-aware copy
-    if (isReturning) {
+    if (isLoginMode) {
+      document.getElementById('gate-eyebrow').textContent = 'Returning Hunter';
+      document.getElementById('gate-title').textContent   = 'Log In To Your Account';
+      document.getElementById('gate-send-btn').textContent = 'Send Login Code';
+      gate.querySelector('.gate__sub').innerHTML = 'Enter the email linked to your account.<br><br>We\'ll send a login code — your class, level, and streak will be restored.';
+      const skipBtn = document.getElementById('gate-skip-btn');
+      if (skipBtn) skipBtn.style.display = 'none';
+    } else if (isReturning) {
       document.getElementById('gate-eyebrow').textContent = 'Your Data Is At Risk';
       document.getElementById('gate-title').textContent   = 'Protect Your Progress';
       document.getElementById('gate-send-btn').textContent = 'Secure My Account';
@@ -5460,6 +5475,9 @@
       if (verifyErr) {
         document.getElementById('gate-code-msg').textContent = 'Invalid code — try again';
         verifyBtn.disabled = false; verifyBtn.textContent = 'Verify Code';
+      } else if (State._loginMode) {
+        document.getElementById('gate-code-msg').textContent = 'Verified — restoring your account...';
+        // Routing & progress restore happens in onAuthStateChange (handles OTP + Google uniformly)
       } else {
         document.getElementById('gate-code-msg').textContent = 'Verified! Loading your OS...';
         setTimeout(() => maybeShowNotifPrompt(), 15000);
@@ -11746,7 +11764,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (window.location.hash && window.location.hash.includes('access_token')) {
           history.replaceState(null, '', window.location.pathname + window.location.search);
         }
-        client.auth.onAuthStateChange((event, session) => {
+        client.auth.onAuthStateChange(async (event, session) => {
           currentUser = session?.user || null;
           const onProfile = document.getElementById('profile').classList.contains('active');
           if (currentUser) {
@@ -11757,7 +11775,27 @@ DEV.skipSplash()      → go straight to class select (if no session)
             }
             checkPremiumFromSupabase();
             const gateActive = document.getElementById('sign-in-gate')?.classList.contains('active');
-            if (gateActive) { enterDashboard(false); }
+            if (gateActive) {
+              if (State._loginMode) {
+                // Returning-user login: pull cloud progress & restore identity BEFORE routing —
+                // prevents the local fresh "Level 1" state from ever overwriting the real account.
+                await pullProgress().catch(() => {});
+                const restoredClass = localStorage.getItem('weebji_class');
+                State._loginMode = false;
+                if (restoredClass) {
+                  State.selectedClass = restoredClass;
+                  State.selectedColor = localStorage.getItem('weebji_color') || (CLASS_META[restoredClass]?.color) || '#00F5FF';
+                  State.selectedLabel = localStorage.getItem('weebji_label') || (CLASS_META[restoredClass]?.label) || 'THE MONARCH';
+                  State.playerName    = localStorage.getItem('weebji_name')  || 'Hunter';
+                  enterDashboard(false);
+                } else {
+                  const msgEl = document.getElementById('gate-code-msg') || document.getElementById('gate-msg');
+                  if (msgEl) msgEl.textContent = 'No Hunter account found for this email — go back and create your class.';
+                }
+              } else {
+                enterDashboard(false);
+              }
+            }
             // Auto-subscribe push on every sign-in — no manual opt-in needed
             if (typeof WeebjPush !== 'undefined') {
               WeebjPush.linkUser(currentUser.id);

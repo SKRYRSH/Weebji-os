@@ -5756,7 +5756,9 @@
     }
     initDashboard();
     // Phase 5: System Voice greeting (slight delay so dashboard is visible)
-    setTimeout(() => SystemVoice.greet(), 900);
+    // First-ever session: force a personalized one-time line through the gate
+    // (most free users never otherwise hear System Voice before day 5)
+    setTimeout(() => { if (!SystemVoice.firstContact()) SystemVoice.greet(); }, 900);
     // Check ghost intervention + notification prompt after a short delay
     setTimeout(() => {
       const p = loadProgress();
@@ -11304,8 +11306,8 @@ ${particles}
 
     function _pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-    function speak(text, tier = 0) {
-      if (!isWeebjiPlus() && !isInVoiceTrial()) return;
+    function speak(text, tier = 0, force = false) {
+      if (!force && !isWeebjiPlus() && !isInVoiceTrial()) return;
       if (!isEnabled()) return;
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
@@ -11374,6 +11376,23 @@ ${particles}
     function greet() {
       const t = _currentTier();
       speak(_pick(LINES.greet[t]), t);
+    }
+
+    // One-time forced first encounter — every hunter hears the System speak once,
+    // even free users who'll never otherwise unlock it before day 5. Uses their
+    // own Contract words (manifest/enemy) so it lands as personal, not generic.
+    function firstContact() {
+      if (localStorage.getItem('weebji_voice_first_contact_done')) return false;
+      localStorage.setItem('weebji_voice_first_contact_done', '1');
+      const name     = localStorage.getItem('weebji_name')     || 'Hunter';
+      const manifest = localStorage.getItem('weebji_manifest') || '';
+      const enemy    = localStorage.getItem('weebji_enemy')    || '';
+      let line = `${name}. I am the System. I have heard your pledge.`;
+      if (manifest)    line += ` "${manifest}." Let's see if you mean it.`;
+      else if (enemy)  line += ` You said you're running from ${enemy}. I'll be watching to see if you stop running.`;
+      line += ` Survive five days without breaking, and I will speak to you again — every day, for a full week. Earn it.`;
+      speak(line, 0, true);
+      return true;
     }
 
     function onLevelUp(newLevel) {
@@ -11448,7 +11467,7 @@ ${particles}
     // 66+ js_errors in 7 days. `say` is just a thin alias for `speak` (one-liner
     // System lines). `speakBoss` was defined inside this IIFE but not surfaced.
     const say = (text) => speak(text, 0);
-    return { isEnabled, toggle, speak, say, speakBoss, greet, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
+    return { isEnabled, toggle, speak, say, speakBoss, greet, firstContact, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
   })();
 
   /* ══ PHASE 5 — DASHBOARD EVOLUTION ═══════════ */

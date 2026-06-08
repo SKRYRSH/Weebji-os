@@ -1064,7 +1064,7 @@
   .srg__inner { background:linear-gradient(160deg,#0d0d12,#13101a); border:1px solid rgba(255,215,0,0.22); border-radius:12px; padding:36px 28px 28px; width:min(320px,88vw); display:flex; flex-direction:column; align-items:center; gap:10px; position:relative; box-shadow:0 0 60px rgba(255,215,0,0.1); }
   .srg__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.35em; color:rgba(255,215,0,0.45); text-transform:uppercase; }
   .srg__days { font-family:'Cinzel',serif; font-size:54px; font-weight:900; color:#FFD700; line-height:1; text-shadow:0 0 30px rgba(255,215,0,0.6); }
-  .srg__subtitle { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:rgba(255,255,255,0.35); margin-top:-4px; }
+  .srg__subtitle { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:rgba(255,255,255,0.5); margin-top:-4px; }
   .srg__reward-box { background:rgba(255,215,0,0.06); border:1px solid rgba(255,215,0,0.15); border-radius:8px; padding:14px 20px; width:100%; text-align:center; position:relative; }
   .srg__reward-title { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:#FFD700; letter-spacing:0.1em; }
   .srg__reward-xp { font-family:'JetBrains Mono',monospace; font-size:11px; color:rgba(255,215,0,0.5); margin-top:4px; letter-spacing:0.15em; }
@@ -1421,12 +1421,12 @@
     pointer-events:none;
   }
   #void-overlay.active { opacity:1; pointer-events:all; }
-  .void__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.45em; color:rgba(180,80,220,0.5); text-transform:uppercase; position:relative; }
+  .void__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.45em; color:rgba(210,140,255,0.7); text-transform:uppercase; position:relative; }
   .void__title { font-family:'Cinzel',serif; font-size:30px; font-weight:900; letter-spacing:0.28em; color:#CC44FF; animation:kf-void-pulse 3s ease-in-out infinite; position:relative; }
   .void__timer { font-family:'JetBrains Mono',monospace; font-size:64px; font-weight:700; letter-spacing:0.06em; color:rgba(180,60,220,0.35); margin:8px 0; transition:color 0.4s, text-shadow 0.4s; position:relative; }
   .void__timer.ticking { color:#BB44EE; text-shadow:0 0 30px rgba(160,0,220,0.5), 0 0 80px rgba(120,0,180,0.25); }
-  .void__mode-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:rgba(160,60,200,0.45); text-transform:uppercase; position:relative; }
-  .void__clock { font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.18em; color:rgba(220,180,255,0.4); margin-top:6px; position:relative; }
+  .void__mode-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:rgba(220,170,255,0.65); text-transform:uppercase; position:relative; }
+  .void__clock { font-family:'JetBrains Mono',monospace; font-size:15px; letter-spacing:0.18em; color:rgba(230,200,255,0.75); margin-top:6px; position:relative; }
   .void__warning { font-family:'Inter',sans-serif; font-size:13px; color:rgba(220,180,255,0.75); font-style:italic; max-width:260px; line-height:1.9; position:relative; animation:kf-void-breathe 5s ease-in-out infinite; }
   .void__penalty-flash { position:absolute; inset:0; background:rgba(200,0,0,0.25); opacity:0; pointer-events:none; transition:opacity 0.1s; }
   .void__penalty-flash.flash { opacity:1; }
@@ -1442,7 +1442,7 @@
   /* Monetization overhaul */
   .plus-paywall { background:rgba(255,200,40,0.03); border:1px solid rgba(255,210,60,0.12); border-radius:16px; padding:18px 16px; margin-bottom:12px; }
   .plus-paywall__header { font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:0.2em; color:rgba(255,210,60,0.5); text-transform:uppercase; margin-bottom:4px; }
-  .plus-paywall__pitch { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.35); line-height:1.6; margin-bottom:10px; font-style:italic; }
+  .plus-paywall__pitch { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.5); line-height:1.6; margin-bottom:10px; font-style:italic; }
   .plus-paywall__trial-notice { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(0,245,255,0.7); background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.15); border-radius:6px; padding:7px 10px; margin-bottom:10px; }
   .plus-paywall__trial-expired { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(255,100,100,0.5); margin-bottom:10px; }
   .plus-social-proof { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.14em; color:rgba(255,210,60,0.4); text-align:center; margin-bottom:12px; }
@@ -1479,7 +1479,7 @@
   .protocol-complete-banner__icon { font-size:22px; flex-shrink:0; }
   .protocol-complete-banner__text { flex:1; }
   .protocol-complete-banner__title { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:0.15em; color:rgba(0,245,255,0.9); }
-  .protocol-complete-banner__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(255,255,255,0.35); margin-top:2px; }
+  .protocol-complete-banner__sub { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(255,255,255,0.5); margin-top:2px; }
   .protocol-complete-banner__close { font-size:16px; color:rgba(255,255,255,0.2); cursor:pointer; -webkit-tap-highlight-color:transparent; padding:4px; }
   .protocol-complete-banner__share { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.15em; color:rgba(0,245,255,0.7); background:rgba(0,245,255,0.07); border:1px solid rgba(0,245,255,0.2); border-radius:6px; padding:5px 10px; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; flex-shrink:0; }
   .protocol-complete-banner__share:active { background:rgba(0,245,255,0.14); }
@@ -1609,7 +1609,7 @@
 
 <!-- ANALYTICS CONSENT BAR -->
 <div id="analytics-consent-bar" style="position:fixed;bottom:0;left:0;right:0;z-index:9997;background:rgba(7,9,15,0.97);border-top:1px solid rgba(255,255,255,0.07);padding:12px 20px;display:none;align-items:center;justify-content:space-between;gap:12px;">
-  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:0.08em;line-height:1.5;">We use anonymous analytics (PostHog) to improve the app. No personal data sold. <a href="privacy.html" target="_blank" style="color:rgba(0,245,255,0.35);">Privacy Policy</a></span>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.08em;line-height:1.5;">We use anonymous analytics (PostHog) to improve the app. No personal data sold. <a href="privacy.html" target="_blank" style="color:rgba(0,245,255,0.5);">Privacy Policy</a></span>
   <div style="display:flex;gap:8px;flex-shrink:0;">
     <button onclick="window._analyticsConsent(true)" style="padding:7px 12px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.25);border-radius:6px;color:#00F5FF;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;cursor:pointer;">Accept</button>
     <button onclick="window._analyticsConsent(false)" style="padding:7px 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;cursor:pointer;">Decline</button>
@@ -3487,7 +3487,7 @@
         <button class="ghost-shop-btn" onclick="Sound.play('tap');window.open('https://play.google.com/store/account/subscriptions?package=io.github.skryrsh.twa','_blank','noopener,noreferrer')" style="margin-bottom:8px;border-color:rgba(255,255,255,0.14);color:rgba(255,255,255,0.62);">⚙ Manage Subscription</button>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.5);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
     } else if (onFreeTrial) {
       el.innerHTML = `
         <div class="plus-paywall__trial-notice">🎁 FREE WEEBJI+ TRIAL — ${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left. Subscribe now so you never lose it.</div>
@@ -3507,7 +3507,7 @@
         </div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.5);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
     } else {
       const trialActive = isInVoiceTrial();
       const dLeft = voiceTrialDaysLeft();
@@ -3570,11 +3570,11 @@
         </div>
         <div style="text-align:center;margin:4px 0 8px">
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(255,255,255,0.22);text-transform:uppercase">— or start small —</div>
-          <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.38);margin-top:3px;font-style:italic">Not ready for WEEBJI+? Grab a Ghost Token and feel what saving your streak is like.</div>
+          <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.5);margin-top:3px;font-style:italic">Not ready for WEEBJI+? Grab a Ghost Token and feel what saving your streak is like.</div>
         </div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.5);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
       // Async: fill social proof with real premium count
       _fetchPremiumCount();
     }
@@ -3654,7 +3654,7 @@
       </div>
       <div style="text-align:center;margin:2px 0 8px">
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(255,255,255,0.22);text-transform:uppercase">— or start small —</div>
-        <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.38);margin-top:3px;font-style:italic">Not ready for WEEBJI+? Grab a Ghost Token and feel what saving your streak is like.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.5);margin-top:3px;font-style:italic">Not ready for WEEBJI+? Grab a Ghost Token and feel what saving your streak is like.</div>
       </div>
       <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95)">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px">SAVE 33%</span></button>
       <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token')" style="margin-bottom:8px">👻 1 Ghost Token — $0.99</button>`;
@@ -4403,7 +4403,7 @@
       <div style="width:100%;max-width:360px;background:#07090F;border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:24px;position:relative;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.4em;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:6px;">Week in Review</div>
         <div style="font-family:'Cinzel',serif;font-size:24px;font-weight:900;letter-spacing:0.06em;color:${ratingColor};text-shadow:0 0 24px ${ratingColor}55;margin-bottom:4px">${rating}</div>
-        <div style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.38);margin-bottom:20px;line-height:1.5">${msg}</div>
+        <div style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:20px;line-height:1.5">${msg}</div>
         <div style="display:flex;justify-content:space-between;gap:2px;margin-bottom:2px">${dots}</div>
         ${statsHtml}
         <button id="weekly-report-close" style="width:100%;margin-top:18px;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:rgba(255,255,255,0.6);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">Continue →</button>
@@ -7323,7 +7323,7 @@
             </div>
             <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:${hexRgba(meta.color,0.35)};border:1px solid ${hexRgba(meta.color,0.2)};border-radius:6px;padding:3px 7px">PLUS</div>
           </div>
-          <div style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.38);line-height:1.6;margin-bottom:12px">${pillarDesc}</div>
+          <div style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:12px">${pillarDesc}</div>
           <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:${hexRgba(meta.color,0.5)};text-transform:uppercase">Preview →</div>
         `;
         container.appendChild(card);
@@ -7398,7 +7398,7 @@
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.3em;color:rgba(230,57,70,0.3);text-transform:uppercase;margin-bottom:8px">Today's Sessions</div>
           ${_log.map(e => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(230,57,70,0.05)">
             <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(230,57,70,0.45)">${e.time}</span>
-            <span style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.35)">${e.mode} · ${e.mins}m${e.topic && e.topic !== 'Other' ? ' · ' + e.topic : ''}</span>
+            <span style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.5)">${e.mode} · ${e.mins}m${e.topic && e.topic !== 'Other' ? ' · ' + e.topic : ''}</span>
             <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(230,57,70,0.55)">+${e.xp} XP</span>
           </div>`).join('')}
         </div>`;

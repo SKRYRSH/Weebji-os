@@ -1426,6 +1426,7 @@
   .void__timer { font-family:'JetBrains Mono',monospace; font-size:64px; font-weight:700; letter-spacing:0.06em; color:rgba(180,60,220,0.35); margin:8px 0; transition:color 0.4s, text-shadow 0.4s; position:relative; }
   .void__timer.ticking { color:#BB44EE; text-shadow:0 0 30px rgba(160,0,220,0.5), 0 0 80px rgba(120,0,180,0.25); }
   .void__mode-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:rgba(160,60,200,0.45); text-transform:uppercase; position:relative; }
+  .void__clock { font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.18em; color:rgba(220,180,255,0.4); margin-top:6px; position:relative; }
   .void__warning { font-family:'Inter',sans-serif; font-size:13px; color:rgba(220,180,255,0.75); font-style:italic; max-width:260px; line-height:1.9; position:relative; animation:kf-void-breathe 5s ease-in-out infinite; }
   .void__penalty-flash { position:absolute; inset:0; background:rgba(200,0,0,0.25); opacity:0; pointer-events:none; transition:opacity 0.1s; }
   .void__penalty-flash.flash { opacity:1; }
@@ -2130,6 +2131,7 @@
       <h2 class="void__title">THE VOID</h2>
       <div class="void__timer ticking" id="void-timer">00:00</div>
       <div class="void__mode-label" id="void-mode-label">Standard Session</div>
+      <div class="void__clock" id="void-clock">--:--</div>
       <p class="void__warning">"The System is watching. Leave this screen and you bleed. Stay. Ascend."</p>
       <button class="void__surrender" id="void-surrender-btn">Surrender Session</button>
     </div>
@@ -3476,10 +3478,33 @@
   function renderWeebjiPlusSection(color) {
     const el = document.getElementById('profile-plus-section');
     if (!el) return;
-    if (isWeebjiPlus()) {
+    const realPremium  = SupabaseSync.isPremium();
+    const trialDaysLeft = streak5TrialDaysLeft();
+    const onFreeTrial  = !realPremium && trialDaysLeft > 0;
+    if (realPremium) {
       el.innerHTML = `
         <div class="profile-plus-active">WEEBJI+ ACTIVE</div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');window.open('https://play.google.com/store/account/subscriptions?package=io.github.skryrsh.twa','_blank','noopener,noreferrer')" style="margin-bottom:8px;border-color:rgba(255,255,255,0.14);color:rgba(255,255,255,0.62);">⚙ Manage Subscription</button>
+        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
+    } else if (onFreeTrial) {
+      el.innerHTML = `
+        <div class="plus-paywall__trial-notice">🎁 FREE WEEBJI+ TRIAL — ${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left. Subscribe now so you never lose it.</div>
+        <div class="profile-plus-active" style="opacity:0.75">WEEBJI+ TRIAL ACTIVE</div>
+        <div class="plus-plans">
+          <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('monthly')">
+            <div class="plus-plan__period">Monthly</div>
+            <div class="plus-plan__price">$9.99</div>
+            <div class="plus-plan__unit">/month</div>
+          </div>
+          <div class="plus-plan featured" id="plus-plan-annual" onclick="Sound.play('tap');_openCheckout('annual')">
+            <div class="plus-plan__badge">BEST VALUE</div>
+            <div class="plus-plan__period">Annual</div>
+            <div class="plus-plan__price">$59.99</div>
+            <div class="plus-plan__unit">/year — save 50%</div>
+          </div>
+        </div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
         <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
@@ -3586,9 +3611,13 @@
         : _enemy
           ? `You said you were running from ${_enemy}. That doesn't stop because the trial did.`
           : `Most hunters stop here. The ones who don't — they're the ones you'll never catch up to.`;
+    const _streak5Left = streak5TrialDaysLeft();
+    const streak5Banner = (!SupabaseSync.isPremium() && _streak5Left > 0)
+      ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(0,245,255,0.7);background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.16);border-radius:6px;padding:7px 10px;margin-bottom:10px;text-align:center">🎁 Free WEEBJI+ trial active — ${_streak5Left} day${_streak5Left===1?'':'s'} left. Subscribe now so you never lose it.</div>`
+      : (!localStorage.getItem('weebji_streak5_trial_used') ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(0,245,255,0.65);background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.12);border-radius:6px;padding:7px 10px;margin-bottom:10px;text-align:center">⭐ Reach a 5-day streak → 7 days of WEEBJI+ free. No card needed.</div>` : '');
     el.innerHTML = `
       <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:900;letter-spacing:0.1em;color:rgba(255,210,60,0.9);margin-bottom:6px;text-align:center">◆ WEEBJI+</div>
-      ${!localStorage.getItem('weebji_streak5_trial_used') ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(0,245,255,0.65);background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.12);border-radius:6px;padding:7px 10px;margin-bottom:10px;text-align:center">⭐ Reach a 5-day streak → 7 days of WEEBJI+ free. No card needed.</div>` : ''}
+      ${streak5Banner}
       ${trialBanner}
       <p style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;margin-bottom:16px;text-align:center;font-style:italic">${pitch}</p>
       <div style="display:flex;gap:10px;margin-bottom:16px;">
@@ -3728,6 +3757,10 @@
       boss:'THE IRON WARDEN', quote:'"Order. Discipline. Collapse."',
       taunt_free:'"Authorization denied. Return when your rank is verified."',
       taunt_plus:'"I have broken stronger soldiers. Let us see if you are different."',
+      taunts_plus_extra:[
+        '"Discipline is not punishment. It is the only mercy I know how to give."',
+        '"Most arrive broken. Few leave standing. Which will you be?"',
+      ],
       img:'bosses/iron-warden.jpg',
       gates:[
         { day:'Monday',   task:'Full workout + all 3 quests + 3-day active streak. Open with everything.',        check: p => ((p.workoutChecked||[]).length>=4||p.workoutBonus) && (p.questsChecked||[]).length>=3 && (p.streak||0)>=3 },
@@ -3742,6 +3775,10 @@
       boss:'THE VOID ARCHITECT', quote:'"You cannot build what you fear to imagine."',
       taunt_free:'"You stand before something you cannot comprehend. Leave."',
       taunt_plus:'"Every great structure begins with a single decision. This is yours."',
+      taunts_plus_extra:[
+        '"I have watched a thousand foundations crumble before they ever rose. Yours will not be one of them — if you listen."',
+        '"You keep starting over. Good. That is how the void teaches."',
+      ],
       img:'bosses/void-architect.jpg',
       gates:[
         { day:'Monday',   task:'Workout + all 3 quests + daily challenge + 3-day active streak. Lay the foundation.', check: p => ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=3 },
@@ -3756,6 +3793,10 @@
       boss:'THE HOLLOW KING', quote:'"An empire built on weak days crumbles."',
       taunt_free:'"Peasants do not address the King. Upgrade your standing."',
       taunt_plus:'"My throne was built on the bones of those who almost made it."',
+      taunts_plus_extra:[
+        '"Crowns are heavy. Most men drop them the moment no one is watching."',
+        '"I did not lose my kingdom to an army. I lost it to a Tuesday I let slide."',
+      ],
       img:'bosses/hollow-king.jpg',
       gates:[
         { day:'Monday',   task:'Workout + all quests + daily challenge + 5-day active streak. The King watches.',  check: p => ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=5 },
@@ -3770,6 +3811,10 @@
       boss:'THE SILENT SOVEREIGN', quote:'"Silence is not weakness. It is the calm before annihilation."',
       taunt_free:'"You are not worth the words."',
       taunt_plus:'"I have waited lifetimes. A few more days will not break me. Can you say the same?"',
+      taunts_plus_extra:[
+        '"Noise is for those who have nothing left to prove. I have said everything I needed to in silence."',
+        '"You filled this silence with excuses. I filled mine with becoming this."',
+      ],
       img:'bosses/silent-sovereign.jpg',
       gates:[
         { day:'Monday',   task:'7+ monk rituals + 5-day active streak. Silence demands perfection.',               check: p => (p.monkChecked||[]).length>=7 && (p.streak||0)>=5 },
@@ -3784,6 +3829,10 @@
       boss:'THE CRIMSON BEAST', quote:'"It does not think. It does not stop. It does not forgive."',
       taunt_free:'"Prey does not earn entry. Run."',
       taunt_plus:'"I smell hesitation. Come closer. Let me cure you of it."',
+      taunts_plus_extra:[
+        '"I do not negotiate with prey. I wait for them to stop running."',
+        '"Hesitation has a smell. You are covered in it."',
+      ],
       img:'bosses/crimson-beast.jpg',
       gates:[
         { day:'Monday',   task:'Full workout + all 3 quests + 30-min focus + 5-day active streak. Beasts demand more.', check: p => ((p.workoutChecked||[]).length>=4||p.workoutBonus) && (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=30) && (p.streak||0)>=5 },
@@ -3798,6 +3847,10 @@
       boss:'THE OBSIDIAN MONK', quote:'"Stillness is a weapon. Master it."',
       taunt_free:'"Your mind is not ready for this confrontation."',
       taunt_plus:'"Stillness is not peace. It is control. Do you have it?"',
+      taunts_plus_extra:[
+        '"You move like someone still arguing with themselves. I stopped arguing years ago."',
+        '"Stillness is not the absence of war. It is winning one no one can see."',
+      ],
       img:'bosses/obsidian-monk.jpg',
       gates:[
         { day:'Monday',   task:'90-minute focus session + 5-day active streak. Total silence, no breaks.',         check: p => Object.values(p.mmDaily||{}).some(v=>v>=90) && (p.streak||0)>=5 },
@@ -3812,6 +3865,10 @@
       boss:'THE PLAGUE DOCTOR', quote:'"I cure nothing. I only reveal what was always there."',
       taunt_free:'"I only treat those enrolled in the full program."',
       taunt_plus:'"I have already diagnosed your weakness. The question is — will you let me cut it out?"',
+      taunts_plus_extra:[
+        '"I have read your symptoms. Avoidance. Comfort. A thousand tomorrows. The cure is simple. The will is rare."',
+        '"Most patients leave before the treatment works. Will you be different, or just another file?"',
+      ],
       img:'bosses/plague-doctor.jpg',
       gates:[
         { day:'Monday',   task:'Full workout + all 3 quests + challenge + 5-day active streak.',                   check: p => ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=5 },
@@ -3826,6 +3883,10 @@
       boss:'THE ASHEN TITAN', quote:'"From the ash of who you were rises what you will become."',
       taunt_free:'"Titans were not built for those who observe. Only those who endure."',
       taunt_plus:'"I was forged in fire that consumed everything around me. Show me you were too."',
+      taunts_plus_extra:[
+        '"Everything that made me was supposed to destroy me first."',
+        '"Ash remembers the shape of what it used to be. So will you, if you stop now."',
+      ],
       img:'bosses/ashen-titan.jpg',
       gates:[
         { day:'Monday',   task:'Gym workout + all 3 quests + 5-day active streak. Titans carry the full load.',    check: p => localStorage.getItem('weebji_workout_mode')==='gym' && ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.questsChecked||[]).length>=3 && (p.streak||0)>=5 },
@@ -3840,6 +3901,10 @@
       boss:'THE FRACTURED MIRROR', quote:'"The only enemy you have ever faced is the one looking back."',
       taunt_free:'"You do not want to see what I reflect. Not yet."',
       taunt_plus:'"Every crack in this mirror is a lie you told yourself. I remember all of them."',
+      taunts_plus_extra:[
+        '"Every excuse you have ever made is standing behind you in this reflection. Turn around."',
+        '"I do not show you who you are. I show you who you decided to settle for."',
+      ],
       img:'bosses/fractured-mirror.jpg',
       gates:[
         { day:'Monday',   task:'Workout + all 3 quests + challenge + 7-day active streak. Face yourself fully.',   check: p => ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=7 },
@@ -3854,6 +3919,10 @@
       boss:'THE ETERNAL HUNTER', quote:'"There is no finish line. There is only the next gate."',
       taunt_free:'"The final gate is not for observers. Only the worthy enter."',
       taunt_plus:'"You have made it further than most. Now comes the part where they all quit."',
+      taunts_plus_extra:[
+        '"The ones who quit always say it was the last gate that broke them. It was never the gate."',
+        '"There is no version of this where you arrive. There is only the version where you keep going."',
+      ],
       img:'bosses/eternal-hunter.jpg',
       gates:[
         { day:'Monday',   task:'Full workout + all quests + challenge + 7-day active streak. The hunt opens fully.',  check: p => ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && (p.streak||0)>=7 },
@@ -4019,7 +4088,8 @@
           if (entries[0].isIntersecting) {
             o.disconnect();
             sessionStorage.setItem(voiceKey, '1');
-            setTimeout(() => SystemVoice.speakBoss(dungeon.taunt_plus), 400);
+            const _pool = [dungeon.taunt_plus, ...(dungeon.taunts_plus_extra || [])];
+            setTimeout(() => SystemVoice.speakBoss(_pool[Math.floor(Math.random() * _pool.length)]), 400);
           }
         }, { threshold: 0.5 });
         obs.observe(el);
@@ -4031,7 +4101,8 @@
     if (bossVoiceBtn) {
       bossVoiceBtn.addEventListener('click', () => {
         if (!('speechSynthesis' in window)) return;
-        const text = (plus ? dungeon.taunt_plus : dungeon.taunt_free).replace(/^"|"$/g, '');
+        const _pool = plus ? [dungeon.taunt_plus, ...(dungeon.taunts_plus_extra || [])] : [dungeon.taunt_free];
+        const text = _pool[Math.floor(Math.random() * _pool.length)].replace(/^"|"$/g, '');
         window.speechSynthesis.cancel();
         const utt = new SpeechSynthesisUtterance(text);
         utt.rate = 0.86; utt.pitch = 0.6; utt.volume = 1.0;
@@ -4352,9 +4423,26 @@
   function renderPremiumHypeCard() {
     const el = document.getElementById('premium-hype-card');
     if (!el) return;
-    if (isWeebjiPlus()) { el.innerHTML = ''; document.getElementById('trial-urgency-bar').style.display='none'; return; }
-    // Trial urgency bar
     const tBar = document.getElementById('trial-urgency-bar');
+    const realPremium = SupabaseSync.isPremium();
+    const s5Left = streak5TrialDaysLeft();
+    if (realPremium) { el.innerHTML = ''; if (tBar) tBar.style.display = 'none'; return; }
+    // Free WEEBJI+ trial (5-day streak reward) — show its own urgency bar, no upsell card
+    if (s5Left > 0) {
+      el.innerHTML = '';
+      if (tBar) {
+        if (s5Left <= 3) {
+          tBar.style.display = '';
+          tBar.innerHTML = `<div class="trial-urgency-bar" onclick="showPlusSheet()">
+            <div class="trial-urgency-bar__icon">🎁</div>
+            <div class="trial-urgency-bar__text">Your free WEEBJI+ trial ends in <strong>${s5Left} day${s5Left===1?'':'s'}</strong>. Subscribe to keep everything.</div>
+            <div class="trial-urgency-bar__cta">Lock it in →</div>
+          </div>`;
+        } else { tBar.style.display = 'none'; }
+      }
+      return;
+    }
+    // Trial urgency bar
     if (tBar && isInVoiceTrial()) {
       const dLeft = voiceTrialDaysLeft();
       if (dLeft <= 3) {
@@ -4373,6 +4461,7 @@
       { icon: '◈', title: 'Prestige System', desc: 'Hit Level 100 and reset — harder. Each prestige earns a ◈ badge. Free hunters stay capped.' },
       { icon: '🗣', title: 'System Voice', desc: 'The System speaks your name. Knows your streak, your class, your enemy. Personal. Unsettling. Effective.' },
       { icon: '👻', title: '5 Ghost Tokens/month', desc: 'One missed day can erase months of progress. Free tier gets 1 token. Plus hunters get 5, refreshed every month.' },
+      { icon: '⚔', title: 'Friend Battles', desc: 'Challenge any rival to a 7-day XP war. Winner takes the title — and the bragging rights.' },
       { icon: '📊', title: 'Deep Analytics', desc: '90-day streak heatmap. See your arc. Know when you peak and when you fall.' },
       { icon: '🏰', title: 'Guild Creation', desc: 'Build your own faction. Lead a squad. Free hunters can join — only Plus can lead.' },
     ];
@@ -4596,6 +4685,7 @@
       if (modeLbl) modeLbl.textContent = modeLabel || 'Session Active';
       overlay.classList.add('active');
       Sound.play('tap');
+      syncClock();
     }
 
     function exit() {
@@ -4609,6 +4699,11 @@
     function syncTimer(timeStr) {
       const el = document.getElementById('void-timer');
       if (el) el.textContent = timeStr;
+    }
+
+    function syncClock() {
+      const el = document.getElementById('void-clock');
+      if (el) el.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
     function recordLeave() { _leftAt = Date.now(); }
@@ -4639,7 +4734,7 @@
 
     function isActive() { return _active; }
 
-    return { enter, exit, syncTimer, onBreach, recordLeave, cancelPendingBreach, isActive };
+    return { enter, exit, syncTimer, syncClock, onBreach, recordLeave, cancelPendingBreach, isActive };
   })();
 
   // Tab visibility breach detection — 45s grace so quick notification checks never trigger penalty
@@ -6289,14 +6384,17 @@
       Sound.play('tap');
       if (_ftwRunning) {
         clearInterval(_ftwTimer); _ftwTimer = null; _ftwRunning = false;
+        WakeLock.release();
         startBtn.textContent = '▶ START'; display.classList.remove('running');
       } else {
         _ftwRunning = true; startBtn.textContent = '⏸ PAUSE'; display.classList.add('running');
+        WakeLock.request();
         _ftwTimer = setInterval(() => {
           _ftwRemain--;
           display.textContent = _fmtFtw(_ftwRemain);
           if (_ftwRemain <= 0) {
             clearInterval(_ftwTimer); _ftwTimer = null; _ftwRunning = false;
+            WakeLock.release();
             startBtn.textContent = '▶ START'; display.classList.remove('running');
             _ftwRemain = _ftwPreset; display.textContent = _fmtFtw(_ftwPreset);
             if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
@@ -6308,6 +6406,7 @@
     wrap.querySelector('#ftw-reset').addEventListener('click', () => {
       Sound.play('tap');
       if (_ftwTimer) { clearInterval(_ftwTimer); _ftwTimer = null; }
+      WakeLock.release();
       _ftwRunning = false; _ftwRemain = _ftwPreset;
       display.textContent = _fmtFtw(_ftwPreset); display.classList.remove('running');
       startBtn.textContent = '▶ START';
@@ -6604,6 +6703,59 @@
     if (leveled) triggerLevelUp(p.level);
   }
 
+  /* ══ SCREEN WAKE LOCK — keep display on during active sessions ══ */
+  const WakeLock = (() => {
+    let _lock = null, _active = false, _fbVideo = null;
+    // Fallback: silent looping 1px video stream — the same trick music/video apps
+    // use to keep the screen on. Works in Android WebViews where navigator.wakeLock
+    // is missing or silently rejects (a known TWA gap).
+    function _videoFallback() {
+      if (_fbVideo) return;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1; canvas.height = 1;
+        canvas.getContext('2d').fillRect(0, 0, 1, 1);
+        const stream = canvas.captureStream(1);
+        const v = document.createElement('video');
+        v.muted = true; v.loop = true;
+        v.setAttribute('playsinline', '');
+        v.srcObject = stream;
+        v.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;';
+        document.body.appendChild(v);
+        v.play().catch(() => {});
+        _fbVideo = v;
+      } catch {}
+    }
+    function _stopFallback() {
+      if (!_fbVideo) return;
+      _fbVideo.pause();
+      (_fbVideo.srcObject?.getTracks() || []).forEach(t => t.stop());
+      _fbVideo.remove();
+      _fbVideo = null;
+    }
+    async function _acquire() {
+      // Always run the video fallback alongside the real API — on some Android
+      // WebViews/TWAs navigator.wakeLock resolves successfully but silently
+      // does nothing, so the screen sleeps anyway. Belt-and-suspenders.
+      _videoFallback();
+      if (_lock || !('wakeLock' in navigator)) return;
+      try {
+        _lock = await navigator.wakeLock.request('screen');
+        _lock.addEventListener('release', () => { _lock = null; });
+      } catch { _lock = null; }
+    }
+    function request() { _active = true; _acquire(); }
+    function release() {
+      _active = false;
+      if (_lock) { _lock.release().catch(() => {}); _lock = null; }
+      _stopFallback();
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (_active && document.visibilityState === 'visible') _acquire();
+    });
+    return { request, release };
+  })();
+
   /* ══ MASTERMIND — POMODORO ENGINE ═══════════ */
   const Pomo = {
     interval : null,
@@ -6646,6 +6798,7 @@
       this.running = true;
       this.interval = setInterval(() => this.tick(), 1000);
       this.render();
+      WakeLock.request();
       Sound.play('check');
       MusicEngine.play('mastermind');
       if (typeof TheVoid !== 'undefined') {
@@ -6658,6 +6811,7 @@
       this.running = false;
       clearInterval(this.interval); this.interval = null;
       this.render();
+      WakeLock.release();
       MusicEngine.play('ambient');
       if (typeof TheVoid !== 'undefined') TheVoid.exit();
     },
@@ -6666,6 +6820,7 @@
       this.running = false;
       clearInterval(this.interval); this.interval = null;
       this.remaining = MM_MODES[this.mode].mins * 60;
+      WakeLock.release();
       this.render();
       MusicEngine.play('ambient');
       if (typeof TheVoid !== 'undefined') TheVoid.exit();
@@ -6678,7 +6833,7 @@
       if (primTimer) primTimer.textContent = t;
       const secTimer = document.getElementById('mm-timer-sec');
       if (secTimer) secTimer.textContent = t;
-      if (typeof TheVoid !== 'undefined') TheVoid.syncTimer(t);
+      if (typeof TheVoid !== 'undefined') { TheVoid.syncTimer(t); TheVoid.syncClock(); }
       if (this.remaining <= 0) this.complete();
     },
 
@@ -6686,6 +6841,7 @@
       this.running = false;
       clearInterval(this.interval); this.interval = null;
       this.remaining = 0;
+      WakeLock.release();
       if (typeof TheVoid !== 'undefined') TheVoid.exit();
       MusicEngine.play('ambient');
       Sound.play('levelup');
@@ -6907,6 +7063,7 @@
       _running = true;
       _interval = setInterval(_tick, 1000);
       _syncUI();
+      WakeLock.request();
       Sound.play('tap');
       MusicEngine.play('sanctuary');
       // Announce first phase immediately — always free, no premium gate
@@ -6916,6 +7073,7 @@
     function _pause() {
       _running = false;
       clearInterval(_interval);
+      WakeLock.release();
       _syncUI();
       MusicEngine.play('ambient');
     }
@@ -6941,6 +7099,7 @@
     function _onComplete() {
       _running = false;
       clearInterval(_interval);
+      WakeLock.release();
       const cfg = SANCTUARY_MODES[_mode];
       const p = loadProgress();
       p.xp += cfg.xp;
@@ -8214,6 +8373,7 @@
           Sound.play('milestone');
           WeebjPush.local('streak5_trial', '◆ 7 DAYS OF WEEBJI+ UNLOCKED', '5-day streak achieved. Full access granted for 7 days. The System rewards the disciplined.');
           renderPremiumHypeCard();
+          if (typeof SupabaseSync !== 'undefined') SupabaseSync.pushProgress().catch(()=>{});
         }, 600);
       }
     }
@@ -11903,6 +12063,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           playerName: localStorage.getItem('weebji_name') || null,
           playerClass: localStorage.getItem('weebji_class') || null,
           playerColor: localStorage.getItem('weebji_color') || null,
+          streak5TrialStart: localStorage.getItem('weebji_streak5_trial_start') || null,
         };
         // Build leaderboard payload
         const hunterNum = localStorage.getItem('weebji_hunter_num');

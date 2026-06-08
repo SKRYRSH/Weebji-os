@@ -57,7 +57,7 @@
   /* ══ APP SHELL ══════════════════════════════ */
   #app {
     width: 100%; max-width: 390px;
-    height: 100vh; height: 100dvh;
+    height: 100%;
     margin: 0 auto; background: #07090F;
     position: relative; overflow: hidden;
   }
@@ -4008,10 +4008,10 @@
         const text = (plus ? dungeon.taunt_plus : dungeon.taunt_free).replace(/^"|"$/g, '');
         window.speechSynthesis.cancel();
         const utt = new SpeechSynthesisUtterance(text);
-        utt.rate = 0.86; utt.pitch = 0.78; utt.volume = 1.0;
+        utt.rate = 0.86; utt.pitch = 0.6; utt.volume = 1.0;
         const voices = window.speechSynthesis.getVoices();
         const _isMale = v => /male/i.test(v.name) || /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed/i.test(v.name);
-        const _isQuality = v => /natural|neural|online|enhanced|premium/i.test(v.name);
+        const _isQuality = v => /natural|neural|enhanced|premium/i.test(v.name);
         const male = voices.find(v => _isQuality(v) && _isMale(v))
           || voices.find(v => _isMale(v))
           || voices.find(v => v.lang.startsWith('en') && !/female|zira|samantha|karen|victoria|fiona|moira|tessa|veena/i.test(v.name));
@@ -11283,14 +11283,15 @@ ${particles}
 
       const utt = new SpeechSynthesisUtterance(text);
       utt.rate   = 0.86;
-      utt.pitch  = 0.78;
+      utt.pitch  = 0.6;
       utt.volume = 1.0;
 
-      // Prefer high-quality Natural/Neural/Online engines (Chrome/Edge expose these —
-      // they sound far less robotic than legacy SAPI voices), then fall back to any male voice.
+      // Prefer high-quality Natural/Neural/Enhanced engines (on-device, low-latency —
+      // "Online" voices stream over network and stutter/glitch on mobile connections),
+      // then fall back to any male voice.
       const voices = window.speechSynthesis.getVoices();
       const _isMale = v => /male/i.test(v.name) || /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed|rock/i.test(v.name);
-      const _isQuality = v => /natural|neural|online|enhanced|premium/i.test(v.name);
+      const _isQuality = v => /natural|neural|enhanced|premium/i.test(v.name);
       const male = voices.find(v => _isQuality(v) && _isMale(v))
         || voices.find(v => _isMale(v))
         || voices.find(v => v.lang.startsWith('en') && !/female|zira|samantha|karen|victoria|fiona|moira|tessa|veena/i.test(v.name));

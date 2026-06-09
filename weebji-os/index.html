@@ -3016,7 +3016,7 @@
         : 0;
 
       // Yesterday's completion: check all class activity types
-      const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length;
+      const yesterdayDone = p.workoutChecked.length + p.questsChecked.length + p.monkChecked.length + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length + (p.workoutBonus ? 1 : 0);
       // Guard: only use yesterdayCount as fallback if it was saved for this same lastDate.
       // Using a stale count (from two days ago) would silently skip streak loss.
       const effectiveYesterdayDone = (p.yesterdayCountDate === p.lastDate)
@@ -12235,7 +12235,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
         // device). Cancel the false loss and restore the server streak.
         if (p.streakLostToday && (data.streak || 0) > 0 && data.data?.lastDate) {
           const _yest = new Date(); _yest.setDate(_yest.getDate() - 1);
-          const _yStr = _yest.toISOString().slice(0, 10);
+          const _yStr = _yest.toDateString();
           if (data.data.lastDate === _yStr) {
             p.streak = data.streak;
             p.streakLostToday = false;

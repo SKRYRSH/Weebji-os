@@ -1045,6 +1045,33 @@
   @keyframes kf-god-ray { 0% { opacity: 0; background: conic-gradient(from 270deg at 50% -5%, transparent 42%, rgba(var(--ray-rgb),0.14) 50%, transparent 58%); } 20% { opacity: 1; } 65% { opacity: 0.7; } 100% { opacity: 0; background: conic-gradient(from 270deg at 50% -5%, transparent 44%, rgba(var(--ray-rgb),0.04) 50%, transparent 56%); } }
   @media (prefers-reduced-motion: reduce) { .identity-ray.fire { display: none; } }
 
+  /* ══ CONTRACT SCREEN ═══════════════════════ */
+  #contract-screen { position:fixed; inset:0; z-index:960; background:#07090F; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 28px 40px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; }
+  #contract-screen.csc-visible { opacity:1; pointer-events:all; }
+  #contract-screen.csc-exit { opacity:0; pointer-events:none; }
+  .csc__glow { position:absolute; top:42%; left:50%; transform:translate(-50%,-50%); width:300px; height:300px; border-radius:50%; background:radial-gradient(circle,var(--cc,#00F5FF) 0%,transparent 70%); opacity:0; filter:blur(72px); animation:kf-csc-glow 3.5s 0.6s ease-in-out infinite alternate; }
+  @keyframes kf-csc-glow { from{opacity:0.05} to{opacity:0.15} }
+  .csc__tx { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.32em; color:var(--cc,#00F5FF); margin:0 0 22px; text-align:center; opacity:0; text-transform:uppercase; }
+  .csc__title { font-family:'Cinzel',serif; font-size:clamp(17px,4.5vw,26px); letter-spacing:0.2em; color:#fff; text-align:center; margin:0 0 22px; line-height:1.25; opacity:0; }
+  .csc__rule { height:1px; background:var(--cc,#00F5FF); opacity:0; margin:0 auto 32px; width:0; }
+  .csc__body { font-family:'Inter',sans-serif; font-size:13.5px; line-height:1.9; color:rgba(255,255,255,0.55); text-align:center; max-width:315px; margin:0 0 44px; }
+  .csc__body p { margin:0 0 10px; opacity:0; }
+  .csc__body p.csc-punch { color:var(--cc,#00F5FF); opacity:0; font-weight:500; }
+  .csc__cta { font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.22em; color:var(--cc,#00F5FF); background:transparent; border:1px solid var(--cc,#00F5FF); padding:14px 32px; cursor:pointer; opacity:0; transition:background 0.2s; }
+  .csc__cta:active { background:rgba(255,255,255,0.06); }
+  .csc__cta.csc-pulse { animation:kf-csc-cta 2.2s ease-in-out infinite; }
+  @keyframes kf-csc-cta { 0%,100%{box-shadow:0 0 0 transparent} 50%{box-shadow:0 0 18px var(--cc,#00F5FF)} }
+  @keyframes kf-csc-up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes kf-csc-rule { to{width:52px;opacity:0.45} }
+  #contract-screen.csc-visible .csc__tx    { animation:kf-csc-up 0.55s 0.2s  ease both; }
+  #contract-screen.csc-visible .csc__title { animation:kf-csc-up 0.55s 0.6s  ease both; }
+  #contract-screen.csc-visible .csc__rule  { animation:kf-csc-rule 0.45s 0.95s ease both; }
+  #contract-screen.csc-visible .csc__body p:nth-child(1) { animation:kf-csc-up 0.5s 1.2s  ease both; }
+  #contract-screen.csc-visible .csc__body p:nth-child(2) { animation:kf-csc-up 0.5s 1.65s ease both; }
+  #contract-screen.csc-visible .csc__body p:nth-child(3) { animation:kf-csc-up 0.5s 2.1s  ease both; }
+  #contract-screen.csc-visible .csc__body p:nth-child(4) { animation:kf-csc-up 0.5s 2.55s ease both; }
+  #contract-screen.csc-visible .csc__cta   { animation:kf-csc-up 0.5s 3.0s  ease both; }
+
   /* ══ CINEMATIC ENGINE — STREAK MILESTONE ════ */
   #streak-milestone { position: absolute; inset: 0; z-index: 810; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; opacity: 0; }
   #streak-milestone.active { animation: kf-smilestone 0.5s cubic-bezier(0.16,1,0.3,1) forwards; pointer-events: all; opacity:1; }
@@ -1712,6 +1739,16 @@
         <div class="identity__line" id="id-line-4"><p class="identity__tagline">Your future self sent this. Don't let them down.</p></div>
         <div class="identity__line" id="id-line-5"><p class="identity__manifest" id="id-manifest-text"></p></div>
       </div>
+    </div>
+
+    <!-- ══ CONTRACT SCREEN ══════════════════════ -->
+    <div id="contract-screen">
+      <div class="csc__glow"></div>
+      <p class="csc__tx">— Transmission Received —</p>
+      <h2 class="csc__title" id="csc-title"></h2>
+      <div class="csc__rule"></div>
+      <div class="csc__body" id="csc-body"></div>
+      <button class="csc__cta" id="csc-cta-btn" onclick="acceptContract()"></button>
     </div>
 
     <!-- ══ S04B: SIGN-IN GATE ══════════════════ -->
@@ -5673,6 +5710,76 @@
     enterDashboard();
   }
 
+  /* ══ FLOW: CONTRACT SCREEN ════════════════════════════════════════ */
+  const CONTRACT_DATA = {
+    monarch: {
+      title: 'THE FORGE CONTRACT',
+      lines: [
+        'You have entered the Forge.',
+        'This is not a fitness app. This is a trial by fire.',
+        'Every session either sharpens you — or proves you were never serious. Your HP drops when you miss. Your streak dies when you stop. The System records everything and forgets nothing.',
+        'There are no excuses inside these walls. Only the work.'
+      ],
+      cta: 'FORGE THE CONTRACT',
+      voice: 'You have entered the Forge. This is not a fitness app. This is a trial by fire. Every session either sharpens you — or proves you were never serious. The System records everything, and forgets nothing. There are no excuses inside these walls. Only the work.'
+    },
+    mastermind: {
+      title: 'THE MIND CONTRACT',
+      lines: [
+        'You have entered the Architecture.',
+        'This is not a productivity tool. This is a discipline engine.',
+        'The mind that trains without mercy becomes unstoppable. The one that negotiates with distraction becomes noise. The System will demand your focus daily — without sympathy, without shortcuts.',
+        'Pay it in full — or be forgotten.'
+      ],
+      cta: 'SEAL THE CONTRACT',
+      voice: 'You have entered the Architecture. This is not a productivity tool. This is a discipline engine. The mind that trains without mercy becomes unstoppable. The System will demand your focus daily — without sympathy, without shortcuts. Pay it in full — or be forgotten.'
+    },
+    monk: {
+      title: 'THE SILENT VOW',
+      lines: [
+        'You have entered the Silence.',
+        'This is not a routine tracker. This is a vow.',
+        'The Monk does not announce. Does not perform. Does not negotiate with weakness. The System watches without sound — recording every ritual completed, every one abandoned.',
+        'Consistency is the only language it speaks. Speak it — or say nothing forever.'
+      ],
+      cta: 'TAKE THE VOW',
+      voice: 'You have entered the Silence. This is not a routine tracker. This is a vow. The Monk does not announce. Does not negotiate with weakness. The System watches without sound — recording every ritual completed, every one abandoned. Consistency is the only language it speaks. Speak it — or say nothing forever.'
+    }
+  };
+
+  function showContractScreen(onAccept) {
+    const cls   = localStorage.getItem('weebji_class') || 'monarch';
+    const d     = CONTRACT_DATA[cls] || CONTRACT_DATA.monarch;
+    const color = localStorage.getItem('weebji_color') || '#00F5FF';
+    const scr   = document.getElementById('contract-screen');
+    document.getElementById('csc-title').textContent = d.title;
+    document.getElementById('csc-body').innerHTML =
+      d.lines.map((l, i) => `<p${i === d.lines.length - 1 ? ' class="csc-punch"' : ''}>${l}</p>`).join('');
+    document.getElementById('csc-cta-btn').textContent = d.cta;
+    scr.style.setProperty('--cc', color);
+    window._contractCallback = onAccept;
+    requestAnimationFrame(() => {
+      scr.classList.add('csc-visible');
+      setTimeout(() => { if (typeof SystemVoice !== 'undefined') SystemVoice.speakContractOnce(d.voice); }, 1100);
+      setTimeout(() => { const b = document.getElementById('csc-cta-btn'); if (b) b.classList.add('csc-pulse'); }, 3500);
+    });
+  }
+
+  function acceptContract() {
+    localStorage.setItem('weebji_contract_accepted', '1');
+    localStorage.removeItem('weebji_pending_contract');
+    window._contractJustAccepted = true;
+    const scr = document.getElementById('contract-screen');
+    scr.classList.add('csc-exit');
+    setTimeout(() => {
+      scr.classList.remove('csc-visible', 'csc-exit');
+      if (typeof window._contractCallback === 'function') {
+        window._contractCallback();
+        window._contractCallback = null;
+      }
+    }, 650);
+  }
+
   /* ══ TOUR GUIDE ══════════════════════════════════ */
   const Tour = (() => {
     let _idx = 0;
@@ -5831,13 +5938,24 @@
     if (noAccount && !window._gateSkippedThisSession) {
       const launches = parseInt(localStorage.getItem('weebji_launch_count') || '0') + 1;
       localStorage.setItem('weebji_launch_count', String(launches));
-      if (fromOnboarding) { showSignInGate(false); return; }
-      if (launches >= 3)  { showSignInGate(true);  return; }
+      if (fromOnboarding) {
+        localStorage.setItem('weebji_pending_contract', '1');
+        showSignInGate(false);
+        return;
+      }
+      if (launches >= 3) { showSignInGate(true); return; }
     }
+    if (localStorage.getItem('weebji_pending_contract') && SupabaseSync.getUser()) {
+      showContractScreen(() => _launchDashboard(fromOnboarding));
+      return;
+    }
+    _launchDashboard(fromOnboarding);
+  }
+
+  function _launchDashboard(fromOnboarding = false) {
     showScreen('dashboard');
     Sound.play('appOpen');
     if (typeof posthog !== 'undefined') posthog.capture('dashboard_opened', { from_onboarding: fromOnboarding, class: localStorage.getItem('weebji_class') });
-    // Pull cloud data immediately if signed in — re-render class cards once resolved
     if (typeof SupabaseSync !== 'undefined' && SupabaseSync.getUser()) {
       SupabaseSync.pullProgress().then(() => {
         const _p   = loadProgress();
@@ -5850,11 +5968,8 @@
       }).catch(() => {});
     }
     initDashboard();
-    // Phase 5: System Voice greeting (slight delay so dashboard is visible)
-    // First-ever session: force a personalized one-time line through the gate
-    // (most free users never otherwise hear System Voice before day 5)
-    setTimeout(() => { if (!SystemVoice.firstContact()) SystemVoice.greet(); }, 900);
-    // Check ghost intervention + notification prompt after a short delay
+    // On contract-accept sessions, voice fires from speakContractOnce.onend instead of here.
+    setTimeout(() => { if (!window._contractJustAccepted && !SystemVoice.firstContact()) SystemVoice.greet(); }, 900);
     setTimeout(() => {
       const p = loadProgress();
       checkPenanceOnBoot();
@@ -5864,16 +5979,12 @@
       RitualClock.check();
       maybeShowSignInNudge();
       maybeShowRatingPrompt();
-      // Handle shortcut action (?action=profile from manifest shortcuts)
       if (window._shortcutAction === 'profile') {
         window._shortcutAction = null;
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'profile'));
         showScreen('profile');
         renderProfile();
       }
-      // First-time feature tour — fires once for new users and existing users who haven't seen it.
-      // Skip here if the mission briefing overlay is about to cover the screen — its "Begin"
-      // button kicks off the tour instead, so they never race each other.
       if (!localStorage.getItem('weebji_tour_done') && localStorage.getItem('weebji_mission_done')) {
         setTimeout(() => Tour.start(), 1400);
       }
@@ -11625,11 +11736,38 @@ ${particles}
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
 
+    function speakContractOnce(text) {
+      if (!isEnabled()) return;
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.rate   = 0.84;
+      utt.pitch  = 0.62;
+      utt.volume = 0.95;
+      const voices = window.speechSynthesis.getVoices();
+      const _isMale    = v => /male/i.test(v.name) || /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed|rock/i.test(v.name);
+      const _isQuality = v => /natural|neural|enhanced|premium/i.test(v.name);
+      const male = voices.find(v => _isQuality(v) && _isMale(v))
+        || voices.find(v => _isMale(v))
+        || voices.find(v => v.lang.startsWith('en') && !/female|zira|samantha|karen|victoria|fiona|moira|tessa|veena/i.test(v.name));
+      if (male) utt.voice = male;
+      const ind = document.getElementById('voice-indicator');
+      if (ind) { ind.style.setProperty('--vd-color', '#FFFFFF'); ind.classList.add('speaking'); }
+      utt.onend = () => {
+        if (ind) ind.classList.remove('speaking');
+        if (window._contractJustAccepted && !localStorage.getItem('weebji_voice_first_contact_done')) {
+          window._contractJustAccepted = false;
+          setTimeout(() => firstContact(), 700);
+        }
+      };
+      window.speechSynthesis.speak(utt);
+    }
+
     // v208: `say` and `speakBoss` were called from many places but never exported —
     // 66+ js_errors in 7 days. `say` is just a thin alias for `speak` (one-liner
     // System lines). `speakBoss` was defined inside this IIFE but not surfaced.
     const say = (text) => speak(text, 0);
-    return { isEnabled, toggle, speak, say, speakBoss, greet, firstContact, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
+    return { isEnabled, toggle, speak, say, speakBoss, speakContractOnce, greet, firstContact, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
   })();
 
   /* ══ PHASE 5 — DASHBOARD EVOLUTION ═══════════ */

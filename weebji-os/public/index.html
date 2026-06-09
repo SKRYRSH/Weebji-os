@@ -9550,6 +9550,8 @@
         });
       }
       rows.sort((a, b) => (b.streak||0)-(a.streak||0) || (b.best_streak||0)-(a.best_streak||0) || (b.level||0)-(a.level||0));
+      const filteredRows = rows.filter(r => (r.streak || 0) > 0);
+      rows.splice(0, rows.length, ...filteredRows);
       rows.splice(20);
     }
 

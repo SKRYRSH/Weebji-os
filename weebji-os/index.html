@@ -1016,6 +1016,20 @@
   .mb__btn { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; background: transparent; border: 1px solid var(--mb-color, #00F5FF); border-radius: 12px; color: var(--mb-color, #00F5FF); padding: 14px 32px; cursor: pointer; transition: background 0.2s, box-shadow 0.2s, transform 0.15s; -webkit-tap-highlight-color: transparent; }
   .mb__btn:hover { box-shadow: 0 0 10px var(--mb-glow, rgba(0,245,255,0.4)), 0 0 28px var(--mb-glow, rgba(0,245,255,0.2)); transform: translateY(-1px); }
   .mb__btn:active { background: rgba(255,255,255,0.05); transform: scale(0.97); }
+  /* First Directive — live countdown ring */
+  .mb__stage2 { display: none; }
+  #mission-briefing.directive-live .mb__stage1 { display: none; }
+  #mission-briefing.directive-live .mb__stage2 { display: block; }
+  .fd-ring-wrap { position: relative; width: 180px; height: 180px; margin: 0 auto 26px; }
+  .fd-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .fd-ring-bg { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 4; }
+  .fd-ring-fg { fill: none; stroke: var(--mb-color, #00F5FF); stroke-width: 4; stroke-linecap: round; filter: drop-shadow(0 0 8px var(--mb-glow, rgba(0,245,255,0.5))); transition: stroke-dashoffset 1s linear; }
+  .fd-ring-count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 46px; color: #fff; text-shadow: 0 0 24px var(--mb-glow, rgba(0,245,255,0.5)); }
+  .fd-pulse { animation: kf-fd-pulse 2.4s ease-in-out infinite; }
+  @keyframes kf-fd-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+  .fd-instruction { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.85); min-height: 20px; margin: 0 0 10px; }
+  .fd-sub { font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.4); margin: 0; }
+  @media (prefers-reduced-motion: reduce) { .fd-pulse { animation: none; } .fd-ring-fg { transition: none; } }
   #arc-card-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.94); z-index: 920; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px 20px; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
   #arc-card-overlay.active { opacity: 1; pointer-events: all; }
   .arc-card-wrap { width: 100%; max-width: 320px; border-radius: 20px; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06); flex-shrink: 0; }
@@ -2114,12 +2128,23 @@
     <!-- Mission Briefing overlay (first-time onboarding) -->
     <div id="mission-briefing">
       <div class="mb__inner">
-        <p class="mb__eyebrow">DAY 1 — MISSION BRIEFING</p>
-        <h2 class="mb__title" id="mb-title">FIRST MISSION</h2>
-        <div class="mb__rule" id="mb-rule"></div>
-        <p class="mb__body" id="mb-body"></p>
-        <p class="mb__target" id="mb-target"></p>
-        <button class="mb__btn" id="mb-begin-btn">BEGIN MISSION →</button>
+        <div class="mb__stage1">
+          <p class="mb__eyebrow">SYSTEM DIRECTIVE — DAY 1</p>
+          <h2 class="mb__title" id="mb-title">FIRST MISSION</h2>
+          <div class="mb__rule" id="mb-rule"></div>
+          <p class="mb__body" id="mb-body"></p>
+          <p class="mb__target" id="mb-target"></p>
+          <button class="mb__btn" id="mb-begin-btn">ACCEPT DIRECTIVE →</button>
+        </div>
+        <div class="mb__stage2">
+          <p class="mb__eyebrow">DIRECTIVE ACTIVE</p>
+          <div class="fd-ring-wrap fd-pulse">
+            <svg viewBox="0 0 180 180"><circle class="fd-ring-bg" cx="90" cy="90" r="84"/><circle class="fd-ring-fg" id="fd-ring-fg" cx="90" cy="90" r="84"/></svg>
+            <div class="fd-ring-count" id="fd-count">30</div>
+          </div>
+          <p class="fd-instruction" id="fd-instruction"></p>
+          <p class="fd-sub" id="fd-sub">The System is watching.</p>
+        </div>
       </div>
     </div>
 
@@ -6101,7 +6126,9 @@
 
     // Day-1 Welcome Card — only for true first-timers
     renderWelcomeCard(p, cls);
-    // Mission Briefing — fullscreen overlay on very first dashboard visit
+    // Next Directive card — day-1 return hook after the First Directive
+    renderNextDirectiveCard(p, cls);
+    // First Directive — fullscreen overlay on very first dashboard visit
     if (!localStorage.getItem('weebji_mission_done')) setTimeout(() => showMissionBriefing(cls, color), 1200);
     // YouTube Notice Board removed — CORS proxy was fragile
   }
@@ -6174,12 +6201,12 @@
     if (localStorage.getItem('weebji_mission_done')) return;
     const overlay = document.getElementById('mission-briefing');
     if (!overlay) return;
-    const missions = {
-      monarch:    { title: 'FORGE YOUR BODY',    body: 'Your first mission is physical. Complete one workout today — anything counts. The body is the weapon. Pick it up.', target: 'TARGET: THE FORGE' },
-      mastermind: { title: 'EXPAND YOUR INTELLECT', body: 'Your first mission is knowledge. Start a 25-minute deep work session — study, build, or learn. Intelligence is the sharpest weapon. Sharpen it.', target: 'TARGET: MIND FORGE' },
-      monk:       { title: 'CONTROL YOUR MIND',     body: 'Your first mission is mastery of self. Complete today\'s ritual — meditation, breathwork, or stillness. The mind is the battlefield. Tame it.', target: 'TARGET: SANCTUARY' },
+    const directives = {
+      monarch:    { title: 'PROVE YOU EXIST',     body: 'Thirty seconds. Pushups, squats, or a plank — move until the ring closes. The System does not accept words. It accepts motion.', target: 'DIRECTIVE: 30 SECONDS OF MOTION', live: 'MOVE. DO NOT STOP.' },
+      mastermind: { title: 'CLAIM YOUR TARGET',   body: 'Thirty seconds. Eyes on the ring. Hold the one thing you intend to build in your mind. Nothing else enters.', target: 'DIRECTIVE: 30 SECONDS OF FOCUS', live: 'HOLD THE TARGET.' },
+      monk:       { title: 'COMMAND YOUR BREATH', body: 'Thirty seconds. Breathe with the ring. In through the nose. Out slow. The mind follows the breath.', target: 'DIRECTIVE: 30 SECONDS OF BREATH', live: 'BREATHE IN' },
     };
-    const m = missions[cls] || missions.monarch;
+    const m = directives[cls] || directives.monarch;
     const rgb = `${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)}`;
     overlay.style.setProperty('--mb-color', color);
     overlay.style.setProperty('--mb-glow', `rgba(${rgb},0.5)`);
@@ -6188,16 +6215,94 @@
     document.getElementById('mb-target').textContent = m.target;
     overlay.classList.add('active');
     document.getElementById('mb-begin-btn').onclick = () => {
-      localStorage.setItem('weebji_mission_done', '1');
-      overlay.classList.remove('active');
-      if (typeof posthog !== 'undefined') posthog.capture('onboarding_completed', { class: cls });
+      // Funnel event fires here so onboarding_completed stays comparable to pre-directive data
+      if (typeof posthog !== 'undefined' && !localStorage.getItem('weebji_onb_evt_sent')) {
+        localStorage.setItem('weebji_onb_evt_sent', '1');
+        posthog.capture('onboarding_completed', { class: cls });
+      }
       Sound.play('tap');
-      // Mission briefing was covering the screen — start the tour now that it's gone
-      if (!localStorage.getItem('weebji_tour_done')) setTimeout(() => Tour.start(), 500);
+      startFirstDirective(cls, m, overlay);
     };
   }
 
+  function startFirstDirective(cls, m, overlay) {
+    overlay.classList.add('directive-live');
+    const TOTAL = 30;
+    const C = 2 * Math.PI * 84;
+    const fg = document.getElementById('fd-ring-fg');
+    fg.style.strokeDasharray  = C;
+    fg.style.strokeDashoffset = 0;
+    const countEl = document.getElementById('fd-count');
+    const instrEl = document.getElementById('fd-instruction');
+    countEl.textContent = TOTAL;
+    instrEl.textContent = m.live;
+    let left = TOTAL;
+    const tick = setInterval(() => {
+      // Overlay killed externally (e.g. sign-out) — stop cleanly
+      if (!overlay.classList.contains('active')) { clearInterval(tick); overlay.classList.remove('directive-live'); return; }
+      left -= 1;
+      if (left < 0) { clearInterval(tick); finishFirstDirective(cls, overlay); return; }
+      countEl.textContent = left;
+      fg.style.strokeDashoffset = C * (1 - left / TOTAL);
+      if (cls === 'monk') instrEl.textContent = (Math.floor((TOTAL - left) / 5) % 2 === 0) ? 'BREATHE IN' : 'BREATHE OUT';
+    }, 1000);
+  }
+
+  function finishFirstDirective(cls, overlay) {
+    localStorage.setItem('weebji_mission_done', '1');
+    localStorage.setItem('weebji_first_directive_done', '1');
+    // Day-1 hook: next directive unlocks at next local midnight
+    const mid = new Date(); mid.setHours(24, 0, 0, 0);
+    localStorage.setItem('weebji_next_directive_unlock', String(mid.getTime()));
+    if (!localStorage.getItem('weebji_first_action_done')) {
+      localStorage.setItem('weebji_first_action_done', '1');
+      if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: cls, via: 'first_directive' });
+    }
+    document.getElementById('fd-count').textContent = '✓';
+    document.getElementById('fd-instruction').textContent = 'DIRECTIVE COMPLETE';
+    document.getElementById('fd-sub').textContent = 'The System acknowledges you.';
+    Sound.play('check');
+    haptic([60, 40, 120]);
+    setTimeout(() => {
+      overlay.classList.remove('active');
+      setTimeout(() => overlay.classList.remove('directive-live'), 600);
+      document.getElementById('welcome-day1-card')?.remove();
+      // The first win: +100 XP → Level 2 → full cinematic
+      const p = loadProgress();
+      p.xp += 100;
+      const leveled = checkLevelUp(p);
+      saveProgress(p); updateXPBar(p); updateStats(p);
+      renderNextDirectiveCard(p, cls);
+      if (leveled) {
+        triggerLevelUp(p.level);
+        // Start the tour only after the level-up overlay is dismissed
+        if (!localStorage.getItem('weebji_tour_done')) {
+          const luEl = document.getElementById('levelup-overlay');
+          const startTour = () => {
+            if (luEl.classList.contains('active')) return;
+            luEl.removeEventListener('click', startTour);
+            setTimeout(() => Tour.start(), 400);
+          };
+          setTimeout(() => luEl.addEventListener('click', startTour), 1000);
+        }
+      } else if (!localStorage.getItem('weebji_tour_done')) {
+        setTimeout(() => Tour.start(), 500);
+      }
+    }, 1500);
+  }
+
   function markFirstActionDone() {
+    // A real pillar action clears the Next Directive lock card forever
+    if (localStorage.getItem('weebji_first_directive_done') && !localStorage.getItem('weebji_directive2_done')) {
+      localStorage.setItem('weebji_directive2_done', '1');
+      if (typeof posthog !== 'undefined') posthog.capture('next_directive_completed', { class: localStorage.getItem('weebji_class') });
+      const nd = document.getElementById('next-directive-card');
+      if (nd) {
+        nd.style.transition = 'opacity 0.4s ease';
+        nd.style.opacity = '0';
+        setTimeout(() => nd.remove(), 420);
+      }
+    }
     if (localStorage.getItem('weebji_first_action_done')) return;
     localStorage.setItem('weebji_first_action_done', '1');
     if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: localStorage.getItem('weebji_class') });
@@ -6206,6 +6311,93 @@
       card.style.transition = 'opacity 0.4s ease';
       card.style.opacity = '0';
       setTimeout(() => card.remove(), 420);
+    }
+  }
+
+  /* ── Next Directive Card (day-1 return hook) ── */
+  function renderNextDirectiveCard(p, cls) {
+    document.getElementById('next-directive-card')?.remove();
+    if (window._weebjiNDTimer) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; }
+    if (!localStorage.getItem('weebji_first_directive_done')) return;
+    if (localStorage.getItem('weebji_directive2_done')) return;
+    const unlock = parseInt(localStorage.getItem('weebji_next_directive_unlock') || '0');
+    if (!unlock) return;
+    const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+    const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
+    const card = document.createElement('div');
+    card.id = 'next-directive-card';
+    card.style.cssText = `
+      margin: 0 16px 16px;
+      padding: 18px 20px;
+      background: rgba(${r},${g},${b},0.04);
+      border: 1px solid rgba(${r},${g},${b},0.2);
+      border-radius: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 18px rgba(${r},${g},${b},0.06);
+    `;
+    const locked = Date.now() < unlock;
+    if (locked) {
+      card.innerHTML = `
+        <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">🔒 Next Directive — Sealed</p>
+        <p style="font-family:'Cinzel',serif;font-size:24px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);margin:0 0 10px" id="nd-count">--:--:--</p>
+        <p style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0">"Return when the seal breaks.<br>The System remembers who shows up."</p>
+      `;
+      const pad = n => String(n).padStart(2, '0');
+      const renderCount = () => {
+        const el = document.getElementById('nd-count');
+        if (!el) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; return; }
+        const ms = unlock - Date.now();
+        if (ms <= 0) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; renderNextDirectiveCard(loadProgress(), cls); return; }
+        const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+        el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+      };
+      renderCount();
+      window._weebjiNDTimer = setInterval(renderCount, 1000);
+    } else {
+      const missions = {
+        monarch:    'Complete one real workout in The Forge. Anything counts. Everything is recorded.',
+        mastermind: 'Run one 25-minute deep work session. Build, study, or learn — the System logs all of it.',
+        monk:       'Complete today\'s ritual — meditation, breathwork, or stillness. Prove the first time was not luck.',
+      };
+      card.innerHTML = `
+        <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">⚡ Directive Unlocked</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin:0 0 16px">"${missions[cls] || missions.monarch}"</p>
+        <button id="nd-go-btn" style="
+          font-family:'JetBrains Mono',monospace;
+          font-size:11px;
+          letter-spacing:0.2em;
+          text-transform:uppercase;
+          background:transparent;
+          border:1px solid rgba(${r},${g},${b},0.35);
+          border-radius:8px;
+          color:rgba(${r},${g},${b},1);
+          padding:10px 20px;
+          cursor:pointer;
+          -webkit-tap-highlight-color:transparent;
+          transition:border-color 0.2s,color 0.2s,box-shadow 0.2s;
+        ">View Target →</button>
+      `;
+      card.querySelector('#nd-go-btn').addEventListener('click', () => {
+        Sound.play('tap');
+        const forgeCard = document.getElementById('forge-card');
+        const dashScroll = document.querySelector('.dash-scroll');
+        if (forgeCard && dashScroll) dashScroll.scrollTo({ top: forgeCard.offsetTop, behavior: 'smooth' });
+        if (forgeCard) {
+          const prevBorder = forgeCard.style.borderColor;
+          forgeCard.style.borderColor = color;
+          setTimeout(() => { if (forgeCard) forgeCard.style.borderColor = prevBorder; }, 1200);
+        }
+      });
+    }
+    const forgeCard = document.getElementById('forge-card');
+    if (forgeCard && forgeCard.parentNode) {
+      forgeCard.parentNode.insertBefore(card, forgeCard);
+    } else {
+      const scroll = document.querySelector('.dash-scroll');
+      if (scroll) scroll.prepend(card);
     }
   }
 

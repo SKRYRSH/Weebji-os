@@ -8550,11 +8550,18 @@
         lfo.connect(lfoG); lfoG.connect(o.detune);
         lfo.start(); _nodes.push(lfo);
         o.connect(g); g.connect(dryG); o.start(); _nodes.push(o);
+        // Octave-up shimmer layer — 110Hz barely reproduces on phone speakers,
+        // this 220Hz double is what actually makes the pad audible on mobile
+        const o2 = _ctx.createOscillator(); const g2 = _ctx.createGain();
+        o2.type = 'sine'; o2.frequency.value = 220; o2.detune.value = dt;
+        g2.gain.value = 0.034;
+        lfoG.connect(o2.detune);
+        o2.connect(g2); g2.connect(dryG); o2.start(); _nodes.push(o2);
       });
       // Slow triangle arp drifting through A minor: A2→C3→E3→G3→E3→C3
       const arpO = _ctx.createOscillator(); const arpG = _ctx.createGain();
       arpO.type = 'triangle'; arpO.frequency.value = 220;
-      arpG.gain.value = 0.032; arpO.connect(arpG); arpG.connect(_master);
+      arpG.gain.value = 0.058; arpO.connect(arpG); arpG.connect(_master);
       arpO.start(); _nodes.push(arpO);
       // Pre-schedule arp on AudioContext clock — no setTimeout, no stutter
       const arpNotes = [220.0, 261.6, 329.6, 392.0, 329.6, 261.6];
@@ -8564,7 +8571,7 @@
       }
       // Sub warmth
       _drone(55, 'sine', 0.18, 0.03, 0.2);
-      _fadeIn(0.07, 4.0);
+      _fadeIn(0.12, 4.0);
     }
 
     // ── SANCTUARY: tibetan singing bowl — 432+440Hz beating pair ──

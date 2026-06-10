@@ -4221,16 +4221,17 @@
       <div class="dungeon-timer">${timerTxt}</div>
     </div>`;
 
-    // Boss speaks once per session when dungeon card scrolls into view (Plus only)
-    if (plus && !bossDone) {
+    // Boss speaks once per session when dungeon card scrolls into view.
+    // Free users hear taunt_free — that line IS the upsell, never silence it.
+    if (!bossDone) {
       const voiceKey = `dungeon_voiced_${yearWeek}_${dungeonIndex}`;
       if (!sessionStorage.getItem(voiceKey)) {
         const obs = new IntersectionObserver((entries, o) => {
           if (entries[0].isIntersecting) {
             o.disconnect();
             sessionStorage.setItem(voiceKey, '1');
-            const _pool = [dungeon.taunt_plus, ...(dungeon.taunts_plus_extra || [])];
-            setTimeout(() => SystemVoice.speakBoss(_pool[Math.floor(Math.random() * _pool.length)]), 400);
+            const _pool = plus ? [dungeon.taunt_plus, ...(dungeon.taunts_plus_extra || [])] : [dungeon.taunt_free];
+            setTimeout(() => SystemVoice.speakBoss(_pool[Math.floor(Math.random() * _pool.length)], !plus), 400);
           }
         }, { threshold: 0.5 });
         obs.observe(el);
@@ -5358,7 +5359,8 @@
     const GHOST_GAP_MS = 7 * 86400000;
 
     function eligible() {
-      if (!localStorage.getItem('weebji_mission_done')) return false; // never during onboarding
+      // mission flag only exists for post-v262 signups — any hunter past level 1 is past onboarding
+      if (!localStorage.getItem('weebji_mission_done') && (loadProgress().level || 1) < 2) return false;
       if (localStorage.getItem('weebji_anomaly_last') === new Date().toDateString()) return false;
       return true;
     }
@@ -6405,13 +6407,13 @@
     renderWelcomeCard(p, cls);
     // Directive card — Awakening Protocol days 2–7, then daily procedural directives
     DirectiveEngine.renderCard(p, cls);
-    // One-time anomaly announcement (post-onboarding users only)
-    if (localStorage.getItem('weebji_mission_done') && !localStorage.getItem('weebji_anomaly_notice')) {
+    // One-time anomaly announcement (post-onboarding users only — veterans predate the mission flag)
+    if ((localStorage.getItem('weebji_mission_done') || (p.level || 1) >= 2) && !localStorage.getItem('weebji_anomaly_notice')) {
       localStorage.setItem('weebji_anomaly_notice', '1');
       setTimeout(() => spawnAnomalyNotice(color), 2500);
     }
-    // First Directive — fullscreen overlay on very first dashboard visit
-    if (!localStorage.getItem('weebji_mission_done')) setTimeout(() => showMissionBriefing(cls, color), 1200);
+    // First Directive — fullscreen overlay on very first dashboard visit (never for veterans past level 1)
+    if (!localStorage.getItem('weebji_mission_done') && (p.level || 1) < 2) setTimeout(() => showMissionBriefing(cls, color), 1200);
     // YouTube Notice Board removed — CORS proxy was fragile
   }
 
@@ -10371,7 +10373,10 @@
         });
       }
       rows.sort((a, b) => (b.streak||0)-(a.streak||0) || (b.best_streak||0)-(a.best_streak||0) || (b.level||0)-(a.level||0));
-      const filteredRows = rows.filter(r => (r.streak || 0) > 0);
+      // Hide 0-day hunters but NEVER yourself, and never empty the whole board —
+      // if everyone is at 0 the board falls back to level ranking instead of vanishing
+      let filteredRows = rows.filter(r => (r.streak || 0) > 0 || (me && r.user_id === me.id));
+      if (!filteredRows.length) filteredRows = rows.slice();
       rows.splice(0, rows.length, ...filteredRows);
       rows.splice(20);
     }
@@ -12324,8 +12329,8 @@ ${particles}
       window.speechSynthesis.speak(utt);
     }
 
-    function speakBoss(text) {
-      if (!isWeebjiPlus() && !isInVoiceTrial()) return;
+    function speakBoss(text, allowFree) {
+      if (!allowFree && !isWeebjiPlus() && !isInVoiceTrial()) return;
       if (!isEnabled()) return;
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
@@ -13173,6 +13178,21 @@ DEV.skipSplash()      → go straight to class select (if no session)
             }, { onConflict: 'user_id' });
           } catch (e) { console.warn('lb upsert:', e); }
         }
+        // Merge any taps that landed while this pull was in flight — the `p` snapshot
+        // above predates them; saving it raw silently undoes the user's checks
+        // (tap → check appears → pull finishes → check vanishes → user must re-tap).
+        const fresh = loadProgress();
+        const _union = (a, b) => [...new Set([...(a || []), ...(b || [])])];
+        p.workoutChecked = _union(p.workoutChecked, fresh.workoutChecked);
+        p.questsChecked  = _union(p.questsChecked,  fresh.questsChecked);
+        p.customDone     = _union(p.customDone,     fresh.customDone);
+        p.monkChecked    = _union(p.monkChecked,    fresh.monkChecked);
+        p.workoutBonus   = p.workoutBonus || fresh.workoutBonus;
+        p.monkBonus      = p.monkBonus    || fresh.monkBonus;
+        if (fresh.level > p.level || (fresh.level === p.level && fresh.xp > p.xp)) { p.level = fresh.level; p.xp = fresh.xp; }
+        p.mmSessions = Math.max(p.mmSessions || 0, fresh.mmSessions || 0);
+        p.totalStudyMins = Math.max(p.totalStudyMins || 0, fresh.totalStudyMins || 0);
+        if (fresh.mmDaily) { p.mmDaily = p.mmDaily || {}; for (const _k in fresh.mmDaily) p.mmDaily[_k] = Math.max(p.mmDaily[_k] || 0, fresh.mmDaily[_k] || 0); }
         saveProgress(p);
         if (typeof checkGoodwillOverlay === 'function') checkGoodwillOverlay();
         // Always refresh visible stats immediately — user may be on any screen

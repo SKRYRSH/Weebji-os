@@ -1049,8 +1049,31 @@
   @keyframes kf-nd-count-glow { 0%, 100% { text-shadow: 0 0 8px rgba(255,255,255,0.15); } 50% { text-shadow: 0 0 22px var(--nd-glow, rgba(0,245,255,0.5)); } }
   .nd-unlocked { animation: kf-nd-border 2.2s ease-in-out infinite; }
   @keyframes kf-nd-border { 0%, 100% { box-shadow: 0 0 18px var(--nd-dim, rgba(0,245,255,0.06)); } 50% { box-shadow: 0 0 30px var(--nd-glow, rgba(0,245,255,0.3)); } }
+  /* Directive Engine — protocol dots, priority gold, redacted tease */
+  .dir-dots { display: flex; gap: 7px; justify-content: center; margin: 0 0 12px; }
+  .dir-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.12); transition: background 0.3s; }
+  .dir-dot.on { background: var(--nd-glow, rgba(0,245,255,0.45)); box-shadow: 0 0 6px var(--nd-glow, rgba(0,245,255,0.45)); }
+  .dir-dot.now { background: transparent; border: 1px solid var(--nd-glow, rgba(0,245,255,0.45)); animation: kf-dir-now 1.6s ease-in-out infinite; }
+  @keyframes kf-dir-now { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 8px var(--nd-glow, rgba(0,245,255,0.45)); } }
+  .dir-priority { border-color: rgba(255,200,87,0.5) !important; animation: kf-dir-priority 2s ease-in-out infinite !important; }
+  @keyframes kf-dir-priority { 0%, 100% { box-shadow: 0 0 16px rgba(255,200,87,0.08); } 50% { box-shadow: 0 0 34px rgba(255,200,87,0.3); } }
+  .dir-redacted { display: inline-block; background: rgba(255,255,255,0.16); color: transparent; border-radius: 3px; padding: 0 4px; user-select: none; animation: kf-dir-redact 2.8s ease-in-out infinite; }
+  @keyframes kf-dir-redact { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.9; } }
+  .dir-complete-pop { animation: kf-dir-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+  @keyframes kf-dir-pop { 0% { transform: scale(0.92); opacity: 0.4; } 100% { transform: scale(1); opacity: 1; } }
+  /* Universal check juice — every task check pops, row flashes, XP bar surges */
+  .check-pop { animation: kf-check-pop 0.45s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes kf-check-pop { 0% { transform: scale(0.3); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+  .row-flash { animation: kf-row-flash 0.6s ease-out; }
+  @keyframes kf-row-flash { 0% { background-color: rgba(255,255,255,0.08); } 100% { background-color: transparent; } }
+  .xp-surge { animation: kf-xp-surge 0.8s ease-out; }
+  @keyframes kf-xp-surge { 0% { filter: brightness(2.4) saturate(1.5); box-shadow: 0 0 14px currentColor; } 100% { filter: none; box-shadow: none; } }
+  .xp-float.combo { color: #FFC857; }
+  /* Peak-moment upsell sheet — slides up after level-up / ghost save / streak milestone */
+  #peak-upsell { position: absolute; left: 12px; right: 12px; bottom: 14px; z-index: 928; background: rgba(7,9,15,0.97); border: 1px solid rgba(255,200,87,0.35); border-radius: 16px; padding: 18px 18px 14px; font-family: 'JetBrains Mono', monospace; text-align: center; transform: translateY(130%); transition: transform 0.45s cubic-bezier(0.22,1,0.36,1); box-shadow: 0 -4px 40px rgba(0,0,0,0.6), 0 0 24px rgba(255,200,87,0.08); }
+  #peak-upsell.show { transform: none; }
   @media (prefers-reduced-motion: reduce) {
-    .fd-pulse, #mission-briefing.fd-final .fd-ring-count, .fd-ring-count.fd-done, .nd-sweep, .nd-countdown, .nd-unlocked { animation: none; }
+    .fd-pulse, #mission-briefing.fd-final .fd-ring-count, .fd-ring-count.fd-done, .nd-sweep, .nd-countdown, .nd-unlocked, .dir-dot.now, .dir-priority, .dir-redacted, .dir-complete-pop, .check-pop, .row-flash, .xp-surge { animation: none; }
     .fd-ring-fg, .fd-ring-wrap.fd-breathing { transition: none; }
   }
   /* ── Anomaly overlay — fullscreen variable reward drop ── */
@@ -4599,6 +4622,47 @@
     </div>`;
   }
 
+  /* ══ PEAK-MOMENT UPSELL ══════════════════════
+     Contextual WEEBJI+ pitch fired right after a dopamine peak (level-up,
+     ghost-token save, streak milestone). Free users only, 3-day cooldown,
+     never stacks on another cinematic. */
+  const PeakUpsell = (() => {
+    const CD_KEY = 'weebji_peak_upsell_ts';
+    const COPY = {
+      levelup:    { e: '◈ The System sees potential', b: 'Hunters with WEEBJI+ climb twice as fast — Weekly Dungeons, Shadow Rival, Prestige. The ones ranked above you already have it.' },
+      ghost_save: { e: '👻 The System saved you', b: 'That streak lives because one token died for it. Free hunters get 1 a month — WEEBJI+ carries five. The next fall may not be so forgiving.' },
+      streak:     { e: '🔥 Your discipline is rare', b: 'A streak like this deserves the full arsenal: Weekly Dungeon, Friend Battles, System Voice. Eight features are still sealed from you.' },
+    };
+    function maybeShow(trigger) {
+      if (!trigger || !COPY[trigger]) return;
+      try { if (SupabaseSync.isPremium()) return; } catch (e) {}
+      if (Date.now() - parseInt(localStorage.getItem(CD_KEY) || '0') < 3 * 86400000) return;
+      if (document.querySelector('#levelup-overlay.active, #anomaly-overlay.active, #mission-briefing.active, #ghost-intervention.active')) return;
+      if (document.getElementById('peak-upsell')) return;
+      localStorage.setItem(CD_KEY, String(Date.now()));
+      const el = document.createElement('div');
+      el.id = 'peak-upsell';
+      el.innerHTML = `
+        <p style="font-size:9px;letter-spacing:0.3em;color:rgba(255,200,87,0.8);text-transform:uppercase;margin:0 0 8px">${COPY[trigger].e}</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.78);line-height:1.65;margin:0 0 14px">${COPY[trigger].b}</p>
+        <button id="peak-upsell-cta" style="display:block;width:100%;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;background:rgba(255,200,87,0.08);border:1px solid rgba(255,200,87,0.5);border-radius:8px;color:#FFC857;padding:12px;cursor:pointer;-webkit-tap-highlight-color:transparent">Unseal WEEBJI+ — $9.99/mo</button>
+        <button id="peak-upsell-no" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;background:transparent;border:none;color:rgba(255,255,255,0.35);padding:10px 16px 2px;cursor:pointer;-webkit-tap-highlight-color:transparent">Not yet</button>
+      `;
+      document.getElementById('app').appendChild(el);
+      requestAnimationFrame(() => el.classList.add('show'));
+      Sound.play('tap'); haptic(20);
+      if (typeof posthog !== 'undefined') posthog.capture('peak_upsell_shown', { trigger });
+      const close = () => { el.classList.remove('show'); setTimeout(() => el.remove(), 500); };
+      el.querySelector('#peak-upsell-cta').onclick = () => {
+        if (typeof posthog !== 'undefined') posthog.capture('peak_upsell_cta', { trigger });
+        close(); showPlusSheet();
+      };
+      el.querySelector('#peak-upsell-no').onclick = close;
+      setTimeout(close, 16000);
+    }
+    return { maybeShow };
+  })();
+
   async function issueBattle(friendId, friendName, friendClass, friendColor) {
     const client = SupabaseSync._client();
     const me = SupabaseSync.getUser();
@@ -5201,6 +5265,34 @@
     el.addEventListener('animationend', () => el.remove(), { once: true });
   }
 
+  /* Universal check juice — micro-burst + pop on every task check, with combo
+     stacking when checks land within 4s of each other */
+  let _comboN = 0, _comboT = 0;
+  function popCheck(checkEl) {
+    if (!checkEl) return;
+    checkEl.classList.remove('check-pop'); void checkEl.offsetWidth;
+    checkEl.classList.add('check-pop');
+    const row = checkEl.closest('.done') || checkEl.parentElement;
+    if (row) { row.classList.remove('row-flash'); void row.offsetWidth; row.classList.add('row-flash'); }
+    haptic(15);
+    const rct = checkEl.getBoundingClientRect();
+    if (typeof CinCanvas !== 'undefined') {
+      CinCanvas.burst(rct.left + rct.width / 2, rct.top + rct.height / 2, 8, localStorage.getItem('weebji_color') || '#00F5FF', 5);
+    }
+    const now = Date.now();
+    _comboN = (now - _comboT < 4000) ? _comboN + 1 : 1;
+    _comboT = now;
+    if (_comboN >= 2) {
+      const el = document.createElement('div');
+      el.className = 'xp-float combo';
+      el.textContent = `COMBO ×${_comboN}`;
+      el.style.left = `${rct.left + rct.width / 2}px`;
+      el.style.top  = `${rct.top - 18}px`;
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+    }
+  }
+
   /* ══ VARIABLE REWARDS — RNG DROP ENGINE ══════ */
   const RARE_DROPS = [
     { id: 'critical_surge', label: '⚡  CRITICAL SURGE — 2× XP',      apply: null, multiplier: 2 },
@@ -5383,6 +5475,7 @@
     { id: 'flesh_and_steel',   glyph: '🏋', label: 'Flesh and Steel',       desc: 'Twenty workout bonuses earned. You built a body worthy of the title.',             condition: (p,cls) => cls === 'monarch' && (p.totalWorkoutDays||0) >= 20 },
     { id: 'pilgrim_path',      glyph: '☯', label: 'Path of the Pilgrim',   desc: 'All eight rituals, fourteen consecutive days. The Monk way is the only way.',      condition: (p,cls) => cls === 'monk' && p.monkGrid && p.monkGrid.length >= 14 },
     { id: 'shadow_slayer',     glyph: '👁', label: 'Shadow Slayer',         desc: 'Your shadow self could not keep up. You outran your own past.',                    condition: (p,_)   => !!p.shadowSlayerEarned },
+    { id: 'the_awakened',      glyph: '⟁', label: 'The Awakened',          desc: 'Seven directives. Seven days. The Awakening Protocol is complete — the System no longer questions you.', condition: () => localStorage.getItem('weebji_awakened') === '1' },
   ];
 
   const STREAK_TITLE_DEFS = {
@@ -6310,8 +6403,8 @@
 
     // Day-1 Welcome Card — only for true first-timers
     renderWelcomeCard(p, cls);
-    // Next Directive card — day-1 return hook after the First Directive
-    renderNextDirectiveCard(p, cls);
+    // Directive card — Awakening Protocol days 2–7, then daily procedural directives
+    DirectiveEngine.renderCard(p, cls);
     // One-time anomaly announcement (post-onboarding users only)
     if (localStorage.getItem('weebji_mission_done') && !localStorage.getItem('weebji_anomaly_notice')) {
       localStorage.setItem('weebji_anomaly_notice', '1');
@@ -6455,9 +6548,8 @@
   function finishFirstDirective(cls, overlay) {
     localStorage.setItem('weebji_mission_done', '1');
     localStorage.setItem('weebji_first_directive_done', '1');
-    // Day-1 hook: next directive unlocks at next local midnight
-    const mid = new Date(); mid.setHours(24, 0, 0, 0);
-    localStorage.setItem('weebji_next_directive_unlock', String(mid.getTime()));
+    // Day-1 sealed: protocol day 2 unlocks at next local midnight
+    DirectiveEngine.beginProtocol();
     if (!localStorage.getItem('weebji_first_action_done')) {
       localStorage.setItem('weebji_first_action_done', '1');
       if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: cls, via: 'first_directive' });
@@ -6487,7 +6579,7 @@
       p.xp += 100;
       const leveled = checkLevelUp(p);
       saveProgress(p); updateXPBar(p); updateStats(p);
-      renderNextDirectiveCard(p, cls);
+      DirectiveEngine.renderCard(p, cls);
       if (leveled) {
         triggerLevelUp(p.level);
         // Start the tour only after the level-up overlay is dismissed
@@ -6507,17 +6599,7 @@
   }
 
   function markFirstActionDone() {
-    // A real pillar action clears the Next Directive lock card forever
-    if (localStorage.getItem('weebji_first_directive_done') && !localStorage.getItem('weebji_directive2_done')) {
-      localStorage.setItem('weebji_directive2_done', '1');
-      if (typeof posthog !== 'undefined') posthog.capture('next_directive_completed', { class: localStorage.getItem('weebji_class') });
-      const nd = document.getElementById('next-directive-card');
-      if (nd) {
-        nd.style.transition = 'opacity 0.4s ease';
-        nd.style.opacity = '0';
-        setTimeout(() => nd.remove(), 420);
-      }
-    }
+    // Directive completion is now detected by DirectiveEngine.evaluate() via updateStats
     if (localStorage.getItem('weebji_first_action_done')) return;
     localStorage.setItem('weebji_first_action_done', '1');
     if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: localStorage.getItem('weebji_class') });
@@ -6529,104 +6611,275 @@
     }
   }
 
-  /* ── Next Directive Card (day-1 return hook) ── */
-  function renderNextDirectiveCard(p, cls) {
-    document.getElementById('next-directive-card')?.remove();
-    if (window._weebjiNDTimer) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; }
-    if (!localStorage.getItem('weebji_first_directive_done')) return;
-    if (localStorage.getItem('weebji_directive2_done')) return;
-    const unlock = parseInt(localStorage.getItem('weebji_next_directive_unlock') || '0');
-    if (!unlock) return;
-    const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
-    const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
-    const card = document.createElement('div');
-    card.id = 'next-directive-card';
-    card.style.cssText = `
-      margin: 0 16px 16px;
-      padding: 18px 20px;
-      background: rgba(${r},${g},${b},0.04);
-      border: 1px solid rgba(${r},${g},${b},0.2);
-      border-radius: 16px;
-      font-family: 'JetBrains Mono', monospace;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 18px rgba(${r},${g},${b},0.06);
-    `;
-    card.style.setProperty('--nd-glow', `rgba(${r},${g},${b},0.45)`);
-    card.style.setProperty('--nd-dim',  `rgba(${r},${g},${b},0.06)`);
-    const locked = Date.now() < unlock;
-    if (locked) {
-      card.innerHTML = `
-        <div class="nd-sweep"></div>
-        <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">🔒 Next Directive — Sealed</p>
-        <p class="nd-countdown" style="font-family:'Cinzel',serif;font-size:24px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);margin:0 0 10px" id="nd-count">--:--:--</p>
-        <p style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0">"Return when the seal breaks.<br>The System remembers who shows up."</p>
-      `;
-      const pad = n => String(n).padStart(2, '0');
-      const renderCount = () => {
-        const el = document.getElementById('nd-count');
-        if (!el) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; return; }
-        const ms = unlock - Date.now();
-        if (ms <= 0) {
-          clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null;
-          // The seal breaks while they watch — make it a moment
-          triggerFlash('flash-class', color, null);
-          Sound.play('check');
-          haptic([40, 30, 80]);
-          renderNextDirectiveCard(loadProgress(), cls);
-          return;
-        }
-        const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
-        el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
-      };
-      renderCount();
-      window._weebjiNDTimer = setInterval(renderCount, 1000);
-    } else {
-      card.classList.add('nd-unlocked');
-      const missions = {
-        monarch:    'Complete one real workout in The Forge. Anything counts. Everything is recorded.',
-        mastermind: 'Run one 25-minute deep work session. Build, study, or learn — the System logs all of it.',
-        monk:       'Complete today\'s ritual — meditation, breathwork, or stillness. Prove the first time was not luck.',
-      };
-      card.innerHTML = `
-        <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">⚡ Directive Unlocked</p>
-        <p style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin:0 0 16px">"${missions[cls] || missions.monarch}"</p>
-        <button id="nd-go-btn" style="
-          font-family:'JetBrains Mono',monospace;
-          font-size:11px;
-          letter-spacing:0.2em;
-          text-transform:uppercase;
-          background:transparent;
-          border:1px solid rgba(${r},${g},${b},0.35);
-          border-radius:8px;
-          color:rgba(${r},${g},${b},1);
-          padding:10px 20px;
-          cursor:pointer;
-          -webkit-tap-highlight-color:transparent;
-          transition:border-color 0.2s,color 0.2s,box-shadow 0.2s;
-        ">View Target →</button>
-      `;
-      card.querySelector('#nd-go-btn').addEventListener('click', () => {
-        Sound.play('tap');
-        const forgeCard = document.getElementById('forge-card');
-        const dashScroll = document.querySelector('.dash-scroll');
-        if (forgeCard && dashScroll) dashScroll.scrollTo({ top: forgeCard.offsetTop, behavior: 'smooth' });
-        if (forgeCard) {
-          const prevBorder = forgeCard.style.borderColor;
-          forgeCard.style.borderColor = color;
-          setTimeout(() => { if (forgeCard) forgeCard.style.borderColor = prevBorder; }, 1200);
-        }
-      });
+  /* ══ DIRECTIVE ENGINE ════════════════════════
+     Day 1: First Directive (above). Days 2–7: Awakening Protocol — scripted,
+     escalating, ends in THE AWAKENED title. Day 8+: procedural daily directive
+     drawn from a per-class template pool, seeded by date, level-gated, with a
+     15% Priority roll (2× XP). One directive per day; completing it seals the
+     card until midnight with a redacted tease of tomorrow's trial.
+     Completion is detected by evaluate() — hooked into updateStats(). */
+  const DirectiveEngine = (() => {
+    const S_KEY   = 'weebji_directive_state'; // {date, day, tpl?, priority?, done}
+    const DAY_KEY = 'weebji_directive_day';   // next day number; 2–7 = protocol, 8+ = directive #
+
+    const _today  = () => new Date().toDateString();
+    const _cls    = () => localStorage.getItem('weebji_class') || 'monarch';
+    const _qs     = p => (p.questsChecked || []).length;
+    const _pillar = (p, c) => c === 'mastermind' ? (p.mmSessions || 0) : c === 'monk' ? (p.monkChecked || []).length : (p.workoutChecked || []).length;
+    const _fullPillar = (p, c) => c === 'mastermind' ? (p.mmSessions || 0) >= 2 : c === 'monk' ? (p.monkChecked || []).length >= 6 : (p.workoutBonus || (p.workoutChecked || []).length >= 3);
+    const _hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+    const _get = () => { try { return JSON.parse(localStorage.getItem(S_KEY) || 'null'); } catch (e) { return null; } };
+    const _set = st => localStorage.setItem(S_KEY, JSON.stringify(st));
+
+    /* Days 2–7 — the Awakening Protocol. Demands and rewards escalate. */
+    const PROTOCOL = {
+      2: { xp: 40, text: {
+            monarch:    'Complete one real workout in The Forge. Anything counts. Everything is recorded.',
+            mastermind: 'Run one deep work session. Build, study, or learn — the System logs all of it.',
+            monk:       'Complete one ritual — meditation, breathwork, or stillness. Prove the first time was not luck.' },
+           check: (p, c) => _pillar(p, c) >= 1 },
+      3: { xp: 50, text: {
+            monarch:    'Two days in. Today: one workout entry and one quest. The Protocol escalates.',
+            mastermind: 'Two days in. Today: one focus session and one quest. The Protocol escalates.',
+            monk:       'Two days in. Today: one ritual and one quest. The Protocol escalates.' },
+           check: (p, c) => _pillar(p, c) >= 1 && _qs(p) >= 1 },
+      4: { xp: 60, text: {
+            monarch:    'Two workout entries today. The body remembers what you repeat.',
+            mastermind: 'Two focus sessions today. Depth is built in repetitions.',
+            monk:       'Three rituals today. Stillness compounds.' },
+           check: (p, c) => _pillar(p, c) >= (c === 'monk' ? 3 : 2) },
+      5: { xp: 70, text: {
+            monarch:    'One workout + today\'s Daily Challenge. The System tests how you handle the unexpected.',
+            mastermind: 'One focus session + today\'s Daily Challenge. The System tests how you handle the unexpected.',
+            monk:       'One ritual + today\'s Daily Challenge. The System tests how you handle the unexpected.' },
+           check: (p, c) => _pillar(p, c) >= 1 && !!p.dailyChallengeDone },
+      6: { xp: 85, text: {
+            monarch:    'Full workout protocol. Every exercise. No partial credit on Day 6.',
+            mastermind: 'Two deep work sessions. The summit is one day away.',
+            monk:       'Five rituals. The path narrows near the summit.' },
+           check: (p, c) => c === 'monk' ? (p.monkChecked || []).length >= 5 : _fullPillar(p, c) },
+      7: { xp: 100, text: {
+            monarch:    'The final seal. Full workout + every quest. Complete this, and the System stops calling you a candidate.',
+            mastermind: 'The final seal. Two deep work sessions + every quest. Complete this, and the System stops calling you a candidate.',
+            monk:       'The final seal. Six rituals + every quest. Complete this, and the System stops calling you a candidate.' },
+           check: (p, c) => _fullPillar(p, c) && _qs(p) >= 3 },
+    };
+
+    /* Day 8+ — procedural pool. Add templates here any time; minLvl gates harder ones. */
+    const POOL = {
+      universal: [
+        { id: 'u_quests', xp: 45, text: 'Clear every quest on the board. No exceptions, no leftovers.', check: p => _qs(p) >= 3 },
+        { id: 'u_dc',     xp: 40, text: 'Complete today\'s Daily Challenge. The System is watching how you handle the unexpected.', check: p => !!p.dailyChallengeDone },
+        { id: 'u_combo',  xp: 55, text: 'One pillar action + every quest. Order on all fronts.', check: (p, c) => _pillar(p, c) >= 1 && _qs(p) >= 3 },
+      ],
+      monarch: [
+        { id: 'm_full',   xp: 60, text: 'Full workout protocol. Every exercise. The System accepts no partial record today.', check: p => p.workoutBonus || (p.workoutChecked || []).length >= 3 },
+        { id: 'm_double', xp: 45, text: 'Two entries in The Forge today. The body remembers what you repeat.', check: p => (p.workoutChecked || []).length >= 2 },
+        { id: 'm_combo',  xp: 50, text: 'One workout + two quests. Strength without order is noise.', check: p => (p.workoutChecked || []).length >= 1 && _qs(p) >= 2 },
+      ],
+      mastermind: [
+        { id: 'a_double', xp: 60, text: 'Two deep work sessions. The Architect builds daily.', check: p => (p.mmSessions || 0) >= 2 },
+        { id: 'a_combo',  xp: 50, text: 'One focus session + two quests. Precision on every front.', check: p => (p.mmSessions || 0) >= 1 && _qs(p) >= 2 },
+        { id: 'a_triple', xp: 80, minLvl: 8, text: 'Three sessions. Today you outwork your own record.', check: p => (p.mmSessions || 0) >= 3 },
+      ],
+      monk: [
+        { id: 'k_five',  xp: 60, text: 'Five rituals before the day ends. Stillness is built in repetitions.', check: p => (p.monkChecked || []).length >= 5 },
+        { id: 'k_combo', xp: 50, text: 'Three rituals + two quests. Calm, then order.', check: p => (p.monkChecked || []).length >= 3 && _qs(p) >= 2 },
+        { id: 'k_all',   xp: 80, minLvl: 8, text: 'Every ritual. All of them. Total command of the inner world.', check: p => (p.monkChecked || []).length >= MONK_RITUALS.length },
+      ],
+    };
+
+    function _resolve(st, cls) {
+      if (st.day <= 7) {
+        const d = PROTOCOL[st.day];
+        return d ? { text: d.text[cls] || d.text.monarch, check: d.check, xp: d.xp } : null;
+      }
+      const pool = POOL.universal.concat(POOL[cls] || []);
+      return pool.find(t => t.id === st.tpl) || pool[0];
     }
-    const forgeCard = document.getElementById('forge-card');
-    if (forgeCard && forgeCard.parentNode) {
-      forgeCard.parentNode.insertBefore(card, forgeCard);
-    } else {
-      const scroll = document.querySelector('.dash-scroll');
-      if (scroll) scroll.prepend(card);
+
+    // Called from finishFirstDirective: day 1 done, day 2 sealed until midnight
+    function beginProtocol() {
+      _set({ date: _today(), day: 1, done: true });
+      localStorage.setItem(DAY_KEY, '2');
     }
-  }
+
+    function _ensureToday(p) {
+      if (!localStorage.getItem('weebji_first_directive_done')) return null;
+      let st = _get();
+      if (st && st.date === _today()) return st;
+      // Migration: users mid-flow on the old next-directive card
+      if (!st) {
+        const oldUnlock = parseInt(localStorage.getItem('weebji_next_directive_unlock') || '0');
+        if (!localStorage.getItem(DAY_KEY)) {
+          localStorage.setItem(DAY_KEY, localStorage.getItem('weebji_directive2_done') ? '3' : '2');
+        }
+        if (oldUnlock && Date.now() < oldUnlock) {
+          st = { date: _today(), day: 1, done: true };
+          _set(st);
+          return st;
+        }
+      }
+      // New day — the System assigns today's directive
+      const day = Math.max(2, parseInt(localStorage.getItem(DAY_KEY) || '2'));
+      st = { date: _today(), day, done: false };
+      if (day > 7) {
+        const cls = _cls();
+        const pool = POOL.universal.concat(POOL[cls] || []).filter(t => (t.minLvl || 0) <= (p.level || 1));
+        const h = _hash(_today() + '|' + day);
+        st.tpl = pool[h % pool.length].id;
+        st.priority = ((h >>> 8) % 100) < 15;
+      }
+      _set(st);
+      return st;
+    }
+
+    // Hooked into updateStats() — fires the completion cinematic exactly once
+    function evaluate(p) {
+      const st = _get();
+      if (!st || st.date !== _today() || st.done) return;
+      const cls = _cls();
+      const t = _resolve(st, cls);
+      if (!t) return;
+      let ok = false;
+      try { ok = !!t.check(p, cls); } catch (e) {}
+      if (!ok) return;
+      st.done = true; _set(st);
+      localStorage.setItem(DAY_KEY, String(st.day + 1));
+      const xp = t.xp * (st.priority ? 2 : 1);
+      const p2 = loadProgress();
+      p2.xp += xp;
+      if (st.day === 7) localStorage.setItem('weebji_awakened', '1');
+      const leveled = checkLevelUp(p2);
+      checkSecretTitles(p2, cls);
+      saveProgress(p2); updateXPBar(p2);
+      spawnDropBanner(st.day === 7
+        ? '⟁ AWAKENING PROTOCOL COMPLETE — THE SYSTEM ACKNOWLEDGES YOU'
+        : `⟁ DIRECTIVE COMPLETE — +${xp} XP`);
+      triggerFlash('flash-class', localStorage.getItem('weebji_color') || '#00F5FF', null);
+      Sound.play(st.day === 7 ? 'milestone' : 'check');
+      haptic(st.day === 7 ? [80, 50, 80, 50, 200] : [50, 30, 90]);
+      if (st.day === 7) shakeApp(0.6);
+      if (typeof posthog !== 'undefined') posthog.capture('directive_completed', { day: st.day, tpl: st.tpl || ('protocol_' + st.day), priority: !!st.priority, xp });
+      renderCard(p2, cls);
+      if (leveled) setTimeout(() => triggerLevelUp(p2.level), 600);
+    }
+
+    function renderCard(p, cls) {
+      document.getElementById('next-directive-card')?.remove(); // legacy card
+      document.getElementById('directive-card')?.remove();
+      if (window._weebjiNDTimer) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; }
+      const st = _ensureToday(p);
+      if (!st) return;
+      cls = cls || _cls();
+      const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+      const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
+      const card = document.createElement('div');
+      card.id = 'directive-card';
+      card.style.cssText = `
+        margin: 0 16px 16px;
+        padding: 18px 20px;
+        background: rgba(${r},${g},${b},0.04);
+        border: 1px solid rgba(${r},${g},${b},0.2);
+        border-radius: 16px;
+        font-family: 'JetBrains Mono', monospace;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 18px rgba(${r},${g},${b},0.06);
+      `;
+      card.style.setProperty('--nd-glow', `rgba(${r},${g},${b},0.45)`);
+      card.style.setProperty('--nd-dim',  `rgba(${r},${g},${b},0.06)`);
+      const proto = st.day <= 7;
+      const dots = proto
+        ? `<div class="dir-dots">${[1,2,3,4,5,6,7].map(d => `<div class="dir-dot${d < st.day || (d === st.day && st.done) ? ' on' : d === st.day ? ' now' : ''}"></div>`).join('')}</div>`
+        : '';
+      if (st.done) {
+        // Sealed until midnight — tomorrow's trial stays classified
+        card.classList.add('dir-complete-pop');
+        const eyebrow = st.day === 7 ? '⟁ Awakening Protocol — Complete'
+          : proto ? `✓ Day ${st.day} Sealed — Protocol ${st.day}/7`
+          : `✓ Directive #${st.day} — Complete`;
+        card.innerHTML = `
+          <div class="nd-sweep"></div>
+          ${dots}
+          <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">${eyebrow}</p>
+          <p class="nd-countdown" style="font-family:'Cinzel',serif;font-size:24px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);margin:0 0 10px" id="dir-count">--:--:--</p>
+          <p style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0">TOMORROW: <span class="dir-redacted">DIRECTIVE CLASSIFIED</span><br>"The System has already chosen your next trial.<br>Return when the seal breaks."</p>
+        `;
+        const mid = new Date(); mid.setHours(24, 0, 0, 0);
+        const unlock = mid.getTime();
+        const pad = n => String(n).padStart(2, '0');
+        const renderCount = () => {
+          const el = document.getElementById('dir-count');
+          if (!el) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; return; }
+          const ms = unlock - Date.now();
+          if (ms <= 0) {
+            clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null;
+            // The seal breaks while they watch — make it a moment
+            triggerFlash('flash-class', color, null);
+            Sound.play('check');
+            haptic([40, 30, 80]);
+            renderCard(loadProgress(), cls);
+            return;
+          }
+          const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+          el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+        };
+        renderCount();
+        window._weebjiNDTimer = setInterval(renderCount, 1000);
+      } else {
+        card.classList.add('nd-unlocked');
+        if (st.priority) card.classList.add('dir-priority');
+        const t = _resolve(st, cls);
+        const xp = t.xp * (st.priority ? 2 : 1);
+        const eyeColor = st.priority ? 'rgba(255,200,87,0.8)' : `rgba(${r},${g},${b},0.55)`;
+        const eyebrow = proto ? `⚡ Awakening Protocol — Day ${st.day} of 7`
+          : st.priority ? `⚠ Priority Directive #${st.day} — 2× Reward`
+          : `⚡ Directive #${st.day}`;
+        card.innerHTML = `
+          ${dots}
+          <p style="font-size:9px;letter-spacing:0.35em;color:${eyeColor};text-transform:uppercase;margin:0 0 10px">${eyebrow}</p>
+          <p style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin:0 0 10px">"${t.text}"</p>
+          <p style="font-size:10px;letter-spacing:0.2em;color:rgba(${r},${g},${b},0.7);text-transform:uppercase;margin:0 0 14px">Reward: +${xp} XP${st.day === 7 ? ' + Title: The Awakened' : ''}</p>
+          <button id="dir-go-btn" style="
+            font-family:'JetBrains Mono',monospace;
+            font-size:11px;
+            letter-spacing:0.2em;
+            text-transform:uppercase;
+            background:transparent;
+            border:1px solid rgba(${r},${g},${b},0.35);
+            border-radius:8px;
+            color:rgba(${r},${g},${b},1);
+            padding:10px 20px;
+            cursor:pointer;
+            -webkit-tap-highlight-color:transparent;
+            transition:border-color 0.2s,color 0.2s,box-shadow 0.2s;
+          ">View Target →</button>
+        `;
+        card.querySelector('#dir-go-btn').addEventListener('click', () => {
+          Sound.play('tap');
+          const forgeCard = document.getElementById('forge-card');
+          const dashScroll = document.querySelector('.dash-scroll');
+          if (forgeCard && dashScroll) dashScroll.scrollTo({ top: forgeCard.offsetTop, behavior: 'smooth' });
+          if (forgeCard) {
+            const prevBorder = forgeCard.style.borderColor;
+            forgeCard.style.borderColor = color;
+            setTimeout(() => { if (forgeCard) forgeCard.style.borderColor = prevBorder; }, 1200);
+          }
+        });
+      }
+      const forgeCard = document.getElementById('forge-card');
+      if (forgeCard && forgeCard.parentNode) {
+        forgeCard.parentNode.insertBefore(card, forgeCard);
+      } else {
+        const scroll = document.querySelector('.dash-scroll');
+        if (scroll) scroll.prepend(card);
+      }
+    }
+
+    return { renderCard, evaluate, beginProtocol };
+  })();
 
   /* ── HP Bar (5 segmented blocks) ──────────── */
   function renderHearts(hp) {
@@ -7150,6 +7403,7 @@
       if (!p.customDone) p.customDone = [];
       p.customDone.push(task.id);
       row.classList.add('done'); row.querySelector('.quest-check').innerHTML = CHECK_SVG;
+      popCheck(row.querySelector('.quest-check'));
       p.xp += rollCriticalDrop(task.xp, row.querySelector('.quest-xp'), p);
       Sound.play('check');
       markFirstActionDone();
@@ -7170,13 +7424,14 @@
     } else {
       p.workoutChecked.push(index);
       row.classList.add('done'); row.querySelector('.ex-check').innerHTML = CHECK_SVG;
+      popCheck(row.querySelector('.ex-check'));
       p.xp += rollCriticalDrop(exercises[index].xp, row.querySelector('.ex-xp'), p);
       Sound.play('check');
       markFirstActionDone();
 
       // Perfect set
       if (p.workoutChecked.length === exercises.length && !p.workoutBonus) {
-        p.workoutBonus = true; p.xp += 10;
+        p.workoutBonus = true; p.xp += 25;
         Sound.play('workoutComplete');
         haptic([80, 40, 80, 40, 200]);
         WeebjPush.local('workout_complete', 'MISSION ACCOMPLISHED', 'Full protocol executed. +25 XP bonus recorded by the System.');
@@ -7210,6 +7465,7 @@
       row.classList.remove('done'); row.querySelector('.rest-check').innerHTML = '';
     } else {
       p.workoutChecked.push(0); row.classList.add('done'); row.querySelector('.rest-check').innerHTML = CHECK_SVG;
+      popCheck(row.querySelector('.rest-check'));
       p.xp += rollCriticalDrop(15, row.querySelector('.rest-xp'), p); Sound.play('check');
     }
     const leveled = checkLevelUp(p);
@@ -7225,6 +7481,7 @@
       row.classList.remove('done'); row.querySelector('.quest-check').innerHTML = '';
     } else {
       p.questsChecked.push(index); row.classList.add('done'); row.querySelector('.quest-check').innerHTML = CHECK_SVG;
+      popCheck(row.querySelector('.quest-check'));
       p.xp += rollCriticalDrop(quests[index].xp, row.querySelector('.quest-xp'), p); Sound.play('check');
       markFirstActionDone();
     }
@@ -7777,10 +8034,11 @@
     } else {
       p.monkChecked.push(index);
       row.classList.add('done'); row.querySelector('.monk-check').innerHTML = CHECK_SVG;
+      popCheck(row.querySelector('.monk-check'));
       p.xp += rollCriticalDrop(MONK_RITUALS[index].xp, row.querySelector('.monk-ritual-xp'), p);
       Sound.play('check');
       if (p.monkChecked.length === MONK_RITUALS.length && !p.monkBonus) {
-        p.monkBonus = true; p.xp += 10;
+        p.monkBonus = true; p.xp += 25;
         Sound.play('workoutComplete');
         triggerFlash('flash-white', '#FFFFFF', null);
         shakeApp(0.5);
@@ -8041,6 +8299,7 @@
         } else {
           p2.monkChecked.push(i);
           row.classList.add('done'); row.querySelector('.monk-check').innerHTML = CHECK_SVG;
+          popCheck(row.querySelector('.monk-check'));
           p2.xp += rollCriticalDrop(r.xp, row.querySelector('.monk-ritual-xp'), p2);
           Sound.play('check');
           if (p2.monkChecked.length === MONK_RITUALS.length && !p2.monkBonus) {
@@ -8880,7 +9139,11 @@
   function updateXPBar(p) {
     const needed = xpForLevel(p.level, p.prestige);
     const pct    = Math.min((p.xp / needed) * 100, 100);
-    document.getElementById('xp-fill').style.width = `${pct}%`;
+    const _fill  = document.getElementById('xp-fill');
+    const _prevW = parseFloat(_fill.style.width) || 0;
+    _fill.style.width = `${pct}%`;
+    // Surge glow whenever the bar visibly grows
+    if (pct > _prevW + 0.1) { _fill.classList.remove('xp-surge'); void _fill.offsetWidth; _fill.classList.add('xp-surge'); }
     if (p.level >= 100 && localStorage.getItem('weebji_prestige_ready') === '1') {
       document.getElementById('xp-label').textContent = '◈ PRESTIGE READY';
       document.getElementById('xp-label').style.color = '#FFD700';
@@ -8895,6 +9158,8 @@
   }
 
   function updateStats(p) {
+    // Directive completion check — runs after every action's saveProgress
+    try { DirectiveEngine.evaluate(p); } catch (e) {}
     const prevStreakDisplay = parseInt(document.getElementById('stat-streak').textContent) || 0;
     // Fire streak milestone cinematic — deduplicated via localStorage so it never shows twice for same milestone
     const _msKey = 'weebji_milestones_seen';
@@ -9185,6 +9450,16 @@
     // Show share button at every 5th level or tier change
     const _shareBtn = document.getElementById('levelup-share-btn');
     if (_shareBtn) _shareBtn.classList.toggle('visible', newLevel % 5 === 0 || newTier > oldTier);
+
+    // Peak-moment upsell — fires once the overlay is dismissed (skip onboarding + tier evolutions)
+    if (newLevel >= 3 && newTier === oldTier) {
+      const _puClick = () => {
+        if (luEl.classList.contains('active')) return;
+        luEl.removeEventListener('click', _puClick);
+        setTimeout(() => PeakUpsell.maybeShow('levelup'), 1200);
+      };
+      setTimeout(() => luEl.addEventListener('click', _puClick), 800);
+    }
 
     // t=60ms: overlay appears
     setTimeout(() => {
@@ -10575,6 +10850,8 @@
 
   // 4. STREAK MILESTONE — full-screen gold cinematic card
   function triggerStreakMilestone(streak) {
+    // Peak-moment upsell — after the milestone cinematic settles
+    if (streak >= 7) setTimeout(() => PeakUpsell.maybeShow('streak'), 7000);
     const el = document.getElementById('streak-milestone');
     if (!el) return;
     document.getElementById('smilestone-num').textContent   = streak;
@@ -11261,6 +11538,8 @@
     document.getElementById('ghost-intervention').classList.remove('active');
     updateStats(p);
     Sound.play('milestone');
+    // Peak-moment upsell — the save just happened, the loss was real
+    setTimeout(() => PeakUpsell.maybeShow('ghost_save'), 1800);
     spawnDropBanner(`👻 GHOST TOKEN CONSUMED — ${p.streak}-DAY STREAK PRESERVED`);
     if (p.ghostTokens === 1) setTimeout(() => spawnDropBanner('👻 LAST TOKEN REMAINING — Stock up before your next miss'), 2400);
     if (p.ghostTokens === 0) setTimeout(() => spawnDropBanner('👻 TOKENS DEPLETED — One miss away from PENANCE'), 2400);

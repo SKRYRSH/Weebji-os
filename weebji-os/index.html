@@ -1053,6 +1053,25 @@
     .fd-pulse, #mission-briefing.fd-final .fd-ring-count, .fd-ring-count.fd-done, .nd-sweep, .nd-countdown, .nd-unlocked { animation: none; }
     .fd-ring-fg, .fd-ring-wrap.fd-breathing { transition: none; }
   }
+  /* ── Anomaly overlay — fullscreen variable reward drop ── */
+  #anomaly-overlay { position: absolute; inset: 0; background: rgba(2,3,7,0.96); z-index: 930; display: flex; align-items: center; justify-content: center; padding: 32px 24px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+  #anomaly-overlay.active { opacity: 1; pointer-events: all; }
+  #anomaly-overlay::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 3px); pointer-events: none; }
+  .an__inner { text-align: center; max-width: 340px; position: relative; }
+  .an__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.4em; color: #FF3B5C; text-transform: uppercase; margin: 0 0 16px; }
+  #anomaly-overlay.glitching .an__eyebrow { animation: kf-an-flicker 0.5s steps(2) infinite; }
+  .an__title { font-family: 'Cinzel', serif; font-size: 30px; letter-spacing: 0.1em; color: #fff; margin: 0 0 24px; }
+  #anomaly-overlay.glitching .an__title { animation: kf-an-glitch 0.4s steps(2) infinite; text-shadow: 2px 0 #FF3B5C, -2px 0 var(--an-color, #00F5FF); }
+  .an__reward { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  #anomaly-overlay.revealed .an__reward { opacity: 1; transform: none; }
+  #anomaly-overlay.revealed .an__eyebrow { color: var(--an-color, #00F5FF); }
+  .an__glyph { font-size: 44px; margin: 0 0 12px; filter: drop-shadow(0 0 18px var(--an-glow, rgba(0,245,255,0.5))); }
+  .an__label { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.25em; color: var(--an-color, #00F5FF); text-transform: uppercase; margin: 0 0 12px; }
+  .an__body { font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.65; color: rgba(255,255,255,0.7); margin: 0 0 26px; }
+  .an__tap { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: rgba(255,255,255,0.25); text-transform: uppercase; margin: 0; }
+  @keyframes kf-an-flicker { 50% { opacity: 0.3; } }
+  @keyframes kf-an-glitch { 0% { transform: translate(0); } 25% { transform: translate(-3px,1px); } 50% { transform: translate(2px,-2px); } 75% { transform: translate(-1px,2px); } 100% { transform: translate(0); } }
+  @media (prefers-reduced-motion: reduce) { #anomaly-overlay.glitching .an__title, #anomaly-overlay.glitching .an__eyebrow { animation: none; } }
   #arc-card-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.94); z-index: 920; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px 20px; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
   #arc-card-overlay.active { opacity: 1; pointer-events: all; }
   .arc-card-wrap { width: 100%; max-width: 320px; border-radius: 20px; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06); flex-shrink: 0; }
@@ -2167,6 +2186,20 @@
           </div>
           <p class="fd-instruction" id="fd-instruction"></p>
           <p class="fd-sub" id="fd-sub">The System is watching.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anomaly overlay — variable reward drops -->
+    <div id="anomaly-overlay">
+      <div class="an__inner">
+        <p class="an__eyebrow">⚠ Signal Interference</p>
+        <h2 class="an__title">ANOMALY DETECTED</h2>
+        <div class="an__reward">
+          <p class="an__glyph" id="an-glyph">⚡</p>
+          <p class="an__label" id="an-label"></p>
+          <p class="an__body" id="an-body"></p>
+          <p class="an__tap">tap to continue</p>
         </div>
       </div>
     </div>
@@ -5180,6 +5213,8 @@
     const safeXP = Math.min(Math.abs(baseXP || 0), _XP_MAX_PER_ACTION);
     if (_isRateLimited()) { spawnXPFloat(safeXP, sourceEl); return safeXP; }
     baseXP = safeXP;
+    // Anomaly takes the stage — skip the crit roll so cinematics never stack
+    if (AnomalyEngine.tryRoll()) { spawnXPFloat(baseXP, sourceEl); return baseXP; }
     if (Math.random() > 0.05) {
       spawnXPFloat(baseXP, sourceEl);
       return baseXP;
@@ -5210,6 +5245,132 @@
     el.addEventListener('animationend', () => el.remove(), { once: true });
     // Phase 5: System Voice on critical drop
     if (/CRITICAL|TOKEN|UNBROKEN/i.test(label)) SystemVoice.onCriticalDrop();
+  }
+
+  /* ══ ANOMALY ENGINE — fullscreen variable rewards ══
+     Macro layer above crits: ~12% per action, max 1/day.
+     Loot: XP cache / lore fragment / ghost token (1 per week, cap 5). */
+  const ANOMALY_LORE = [
+    'Before you, there were others. The System does not speak of them.',
+    'The Void is not empty. It is where discarded excuses go.',
+    'Streaks are not numbers. They are proof that yesterday\'s you kept a promise.',
+    'Somewhere, another hunter just quit. Their unclaimed XP flows through the stream. Some of it found you.',
+    'The System was not built to make you comfortable. It was built to make you undeniable.',
+    'Every anomaly is a crack in the pattern. You are becoming one.',
+    'Your contract has no exit clause. You read it. You signed anyway.',
+    'When you reach Level 100, the System will tell you what it is. Keep climbing.',
+  ];
+
+  const AnomalyEngine = (() => {
+    const CHANCE = 0.12;
+    const GHOST_GAP_MS = 7 * 86400000;
+
+    function eligible() {
+      if (!localStorage.getItem('weebji_mission_done')) return false; // never during onboarding
+      if (localStorage.getItem('weebji_anomaly_last') === new Date().toDateString()) return false;
+      return true;
+    }
+
+    function pickReward() {
+      const p = loadProgress();
+      const roll = Math.random();
+      const lastGhost = parseInt(localStorage.getItem('weebji_anomaly_ghost_ts') || '0');
+      const ghostOk = (p.ghostTokens || 0) < 5 && (Date.now() - lastGhost) > GHOST_GAP_MS;
+      if (roll < 0.15 && ghostOk) return { type: 'ghost' };
+      const found = JSON.parse(localStorage.getItem('weebji_lore_found') || '[]');
+      if (roll < 0.45 && found.length < ANOMALY_LORE.length) return { type: 'lore', idx: found.length };
+      return { type: 'xp', amount: 40 + Math.floor(Math.random() * 41) };
+    }
+
+    function tryRoll() {
+      if (!eligible()) return false;
+      if (Math.random() > CHANCE) return false;
+      localStorage.setItem('weebji_anomaly_last', new Date().toDateString());
+      const reward = pickReward();
+      // Wait out any running level-up cinematic before taking the stage
+      let waited = 0;
+      const arm = () => {
+        const lu = document.getElementById('levelup-overlay');
+        if (lu && lu.classList.contains('active') && waited < 30000) { waited += 500; setTimeout(arm, 500); return; }
+        show(reward);
+      };
+      setTimeout(arm, 1100);
+      return true;
+    }
+
+    function show(reward) {
+      const overlay = document.getElementById('anomaly-overlay');
+      if (!overlay) return;
+      const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+      overlay.style.setProperty('--an-color', color);
+      overlay.style.setProperty('--an-glow', hexRgba(color, 0.5));
+      const glyphEl = document.getElementById('an-glyph');
+      const labelEl = document.getElementById('an-label');
+      const bodyEl  = document.getElementById('an-body');
+      const payload = { type: reward.type };
+      if (reward.type === 'ghost') {
+        glyphEl.textContent = '👻';
+        labelEl.textContent = 'GHOST TOKEN RECOVERED';
+        bodyEl.textContent  = 'A fragment of another hunter\'s abandoned streak. It will shield yours.';
+      } else if (reward.type === 'lore') {
+        glyphEl.textContent = '◈';
+        labelEl.textContent = `LORE FRAGMENT ${reward.idx + 1} / ${ANOMALY_LORE.length}`;
+        bodyEl.textContent  = `"${ANOMALY_LORE[reward.idx]}"`;
+      } else {
+        glyphEl.textContent = '⚡';
+        labelEl.textContent = `XP CACHE — +${reward.amount} XP`;
+        bodyEl.textContent  = 'Unclaimed experience, rerouted to you. The System rewards the present.';
+        payload.amount = reward.amount;
+      }
+      if (typeof posthog !== 'undefined') posthog.capture('anomaly_drop', payload);
+      overlay.classList.add('active', 'glitching');
+      Sound.play('criticalDrop');
+      haptic([60, 30, 60, 30, 120]);
+      triggerFlash('flash-class', color, null);
+      shakeApp(0.8);
+      let leveled = false;
+      // Reveal + apply after the glitch settles (reward is granted even if they never tap)
+      setTimeout(() => {
+        overlay.classList.remove('glitching');
+        overlay.classList.add('revealed');
+        Sound.play('check');
+        const p = loadProgress();
+        if (reward.type === 'ghost') {
+          p.ghostTokens = Math.min((p.ghostTokens || 0) + 1, 5);
+          localStorage.setItem('weebji_anomaly_ghost_ts', String(Date.now()));
+        } else if (reward.type === 'lore') {
+          const found = JSON.parse(localStorage.getItem('weebji_lore_found') || '[]');
+          if (!found.includes(reward.idx)) found.push(reward.idx);
+          localStorage.setItem('weebji_lore_found', JSON.stringify(found));
+        } else {
+          p.xp += reward.amount;
+        }
+        leveled = checkLevelUp(p);
+        saveProgress(p); updateXPBar(p); updateStats(p);
+      }, 1300);
+      const dismiss = () => {
+        overlay.removeEventListener('click', dismiss);
+        overlay.classList.remove('active', 'revealed', 'glitching');
+        if (leveled) setTimeout(() => triggerLevelUp(loadProgress().level), 350);
+      };
+      setTimeout(() => overlay.addEventListener('click', dismiss), 1600);
+    }
+
+    return { tryRoll };
+  })();
+
+  // One-time System notice so users know anomalies exist
+  function spawnAnomalyNotice(color) {
+    const el = document.createElement('div');
+    el.style.cssText = `position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:960; max-width:330px; width:calc(100% - 40px); padding:14px 18px; background:rgba(7,9,15,0.96); border:1px solid ${hexRgba(color,0.35)}; border-radius:12px; box-shadow:0 0 24px ${hexRgba(color,0.15)}; font-family:'JetBrains Mono',monospace; text-align:center; cursor:pointer; -webkit-tap-highlight-color:transparent;`;
+    el.innerHTML = `
+      <p style="font-size:9px;letter-spacing:0.3em;color:#FF3B5C;text-transform:uppercase;margin:0 0 8px">⚠ System Notice</p>
+      <p style="font-size:11px;color:rgba(255,255,255,0.75);line-height:1.6;margin:0">Reward stream destabilized. <span style="color:${color}">ANOMALIES</span> may now trigger on any completed action — XP caches, lore fragments, even Ghost Tokens. The System rewards the present.</p>`;
+    document.body.appendChild(el);
+    Sound.play('tap');
+    const kill = () => { el.style.transition = 'opacity 0.4s ease'; el.style.opacity = '0'; setTimeout(() => el.remove(), 420); };
+    el.addEventListener('click', kill);
+    setTimeout(kill, 9000);
   }
 
   /* ══ ASYMMETRIC UNLOCKABLES ══════════════════ */
@@ -6151,6 +6312,11 @@
     renderWelcomeCard(p, cls);
     // Next Directive card — day-1 return hook after the First Directive
     renderNextDirectiveCard(p, cls);
+    // One-time anomaly announcement (post-onboarding users only)
+    if (localStorage.getItem('weebji_mission_done') && !localStorage.getItem('weebji_anomaly_notice')) {
+      localStorage.setItem('weebji_anomaly_notice', '1');
+      setTimeout(() => spawnAnomalyNotice(color), 2500);
+    }
     // First Directive — fullscreen overlay on very first dashboard visit
     if (!localStorage.getItem('weebji_mission_done')) setTimeout(() => showMissionBriefing(cls, color), 1200);
     // YouTube Notice Board removed — CORS proxy was fragile

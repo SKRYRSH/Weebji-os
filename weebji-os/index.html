@@ -6293,10 +6293,9 @@
       streakEl.addEventListener('animationend', () => streakEl.classList.remove('streak-ping'), { once: true });
     });
 
-    // Music: class theme on home (ambient is a near-silent drone — class themes are the real bg music)
-    const _homeTheme = _classTheme(cls);
-    if (!MusicEngine.currentTheme() || MusicEngine.currentTheme() === 'ambient') {
-      MusicEngine.play(_homeTheme);
+    // Music: ambient is the home default — class themes belong to their task screens
+    if (!MusicEngine.currentTheme()) {
+      MusicEngine.play('ambient');
     }
     // Persistent unlock: resume suspended context on ANY gesture (handles mobile re-suspend)
     if (!window._weebjiMusicUnlockBound) {
@@ -8795,17 +8794,12 @@
     return { play, stop, toggle, isEnabled, currentTheme };
   })();
 
-  // Home/background theme per class — ambient only when no class chosen yet
-  function _classTheme(cls) {
-    return ({ monarch: 'monarch', mastermind: 'mastermind', monk: 'sanctuary' })[cls] || 'ambient';
-  }
-
   // Start music on the very first gesture — covers onboarding screens (contract, vow,
   // class select, First Directive), which previously ran in total silence
   const _earlyMusicStart = () => {
     document.removeEventListener('pointerdown', _earlyMusicStart);
     if (!MusicEngine.isEnabled() || MusicEngine.currentTheme()) return;
-    MusicEngine.play(_classTheme(localStorage.getItem('weebji_class')));
+    MusicEngine.play('ambient');
   };
   document.addEventListener('pointerdown', _earlyMusicStart, { passive: true });
 
@@ -11134,7 +11128,7 @@
 
   document.getElementById('music-toggle-btn').addEventListener('click', () => {
     const on = MusicEngine.toggle();
-    if (on) MusicEngine.play(_classTheme(localStorage.getItem('weebji_class')));
+    if (on) MusicEngine.play('ambient');
     _updateMusicBtn();
     Sound.play('tap');
   });

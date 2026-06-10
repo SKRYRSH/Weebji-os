@@ -1027,9 +1027,32 @@
   .fd-ring-count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 46px; color: #fff; text-shadow: 0 0 24px var(--mb-glow, rgba(0,245,255,0.5)); }
   .fd-pulse { animation: kf-fd-pulse 2.4s ease-in-out infinite; }
   @keyframes kf-fd-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.045); } }
-  .fd-instruction { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.85); min-height: 20px; margin: 0 0 10px; }
+  .fd-instruction { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.85); min-height: 20px; margin: 0 0 10px; transition: color 0.4s ease; }
   .fd-sub { font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.4); margin: 0; }
-  @media (prefers-reduced-motion: reduce) { .fd-pulse { animation: none; } .fd-ring-fg { transition: none; } }
+  /* Monk breathing — ring swells and shrinks with the breath */
+  .fd-ring-wrap.fd-breathing { transition: transform 4.6s cubic-bezier(0.45,0,0.55,1); }
+  #mission-briefing.fd-breathe-in  .fd-ring-wrap.fd-breathing { transform: scale(1.1); }
+  #mission-briefing.fd-breathe-out .fd-ring-wrap.fd-breathing { transform: scale(0.94); }
+  /* Final seconds — urgency */
+  #mission-briefing.fd-final .fd-ring-count { color: var(--mb-color, #00F5FF); animation: kf-fd-count-pop 1s ease infinite; }
+  #mission-briefing.fd-final .fd-ring-fg { filter: drop-shadow(0 0 16px var(--mb-glow, rgba(0,245,255,0.5))); }
+  #mission-briefing.fd-final .fd-instruction { color: var(--mb-color, #00F5FF); }
+  @keyframes kf-fd-count-pop { 0% { transform: scale(1.18); } 40% { transform: scale(1); } 100% { transform: scale(1); } }
+  /* Completion — checkmark slams in, ring goes white-hot */
+  .fd-ring-count.fd-done { animation: kf-fd-done-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; color: var(--mb-color, #00F5FF); }
+  @keyframes kf-fd-done-pop { 0% { transform: scale(0); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+  .fd-ring-fg.fd-done { stroke: #FFFFFF; filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); }
+  /* Next Directive card */
+  .nd-sweep { position: absolute; top: 0; left: -60%; width: 45%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.05), transparent); animation: kf-nd-sweep 3.4s ease-in-out infinite; pointer-events: none; }
+  @keyframes kf-nd-sweep { 0% { left: -60%; } 60% { left: 120%; } 100% { left: 120%; } }
+  .nd-countdown { animation: kf-nd-count-glow 2.6s ease-in-out infinite; }
+  @keyframes kf-nd-count-glow { 0%, 100% { text-shadow: 0 0 8px rgba(255,255,255,0.15); } 50% { text-shadow: 0 0 22px var(--nd-glow, rgba(0,245,255,0.5)); } }
+  .nd-unlocked { animation: kf-nd-border 2.2s ease-in-out infinite; }
+  @keyframes kf-nd-border { 0%, 100% { box-shadow: 0 0 18px var(--nd-dim, rgba(0,245,255,0.06)); } 50% { box-shadow: 0 0 30px var(--nd-glow, rgba(0,245,255,0.3)); } }
+  @media (prefers-reduced-motion: reduce) {
+    .fd-pulse, #mission-briefing.fd-final .fd-ring-count, .fd-ring-count.fd-done, .nd-sweep, .nd-countdown, .nd-unlocked { animation: none; }
+    .fd-ring-fg, .fd-ring-wrap.fd-breathing { transition: none; }
+  }
   #arc-card-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.94); z-index: 920; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px 20px; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
   #arc-card-overlay.active { opacity: 1; pointer-events: all; }
   .arc-card-wrap { width: 100%; max-width: 320px; border-radius: 20px; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06); flex-shrink: 0; }
@@ -6234,17 +6257,32 @@
     fg.style.strokeDashoffset = 0;
     const countEl = document.getElementById('fd-count');
     const instrEl = document.getElementById('fd-instruction');
+    const ringWrap = overlay.querySelector('.fd-ring-wrap');
     countEl.textContent = TOTAL;
     instrEl.textContent = m.live;
+    // Monk: the ring breathes with the user instead of pulsing
+    if (cls === 'monk' && ringWrap) {
+      ringWrap.classList.remove('fd-pulse');
+      ringWrap.classList.add('fd-breathing');
+      overlay.classList.add('fd-breathe-in');
+    }
     let left = TOTAL;
     const tick = setInterval(() => {
       // Overlay killed externally (e.g. sign-out) — stop cleanly
-      if (!overlay.classList.contains('active')) { clearInterval(tick); overlay.classList.remove('directive-live'); return; }
+      if (!overlay.classList.contains('active')) { clearInterval(tick); overlay.classList.remove('directive-live', 'fd-final', 'fd-breathe-in', 'fd-breathe-out'); return; }
       left -= 1;
       if (left < 0) { clearInterval(tick); finishFirstDirective(cls, overlay); return; }
       countEl.textContent = left;
       fg.style.strokeDashoffset = C * (1 - left / TOTAL);
-      if (cls === 'monk') instrEl.textContent = (Math.floor((TOTAL - left) / 5) % 2 === 0) ? 'BREATHE IN' : 'BREATHE OUT';
+      if (cls === 'monk') {
+        const inhale = Math.floor((TOTAL - left) / 5) % 2 === 0;
+        instrEl.textContent = inhale ? 'BREATHE IN' : 'BREATHE OUT';
+        overlay.classList.toggle('fd-breathe-in', inhale);
+        overlay.classList.toggle('fd-breathe-out', !inhale);
+      }
+      // Final seconds — urgency ramps
+      if (left === 5) overlay.classList.add('fd-final');
+      if (left <= 3 && left > 0) { Sound.play('tap'); haptic(30); }
     }, 1000);
   }
 
@@ -6258,14 +6296,25 @@
       localStorage.setItem('weebji_first_action_done', '1');
       if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: cls, via: 'first_directive' });
     }
-    document.getElementById('fd-count').textContent = '✓';
+    overlay.classList.remove('fd-final', 'fd-breathe-in', 'fd-breathe-out');
+    const fdCount = document.getElementById('fd-count');
+    fdCount.textContent = '✓';
+    fdCount.classList.add('fd-done');
+    document.getElementById('fd-ring-fg').classList.add('fd-done');
     document.getElementById('fd-instruction').textContent = 'DIRECTIVE COMPLETE';
     document.getElementById('fd-sub').textContent = 'The System acknowledges you.';
+    const _fdColor = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+    triggerFlash('flash-class', _fdColor, null);
+    shakeApp(0.5);
     Sound.play('check');
     haptic([60, 40, 120]);
     setTimeout(() => {
       overlay.classList.remove('active');
-      setTimeout(() => overlay.classList.remove('directive-live'), 600);
+      setTimeout(() => {
+        overlay.classList.remove('directive-live');
+        fdCount.classList.remove('fd-done');
+        document.getElementById('fd-ring-fg').classList.remove('fd-done');
+      }, 600);
       document.getElementById('welcome-day1-card')?.remove();
       // The first win: +100 XP → Level 2 → full cinematic
       const p = loadProgress();
@@ -6338,11 +6387,14 @@
       overflow: hidden;
       box-shadow: 0 0 18px rgba(${r},${g},${b},0.06);
     `;
+    card.style.setProperty('--nd-glow', `rgba(${r},${g},${b},0.45)`);
+    card.style.setProperty('--nd-dim',  `rgba(${r},${g},${b},0.06)`);
     const locked = Date.now() < unlock;
     if (locked) {
       card.innerHTML = `
+        <div class="nd-sweep"></div>
         <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">🔒 Next Directive — Sealed</p>
-        <p style="font-family:'Cinzel',serif;font-size:24px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);margin:0 0 10px" id="nd-count">--:--:--</p>
+        <p class="nd-countdown" style="font-family:'Cinzel',serif;font-size:24px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);margin:0 0 10px" id="nd-count">--:--:--</p>
         <p style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0">"Return when the seal breaks.<br>The System remembers who shows up."</p>
       `;
       const pad = n => String(n).padStart(2, '0');
@@ -6350,13 +6402,22 @@
         const el = document.getElementById('nd-count');
         if (!el) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; return; }
         const ms = unlock - Date.now();
-        if (ms <= 0) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; renderNextDirectiveCard(loadProgress(), cls); return; }
+        if (ms <= 0) {
+          clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null;
+          // The seal breaks while they watch — make it a moment
+          triggerFlash('flash-class', color, null);
+          Sound.play('check');
+          haptic([40, 30, 80]);
+          renderNextDirectiveCard(loadProgress(), cls);
+          return;
+        }
         const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
         el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
       };
       renderCount();
       window._weebjiNDTimer = setInterval(renderCount, 1000);
     } else {
+      card.classList.add('nd-unlocked');
       const missions = {
         monarch:    'Complete one real workout in The Forge. Anything counts. Everything is recorded.',
         mastermind: 'Run one 25-minute deep work session. Build, study, or learn — the System logs all of it.',

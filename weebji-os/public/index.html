@@ -3180,8 +3180,14 @@
         } else {
           p.streak = (p.streak || 0) + 1;
           p.hp = Math.min(5, p.hp + 1);
+          // Clear stale loss flag from a previous day — while true it blocks
+          // pullProgress from ever restoring the cloud streak (v270)
+          p.streakLostToday = false;
         }
       }
+      // Broken loss state: flag set but no prevStreak to restore — the overlay
+      // can never show, so the flag is dead weight that blocks cloud restore (v270)
+      if (p.streakLostToday && !p.prevStreak) p.streakLostToday = false;
 
       // Save yesterday's count + the date it belongs to before wiping
       p.yesterdayCount = yesterdayDone;
@@ -3612,8 +3618,13 @@
       await _openPlayBilling(plan);
       return;
     }
-    // Web browser — direct to Play Store
-    spawnDropBanner('◆  Get WEEBJI OS on Google Play to unlock WEEBJI+');
+    // No Digital Goods API. Inside the TWA this means the device's default
+    // browser isn't Chrome (DGA only works when Chrome renders the TWA).
+    const _inTWA = document.referrer.startsWith('android-app://') || localStorage.getItem('weebji_twa') === '1';
+    try { if (typeof posthog !== 'undefined') posthog.capture('billing_dga_unavailable', { plan, in_twa: _inTWA, ua: navigator.userAgent }); } catch(_) {}
+    spawnDropBanner(_inTWA
+      ? '◆  Purchases need Google Chrome — set Chrome as your default browser, then reopen WEEBJI OS'
+      : '◆  Get WEEBJI OS on Google Play to unlock WEEBJI+');
   }
 
   function renderWeebjiPlusSection(color) {
@@ -6707,7 +6718,13 @@
     }
 
     function _ensureToday(p) {
-      if (!localStorage.getItem('weebji_first_directive_done')) return null;
+      if (!localStorage.getItem('weebji_first_directive_done')) {
+        // Veterans predate the First Directive flag — admit them straight to
+        // daily directives, skipping the newcomer Awakening Protocol (v270)
+        if ((p.level || 1) < 2) return null;
+        localStorage.setItem('weebji_first_directive_done', '1');
+        if (!localStorage.getItem(DAY_KEY)) localStorage.setItem(DAY_KEY, '8');
+      }
       let st = _get();
       if (st && st.date === _today()) return st;
       // Migration: users mid-flow on the old next-directive card
@@ -6723,7 +6740,10 @@
         }
       }
       // New day — the System assigns today's directive
-      const day = Math.max(2, parseInt(localStorage.getItem(DAY_KEY) || '2'));
+      let day = Math.max(2, parseInt(localStorage.getItem(DAY_KEY) || '2'));
+      // Level 20+ mid-protocol = veteran who slipped in — the Awakening is for
+      // newcomers; their day's check auto-passes instantly anyway (v270)
+      if (day <= 7 && (p.level || 1) >= 20) { day = 8; localStorage.setItem(DAY_KEY, '8'); }
       st = { date: _today(), day, done: false };
       if (day > 7) {
         const cls = _cls();
@@ -13709,6 +13729,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
   (function checkApkUpdate() {
     const APK_VERSION = 6;
     const isTWA = document.referrer.startsWith('android-app://');
+    if (isTWA) localStorage.setItem('weebji_twa', '1'); // referrer is lost on reload — persist
     if (!isTWA) return;
     if (localStorage.getItem('weebji_upd_dismissed') === '1') return;
     fetch('/Weebji-os/version.json?_=' + Date.now())

@@ -2408,6 +2408,13 @@
   <!-- ══ DEV PANEL (remove before launch) ══════ -->
 
   <script>
+  /* ══ REFERRAL CAPTURE — ?ref=<hunterNum> from a Summon link ══ */
+  try {
+    const _refP = parseInt(new URLSearchParams(location.search).get('ref') || '0');
+    if (_refP > 0 && !localStorage.getItem('weebji_ref_by')) localStorage.setItem('weebji_ref_by', String(_refP));
+    if (location.search.includes('ref=')) history.replaceState(null, '', location.pathname);
+  } catch(_) {}
+
   /* ══ SERVICE WORKER ══════════════════════════ */
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     // When new SW takes control → auto-reload to pick up fresh code
@@ -3290,6 +3297,7 @@
 
   function isWeebjiPlus() {
     if (SupabaseSync.isPremium()) return true;
+    if (parseInt(localStorage.getItem('weebji_ref_trial_until') || '0') > Date.now()) return true; // Summon a Hunter reward
     const ts = parseInt(localStorage.getItem('weebji_streak5_trial_start') || '0');
     return ts > 0 && Date.now() - ts < 7 * 86400000;
   }
@@ -3730,6 +3738,10 @@
       // Async: fill social proof with real premium count
       _fetchPremiumCount();
     }
+    // Summon a Hunter — referral CTA, every tier sees it
+    el.insertAdjacentHTML('beforeend', `
+      <button class="ghost-shop-btn" onclick="Sound.play('tap');ReferralSystem.shareLink()" style="margin-top:8px;border-color:${color}55;color:${color};">⟁ Summon a Hunter</button>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.4);text-align:center;padding:4px 0;">They start with a bonus Ghost Token. You earn +7 days of WEEBJI+ per summon.</div>`);
   }
 
   async function _fetchPremiumCount() {
@@ -11584,13 +11596,63 @@
     triggerPenanceProtocol(p);
   });
 
+  /* ══ SUMMON A HUNTER — referral system ══════
+     Share link carries ?ref=<hunterNum>. Referred hunter: +1 Ghost Token on
+     first sign-in. Referrer: +7 days WEEBJI+ per summon (stacks). Server
+     validates via claim_referral / redeem_referral_rewards RPCs (48h account
+     age cap, no self-referral, one claim per account). */
+  const ReferralSystem = (() => {
+    function shareLink() {
+      const num = localStorage.getItem('weebji_hunter_num');
+      const url = 'https://skryrsh.github.io/Weebji-os/' + (num ? `?ref=${num}` : '');
+      const text = `The System has chosen you. I am Hunter #${num || '?'} — join me and level up in real life. ⟁`;
+      if (navigator.share) navigator.share({ title: 'WEEBJI OS', text, url }).catch(() => {});
+      else { try { navigator.clipboard.writeText(`${text} ${url}`); } catch(_) {} spawnDropBanner('⟁ SUMMON LINK COPIED — send it to your chosen one'); }
+      if (typeof posthog !== 'undefined') posthog.capture('referral_share', { hunter: num });
+    }
+    async function sync() {
+      const client = SupabaseSync._client();
+      if (!client || !SupabaseSync.getUser()) return;
+      // I was summoned — claim once (any server verdict is final, never retry-spam)
+      const refBy = parseInt(localStorage.getItem('weebji_ref_by') || '0');
+      if (refBy && !localStorage.getItem('weebji_ref_claimed')) {
+        try {
+          // NOTE: .rpc() is a thenable without .catch() — try/await only
+          const { data } = await client.rpc('claim_referral', { ref_hunter_number: refBy });
+          if (data) localStorage.setItem('weebji_ref_claimed', '1');
+          if (data === 'ok') {
+            const p = loadProgress(); p.ghostTokens = (p.ghostTokens || 0) + 1; saveProgress(p);
+            spawnDropBanner(`⟁ SUMMONED BY HUNTER #${refBy} — bonus Ghost Token granted`);
+            if (typeof posthog !== 'undefined') posthog.capture('referral_claimed', { referrer: refBy });
+          }
+        } catch (_) {}
+      }
+      // My summons were answered — redeem, throttled to once/hour
+      const last = parseInt(localStorage.getItem('weebji_ref_redeem_at') || '0');
+      if (Date.now() - last < 3600000) return;
+      localStorage.setItem('weebji_ref_redeem_at', String(Date.now()));
+      try {
+        const { data: n } = await client.rpc('redeem_referral_rewards');
+        if (n > 0) {
+          const base = Math.max(parseInt(localStorage.getItem('weebji_ref_trial_until') || '0'), Date.now());
+          localStorage.setItem('weebji_ref_trial_until', String(base + n * 7 * 86400000));
+          spawnDropBanner(`⟁ ${n > 1 ? n + ' HUNTERS' : 'A HUNTER'} ANSWERED YOUR SUMMONS — +${n * 7} DAYS OF WEEBJI+`);
+          Sound.play('milestone');
+          if (typeof posthog !== 'undefined') posthog.capture('referral_rewarded', { count: n });
+        }
+      } catch (_) {}
+    }
+    return { shareLink, sync };
+  })();
+
   /* ══ WHAT'S NEW — once per version, feature releases only ══
      Bump VERSION with every deploy (match sw.js CACHE_NAME). Fill ITEMS only
      when something user-visible shipped — leave [] on fix-only releases and
      the overlay stays silent while still recording the seen version. */
   const WhatsNew = (() => {
-    const VERSION = 271;
+    const VERSION = 272;
     const ITEMS = [
+      '⟁ SUMMON A HUNTER — share your link from Profile: they start with a bonus Ghost Token, you earn +7 days of WEEBJI+ per summon',
       '⚡ Daily Directives now reach veteran hunters — the System has found you',
       '👻 Streak protection + cloud sync hardened — your record is safer than ever',
     ];
@@ -12938,7 +13000,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
               WeebjPush.linkUser(currentUser.id);
               WeebjPush.autoSubscribe();
             }
-            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') pullProgress();
+            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+              pullProgress().then(() => { try { ReferralSystem.sync(); } catch(_) {} }).catch(() => {});
+            }
             if (event === 'INITIAL_SESSION' && document.getElementById('dashboard')?.classList.contains('active')) initDashboard();
 
             if (onProfile) { renderAuthSection(); if (typeof GuildSystem !== 'undefined') GuildSystem.renderGuildSection(); }

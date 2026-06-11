@@ -6292,6 +6292,7 @@
       showInstallPromptWhenReady();
       maybeShowNotifPrompt();
       RitualClock.check();
+      setTimeout(() => WhatsNew.check(), 2600);
       maybeShowSignInNudge();
       maybeShowRatingPrompt();
       if (window._shortcutAction === 'profile') {
@@ -11582,6 +11583,45 @@
     document.getElementById('ghost-intervention').classList.remove('active');
     triggerPenanceProtocol(p);
   });
+
+  /* ══ WHAT'S NEW — once per version, feature releases only ══
+     Bump VERSION with every deploy (match sw.js CACHE_NAME). Fill ITEMS only
+     when something user-visible shipped — leave [] on fix-only releases and
+     the overlay stays silent while still recording the seen version. */
+  const WhatsNew = (() => {
+    const VERSION = 271;
+    const ITEMS = [
+      '⚡ Daily Directives now reach veteran hunters — the System has found you',
+      '👻 Streak protection + cloud sync hardened — your record is safer than ever',
+    ];
+    function check() {
+      const seen = parseInt(localStorage.getItem('weebji_seen_version') || '0');
+      localStorage.setItem('weebji_seen_version', VERSION);
+      if (!seen || seen >= VERSION) return; // fresh install: nothing is "new"
+      if (!ITEMS.length) return;
+      if (document.getElementById('ghost-intervention')?.classList.contains('active')) return; // never fight the rescue
+      if (localStorage.getItem('weebji_penance_active') === '1') return;
+      const color = localStorage.getItem('weebji_color') || '#00F5FF';
+      const el = document.createElement('div');
+      el.id = 'whats-new-overlay';
+      el.style.cssText = 'position:fixed;inset:0;z-index:9990;background:rgba(2,2,10,0.92);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:32px;opacity:0;transition:opacity 0.5s ease;';
+      el.innerHTML = `
+        <div style="max-width:320px;width:100%;border:1px solid ${color}33;border-radius:18px;background:rgba(6,6,18,0.95);padding:26px 24px;text-align:center;box-shadow:0 0 40px ${color}18;">
+          <p style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.4em;color:${color}88;text-transform:uppercase;margin:0 0 8px">System Update — Patch ${VERSION}</p>
+          <h2 style="font-family:'Cinzel',serif;font-size:20px;letter-spacing:0.14em;color:#fff;margin:0 0 16px">THE SYSTEM EVOLVED</h2>
+          <div style="text-align:left;display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+            ${ITEMS.map(t => `<p style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.72);line-height:1.6;margin:0">${t}</p>`).join('')}
+          </div>
+          <button id="whats-new-ok" style="width:100%;padding:13px;border-radius:11px;border:1px solid ${color}55;background:${color}14;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;color:${color};cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">Acknowledged</button>
+        </div>`;
+      document.body.appendChild(el);
+      requestAnimationFrame(() => el.style.opacity = '1');
+      Sound.play('check');
+      document.getElementById('whats-new-ok').onclick = () => { el.style.opacity = '0'; setTimeout(() => el.remove(), 500); };
+      if (typeof posthog !== 'undefined') posthog.capture('whats_new_shown', { version: VERSION });
+    }
+    return { check };
+  })();
 
   /* ══ PRESTIGE SYSTEM ═════════════════════════ */
   function showPrestigeModal() {

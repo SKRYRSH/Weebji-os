@@ -3141,6 +3141,7 @@
       dailyChallengeDone: (localStorage.getItem('weebji_dc_done') || '').startsWith(today),
       brainChallengeDone: (localStorage.getItem('weebji_brain_done') || '') === today,
       pinnedTitle       : localStorage.getItem('weebji_pinned_title') || null,
+      oath              : JSON.parse(localStorage.getItem('weebji_oath') || 'null'),
     };
 
     // Monthly ghost token refill — MUST run before streak check so tokens are available
@@ -3278,6 +3279,7 @@
     localStorage.setItem('weebji_streak_lost_today', p.streakLostToday ? 'true' : 'false');
     if (p.pinnedTitle) localStorage.setItem('weebji_pinned_title', p.pinnedTitle);
     else localStorage.removeItem('weebji_pinned_title');
+    if (p.oath !== undefined) localStorage.setItem('weebji_oath', JSON.stringify(p.oath || null));
     // Anti-tamper: write integrity hash
     _writeHash(p);
     // Phase 4: save daily shadow snapshot

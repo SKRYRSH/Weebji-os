@@ -21,9 +21,11 @@ const NOTIF: Record<string, { title: string; body: string }> = {
 };
 
 // Re-engagement bands: comeback_Nd targets users whose last sync is N..N+1 days old.
-// One-day-wide band + once-daily cron = each lapsed user gets exactly one push per
-// stage (day 2, 5, 10), never the twice-daily repeat spam the old 3d/7d types caused.
+// Cron fires hourly; we only push band users whose LOCAL hour is 17 (5pm their evening,
+// any timezone). One-day band x one 5pm per day = exactly one push per stage (2/5/10),
+// never the twice-daily repeat spam the old 3d/7d types caused.
 const COMEBACK_DAYS: Record<string, number> = { comeback_2d: 2, comeback_5d: 5, comeback_10d: 10 };
+const COMEBACK_LOCAL_HOUR = 17;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
@@ -78,7 +80,17 @@ Deno.serve(async (req) => {
       const bandOlder = new Date(now.getTime() - (days + 1) * 24 * 60 * 60 * 1000).toISOString();
       const { data: rows } = await sb.from('progress').select('user_id')
         .lt('updated_at', bandNewer).gte('updated_at', bandOlder);
-      userIds = (rows || []).map(r => r.user_id);
+      const bandIds = (rows || []).map(r => r.user_id);
+      if (bandIds.length) {
+        const { data: tzRows } = await sb.from('push_subscriptions').select('user_id, timezone').in('user_id', bandIds);
+        const localHour = (tz: string | null): number => {
+          try {
+            return parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: tz || 'UTC', hour: '2-digit', hour12: false }).format(now));
+          } catch { return now.getUTCHours(); }
+        };
+        const eveningNow = new Set((tzRows || []).filter(r => localHour(r.timezone) === COMEBACK_LOCAL_HOUR).map(r => r.user_id));
+        userIds = bandIds.filter(id => eveningNow.has(id));
+      }
     } else if (type === 'streak5_trial_ending' || type === 'streak5_trial_ended') {
       // ending: trial started 5-6 days ago (~2 days left) | ended: started 7-8 days ago (just lapsed)
       const [daysAgoMin, daysAgoMax] = type === 'streak5_trial_ending' ? [5, 6] : [7, 8];

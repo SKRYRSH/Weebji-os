@@ -8627,6 +8627,7 @@
   }
 
   function renderSecondaryMonk(p, el) {
+    el.innerHTML = ''; // appends below — without this every re-render stacks another panel
     // ── Sanctuary mini panel ──
     const sanctuaryMini = document.createElement('div');
     sanctuaryMini.innerHTML = `
@@ -8651,21 +8652,16 @@
     el.appendChild(sanctuaryMini);
     // Wire Sanctuary mode buttons and start (shared Sanctuary object)
     sanctuaryMini.querySelectorAll('[data-ctx="sec"]').forEach(b => {
-      b.addEventListener('click', () => {
-        Sanctuary.selectMode(b.dataset.mode);
-        // Sync secondary panel by re-reading from main syncUI approach
-        const t = document.getElementById('sec-sanctuary-timer');
-        const ph = document.getElementById('sec-sanctuary-phase');
-        const r = document.getElementById('sec-sanctuary-ring');
-        const ri = document.getElementById('sec-sanctuary-ring-inner');
-        // just re-render
-        renderSecondaryMonk(loadProgress(), el);
-      });
+      // selectMode runs the engine's _syncUI — updates timer, labels and active
+      // buttons in place. Re-rendering here stacked duplicate panels (dup IDs
+      // broke the tick display) and reset the visible timer to the hardcoded 10:00.
+      b.addEventListener('click', () => { Sanctuary.selectMode(b.dataset.mode); });
     });
     const secBtn = sanctuaryMini.querySelector('#sec-sanctuary-start');
     if (secBtn) secBtn.addEventListener('click', () => Sanctuary.toggle());
     const secGuideBtn = sanctuaryMini.querySelector('#sec-sanctuary-guide-btn');
     if (secGuideBtn) secGuideBtn.addEventListener('click', () => { Sound.play('tap'); Sanctuary.toggleGuide(); });
+    Sanctuary.syncUI(); // reflect real engine state (mode, remaining) over the hardcoded defaults
 
     // ── Rituals ──
     const ritualWrap = document.createElement('div');
@@ -12008,7 +12004,7 @@
      when something user-visible shipped — leave [] on fix-only releases and
      the overlay stays silent while still recording the seen version. */
   const WhatsNew = (() => {
-    const VERSION = 275;
+    const VERSION = 276;
     const ITEMS = [
       '⚔ CALIBRATION — The Forge now asks how hard the System should push you. Easy, Moderate, or Hard — reps, sets and XP scale to your level. Change it anytime',
       '🧘 INITIATE MODE — a 5-minute Sanctuary session for those beginning the path of stillness',

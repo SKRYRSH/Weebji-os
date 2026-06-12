@@ -1,7 +1,7 @@
-// ── WEEBJI OS — Service Worker v276 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v276';
+// ── WEEBJI OS — Service Worker v277 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v277';
 const BASE = self.registration.scope;
-const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png'];
+const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
@@ -17,6 +17,7 @@ self.addEventListener('message', e => {
     self.registration.showNotification(title || 'WEEBJI OS', {
       body:               body || 'The System has updated your status.',
       icon:               BASE + 'icons/icon-192.png',
+      badge:              BASE + 'icons/badge-96.png',
       tag:                cfg.tag,
       renotify:           true,
       vibrate:            cfg.vibrate,

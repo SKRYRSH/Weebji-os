@@ -7945,13 +7945,15 @@
 
     render() {
       const cfg = MM_MODES[this.mode];
-      const timerEl = document.getElementById('mm-timer') || document.getElementById('mm-timer-sec');
-      const startEl = document.getElementById('mm-start-btn') || document.getElementById('mm-start-sec');
-      const labelEl = document.getElementById('mm-session-label');
-      if (timerEl) { timerEl.textContent = this.formatTime(this.remaining); timerEl.classList.toggle('running', this.running); }
-      if (startEl) startEl.textContent = this.running ? 'Pause' : (this.remaining < cfg.mins * 60 && this.remaining > 0 ? 'Resume' : 'Begin Session');
+      // Same dual-mount duplicate-ID situation as the Sanctuary panel — update every copy
+      document.querySelectorAll('#mm-timer, #mm-timer-sec').forEach(el => {
+        el.textContent = this.formatTime(this.remaining); el.classList.toggle('running', this.running);
+      });
+      document.querySelectorAll('#mm-start-btn, #mm-start-sec').forEach(el => {
+        el.textContent = this.running ? 'Pause' : (this.remaining < cfg.mins * 60 && this.remaining > 0 ? 'Resume' : 'Begin Session');
+      });
       const p = loadProgress();
-      if (labelEl) labelEl.textContent = `Session ${p.mmSessions + (this.running ? 1 : 0)} today`;
+      document.querySelectorAll('#mm-session-label').forEach(el => { el.textContent = `Session ${p.mmSessions + (this.running ? 1 : 0)} today`; });
     },
 
     selectMode(mode) {
@@ -8302,30 +8304,30 @@
     }
 
     function _syncUI() {
-      const timerEl   = document.getElementById('sanctuary-timer')   || document.getElementById('sec-sanctuary-timer');
-      const phaseEl   = document.getElementById('sanctuary-phase')   || document.getElementById('sec-sanctuary-phase');
-      const ringEl    = document.getElementById('sanctuary-ring')    || document.getElementById('sec-sanctuary-ring');
-      const ringInner = document.getElementById('sanctuary-ring-inner') || document.getElementById('sec-sanctuary-ring-inner');
-      const startBtn  = document.getElementById('sanctuary-start')   || document.getElementById('sec-sanctuary-start');
-      const sessEl    = document.getElementById('sanctuary-sessions');
-      if (timerEl) timerEl.textContent = _fmt(_remaining);
-      if (phaseEl) {
-        if (!_running) phaseEl.textContent = '— awaiting —';
-        else if (_guideOn) phaseEl.textContent = PHASE_LABELS[_breathPhase];
-        else phaseEl.textContent = _flashRemaining > 0 ? 'Focus on your breath' : '—';
-      }
-      if (startBtn) startBtn.textContent = _running ? 'Pause' : (_remaining < SANCTUARY_MODES[_mode].mins * 60 ? 'Resume' : 'Begin Session');
-      if (ringEl) {
-        const phase = _guideOn ? _breathPhase : 2;
-        const scales = [1.18, 1.18, 0.75, 0.75];
-        ringEl.style.transform = `scale(${scales[phase]})`;
-        ringEl.dataset.phase = phase;
-      }
-      if (ringInner) ringInner.dataset.phase = _guideOn ? _breathPhase : 2;
-      if (sessEl) {
+      // The sec- panel can be mounted twice at once (dashboard pillar card + pillar
+      // panel overlay) with duplicate IDs — getElementById only ever reached the first
+      // copy, so the visible panel froze. Update every copy.
+      const all = (sel) => document.querySelectorAll(sel);
+      all('#sanctuary-timer, #sec-sanctuary-timer').forEach(el => { el.textContent = _fmt(_remaining); });
+      all('#sanctuary-phase, #sec-sanctuary-phase').forEach(el => {
+        if (!_running) el.textContent = '— awaiting —';
+        else if (_guideOn) el.textContent = PHASE_LABELS[_breathPhase];
+        else el.textContent = _flashRemaining > 0 ? 'Focus on your breath' : '—';
+      });
+      all('#sanctuary-start, #sec-sanctuary-start').forEach(el => {
+        el.textContent = _running ? 'Pause' : (_remaining < SANCTUARY_MODES[_mode].mins * 60 ? 'Resume' : 'Begin Session');
+      });
+      const phase  = _guideOn ? _breathPhase : 2;
+      const scales = [1.18, 1.18, 0.75, 0.75];
+      all('#sanctuary-ring, #sec-sanctuary-ring').forEach(el => {
+        el.style.transform = `scale(${scales[phase]})`;
+        el.dataset.phase = phase;
+      });
+      all('#sanctuary-ring-inner, #sec-sanctuary-ring-inner').forEach(el => { el.dataset.phase = phase; });
+      all('#sanctuary-sessions').forEach(el => {
         const totalMins = parseInt(localStorage.getItem('weebji_total_med_mins') || '0');
-        sessEl.textContent = totalMins > 0 ? `${totalMins} min lifetime` : 'No sessions yet';
-      }
+        el.textContent = totalMins > 0 ? `${totalMins} min lifetime` : 'No sessions yet';
+      });
       document.querySelectorAll('.sanctuary-mode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.mode === _mode);
       });
@@ -12004,7 +12006,7 @@
      when something user-visible shipped — leave [] on fix-only releases and
      the overlay stays silent while still recording the seen version. */
   const WhatsNew = (() => {
-    const VERSION = 276;
+    const VERSION = 277;
     const ITEMS = [
       '⚔ CALIBRATION — The Forge now asks how hard the System should push you. Easy, Moderate, or Hard — reps, sets and XP scale to your level. Change it anytime',
       '🧘 INITIATE MODE — a 5-minute Sanctuary session for those beginning the path of stillness',

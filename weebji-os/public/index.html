@@ -1219,7 +1219,7 @@
   .avatar.cls-monk       { background: rgba(168,216,168,0.07); border-color: #A8D8A8; box-shadow: 0 0 8px rgba(168,216,168,1), 0 0 20px rgba(168,216,168,0.5), 0 0 40px rgba(168,216,168,0.15), 0 0 4px rgba(168,216,168,0.2) inset; color: #A8D8A8; text-shadow: 0 0 8px rgba(168,216,168,1), 0 0 16px rgba(168,216,168,0.5); }
 
   /* ══ PHASE 2 — MASTERMIND: THE WHITE ROOM ═══ */
-  .mm-modes { display: flex; gap: 8px; margin-bottom: 22px; }
+  .mm-modes { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; justify-content: center; }
   .mm-mode-btn { flex: 1; padding: 10px 6px; border-radius: 10px; border: 1px solid rgba(230,57,70,0.15); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: #444466; cursor: pointer; text-transform: uppercase; transition: all 0.25s ease; -webkit-tap-highlight-color: transparent; }
   .mm-mode-btn.active { border-color: #E63946; color: #E63946; background: rgba(230,57,70,0.08); box-shadow: 0 0 12px rgba(230,57,70,0.2); }
   .mm-timer-wrap { text-align: center; padding: 16px 0 22px; position: relative; }
@@ -1260,7 +1260,7 @@
 
   /* ══ THE SANCTUARY — MONK MEDITATION ENGINE ══ */
   .sanctuary-panel { display:flex; flex-direction:column; align-items:center; padding:20px 0 16px; gap:14px; border-bottom:1px solid rgba(168,216,168,0.07); margin-bottom:16px; }
-  .sanctuary-modes { display:flex; gap:7px; }
+  .sanctuary-modes { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; }
   .sanctuary-mode-btn { padding:7px 13px; border-radius:8px; border:1px solid rgba(168,216,168,0.14); background:transparent; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.18em; color:rgba(168,216,168,0.35); cursor:pointer; text-transform:uppercase; transition:all 0.2s; -webkit-tap-highlight-color:transparent; }
   .sanctuary-mode-btn.active { border-color:rgba(168,216,168,0.5); background:rgba(168,216,168,0.07); color:#A8D8A8; box-shadow:0 0 10px rgba(168,216,168,0.08); }
   .sanctuary-ring-wrap { position:relative; width:156px; height:156px; display:flex; align-items:center; justify-content:center; }
@@ -2804,6 +2804,67 @@
     ],
   };
 
+  /* ── Difficulty tiers — moderate = original values, scaling keeps list length
+        and indexes stable so workoutChecked never desyncs ──────────────────── */
+  const DIFF_SCALES = {
+    easy:     { reps: 0.6, sets: -1, xp: 0.7 },
+    moderate: null,
+    hard:     { reps: 1.4, sets: +1, xp: 1.3 },
+  };
+  const DIFF_LABELS = { easy: 'Easy', moderate: 'Moderate', hard: 'Hard' };
+  function getDifficulty() {
+    const d = localStorage.getItem('weebji_difficulty');
+    return DIFF_SCALES.hasOwnProperty(d) ? d : 'moderate';
+  }
+  function setDifficulty(d) {
+    localStorage.setItem('weebji_difficulty', d);
+    try { if (typeof posthog !== 'undefined') posthog.capture('difficulty_set', { level: d }); } catch(_) {}
+  }
+  function applyDifficulty(list) {
+    const s = DIFF_SCALES[getDifficulty()];
+    if (!s) return list;
+    return list.map(ex => {
+      // reps can be timed strings ('30s', '45s') — scale the number, keep the suffix
+      const m = typeof ex.reps === 'string' ? ex.reps.match(/^(\d+)(\D*)$/) : null;
+      const reps = m ? Math.max(10, Math.round(+m[1] * s.reps)) + m[2]
+                     : Math.max(4, Math.round(ex.reps * s.reps));
+      return { ...ex, reps, sets: Math.max(2, ex.sets + s.sets), xp: Math.max(1, Math.round(ex.xp * s.xp)) };
+    });
+  }
+  function diffToggleHTML(idPrefix) {
+    const cur = getDifficulty();
+    return `<div class="forge-mode-toggle" style="margin-top:8px;margin-bottom:12px">${Object.entries(DIFF_LABELS).map(([k,v]) =>
+      `<button class="forge-mode-btn${cur===k?' active':''}" id="${idPrefix}-diff-${k}">${v}</button>`).join('')}</div>`;
+  }
+  function bindDiffToggle(root, idPrefix, rerender) {
+    Object.keys(DIFF_LABELS).forEach(k => {
+      root.querySelector(`#${idPrefix}-diff-${k}`)?.addEventListener('click', () => {
+        setDifficulty(k);
+        spawnDropBanner(`⚔️ Training intensity → ${k.toUpperCase()}`);
+        rerender();
+      });
+    });
+  }
+  function renderForgeCalibration(listEl, rerender) {
+    if (!listEl) return;
+    listEl.innerHTML = `
+      <div class="cw-card" style="border-color:rgba(0,245,255,0.18);text-align:center;padding:20px 14px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.25em;color:#00F5FF;text-shadow:0 0 10px rgba(0,245,255,0.5)">CALIBRATION REQUIRED</div>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:rgba(255,255,255,0.45);margin:10px 0 14px;line-height:1.7">The System must measure your limits.<br>Choose your training intensity.</p>
+        <div class="forge-mode-toggle" style="flex-direction:column;gap:8px">
+          <button class="forge-mode-btn" data-diff="easy">Easy — build the habit</button>
+          <button class="forge-mode-btn" data-diff="moderate">Moderate — the standard path</button>
+          <button class="forge-mode-btn" data-diff="hard">Hard — no mercy</button>
+        </div>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,255,255,0.2);margin:12px 0 0;text-transform:uppercase">Can be changed anytime in The Forge</p>
+      </div>`;
+    listEl.querySelectorAll('[data-diff]').forEach(b => b.addEventListener('click', () => {
+      setDifficulty(b.dataset.diff);
+      spawnDropBanner(`⚔️ Training intensity → ${b.dataset.diff.toUpperCase()}`);
+      rerender();
+    }));
+  }
+
   const EXERCISE_INFO = {
     'Push-ups':              { tip: 'Hands shoulder-width, body rigid from head to heel. Lower chest to floor, full range.' },
     'Wide Push-ups':         { tip: 'Hands wider than shoulders. More chest activation, less tricep than standard.' },
@@ -2869,6 +2930,7 @@
   ];
 
   const MM_MODES = {
+    sprint:    { label: 'Sprint',     mins: 10, xp: 6  },
     standard:  { label: 'Standard',   mins: 25, xp: 14 },
     deep:      { label: 'Deep Work',  mins: 50, xp: 30 },
     whiteroom: { label: 'White Room', mins: 90, xp: 55 },
@@ -7344,15 +7406,23 @@
       forgeCard.classList.add('dash-card--cyan');
       titleEl.textContent = 'THE FORGE'; subEl.textContent = `${type} DAY`;
       bonusEl.classList.toggle('hidden', !p.workoutBonus);
+      // First Forge visit: ask difficulty before showing exercises
+      if (!localStorage.getItem('weebji_difficulty')) {
+        const mwc = document.getElementById('forge-mode-wrap');
+        if (mwc) mwc.innerHTML = '';
+        renderForgeCalibration(document.getElementById('exercise-list'), () => renderForgeArea(loadProgress(), cls));
+        return;
+      }
       const wMode = localStorage.getItem('weebji_workout_mode') || 'home';
       const mw = document.getElementById('forge-mode-wrap');
       if (mw) {
-        mw.innerHTML = `<div class="forge-mode-toggle"><button class="forge-mode-btn${wMode==='home'?' active':''}" id="forge-home-btn">🏠 Home</button><button class="forge-mode-btn${wMode==='gym'?' active':''}" id="forge-gym-btn">🏋️ Gym</button></div>`;
+        mw.innerHTML = `<div class="forge-mode-toggle"><button class="forge-mode-btn${wMode==='home'?' active':''}" id="forge-home-btn">🏠 Home</button><button class="forge-mode-btn${wMode==='gym'?' active':''}" id="forge-gym-btn">🏋️ Gym</button></div>` + diffToggleHTML('forge');
         mw.querySelector('#forge-home-btn').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','home'); renderForgeArea(loadProgress(), cls); });
         mw.querySelector('#forge-gym-btn').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','gym'); renderForgeArea(loadProgress(), cls); });
+        bindDiffToggle(mw, 'forge', () => renderForgeArea(loadProgress(), cls));
       }
-      const customs = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
-      renderExercises(p, [...(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]), ...customs]);
+      // customs NOT passed here — renderExercises appends them itself (was double-adding before)
+      renderExercises(p, applyDifficulty(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]));
     }
     // Monarch: calendar + PR board appended after exercise list (clear first to prevent duplication)
     requestAnimationFrame(() => {
@@ -8120,6 +8190,7 @@
 
   /* ══ THE SANCTUARY — MEDITATION ENGINE ══════ */
   const SANCTUARY_MODES = {
+    initiate:     { label: 'Initiate',      mins: 5,  xp: 8  },
     focused:      { label: 'Focused',      mins: 10, xp: 15 },
     deep:         { label: 'Deep',          mins: 20, xp: 28 },
     transcendent: { label: 'Transcendent',  mins: 45, xp: 50 },
@@ -8656,13 +8727,18 @@
       el.appendChild(renderPRBoard(p));
       return;
     }
+    if (!localStorage.getItem('weebji_difficulty')) {
+      renderForgeCalibration(el, () => renderSecondaryMonarch(p, el));
+      return;
+    }
     const workoutMode = localStorage.getItem('weebji_workout_mode') || 'home';
     const customs = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
-    const allExercises = [...(workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]), ...customs];
+    const allExercises = [...applyDifficulty(workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]), ...customs];
     el.innerHTML = `<div class="forge-mode-toggle" style="margin-bottom:12px">
       <button class="forge-mode-btn${workoutMode==='home'?' active':''}" id="sec-mode-home">🏠 Home</button>
       <button class="forge-mode-btn${workoutMode==='gym'?' active':''}" id="sec-mode-gym">🏋️ Gym</button>
-    </div>`;
+    </div>` + diffToggleHTML('sec');
+    bindDiffToggle(el, 'sec', () => renderSecondaryMonarch(p, el));
     el.appendChild(renderForgeTimerWidget());
     allExercises.forEach((ex, i) => {
       const done = p.workoutChecked.includes(i);
@@ -11932,11 +12008,11 @@
      when something user-visible shipped — leave [] on fix-only releases and
      the overlay stays silent while still recording the seen version. */
   const WhatsNew = (() => {
-    const VERSION = 273;
+    const VERSION = 275;
     const ITEMS = [
-      '⟁ THE OATH — the System no longer gives orders to the Awakened. Swear a weekly vow — Train, Focus, or Stillness — and keep it for the days you chose',
-      '◆ OATHKEEPER RANKS — every kept oath raises your rank and multiplies the reward. Break one, and the System remembers',
-      '⚔ New secret title for those who keep three oaths in a row',
+      '⚔ CALIBRATION — The Forge now asks how hard the System should push you. Easy, Moderate, or Hard — reps, sets and XP scale to your level. Change it anytime',
+      '🧘 INITIATE MODE — a 5-minute Sanctuary session for those beginning the path of stillness',
+      '⏱ SPRINT MODE — a 10-minute Mastermind session. Lower the barrier. Enter the work',
     ];
     function check() {
       const seen = parseInt(localStorage.getItem('weebji_seen_version') || '0');
@@ -13104,8 +13180,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const p = loadProgress();
       const type = todayWorkoutType();
       if (type !== 'REST' && WORKOUTS[type]) {
-        WORKOUTS[type].forEach((_, i) => { if (!p.workoutChecked.includes(i)) p.workoutChecked.push(i); });
-        p.xp += WORKOUTS[type].reduce((s, w) => s + w.xp, 0) + 25; p.workoutBonus = true;
+        const wl = applyDifficulty(WORKOUTS[type]);
+        wl.forEach((_, i) => { if (!p.workoutChecked.includes(i)) p.workoutChecked.push(i); });
+        p.xp += wl.reduce((s, w) => s + w.xp, 0) + 25; p.workoutBonus = true;
       }
       const quests = CLASS_QUESTS[cls] || [];
       quests.forEach((_, i) => { if (!p.questsChecked.includes(i)) p.questsChecked.push(i); });

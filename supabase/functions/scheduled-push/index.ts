@@ -10,12 +10,20 @@ const NOTIF: Record<string, { title: string; body: string }> = {
   morning_activation: { title: '◈ SYSTEM ONLINE',         body: "Today's protocol is waiting. Don't let the streak die." },
   streak_reminder:    { title: 'SYSTEM ALERT',             body: "You haven't trained today. Your streak dies at midnight." },
   midday_check:       { title: '◈ MID-SESSION CHECK',     body: "Half the day is gone. You still haven't trained. Fix that." },
-  comeback_3d:        { title: 'RECONNECTION REQUIRED',    body: 'Your guild noticed you went dark. 3 days offline. Come back.' },
-  comeback_7d:        { title: 'RANK SLIPPING',            body: "Someone took your spot on the leaderboard. 7 days gone. Return now." },
+  comeback_2d:        { title: '◈ ABSENCE DETECTED',      body: 'The System has noticed your absence. 48 hours of silence. Return before the void settles in.' },
+  comeback_5d:        { title: 'SIGNAL LOST — DAY 5',     body: 'Five days dark. Hunters are passing you on the leaderboard. The System holds your place — barely. Reconnect.' },
+  comeback_10d:       { title: '⚠ FINAL TRANSMISSION',    body: 'Ten days of silence. Most never return. Prove you are not most. One session reactivates everything.' },
   weekly_start:       { title: '◈ NEW WEEK DETECTED',     body: "Fresh week. Zero excuses. The System is watching from day one." },
   midweek_check:      { title: 'MIDWEEK STATUS',           body: "Wednesday. Still time to make this week count. Are you training?" },
   week_close:         { title: '⚠ WEEK CLOSES TONIGHT',   body: "Sunday ends in hours. Don't let this week die without a session." },
+  streak5_trial_ending: { title: '⏳ YOUR FREE TRIAL IS ENDING', body: 'Your 7-day WEEBJI+ trial ends in 2 days. Subscribe now so you never lose what you unlocked.' },
+  streak5_trial_ended:  { title: '◆ YOUR FREE TRIAL HAS ENDED', body: "WEEBJI+ access has reverted to free tier. You know what you had — now go get it back." },
 };
+
+// Re-engagement bands: comeback_Nd targets users whose last sync is N..N+1 days old.
+// One-day-wide band + once-daily cron = each lapsed user gets exactly one push per
+// stage (day 2, 5, 10), never the twice-daily repeat spam the old 3d/7d types caused.
+const COMEBACK_DAYS: Record<string, number> = { comeback_2d: 2, comeback_5d: 5, comeback_10d: 10 };
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
@@ -40,11 +48,8 @@ Deno.serve(async (req) => {
     );
 
     const now = new Date();
-    const todayUTC        = now.toISOString().slice(0, 10); // YYYY-MM-DD
-    const threeDaysAgo    = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    const sevenDaysAgo    = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const todayUTC = now.toISOString().slice(0, 10);
 
-    // Returns YYYY-MM-DD in the given IANA timezone (falls back to UTC)
     function localToday(tz: string | null): string {
       try {
         if (!tz) return todayUTC;
@@ -52,11 +57,9 @@ Deno.serve(async (req) => {
       } catch { return todayUTC; }
     }
 
-    // Find target user_ids — pull from push_subscriptions directly so streak=0 users still get notified
     let userIds: string[] = [];
 
     if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check') {
-      // Subscribed users who haven't trained today in their local timezone
       const { data: subs } = await sb.from('push_subscriptions').select('user_id, timezone');
       const allIds = (subs || []).map(r => r.user_id);
       if (allIds.length) {
@@ -65,34 +68,43 @@ Deno.serve(async (req) => {
         const tzMap = new Map((subs || []).map(r => [r.user_id, r.timezone as string | null]));
         userIds = allIds.filter(id => {
           const trained = trainedMap.get(id);
-          if (!trained) return true; // never trained or new user
+          if (!trained) return true;
           return trained < localToday(tzMap.get(id) ?? null);
         });
       }
-    } else if (type === 'comeback_3d') {
-      // Exclude users who joined within the last 3 days — they aren't really "gone dark"
-      const { data: newUsers } = await sb.from('users').select('id').gte('joined_at', threeDaysAgo);
-      const newIds3 = new Set((newUsers || []).map(r => r.id));
-      const { data: rows } = await sb.from('progress').select('user_id').lt('updated_at', threeDaysAgo).gte('updated_at', sevenDaysAgo);
-      userIds = (rows || []).map(r => r.user_id).filter(id => !newIds3.has(id));
-    } else if (type === 'comeback_7d') {
-      // Exclude users who joined within the last 7 days
-      const { data: newUsers } = await sb.from('users').select('id').gte('joined_at', sevenDaysAgo);
-      const newIds7 = new Set((newUsers || []).map(r => r.id));
-      const { data: rows } = await sb.from('progress').select('user_id').lt('updated_at', sevenDaysAgo);
-      userIds = (rows || []).map(r => r.user_id).filter(id => !newIds7.has(id));
+    } else if (COMEBACK_DAYS[type]) {
+      const days = COMEBACK_DAYS[type];
+      const bandNewer = new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
+      const bandOlder = new Date(now.getTime() - (days + 1) * 24 * 60 * 60 * 1000).toISOString();
+      const { data: rows } = await sb.from('progress').select('user_id')
+        .lt('updated_at', bandNewer).gte('updated_at', bandOlder);
+      userIds = (rows || []).map(r => r.user_id);
+    } else if (type === 'streak5_trial_ending' || type === 'streak5_trial_ended') {
+      // ending: trial started 5-6 days ago (~2 days left) | ended: started 7-8 days ago (just lapsed)
+      const [daysAgoMin, daysAgoMax] = type === 'streak5_trial_ending' ? [5, 6] : [7, 8];
+      const cutoffOld = now.getTime() - daysAgoMax * 24 * 60 * 60 * 1000;
+      const cutoffNew = now.getTime() - daysAgoMin * 24 * 60 * 60 * 1000;
+      const { data: rows }   = await sb.from('progress').select('user_id, data');
+      const { data: lbRows } = await sb.from('leaderboard').select('user_id, is_plus');
+      const plusSet = new Set((lbRows || []).filter(r => r.is_plus).map(r => r.user_id));
+      userIds = (rows || [])
+        .filter(r => {
+          if (plusSet.has(r.user_id)) return false;
+          const ts = parseInt((r.data as Record<string, unknown> | null)?.streak5TrialStart as string || '0');
+          return ts > 0 && ts >= cutoffOld && ts <= cutoffNew;
+        })
+        .map(r => r.user_id);
     } else {
-      // weekly_* — all subscribed users
       const { data: subs } = await sb.from('push_subscriptions').select('user_id');
       userIds = (subs || []).map(r => r.user_id);
     }
+
     if (userIds.length === 0) {
       return new Response(JSON.stringify({ ok: true, targeted: 0, sent: 0, failed: 0 }), {
         headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
 
-    // Fetch push subscriptions for these users
     const { data: subs, error: subErr } = await sb
       .from('push_subscriptions')
       .select('user_id, endpoint, p256dh, auth')
@@ -119,7 +131,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Best-effort log
     try {
       await sb.from('push_log').insert({ type, targeted: userIds.length, recipients: sent, ok: sent > 0, error: failed > 0 ? `${failed} failed` : null });
     } catch { /* table may not exist */ }

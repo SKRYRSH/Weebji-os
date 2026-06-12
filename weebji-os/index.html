@@ -1061,6 +1061,11 @@
   @keyframes kf-dir-redact { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.9; } }
   .dir-complete-pop { animation: kf-dir-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
   @keyframes kf-dir-pop { 0% { transform: scale(0.92); opacity: 0.4; } 100% { transform: scale(1); opacity: 1; } }
+  /* Oath Engine — behind-pace warning, binding seal text */
+  .oath-warn { border-color: rgba(255,59,92,0.55) !important; animation: kf-oath-warn 1.8s ease-in-out infinite !important; }
+  @keyframes kf-oath-warn { 0%, 100% { box-shadow: 0 0 14px rgba(255,59,92,0.1); } 50% { box-shadow: 0 0 32px rgba(255,59,92,0.35); } }
+  .oath-bind { animation: kf-oath-bind 0.9s cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes kf-oath-bind { 0% { transform: scale(0.85); opacity: 0; letter-spacing: 0.5em; } 100% { transform: scale(1); opacity: 1; letter-spacing: 0.18em; } }
   /* Universal check juice — every task check pops, row flashes, XP bar surges */
   .check-pop { animation: kf-check-pop 0.45s cubic-bezier(0.34,1.56,0.64,1); }
   @keyframes kf-check-pop { 0% { transform: scale(0.3); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
@@ -1073,7 +1078,7 @@
   #peak-upsell { position: absolute; left: 12px; right: 12px; bottom: 14px; z-index: 928; background: rgba(7,9,15,0.97); border: 1px solid rgba(255,200,87,0.35); border-radius: 16px; padding: 18px 18px 14px; font-family: 'JetBrains Mono', monospace; text-align: center; transform: translateY(130%); transition: transform 0.45s cubic-bezier(0.22,1,0.36,1); box-shadow: 0 -4px 40px rgba(0,0,0,0.6), 0 0 24px rgba(255,200,87,0.08); }
   #peak-upsell.show { transform: none; }
   @media (prefers-reduced-motion: reduce) {
-    .fd-pulse, #mission-briefing.fd-final .fd-ring-count, .fd-ring-count.fd-done, .nd-sweep, .nd-countdown, .nd-unlocked, .dir-dot.now, .dir-priority, .dir-redacted, .dir-complete-pop, .check-pop, .row-flash, .xp-surge { animation: none; }
+    .fd-pulse, #mission-briefing.fd-final .fd-ring-count, .fd-ring-count.fd-done, .nd-sweep, .nd-countdown, .nd-unlocked, .dir-dot.now, .dir-priority, .dir-redacted, .dir-complete-pop, .check-pop, .row-flash, .xp-surge, .oath-warn, .oath-bind { animation: none; }
     .fd-ring-fg, .fd-ring-wrap.fd-breathing { transition: none; }
   }
   /* ── Anomaly overlay — fullscreen variable reward drop ── */
@@ -5501,6 +5506,7 @@
     { id: 'pilgrim_path',      glyph: '☯', label: 'Path of the Pilgrim',   desc: 'All eight rituals, fourteen consecutive days. The Monk way is the only way.',      condition: (p,cls) => cls === 'monk' && p.monkGrid && p.monkGrid.length >= 14 },
     { id: 'shadow_slayer',     glyph: '👁', label: 'Shadow Slayer',         desc: 'Your shadow self could not keep up. You outran your own past.',                    condition: (p,_)   => !!p.shadowSlayerEarned },
     { id: 'the_awakened',      glyph: '⟁', label: 'The Awakened',          desc: 'Seven directives. Seven days. The Awakening Protocol is complete — the System no longer questions you.', condition: () => localStorage.getItem('weebji_awakened') === '1' },
+    { id: 'oathkeeper',        glyph: '⟁', label: 'Oathkeeper',            desc: 'Three oaths sworn. Three oaths kept. The System no longer commands you — it witnesses you.', condition: (p,_)   => (p.oath?.rank || 0) >= 3 },
   ];
 
   const STREAK_TITLE_DEFS = {
@@ -6773,6 +6779,7 @@
     function evaluate(p) {
       const st = _get();
       if (!st || st.date !== _today() || st.done) return;
+      if (st.day > 7) return; // day-8+ belongs to the Oath — procedural directives never grant XP again
       const cls = _cls();
       const t = _resolve(st, cls);
       if (!t) return;
@@ -6806,6 +6813,7 @@
       if (window._weebjiNDTimer) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; }
       const st = _ensureToday(p);
       if (!st) return;
+      if (st.day > 7) { OathEngine.renderCard(p, cls); return; } // the Awakened swear Oaths now
       cls = cls || _cls();
       const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
       const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
@@ -6914,6 +6922,277 @@
     }
 
     return { renderCard, evaluate, beginProtocol };
+  })();
+
+  /* ══ OATH ENGINE — day-8+ weekly vows. The Awakened give orders now. ══
+     p.oath = { type, target, days:{dateString:true}, declaredAt, endsAt, xp, rank, status, coldUntil? }
+     rank = consecutive kept oaths (persists across oaths, resets to 0 on a broken one). */
+  const OathEngine = (() => {
+    const DAY = 86400000;
+    const _today = () => new Date().toDateString();
+    const _cls = () => localStorage.getItem('weebji_class') || 'monarch';
+    const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+    const _roman = n => ROMAN[Math.min(n, 10)] || String(n);
+    const TYPES = {
+      TRAIN:     { glyph: '⚔', label: 'TRAIN',     desc: 'A day counts when a workout is logged.',        check: p => (p.workoutChecked || []).length > 0 },
+      FOCUS:     { glyph: '◆', label: 'FOCUS',     desc: 'A day counts when a Focus session is sealed.',  check: p => ((p.mmDaily || {})[new Date().toDateString()] || 0) > 0 },
+      STILLNESS: { glyph: '☯', label: 'STILLNESS', desc: 'A day counts when a ritual is honored.',        check: p => (p.monkChecked || []).length > 0 },
+    };
+    const _xpFor = (target, rank) => Math.round(40 * target * Math.min(3, 1 + rank * 0.25));
+
+    // Hooked into updateStats() beside DirectiveEngine — marks today, judges expired oaths
+    function evaluate(p) {
+      const o = p.oath;
+      if (!o || o.status !== 'active') return;
+      if (Date.now() > o.endsAt) { _judge(); return; }
+      const t = TYPES[o.type];
+      if (!t || (o.days || {})[_today()]) return;
+      let ok = false;
+      try { ok = !!t.check(p); } catch (e) {}
+      if (!ok) return;
+      const p2 = loadProgress();
+      if (!p2.oath || p2.oath.status !== 'active') return;
+      p2.oath.days = p2.oath.days || {};
+      p2.oath.days[_today()] = true;
+      saveProgress(p2);
+      spawnDropBanner(`⟁ THE OATH HOLDS — ${Object.keys(p2.oath.days).length}/${p2.oath.target} DAYS`);
+      Sound.play('check');
+      haptic([50, 30, 90]);
+      renderCard(p2);
+    }
+
+    // Fires once — status flips to 'none' so neither call site can double-judge
+    function _judge() {
+      const p2 = loadProgress();
+      const o = p2.oath;
+      if (!o || o.status !== 'active') return;
+      const kept = Object.keys(o.days || {}).length >= o.target;
+      if (kept) {
+        const rank = (o.rank || 0) + 1;
+        const xp = o.xp || _xpFor(o.target, o.rank || 0);
+        p2.oath = { status: 'none', rank, declaredAt: o.declaredAt };
+        p2.xp += xp;
+        const leveled = checkLevelUp(p2);
+        checkSecretTitles(p2, _cls());
+        saveProgress(p2); updateXPBar(p2);
+        spawnDropBanner(`⟁ OATH KEPT — OATHKEEPER ${_roman(rank)} — +${xp} XP`);
+        triggerFlash('flash-class', localStorage.getItem('weebji_color') || '#00F5FF', null);
+        Sound.play('milestone');
+        haptic([80, 50, 80, 50, 200]);
+        shakeApp(0.6);
+        if (typeof posthog !== 'undefined') posthog.capture('oath_result', { kept: true, rank, type: o.type, target: o.target });
+        if (leveled) setTimeout(() => triggerLevelUp(p2.level), 600);
+      } else {
+        const mid = new Date(); mid.setHours(24, 0, 0, 0);
+        p2.oath = { status: 'none', rank: 0, coldUntil: mid.getTime(), declaredAt: o.declaredAt };
+        saveProgress(p2);
+        spawnDropBanner('Noted.');
+        if (typeof posthog !== 'undefined') posthog.capture('oath_result', { kept: false, type: o.type, target: o.target });
+      }
+      renderCard(p2);
+    }
+
+    function renderCard(p, cls) {
+      document.getElementById('oath-card')?.remove();
+      p = p || loadProgress();
+      const o = p.oath;
+      if (o && o.status === 'active' && Date.now() > o.endsAt) { _judge(); return; }
+      const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+      const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
+      const card = document.createElement('div');
+      card.id = 'oath-card';
+      card.style.cssText = `
+        margin: 0 16px 16px;
+        padding: 18px 20px;
+        background: rgba(${r},${g},${b},0.04);
+        border: 1px solid rgba(${r},${g},${b},0.2);
+        border-radius: 16px;
+        font-family: 'JetBrains Mono', monospace;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 18px rgba(${r},${g},${b},0.06);
+      `;
+      card.style.setProperty('--nd-glow', `rgba(${r},${g},${b},0.45)`);
+      card.style.setProperty('--nd-dim',  `rgba(${r},${g},${b},0.06)`);
+      const rank = o?.rank || 0;
+      if (!o || o.status !== 'active') {
+        if (o?.coldUntil && Date.now() < o.coldUntil) {
+          card.style.borderColor = 'rgba(255,59,92,0.3)';
+          card.innerHTML = `
+            <p style="font-size:9px;letter-spacing:0.35em;color:rgba(255,59,92,0.6);text-transform:uppercase;margin:0 0 10px">⟁ Oath Broken</p>
+            <p style="font-family:'Cinzel',serif;font-size:18px;letter-spacing:0.14em;color:rgba(255,255,255,0.85);margin:0 0 10px">THE SYSTEM REMEMBERS</p>
+            <p style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0">"An oath, once spoken, is not forgotten.<br>Return when the day turns."</p>
+          `;
+        } else {
+          card.classList.add('nd-unlocked');
+          card.innerHTML = `
+            <div class="nd-sweep"></div>
+            <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">⟁ The Oath${rank > 0 ? ` — Oathkeeper ${_roman(rank)}` : ''}</p>
+            <p style="font-family:'Cinzel',serif;font-size:18px;letter-spacing:0.12em;color:rgba(255,255,255,0.9);margin:0 0 10px">THE SYSTEM AWAITS YOUR OATH</p>
+            <p style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;margin:0 0 14px">"You have proven you can follow orders.<br>Now prove you can give them."</p>
+            <button id="oath-swear-btn" style="
+              font-family:'JetBrains Mono',monospace;
+              font-size:11px;
+              letter-spacing:0.2em;
+              text-transform:uppercase;
+              background:transparent;
+              border:1px solid rgba(${r},${g},${b},0.35);
+              border-radius:8px;
+              color:rgba(${r},${g},${b},1);
+              padding:10px 20px;
+              cursor:pointer;
+              -webkit-tap-highlight-color:transparent;
+              transition:border-color 0.2s,color 0.2s,box-shadow 0.2s;
+            ">Swear an Oath →</button>
+          `;
+          card.querySelector('#oath-swear-btn').addEventListener('click', () => {
+            Sound.play('tap');
+            _openDeclare(loadProgress());
+          });
+        }
+      } else {
+        const t = TYPES[o.type] || TYPES.TRAIN;
+        const done = Object.keys(o.days || {}).length;
+        const needed = Math.max(0, o.target - done);
+        const daysLeft = Math.max(0, Math.ceil((o.endsAt - Date.now()) / DAY));
+        const behind = needed > 0 && needed >= daysLeft;
+        const ds = new Date(o.declaredAt); ds.setHours(0, 0, 0, 0);
+        const dots = `<div class="dir-dots">${[0,1,2,3,4,5,6].map(i => {
+          const dstr = new Date(ds.getTime() + i * DAY).toDateString();
+          return `<div class="dir-dot${(o.days || {})[dstr] ? ' on' : dstr === _today() ? ' now' : ''}"></div>`;
+        }).join('')}</div>`;
+        if (behind) card.classList.add('oath-warn');
+        else card.classList.add('nd-unlocked');
+        const line = behind
+          ? `The Oath does not bend. ${needed} day${needed === 1 ? '' : 's'}. ${daysLeft} remain.`
+          : t.desc;
+        card.innerHTML = `
+          ${dots}
+          <p style="font-size:9px;letter-spacing:0.35em;color:${behind ? 'rgba(255,59,92,0.7)' : `rgba(${r},${g},${b},0.55)`};text-transform:uppercase;margin:0 0 10px">⟁ Oath Active — ${t.glyph} ${t.label} ${done}/${o.target}${rank > 0 ? ` — Oathkeeper ${_roman(rank)}` : ''}</p>
+          <p style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin:0 0 10px">"${line}"</p>
+          <p style="font-size:10px;letter-spacing:0.2em;color:rgba(${r},${g},${b},0.7);text-transform:uppercase;margin:0">At stake: +${o.xp || _xpFor(o.target, rank)} XP · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left</p>
+        `;
+      }
+      const forgeCard = document.getElementById('forge-card');
+      if (forgeCard && forgeCard.parentNode) {
+        forgeCard.parentNode.insertBefore(card, forgeCard);
+      } else {
+        const scroll = document.querySelector('.dash-scroll');
+        if (scroll) scroll.prepend(card);
+      }
+    }
+
+    function _openDeclare(p) {
+      if (document.getElementById('oath-declare')) return;
+      const rank = p.oath?.rank || 0;
+      const color = localStorage.getItem('weebji_color') || '#00F5FF';
+      let selType = 'TRAIN', target = 5;
+      const el = document.createElement('div');
+      el.id = 'oath-declare';
+      el.style.cssText = 'position:fixed;inset:0;z-index:9980;background:rgba(2,2,10,0.94);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity 0.4s ease;overflow-y:auto;';
+      const typeRow = k => {
+        const t = TYPES[k];
+        return `
+        <div class="oath-type" data-type="${k}" style="display:flex;align-items:center;gap:14px;text-align:left;padding:13px 16px;border:1px solid ${k === selType ? color : 'rgba(255,255,255,0.12)'};border-radius:12px;background:${k === selType ? color + '14' : 'transparent'};cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color 0.2s,background 0.2s;">
+          <span style="font-size:22px;filter:drop-shadow(0 0 8px ${color}66)">${t.glyph}</span>
+          <div>
+            <div style="font-size:12px;letter-spacing:0.25em;color:#fff;text-transform:uppercase">${t.label}</div>
+            <div style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;margin-top:2px">${t.desc}</div>
+          </div>
+        </div>`;
+      };
+      el.innerHTML = `
+        <div style="max-width:340px;width:100%;text-align:center;font-family:'JetBrains Mono',monospace;">
+          <p style="font-size:9px;letter-spacing:0.4em;color:${color}88;text-transform:uppercase;margin:0 0 8px">⟁ The Oath${rank > 0 ? ` — Oathkeeper ${_roman(rank)}` : ''}</p>
+          <h2 style="font-family:'Cinzel',serif;font-size:22px;letter-spacing:0.14em;color:#fff;margin:0 0 10px">SWEAR YOUR OATH</h2>
+          <p style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6;margin:0 0 18px">"You have proven you can follow orders.<br>Now prove you can give them."</p>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">${['TRAIN','FOCUS','STILLNESS'].map(typeRow).join('')}</div>
+          <p style="font-size:10px;letter-spacing:0.25em;color:rgba(255,255,255,0.5);text-transform:uppercase;margin:0 0 8px"><b id="oath-tval" style="color:${color};font-size:14px">5</b> of 7 days</p>
+          <input type="range" id="oath-target" min="3" max="7" value="5" style="width:100%;accent-color:${color};margin:0 0 12px;cursor:pointer">
+          <p id="oath-xp-prev" style="font-size:11px;letter-spacing:0.2em;color:${color};text-transform:uppercase;margin:0 0 18px">Sealed reward: +${_xpFor(5, rank)} XP</p>
+          <button id="oath-hold" style="position:relative;overflow:hidden;width:100%;padding:16px;border-radius:12px;border:1px solid ${color}55;background:${color}0a;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.3em;color:${color};cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;user-select:none;touch-action:none;">
+            <span id="oath-hold-fill" style="position:absolute;left:0;top:0;bottom:0;width:0%;background:${color}33;pointer-events:none"></span>
+            <span style="position:relative">Hold to Swear</span>
+          </button>
+          <p id="oath-cancel" style="font-size:10px;letter-spacing:0.3em;color:rgba(255,255,255,0.3);text-transform:uppercase;margin:16px 0 0;cursor:pointer;-webkit-tap-highlight-color:transparent">Not Yet</p>
+        </div>`;
+      document.body.appendChild(el);
+      requestAnimationFrame(() => el.style.opacity = '1');
+      const xpPrev = el.querySelector('#oath-xp-prev');
+      el.querySelectorAll('.oath-type').forEach(row => row.addEventListener('click', () => {
+        selType = row.dataset.type;
+        el.querySelectorAll('.oath-type').forEach(x => {
+          const on = x === row;
+          x.style.borderColor = on ? color : 'rgba(255,255,255,0.12)';
+          x.style.background = on ? color + '14' : 'transparent';
+        });
+        Sound.play('tap');
+      }));
+      const tgt = el.querySelector('#oath-target');
+      tgt.addEventListener('input', () => {
+        target = parseInt(tgt.value);
+        el.querySelector('#oath-tval').textContent = target;
+        xpPrev.textContent = `Sealed reward: +${_xpFor(target, rank)} XP`;
+      });
+      el.querySelector('#oath-cancel').addEventListener('click', () => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 400);
+      });
+      // Hold-to-swear — 1.5s press, fill bar, haptic ramp at 0/0.5/1.0s
+      const holdBtn = el.querySelector('#oath-hold');
+      const fill = el.querySelector('#oath-hold-fill');
+      let holdT = null, hapT = [];
+      const cancelHold = () => {
+        if (holdT) { clearTimeout(holdT); holdT = null; }
+        hapT.forEach(clearTimeout); hapT = [];
+        fill.style.transition = 'width 0.2s ease';
+        fill.style.width = '0%';
+      };
+      holdBtn.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        fill.style.transition = 'width 1.5s linear';
+        fill.style.width = '100%';
+        haptic([30]);
+        hapT = [setTimeout(() => haptic([50]), 500), setTimeout(() => haptic([80]), 1000)];
+        holdT = setTimeout(_seal, 1500);
+      });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => holdBtn.addEventListener(ev, cancelHold));
+      function _seal() {
+        holdT = null;
+        hapT.forEach(clearTimeout); hapT = [];
+        const p2 = loadProgress();
+        const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+        const r0 = p2.oath?.rank || 0;
+        // declaration day = day 1 of 7 → window closes at midnight ending day 7
+        p2.oath = {
+          type: selType, target,
+          days: {},
+          declaredAt: Date.now(),
+          endsAt: dayStart.getTime() + 7 * DAY,
+          xp: _xpFor(target, r0),
+          rank: r0,
+          status: 'active',
+        };
+        saveProgress(p2);
+        if (typeof posthog !== 'undefined') posthog.capture('oath_sworn', { type: selType, target, rank: r0 });
+        el.innerHTML = `<p class="oath-bind" style="font-family:'Cinzel',serif;font-size:26px;letter-spacing:0.18em;line-height:1.9;color:#fff;text-align:center;margin:0">SPOKEN.<br>WITNESSED.<br>BINDING.</p>`;
+        triggerFlash('flash-class', color, null);
+        Sound.play('milestone');
+        haptic([80, 50, 80, 50, 200]);
+        setTimeout(() => {
+          el.style.opacity = '0';
+          setTimeout(() => {
+            el.remove();
+            const pp = loadProgress();
+            renderCard(pp);
+            try { evaluate(pp); } catch (e) {} // today's already-done action counts toward day 1
+          }, 400);
+        }, 1900);
+      }
+    }
+
+    return { renderCard, evaluate };
   })();
 
   /* ── HP Bar (5 segmented blocks) ──────────── */
@@ -9195,6 +9474,7 @@
   function updateStats(p) {
     // Directive completion check — runs after every action's saveProgress
     try { DirectiveEngine.evaluate(p); } catch (e) {}
+    try { OathEngine.evaluate(p); } catch (e) {}
     const prevStreakDisplay = parseInt(document.getElementById('stat-streak').textContent) || 0;
     // Fire streak milestone cinematic — deduplicated via localStorage so it never shows twice for same milestone
     const _msKey = 'weebji_milestones_seen';
@@ -11650,11 +11930,11 @@
      when something user-visible shipped — leave [] on fix-only releases and
      the overlay stays silent while still recording the seen version. */
   const WhatsNew = (() => {
-    const VERSION = 272;
+    const VERSION = 273;
     const ITEMS = [
-      '⟁ SUMMON A HUNTER — share your link from Profile: they start with a bonus Ghost Token, you earn +7 days of WEEBJI+ per summon',
-      '⚡ Daily Directives now reach veteran hunters — the System has found you',
-      '👻 Streak protection + cloud sync hardened — your record is safer than ever',
+      '⟁ THE OATH — the System no longer gives orders to the Awakened. Swear a weekly vow — Train, Focus, or Stillness — and keep it for the days you chose',
+      '◆ OATHKEEPER RANKS — every kept oath raises your rank and multiplies the reward. Break one, and the System remembers',
+      '⚔ New secret title for those who keep three oaths in a row',
     ];
     function check() {
       const seen = parseInt(localStorage.getItem('weebji_seen_version') || '0');
@@ -13053,6 +13333,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           playerClass: localStorage.getItem('weebji_class') || null,
           playerColor: localStorage.getItem('weebji_color') || null,
           streak5TrialStart: localStorage.getItem('weebji_streak5_trial_start') || null,
+          oath: p.oath || null,
         };
         // Build leaderboard payload
         const hunterNum = localStorage.getItem('weebji_hunter_num');
@@ -13280,6 +13561,20 @@ DEV.skipSplash()      → go straight to class select (if no session)
           // Penance cross-device — if penance was active on another device, enforce it here too
           if (d.penanceActive && localStorage.getItem('weebji_penance_active') !== '1')
             localStorage.setItem('weebji_penance_active', '1');
+          // Oath cross-device merge — keep highest rank; same oath unions days; a newer
+          // active cloud oath replaces a local 'none' (new device / re-login adopts it)
+          if (d.oath && typeof d.oath === 'object') {
+            if (!p.oath) p.oath = d.oath;
+            else {
+              p.oath.rank = Math.max(p.oath.rank || 0, d.oath.rank || 0);
+              if (d.oath.declaredAt && d.oath.declaredAt === p.oath.declaredAt) {
+                p.oath.days = Object.assign({}, d.oath.days || {}, p.oath.days || {});
+              } else if (d.oath.status === 'active' && p.oath.status !== 'active' && (d.oath.declaredAt || 0) > (p.oath.declaredAt || 0)) {
+                const _oathRank = Math.max(p.oath.rank || 0, d.oath.rank || 0);
+                p.oath = d.oath; p.oath.rank = _oathRank;
+              }
+            }
+          }
         }
         // Upsert leaderboard after identity is restored so display_name is always the real name
         if (hn?.number) {

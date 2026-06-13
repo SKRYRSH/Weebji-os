@@ -989,6 +989,20 @@
   .rate__done { padding: 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.07); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; color: rgba(255,255,255,0.35); cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
   .rate__later { padding: 10px; border: none; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: #333355; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
 
+  /* ══ DAILY QUEST BRIEFING OVERLAY ════════════ */
+  #quest-briefing { position: absolute; inset: 0; background: rgba(8,8,12,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 856; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 28px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
+  #quest-briefing.active { opacity: 1; pointer-events: all; }
+  .qb__system { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: #555577; text-transform: uppercase; }
+  .qb__title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.12em; color: #FFFFFF; }
+  .qb__sub { font-family: 'Inter', sans-serif; font-size: 13px; color: #8888AA; line-height: 1.6; max-width: 280px; }
+  .qb__inputs { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px; margin-top: 6px; }
+  .qb__input { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 13px; font-family: 'Inter', sans-serif; font-size: 13px; color: #FFFFFF; outline: none; }
+  .qb__input:focus { border-color: rgba(0,245,255,0.3); }
+  .qb__btns { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; margin-top: 4px; }
+  .qb__save { padding: 16px; border-radius: 12px; border: 1px solid rgba(0,245,255,0.4); background: rgba(0,245,255,0.07); font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #00F5FF; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: transform 0.15s; }
+  .qb__save:active { transform: scale(0.96); }
+  .qb__skip { padding: 12px; border: none; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: #333355; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
+
   /* ══ PHASE 3 — GHOST TOKEN OVERLAY ══════════ */
   #ghost-intervention { position: absolute; inset: 0; background: rgba(8,8,12,0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 860; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
   #ghost-intervention.active { opacity: 1; pointer-events: all; }
@@ -2327,6 +2341,22 @@
       </div>
     </div>
 
+    <!-- Daily Quest Briefing overlay -->
+    <div id="quest-briefing">
+      <p class="qb__system" id="qb-system">Morning Briefing</p>
+      <h2 class="qb__title" id="qb-title">Set Today's Priorities</h2>
+      <p class="qb__sub" id="qb-sub">Customize your 3 daily quests — make today about what matters to you.</p>
+      <div class="qb__inputs">
+        <input class="qb__input" id="qb-input-0" maxlength="40" autocomplete="off">
+        <input class="qb__input" id="qb-input-1" maxlength="40" autocomplete="off">
+        <input class="qb__input" id="qb-input-2" maxlength="40" autocomplete="off">
+      </div>
+      <div class="qb__btns">
+        <button class="qb__save" id="qb-save-btn">Save Priorities</button>
+        <button class="qb__skip" id="qb-skip-btn">Keep Defaults</button>
+      </div>
+    </div>
+
     <!-- Ghost Token Intervention overlay -->
     <div id="ghost-intervention">
       <p class="ghost-int__system">System Intervention</p>
@@ -2920,6 +2950,21 @@
       { name: '10 min meditation',         xp: 8  },
     ],
   };
+
+  // Per-class daily quest overrides — lets users replace the default 3 quest names
+  function getQuestOverrides(cls) {
+    try {
+      const all = JSON.parse(localStorage.getItem('weebji_quest_overrides') || '{}');
+      return all[cls] || null;
+    } catch { return null; }
+  }
+  function setQuestOverride(cls, idx, name) {
+    let all = {};
+    try { all = JSON.parse(localStorage.getItem('weebji_quest_overrides') || '{}'); } catch {}
+    if (!all[cls]) all[cls] = [null, null, null];
+    all[cls][idx] = name;
+    localStorage.setItem('weebji_quest_overrides', JSON.stringify(all));
+  }
 
   const MONK_RITUALS = [
     { name: '20 min morning meditation',     xp: 10 },
@@ -6365,7 +6410,7 @@
         const _p   = loadProgress();
         const _cls = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
         renderForgeArea(_p, _cls);
-        renderQuests(_p, CLASS_QUESTS[_cls] || CLASS_QUESTS.monarch);
+        renderQuests(_p, CLASS_QUESTS[_cls] || CLASS_QUESTS.monarch, _cls);
         renderSecondaryPillars(_p, _cls);
         updateXPBar(_p);
         updateStats(_p);
@@ -6384,6 +6429,7 @@
       setTimeout(() => WhatsNew.check(), 2600);
       maybeShowSignInNudge();
       maybeShowRatingPrompt();
+      setTimeout(() => maybeShowQuestBriefing(State.selectedClass || localStorage.getItem('weebji_class') || 'monarch'), 5000);
       if (window._shortcutAction === 'profile') {
         window._shortcutAction = null;
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'profile'));
@@ -6453,7 +6499,7 @@
     renderHearts(p.hp);
     renderWeekBar();
     renderForgeArea(p, cls);
-    renderQuests(p, CLASS_QUESTS[cls] || CLASS_QUESTS.monarch);
+    renderQuests(p, CLASS_QUESTS[cls] || CLASS_QUESTS.monarch, cls);
     renderCustomTasks(p, color);
     renderSecondaryPillars(p, cls);
     updateXPBar(p);
@@ -7659,20 +7705,50 @@
   }
 
   /* ── Quests ──────────────────────────────── */
-  function renderQuests(p, quests) {
+  function renderQuests(p, quests, cls) {
     const list = document.getElementById('quest-list');
     list.innerHTML = '';
+    const overrides = (cls && getQuestOverrides(cls)) || [];
     quests.forEach((q, i) => {
       const done = p.questsChecked.includes(i);
+      const name = overrides[i] || q.name;
       const row  = document.createElement('div');
       row.className = `quest-row${done ? ' done' : ''}`;
       row.innerHTML = `
         <div class="quest-check">${done ? CHECK_SVG : ''}</div>
-        <div class="quest-name">${q.name}</div>
-        <div class="quest-xp">+${q.xp} XP</div>`;
-      row.addEventListener('click', () => onQuestTap(i, row, quests));
+        <div class="quest-name">${name}</div>
+        <div class="quest-xp">+${q.xp} XP</div>
+        <button class="custom-task-edit" title="Edit">✎</button>`;
+      row.querySelector('.custom-task-edit').addEventListener('click', e => {
+        e.stopPropagation();
+        _editQuestRow(row, i, name, quests, cls);
+      });
+      row.addEventListener('click', e => {
+        if (e.target.closest('.custom-task-edit')) return;
+        onQuestTap(i, row, quests);
+      });
       list.appendChild(row);
     });
+  }
+
+  function _editQuestRow(row, i, currentName, quests, cls) {
+    row.innerHTML = `
+      <div class="custom-task-input-row" style="flex:1;border-top:none;padding:4px 0 0">
+        <input class="custom-task-input" value="${currentName.replace(/"/g,'&quot;')}" maxlength="40" autocomplete="off" style="flex:1">
+        <button class="custom-task-confirm">✓</button>
+        <button class="custom-task-cancel">×</button>
+      </div>`;
+    const inp = row.querySelector('.custom-task-input');
+    inp.focus(); inp.select();
+    const rerender = () => renderQuests(loadProgress(), quests, cls);
+    const save = () => {
+      const name = inp.value.trim();
+      if (name) setQuestOverride(cls, i, name);
+      rerender();
+    };
+    row.querySelector('.custom-task-confirm').addEventListener('click', save);
+    row.querySelector('.custom-task-cancel').addEventListener('click', rerender);
+    inp.addEventListener('keydown', ev => { if (ev.key==='Enter') save(); if (ev.key==='Escape') rerender(); });
   }
 
   /* ── Custom Tasks ────────────────────────────────────────────────── */
@@ -9992,6 +10068,7 @@
      'weebji_titles','weebji_custom_workouts','weebji_void_sessions',
      'weebji_ghost_whisper','weebji_penance_survived','weebji_shadow_slayer',
      'weebji_penance_active','weebji_custom_tasks','weebji_custom_done','weebji_custom_challenge',
+     'weebji_quest_overrides','weebji_quest_briefing_seen',
 
     ].forEach(k => localStorage.removeItem(k));
     location.reload();
@@ -11918,6 +11995,50 @@
     }, 3000);
   }
 
+  /* ══ DAILY QUEST BRIEFING ════════════════════ */
+  function maybeShowQuestBriefing(cls) {
+    if (!localStorage.getItem('weebji_tour_done')) return; // don't stack on the onboarding tour
+    const today = new Date().toDateString();
+    if (localStorage.getItem('weebji_quest_briefing_seen') === today) return;
+    const hour = new Date().getHours();
+    const isMorning = hour >= 5  && hour < 12;
+    const isEvening = hour >= 18 && hour < 24;
+    if (!isMorning && !isEvening) return;
+    if (document.querySelector('#levelup-overlay.active, #anomaly-overlay.active, #mission-briefing.active, #ghost-intervention.active, #rating-prompt.active')) return;
+
+    const quests    = CLASS_QUESTS[cls] || CLASS_QUESTS.monarch;
+    const overrides = getQuestOverrides(cls) || [];
+    const el = document.getElementById('quest-briefing');
+    if (!el) return;
+
+    document.getElementById('qb-system').textContent = isMorning ? 'Morning Briefing' : 'Evening Briefing';
+    document.getElementById('qb-title').textContent  = isMorning ? "Set Today's Priorities" : "Set Tomorrow's Priorities";
+    document.getElementById('qb-sub').textContent = isMorning
+      ? 'Customize your 3 daily quests — make today about what matters to you.'
+      : 'Get ahead of tomorrow — set your 3 priorities now so The System holds you to them.';
+
+    for (let i = 0; i < 3; i++) {
+      document.getElementById(`qb-input-${i}`).value = overrides[i] || quests[i].name;
+    }
+
+    el.classList.add('active');
+
+    const close = () => {
+      localStorage.setItem('weebji_quest_briefing_seen', today);
+      el.classList.remove('active');
+    };
+    document.getElementById('qb-save-btn').onclick = () => {
+      for (let i = 0; i < 3; i++) {
+        const val = document.getElementById(`qb-input-${i}`).value.trim();
+        if (val) setQuestOverride(cls, i, val);
+      }
+      close();
+      renderQuests(loadProgress(), quests, cls);
+      Sound.play('tap');
+    };
+    document.getElementById('qb-skip-btn').onclick = close;
+  }
+
   /* ══ PHASE 3 — GHOST TOKEN INTERVENTION ══════ */
   function checkGhostIntervention(p) {
     if (!p.streakLostToday || !p.prevStreak) return;
@@ -13236,7 +13357,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
       p.xp += quests.reduce((s, q) => s + q.xp, 0);
       const leveled = checkLevelUp(p); saveProgress(p); updateXPBar(p); updateStats(p);
       if (leveled) triggerLevelUp(p.level);
-      renderForgeArea(p, cls); renderQuests(p, quests);
+      renderForgeArea(p, cls); renderQuests(p, quests, cls);
       console.log(`%c→ XP filled. New XP: ${p.xp}`, 'color:#00F5FF;font-family:monospace');
     },
 

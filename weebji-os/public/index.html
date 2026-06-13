@@ -11726,8 +11726,8 @@
     const streakTopY = titlesY + (featuredTitle ? 80 : 26);
     ctx.font = '500 30px "JetBrains Mono", monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.fillText('BEST STREAK', W/2, streakTopY);
-    const streakNum = p.bestStreak || 0;
+    ctx.fillText('STREAK', W/2, streakTopY);
+    const streakNum = p.streak || 0;
     const streakFS  = streakNum >= 1000 ? 160 : streakNum >= 100 ? 190 : 230;
     const streakNumY = streakTopY + streakFS * 0.88;
     ctx.font = `900 ${streakFS}px "Cinzel", serif`;
@@ -11737,22 +11737,15 @@
     ctx.fillStyle = color;
     ctx.fillText(streakNum === 1 ? 'DAY' : 'DAYS', W/2, streakNumY + 64);
 
-    // Current-streak badge — small accent beside the big number, no layout shift
-    const curStreak = p.streak || 0;
-    if (curStreak > 0) {
+    // Best-streak accent — small label beside the big number, only if higher than current
+    const bestStreak = p.bestStreak || 0;
+    if (bestStreak > streakNum) {
       ctx.textAlign = 'left';
       const badgeX = W/2 + streakFS * 0.78;
       const badgeY = streakNumY - streakFS * 0.82;
       ctx.font = '700 28px "JetBrains Mono", monospace';
-      if (curStreak >= streakNum) {
-        ctx.fillStyle = `rgba(${rgb},0.9)`;
-        ctx.shadowColor = `rgba(${rgb},0.6)`; ctx.shadowBlur = 16;
-        ctx.fillText('🔥 LIVE', badgeX, badgeY);
-        ctx.shadowBlur = 0;
-      } else {
-        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.fillText(`NOW: ${curStreak}d`, badgeX, badgeY);
-      }
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillText(`BEST: ${bestStreak}d`, badgeX, badgeY);
       ctx.textAlign = 'center';
     }
 

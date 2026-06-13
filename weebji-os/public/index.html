@@ -1548,6 +1548,8 @@
     pointer-events:none;
   }
   #void-overlay.active { opacity:1; pointer-events:all; }
+  /* Void session covers the dashboard entirely — pause its background animations so the GPU isn't compositing hidden blur/particle layers for the full session length */
+  body.void-active #dashboard * { animation-play-state: paused !important; }
   .void__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.45em; color:rgba(210,140,255,0.7); text-transform:uppercase; position:relative; }
   .void__title { font-family:'Cinzel',serif; font-size:30px; font-weight:900; letter-spacing:0.28em; color:#CC44FF; animation:kf-void-pulse 3s ease-in-out infinite; position:relative; }
   .void__timer { font-family:'JetBrains Mono',monospace; font-size:64px; font-weight:700; letter-spacing:0.06em; color:rgba(180,60,220,0.35); margin:8px 0; transition:color 0.4s, text-shadow 0.4s; position:relative; }
@@ -5110,6 +5112,7 @@
       const modeLbl = document.getElementById('void-mode-label');
       if (modeLbl) modeLbl.textContent = modeLabel || 'Session Active';
       overlay.classList.add('active');
+      document.body.classList.add('void-active');
       Sound.play('tap');
       syncClock();
     }
@@ -5119,6 +5122,7 @@
       _active = false;
       if (_breachTimer) { clearTimeout(_breachTimer); _breachTimer = null; }
       document.getElementById('void-overlay').classList.remove('active');
+      document.body.classList.remove('void-active');
       document.getElementById('void-breach-banner').classList.remove('show');
     }
 

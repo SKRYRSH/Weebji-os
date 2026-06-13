@@ -10584,20 +10584,27 @@
       if (perm === 'denied') {
         if (nToggle) { nToggle.textContent = 'BLOCKED'; nToggle.className = 'profile-voice__toggle off'; }
         const inTWA = localStorage.getItem('weebji_twa') === '1';
-        if (inTWA) {
-          // JS can't un-deny a browser permission — but on the TWA we can jump
-          // straight to this app's OS notification settings in one tap.
-          if (nSub) nSub.textContent = 'Tap to open notification settings';
-          notifBtn.style.borderColor = hexRgba(color, 0.2); notifBtn.style.opacity = '1';
-          notifBtn.style.cursor = 'pointer';
-          notifBtn.onclick = () => {
+        if (nSub) nSub.textContent = 'Tap to refresh notification access';
+        notifBtn.style.borderColor = hexRgba(color, 0.2); notifBtn.style.opacity = '1';
+        notifBtn.style.cursor = 'pointer';
+        notifBtn.onclick = async () => {
+          // Once denied, re-asking can't show a fresh dialog — but if the OS-level
+          // permission was just toggled on externally, the browser re-checks the
+          // live permission state here and may resolve 'granted' without a prompt.
+          if (nSub) nSub.textContent = 'Checking...';
+          const result = await Notification.requestPermission();
+          if (result === 'granted') {
+            if (nSub) nSub.textContent = 'Subscribing...';
+            await WeebjPush.subscribe();
+            renderProfile();
+          } else if (inTWA) {
+            // Still blocked at the browser level — jump to this app's OS
+            // notification settings so the user can reset it from there.
             window.location.href = 'intent://#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;S.android.provider.extra.APP_PACKAGE=io.github.skryrsh.twa;end';
-          };
-        } else {
-          if (nSub) nSub.textContent = 'Enable in Browser Settings > Site Settings > Notifications';
-          notifBtn.style.cssText += ';cursor:default;opacity:0.55';
-          notifBtn.style.borderColor = hexRgba(color, 0.07);
-        }
+          } else {
+            spawnDropBanner('◆  Still blocked — enable in Browser Settings > Site Settings > Notifications, then tap again');
+          }
+        };
       } else if (perm === 'granted') {
         if (nToggle) { nToggle.textContent = 'ON'; nToggle.className = 'profile-voice__toggle on'; }
         if (nSub)    nSub.textContent = 'Active — tap to refresh subscription';

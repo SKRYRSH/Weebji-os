@@ -27,6 +27,12 @@ const NOTIF: Record<string, { title: string; body: string }> = {
 const COMEBACK_DAYS: Record<string, number> = { comeback_2d: 2, comeback_5d: 5, comeback_10d: 10 };
 const COMEBACK_LOCAL_HOUR = 17;
 
+// morning_activation/streak_reminder used to fire 4x/day each (8 nags/day to anyone
+// who hadn't trained) — Android demotes/mutes channels that spam like that. Now each
+// cron fires hourly but only sends once per day, at the user's local hour below.
+const MORNING_LOCAL_HOUR = 9;
+const STREAK_LOCAL_HOUR  = 20;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -59,6 +65,12 @@ Deno.serve(async (req) => {
       } catch { return todayUTC; }
     }
 
+    function localHour(tz: string | null): number {
+      try {
+        return parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: tz || 'UTC', hour: '2-digit', hour12: false }).format(now));
+      } catch { return now.getUTCHours(); }
+    }
+
     let userIds: string[] = [];
 
     if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check') {
@@ -69,9 +81,13 @@ Deno.serve(async (req) => {
         const trainedMap = new Map((prog || []).map(r => [r.user_id, r.last_trained_date as string | null]));
         const tzMap = new Map((subs || []).map(r => [r.user_id, r.timezone as string | null]));
         userIds = allIds.filter(id => {
+          const tz = tzMap.get(id) ?? null;
           const trained = trainedMap.get(id);
-          if (!trained) return true;
-          return trained < localToday(tzMap.get(id) ?? null);
+          const notTrainedToday = !trained || trained < localToday(tz);
+          if (!notTrainedToday) return false;
+          if (type === 'morning_activation') return localHour(tz) === MORNING_LOCAL_HOUR;
+          if (type === 'streak_reminder')    return localHour(tz) === STREAK_LOCAL_HOUR;
+          return true;
         });
       }
     } else if (COMEBACK_DAYS[type]) {
@@ -83,11 +99,6 @@ Deno.serve(async (req) => {
       const bandIds = (rows || []).map(r => r.user_id);
       if (bandIds.length) {
         const { data: tzRows } = await sb.from('push_subscriptions').select('user_id, timezone').in('user_id', bandIds);
-        const localHour = (tz: string | null): number => {
-          try {
-            return parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: tz || 'UTC', hour: '2-digit', hour12: false }).format(now));
-          } catch { return now.getUTCHours(); }
-        };
         const eveningNow = new Set((tzRows || []).filter(r => localHour(r.timezone) === COMEBACK_LOCAL_HOUR).map(r => r.user_id));
         userIds = bandIds.filter(id => eveningNow.has(id));
       }

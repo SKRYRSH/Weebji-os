@@ -49,10 +49,11 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    const planLabel = plan === 'annual' ? 'plus_annual' : plan === 'ghost_token' ? 'ghost_token' : 'plus';
+    const isGhostPlan = plan === 'ghost_token' || plan === 'ghost_token_3';
+    const planLabel = plan === 'annual' ? 'plus_annual' : 'plus';
 
-    // ghost_token: never touch user_plans (would overwrite an existing plus subscription)
-    if (plan !== 'ghost_token') {
+    // ghost plans: never touch user_plans (would overwrite an existing plus subscription)
+    if (!isGhostPlan) {
       const { error: insertErr } = await serviceClient.from('user_plans').upsert({
         user_id:    user.id,
         email:      user.email,
@@ -64,8 +65,9 @@ Deno.serve(async (req) => {
       if (insertErr) throw insertErr;
     }
 
-    // ghost_token: just increment tokens in progress
-    if (plan === 'ghost_token') {
+    // ghost plans: increment tokens in progress (ghost_token=1, ghost_token_3=3)
+    if (isGhostPlan) {
+      const inc = plan === 'ghost_token_3' ? 3 : 1;
       const { data: prog } = await serviceClient
         .from('progress')
         .select('ghost_tokens')
@@ -74,7 +76,7 @@ Deno.serve(async (req) => {
       const current = prog?.ghost_tokens ?? 0;
       await serviceClient
         .from('progress')
-        .update({ ghost_tokens: Math.min(current + 1, 60) })
+        .update({ ghost_tokens: Math.min(current + inc, 60) })
         .eq('user_id', user.id);
     }
 

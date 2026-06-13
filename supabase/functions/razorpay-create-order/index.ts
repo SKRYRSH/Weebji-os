@@ -6,9 +6,10 @@ const CORS = {
 };
 
 const PLANS: Record<string, { amount: number; description: string }> = {
-  monthly:     { amount: 84900,  description: 'WEEBJI+ Monthly' },  // $9.99 ≈ ₹849
-  annual:      { amount: 499900, description: 'WEEBJI+ Annual' },   // $59.99 ≈ ₹4,999
-  ghost_token: { amount: 9900,   description: 'Ghost Token' },      // $0.99 ≈ ₹99
+  monthly:       { amount: 84900,  description: 'WEEBJI+ Monthly ($9.99 USD)' },   // ≈ ₹849
+  annual:        { amount: 499900, description: 'WEEBJI+ Annual ($59.99 USD)' },   // ≈ ₹4,999
+  ghost_token:   { amount: 9900,   description: 'Ghost Token ($0.99 USD)' },       // ≈ ₹99
+  ghost_token_3: { amount: 19900,  description: '3 Ghost Tokens ($1.99 USD)' },    // ≈ ₹199
 };
 
 Deno.serve(async (req) => {

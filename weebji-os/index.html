@@ -44,6 +44,8 @@
   </script>
   <!-- Supabase JS (jsdelivr with unpkg fallback) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';document.head.appendChild(s)"></script>
+  <!-- Razorpay Checkout (defer — blocks page load outside India without this) -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -3411,6 +3413,7 @@
   }
 
   /* ══ WEEBJI+ ═════════════════════════════════ */
+  const RAZORPAY_KEY_ID = 'rzp_live_SWQ3EqiggroMC5';
 
   function isWeebjiPlus() {
     if (SupabaseSync.isPremium()) return true;
@@ -3738,18 +3741,93 @@
   }
 
   async function _openCheckout(plan) {
-    // Play Store only — use Google Play Billing via Digital Goods API
+    // Play Store / Play-Billing-capable TWA: use Google Play Billing via Digital Goods API
     if ('getDigitalGoodsService' in window) {
+      localStorage.setItem('weebji_play_install', '1');
       await _openPlayBilling(plan);
       return;
     }
-    // No Digital Goods API. Inside the TWA this means the device's default
-    // browser isn't Chrome (DGA only works when Chrome renders the TWA).
+    // DGA unavailable now — but if it was EVER available on this device, this
+    // is a genuine Play Store install (Play TWAs always render in Chrome, so
+    // DGA is present on first launch). Play Policy 4.1 forbids alternative
+    // billing here even if DGA is temporarily down (e.g. user changed default
+    // browser) — block Razorpay and point them back to Chrome instead.
+    if (localStorage.getItem('weebji_play_install') === '1') {
+      try { if (typeof posthog !== 'undefined') posthog.capture('billing_dga_unavailable', { plan, blocked: true, ua: navigator.userAgent }); } catch(_) {}
+      spawnDropBanner('◆  Purchases need Google Chrome — set Chrome as your default browser, then reopen WEEBJI OS');
+      return;
+    }
+    // No Digital Goods API, never seen one on this device — web, itch, or
+    // sideloaded APK. Razorpay is the payment rail for these.
     const _inTWA = document.referrer.startsWith('android-app://') || localStorage.getItem('weebji_twa') === '1';
     try { if (typeof posthog !== 'undefined') posthog.capture('billing_dga_unavailable', { plan, in_twa: _inTWA, ua: navigator.userAgent }); } catch(_) {}
-    spawnDropBanner(_inTWA
-      ? '◆  Purchases need Google Chrome — set Chrome as your default browser, then reopen WEEBJI OS'
-      : '◆  Get WEEBJI OS on Google Play to unlock WEEBJI+');
+
+    const user = SupabaseSync.getUser?.();
+    if (!user) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
+
+    try {
+      const client = SupabaseSync._client();
+      if (!client) throw new Error('Not connected');
+
+      const { data: { session } } = await client.auth.getSession();
+      if (!session?.access_token) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
+
+      if (typeof Razorpay === 'undefined') throw new Error('Payment SDK not loaded — please refresh and try again');
+
+      const { data, error } = await client.functions.invoke('razorpay-create-order', {
+        body: { plan },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
+
+      if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, channel: 'razorpay', in_twa: _inTWA, class: localStorage.getItem('weebji_class') });
+
+      const options = {
+        key:         RAZORPAY_KEY_ID,
+        amount:      data.amount,
+        currency:    data.currency,
+        order_id:    data.order_id,
+        name:        'WEEBJI OS',
+        description: data.description,
+        image:       'https://skryrsh.github.io/Weebji-os/icons/icon-192.png',
+        handler: async function(response) {
+          const verifyClient = SupabaseSync._client();
+          const { data: { session: vSess } } = await verifyClient.auth.getSession();
+          const { error: verifyErr } = await verifyClient.functions.invoke('razorpay-verify-payment', {
+            body: {
+              razorpay_order_id:   response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature:  response.razorpay_signature,
+              plan,
+            },
+            ...(vSess?.access_token ? { headers: { Authorization: `Bearer ${vSess.access_token}` } } : {})
+          });
+          if (verifyErr) { spawnDropBanner('◆  Verification failed — contact weebjiglobal@gmail.com'); return; }
+          try { await SupabaseSync.pullProgress(); } catch(e) {
+            if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pullProgress_post_payment', error: e?.message });
+            spawnDropBanner('◆  Payment verified — refresh if Plus features are not active');
+          }
+          const _banners = { ghost_token: '◆  GHOST TOKEN ACQUIRED — Use it wisely', ghost_token_3: '◆  3 GHOST TOKENS ACQUIRED — Your streak is armoured' };
+          spawnDropBanner(_banners[plan] || '◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
+          if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, channel: 'razorpay', class: localStorage.getItem('weebji_class') });
+          renderProfile(); initDashboard();
+          if (plan !== 'ghost_token' && plan !== 'ghost_token_3') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');
+        },
+        prefill: { email: user.email },
+        theme:   { color: '#00F5FF' },
+        modal:   { backdropclose: false },
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.on('payment.failed', function(resp) {
+        spawnDropBanner('◆  Payment failed — ' + (resp.error?.description || 'Try again'));
+      });
+      rzp.open();
+
+    } catch(e) {
+      if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'checkout', error: e?.message, plan });
+      spawnDropBanner('◆  Could not start checkout — try again');
+    }
   }
 
   function renderWeebjiPlusSection(color) {

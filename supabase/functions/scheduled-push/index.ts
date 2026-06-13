@@ -10,6 +10,7 @@ const NOTIF: Record<string, { title: string; body: string }> = {
   morning_activation: { title: '◈ SYSTEM ONLINE',         body: "Today's protocol is waiting. Don't let the streak die." },
   streak_reminder:    { title: 'SYSTEM ALERT',             body: "You haven't trained today. Your streak dies at midnight." },
   midday_check:       { title: '◈ MID-SESSION CHECK',     body: "Half the day is gone. You still haven't trained. Fix that." },
+  daily_complete:     { title: '◆ DIRECTIVE COMPLETE',    body: "Today's protocol is complete. The System acknowledges you." },
   comeback_2d:        { title: '◈ ABSENCE DETECTED',      body: 'The System has noticed your absence. 48 hours of silence. Return before the void settles in.' },
   comeback_5d:        { title: 'SIGNAL LOST — DAY 5',     body: 'Five days dark. Hunters are passing you on the leaderboard. The System holds your place — barely. Reconnect.' },
   comeback_10d:       { title: '⚠ FINAL TRANSMISSION',    body: 'Ten days of silence. Most never return. Prove you are not most. One session reactivates everything.' },
@@ -72,19 +73,22 @@ Deno.serve(async (req) => {
     }
 
     let userIds: string[] = [];
+    let streakMap = new Map<string, number>();
 
-    if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check') {
+    if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check' || type === 'daily_complete') {
       const { data: subs } = await sb.from('push_subscriptions').select('user_id, timezone');
       const allIds = (subs || []).map(r => r.user_id);
       if (allIds.length) {
-        const { data: prog } = await sb.from('progress').select('user_id, last_trained_date').in('user_id', allIds);
+        const { data: prog } = await sb.from('progress').select('user_id, last_trained_date, streak').in('user_id', allIds);
         const trainedMap = new Map((prog || []).map(r => [r.user_id, r.last_trained_date as string | null]));
+        streakMap = new Map((prog || []).map(r => [r.user_id, (r.streak as number | null) || 0]));
         const tzMap = new Map((subs || []).map(r => [r.user_id, r.timezone as string | null]));
         userIds = allIds.filter(id => {
           const tz = tzMap.get(id) ?? null;
           const trained = trainedMap.get(id);
-          const notTrainedToday = !trained || trained < localToday(tz);
-          if (!notTrainedToday) return false;
+          const trainedToday = !!trained && trained >= localToday(tz);
+          if (type === 'daily_complete') return trainedToday && localHour(tz) === STREAK_LOCAL_HOUR;
+          if (trainedToday) return false;
           if (type === 'morning_activation') return localHour(tz) === MORNING_LOCAL_HOUR;
           if (type === 'streak_reminder')    return localHour(tz) === STREAK_LOCAL_HOUR;
           return true;
@@ -135,10 +139,17 @@ Deno.serve(async (req) => {
     if (subErr) throw subErr;
 
     const { title, body } = NOTIF[type];
-    const payload = JSON.stringify({ type, title, body });
 
     let sent = 0, failed = 0;
     for (const sub of (subs || [])) {
+      let pBody = body;
+      if (type === 'daily_complete') {
+        const streak = streakMap.get(sub.user_id) || 0;
+        pBody = streak > 0
+          ? `Day ${streak} secured. The System acknowledges your discipline.`
+          : body;
+      }
+      const payload = JSON.stringify({ type, title, body: pBody });
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },

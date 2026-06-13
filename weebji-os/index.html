@@ -11660,6 +11660,25 @@
     ctx.fillStyle = color;
     ctx.fillText(streakNum === 1 ? 'DAY' : 'DAYS', W/2, streakNumY + 64);
 
+    // Current-streak badge — small accent beside the big number, no layout shift
+    const curStreak = p.streak || 0;
+    if (curStreak > 0) {
+      ctx.textAlign = 'left';
+      const badgeX = W/2 + streakFS * 0.78;
+      const badgeY = streakNumY - streakFS * 0.82;
+      ctx.font = '700 28px "JetBrains Mono", monospace';
+      if (curStreak >= streakNum) {
+        ctx.fillStyle = `rgba(${rgb},0.9)`;
+        ctx.shadowColor = `rgba(${rgb},0.6)`; ctx.shadowBlur = 16;
+        ctx.fillText('🔥 LIVE', badgeX, badgeY);
+        ctx.shadowBlur = 0;
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fillText(`NOW: ${curStreak}d`, badgeX, badgeY);
+      }
+      ctx.textAlign = 'center';
+    }
+
     // Global rank badge
     const lbRank = localStorage.getItem('weebji_lb_rank');
     if (lbRank) {
@@ -11730,6 +11749,14 @@
       ctx.fillStyle = 'rgba(255,255,255,0.12)';
       ctx.fillText('WEEBJI OS — Search on Play Store', W/2, arcY + 50);
     }
+
+    // Date stamp — bottom-left corner, inside the frame accent
+    const _now = new Date();
+    const _months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    ctx.textAlign = 'left';
+    ctx.font = '400 22px "JetBrains Mono", monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillText(`${_months[_now.getMonth()]} ${_now.getDate()}`, 60, H - 56);
   }
 
   function renderArcTitlePicker() {

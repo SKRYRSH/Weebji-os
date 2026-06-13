@@ -3783,9 +3783,11 @@
       if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, channel: 'razorpay', in_twa: _inTWA, class: localStorage.getItem('weebji_class') });
 
       const options = {
-        key:         RAZORPAY_KEY_ID,
-        amount:      data.amount,
-        currency:    data.currency,
+        key:              RAZORPAY_KEY_ID,
+        amount:           data.amount,
+        currency:         data.currency,
+        display_currency: data.display_currency,
+        display_amount:  data.display_amount,
         order_id:    data.order_id,
         name:        'WEEBJI OS',
         description: data.description,

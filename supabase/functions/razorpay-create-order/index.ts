@@ -5,11 +5,11 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PLANS: Record<string, { amount: number; description: string }> = {
-  monthly:       { amount: 84900,  description: 'WEEBJI+ Monthly ($9.99 USD)' },   // ≈ ₹849
-  annual:        { amount: 499900, description: 'WEEBJI+ Annual ($59.99 USD)' },   // ≈ ₹4,999
-  ghost_token:   { amount: 9900,   description: 'Ghost Token ($0.99 USD)' },       // ≈ ₹99
-  ghost_token_3: { amount: 19900,  description: '3 Ghost Tokens ($1.99 USD)' },    // ≈ ₹199
+const PLANS: Record<string, { amount: number; description: string; displayAmount: string }> = {
+  monthly:       { amount: 84900,  description: 'WEEBJI+ Monthly',   displayAmount: '9.99' },   // ≈ ₹849
+  annual:        { amount: 499900, description: 'WEEBJI+ Annual',    displayAmount: '59.99' },  // ≈ ₹4,999
+  ghost_token:   { amount: 9900,   description: 'Ghost Token',       displayAmount: '0.99' },   // ≈ ₹99
+  ghost_token_3: { amount: 19900,  description: '3 Ghost Tokens',    displayAmount: '1.99' },   // ≈ ₹199
 };
 
 Deno.serve(async (req) => {
@@ -58,10 +58,12 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        order_id:    order.id,
-        amount:      order.amount,
-        currency:    order.currency,
-        description: planConfig.description,
+        order_id:        order.id,
+        amount:          order.amount,
+        currency:        order.currency,
+        description:     planConfig.description,
+        display_currency: 'USD',
+        display_amount:  planConfig.displayAmount,
       }),
       { headers: { ...CORS, 'Content-Type': 'application/json' } }
     );

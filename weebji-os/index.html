@@ -4205,19 +4205,22 @@
     if (!supaClient || !user) return;
     const now = new Date().toISOString();
     const existing = await loadDungeonProgress(yearWeek);
+    const gate1 = existing?.gate1_at || (gateNum===1 ? now : null);
+    const gate2 = existing?.gate2_at || (gateNum===2 ? now : null);
+    const gate3 = existing?.gate3_at || (gateNum===3 ? now : null);
+    const gatesCompleted = [gate1, gate2, gate3].filter(Boolean).length;
     if (existing) {
-      const patch = { gates_completed: Math.max(existing.gates_completed||0, isBoss ? existing.gates_completed : gateNum) };
-      if (isBoss) patch.boss_defeated = true;
-      if (gateNum===1 && !existing.gate1_at) patch.gate1_at = now;
-      if (gateNum===2 && !existing.gate2_at) patch.gate2_at = now;
-      if (gateNum===3 && !existing.gate3_at) patch.gate3_at = now;
-      if (isBoss) patch.boss_at = now;
+      const patch = { gates_completed: gatesCompleted };
+      if (gate1 && !existing.gate1_at) patch.gate1_at = gate1;
+      if (gate2 && !existing.gate2_at) patch.gate2_at = gate2;
+      if (gate3 && !existing.gate3_at) patch.gate3_at = gate3;
+      if (isBoss) { patch.boss_defeated = true; patch.boss_at = now; }
       await supaClient.from('dungeon_completions').update(patch).eq('user_id', user.id).eq('year_week', yearWeek);
     } else {
-      const row = { user_id: user.id, year_week: yearWeek, dungeon_index: dungeonIndex, gates_completed: isBoss ? 0 : gateNum, boss_defeated: !!isBoss };
-      if (gateNum===1) row.gate1_at = now;
-      if (gateNum===2) row.gate2_at = now;
-      if (gateNum===3) row.gate3_at = now;
+      const row = { user_id: user.id, year_week: yearWeek, dungeon_index: dungeonIndex, gates_completed: gatesCompleted, boss_defeated: !!isBoss };
+      if (gate1) row.gate1_at = gate1;
+      if (gate2) row.gate2_at = gate2;
+      if (gate3) row.gate3_at = gate3;
       if (isBoss) row.boss_at = now;
       await supaClient.from('dungeon_completions').insert(row);
     }
@@ -4240,7 +4243,7 @@
     const gatesHtml = dungeon.gates.map((g, i) => {
       const gNum = i + 1;
       const isUnlocked = gatesUnlocked >= gNum;
-      const isClaimed = gatesDone >= gNum;
+      const isClaimed = !!progress?.[`gate${gNum}_at`];
       let stateClass = 'locked';
       if (isClaimed) stateClass = 'claimed';
       else if (isUnlocked) stateClass = 'unlocked';
@@ -4259,7 +4262,8 @@
       </div>`;
     }).join('');
 
-    const bossHtml = gatesDone >= 3 && plus ? bossDone ? '' : `
+    const allGatesClaimed = !!(progress?.gate1_at && progress?.gate2_at && progress?.gate3_at);
+    const bossHtml = allGatesClaimed && plus ? bossDone ? '' : `
       <div class="dungeon-boss-fight">
         <div class="dungeon-boss-fight__label">⚔ Final Confrontation — Boss Fight</div>
         <div class="dungeon-boss-fight__task">${dungeon.boss_task}</div>

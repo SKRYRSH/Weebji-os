@@ -3780,6 +3780,11 @@
       });
       if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
 
+      if (data.currency === 'INR' && data.display_amount) {
+        const proceed = confirm(`Heads up: your payment provider may display this as ₹${(data.amount / 100).toFixed(0)} (INR) — that's just $${data.display_amount} USD, charged in your local currency. Continue to payment?`);
+        if (!proceed) return;
+      }
+
       if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, channel: 'razorpay', in_twa: _inTWA, class: localStorage.getItem('weebji_class') });
 
       const options = {

@@ -2709,10 +2709,13 @@
     if (Notification.permission !== 'default') return;
     if (sessionStorage.getItem('weebji_notif_shown_this_session')) return;
     if (!SupabaseSync.getUser()) return;
-    // Don't ask permission until user has earned at least 1 streak day —
-    // asking on Day 0 yields permanent denial on Android (~80% deny rate).
+    // Don't ask permission until the user has hit an earned milestone —
+    // raw Day-0 asks yield permanent denial on Android (~80% deny rate).
+    // First Directive gets ~100% of users to level 2 in ~31s, so that's
+    // now the trigger (streak>=1 alone was nearly unreachable: streak only
+    // increments on a Day-1+ session, and Day-1 retention is ~0%).
     const _p = loadProgress();
-    if ((_p.streak || 0) < 1) return;
+    if ((_p.streak || 0) < 1 && (_p.level || 1) <= 1) return;
     // Snooze: don't show again if dismissed within last 3 days
     const snoozed = localStorage.getItem('weebji_notif_snoozed');
     if (snoozed && Date.now() - parseInt(snoozed) < 3 * 24 * 60 * 60 * 1000) return;
@@ -12006,12 +12009,8 @@
      when something user-visible shipped — leave [] on fix-only releases and
      the overlay stays silent while still recording the seen version. */
   const WhatsNew = (() => {
-    const VERSION = 277;
-    const ITEMS = [
-      '⚔ CALIBRATION — The Forge now asks how hard the System should push you. Easy, Moderate, or Hard — reps, sets and XP scale to your level. Change it anytime',
-      '🧘 INITIATE MODE — a 5-minute Sanctuary session for those beginning the path of stillness',
-      '⏱ SPRINT MODE — a 10-minute Mastermind session. Lower the barrier. Enter the work',
-    ];
+    const VERSION = 278;
+    const ITEMS = [];
     function check() {
       const seen = parseInt(localStorage.getItem('weebji_seen_version') || '0');
       localStorage.setItem('weebji_seen_version', VERSION);

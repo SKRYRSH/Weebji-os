@@ -3756,7 +3756,10 @@
       const _billingResult = await _openPlayBilling(plan);
       if (_billingResult !== 'unavailable') return;
       // DGA API surface exists but no real Play Billing connection (sideloaded
-      // APK, e.g. itch) — fall through to Razorpay below.
+      // APK, e.g. itch) — fall through to Razorpay below. Also clear any stale
+      // weebji_play_install flag set by older buggy code on this device, so the
+      // Play-policy block below doesn't fire on a non-Play-Store install.
+      localStorage.removeItem('weebji_play_install');
     }
     // DGA unavailable now — but if it was EVER available on this device, this
     // is a genuine Play Store install (Play TWAs always render in Chrome, so

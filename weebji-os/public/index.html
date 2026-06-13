@@ -2459,11 +2459,20 @@
     // When new SW takes control → auto-reload to pick up fresh code
     let _swRefreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!_swRefreshing) { _swRefreshing = true; window.location.reload(); }
+      if (_swRefreshing) return;
+      // Loop breaker: if we already reloaded for a SW update very recently, don't reload again —
+      // a CDN edge can keep serving a "new" sw.js that never settles, causing an infinite
+      // update-banner/reload cycle (seen on the itch TWA build).
+      const lastReload = parseInt(sessionStorage.getItem('weebji_sw_reload_at') || '0');
+      if (Date.now() - lastReload < 15000) return;
+      _swRefreshing = true;
+      sessionStorage.setItem('weebji_sw_reload_at', String(Date.now()));
+      window.location.reload();
     });
 
     function _showUpdateBanner(reg) {
       if (document.getElementById('sw-update-banner')) return;
+      if (sessionStorage.getItem('weebji_sw_banner_dismissed')) return;
       const color = localStorage.getItem('weebji_color') || '#00F5FF';
       const banner = document.createElement('div');
       banner.id = 'sw-update-banner';
@@ -2473,7 +2482,10 @@
           <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.35em;color:${color}99;text-transform:uppercase;margin-bottom:3px;">System Update</div>
           <div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;letter-spacing:0.08em;">New Version Available</div>
         </div>
-        <button id="sw-update-btn" style="background:${color}18;border:1px solid ${color}55;border-radius:10px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;color:${color};cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;text-transform:uppercase;">Update</button>`;
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="sw-update-btn" style="background:${color}18;border:1px solid ${color}55;border-radius:10px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;color:${color};cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;text-transform:uppercase;">Update</button>
+          <button id="sw-update-dismiss" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:18px;line-height:1;cursor:pointer;padding:4px;-webkit-tap-highlight-color:transparent;">✕</button>
+        </div>`;
       document.body.appendChild(banner);
       document.getElementById('sw-update-btn').addEventListener('click', () => {
         banner.querySelector('#sw-update-btn').textContent = 'Installing…';
@@ -2482,6 +2494,10 @@
         const waitingSW = reg.waiting;
         if (waitingSW) waitingSW.postMessage({ type: 'SKIP_WAITING' });
         else window.location.reload();
+      });
+      document.getElementById('sw-update-dismiss').addEventListener('click', () => {
+        sessionStorage.setItem('weebji_sw_banner_dismissed', '1');
+        banner.remove();
       });
     }
 
@@ -2499,8 +2515,12 @@
         });
       });
 
-      // Force check for updates every time app opens (bypass 24h browser throttle)
-      reg.update().catch(() => {});
+      // Force check for updates every time app opens (bypass 24h browser throttle) —
+      // but only once per session, so a stuck CDN edge can't re-trigger this on every tick.
+      if (!sessionStorage.getItem('weebji_sw_checked')) {
+        sessionStorage.setItem('weebji_sw_checked', '1');
+        reg.update().catch(() => {});
+      }
     }).catch(e => console.warn('[SW] failed', e));
   }
 

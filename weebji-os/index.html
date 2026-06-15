@@ -2515,10 +2515,14 @@
         });
       });
 
-      // Force check for updates every time app opens (bypass 24h browser throttle) —
-      // but only once per session, so a stuck CDN edge can't re-trigger this on every tick.
-      if (!sessionStorage.getItem('weebji_sw_checked')) {
-        sessionStorage.setItem('weebji_sw_checked', '1');
+      // Force check for updates (bypass 24h browser throttle) — but throttled to once
+      // per 30min via localStorage (not sessionStorage). TWAs on some devices (Pixel/
+      // Chrome) kill the process between opens, resetting sessionStorage every time —
+      // that re-triggered reg.update() on every open, hitting GitHub Pages' CDN edge
+      // propagation variance and showing a false "new version" banner every open.
+      const lastSwCheck = parseInt(localStorage.getItem('weebji_sw_checked_at') || '0');
+      if (Date.now() - lastSwCheck > 30 * 60 * 1000) {
+        localStorage.setItem('weebji_sw_checked_at', String(Date.now()));
         reg.update().catch(() => {});
       }
     }).catch(e => console.warn('[SW] failed', e));

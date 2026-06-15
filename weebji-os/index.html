@@ -2586,7 +2586,7 @@
       if (!c) return;
       try {
         await c.from('push_subscriptions').delete().eq('user_id', _userId);
-        await c.from('push_subscriptions').insert({
+        const { error } = await c.from('push_subscriptions').insert({
           user_id:    _userId,
           endpoint:   j.endpoint,
           p256dh:     j.keys?.p256dh,
@@ -2594,7 +2594,10 @@
           timezone:   Intl.DateTimeFormat().resolvedOptions().timeZone,
           updated_at: new Date().toISOString(),
         });
-      } catch(_) {}
+        if (error && typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: error.message });
+      } catch(e) {
+        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: e?.message });
+      }
     }
 
     async function subscribe() {
@@ -2639,12 +2642,18 @@
     function testPush() { local('test', '✅ WEEBJI PUSH TEST', 'Notifications are working. The System sees you.'); }
 
     async function autoSubscribe() {
-      if (!('Notification' in window) || !('PushManager' in window)) return;
+      if (!('Notification' in window) || !('PushManager' in window)) {
+        if (typeof posthog !== 'undefined') posthog.capture('push_autosubscribe_skipped', { reason: 'no_api' });
+        return;
+      }
       try {
         if (Notification.permission === 'default') {
           await Notification.requestPermission();
         }
-        if (Notification.permission !== 'granted') return;
+        if (Notification.permission !== 'granted') {
+          if (typeof posthog !== 'undefined') posthog.capture('push_autosubscribe_skipped', { reason: 'permission_' + Notification.permission });
+          return;
+        }
         const reg = await navigator.serviceWorker.ready;
         const existing = await reg.pushManager.getSubscription();
         if (existing) {
@@ -2657,7 +2666,49 @@
       } catch(_) {}
     }
 
-    return { subscribe, unsubscribe, isOptedOut, autoSubscribe, send, local, clearStale, init, setUser, linkUser, testPush };
+    // Most users never see the permission prompt because autoSubscribe() runs
+    // during the auth-state-change callback (no user gesture), and browsers
+    // silently suppress Notification.requestPermission() outside a gesture.
+    // This banner gives them a real tap to trigger it from.
+    function maybeShowEnableBanner() {
+      if (!('Notification' in window) || !('PushManager' in window)) return;
+      if (Notification.permission !== 'default') return;
+      if (document.getElementById('push-enable-banner')) return;
+      const dismissedAt = parseInt(localStorage.getItem('weebji_push_banner_dismissed_at') || '0');
+      if (Date.now() - dismissedAt < 3 * 24 * 60 * 60 * 1000) return;
+      const color = localStorage.getItem('weebji_color') || '#00F5FF';
+      const banner = document.createElement('div');
+      banner.id = 'push-enable-banner';
+      banner.style.cssText = `position:fixed;bottom:80px;left:16px;right:16px;z-index:99998;background:rgba(4,4,14,0.97);border:1px solid ${color}44;border-radius:16px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(20px);box-shadow:0 0 32px ${color}22;`;
+      banner.innerHTML = `
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.35em;color:${color}99;text-transform:uppercase;margin-bottom:3px;">System Alert</div>
+          <div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;letter-spacing:0.08em;">Enable Daily Notifications</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="push-enable-btn" style="background:${color}18;border:1px solid ${color}55;border-radius:10px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;color:${color};cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;text-transform:uppercase;">Enable</button>
+          <button id="push-enable-dismiss" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:18px;line-height:1;cursor:pointer;padding:4px;-webkit-tap-highlight-color:transparent;">✕</button>
+        </div>`;
+      document.body.appendChild(banner);
+      document.getElementById('push-enable-btn').addEventListener('click', async () => {
+        if (typeof posthog !== 'undefined') posthog.capture('push_banner_enable_clicked');
+        const result = await subscribe();
+        banner.remove();
+        if (result === true) {
+          if (typeof posthog !== 'undefined') posthog.capture('push_banner_enabled');
+        } else {
+          localStorage.setItem('weebji_push_banner_dismissed_at', String(Date.now()));
+          if (typeof posthog !== 'undefined') posthog.capture('push_banner_enable_failed', { result: String(result) });
+        }
+      });
+      document.getElementById('push-enable-dismiss').addEventListener('click', () => {
+        localStorage.setItem('weebji_push_banner_dismissed_at', String(Date.now()));
+        if (typeof posthog !== 'undefined') posthog.capture('push_banner_dismissed');
+        banner.remove();
+      });
+    }
+
+    return { subscribe, unsubscribe, isOptedOut, autoSubscribe, maybeShowEnableBanner, send, local, clearStale, init, setUser, linkUser, testPush };
   })();
 
   /* ══ PWA INSTALL PROMPT ══════════════════════ */
@@ -3671,6 +3722,8 @@
   const _SB_URL = 'https://qpcqbiicomlpsmkgqhsm.supabase.co';
   const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwY3FiaWljb21scHNta2dxaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTU0NjYsImV4cCI6MjA4OTQzMTQ2Nn0.RGHdyTDAea-85XNU5gOJ-lmwVTbGzkeadFXQH5w37aE';
 
+  let _checkoutInFlight = false;
+
   async function _openPlayBilling(plan) {
     const sku = PLAY_SKUS[plan];
     if (!sku) return 'unavailable';
@@ -3766,6 +3819,15 @@
       return true;
     } catch(e) {
       if (e.name === 'AbortError') { return 'cancelled'; }
+      // "OperationError: unsupported context" — the Digital Goods probe above
+      // returned product details (so it looked like a real Play Store install),
+      // but the actual PaymentRequest has no genuine Play Billing backing
+      // (e.g. itch-sideloaded TWA). Treat as 'unavailable' so _openCheckout
+      // falls through to Razorpay instead of permanently trapping the user here.
+      if (e.name === 'OperationError') {
+        localStorage.removeItem('weebji_play_install');
+        return 'unavailable';
+      }
       _ph('billing_error', { sku, plan, error: e?.message, name: e?.name });
       spawnDropBanner('◆  Purchase error — please try again');
       return 'error';
@@ -3773,6 +3835,12 @@
   }
 
   async function _openCheckout(plan) {
+    // Guard against rapid double/triple-taps on buy buttons — overlapping
+    // PaymentRequest.show() calls throw "OperationError: unsupported context"
+    // in Chrome, which was permanently locking some users out of checkout.
+    if (_checkoutInFlight) return;
+    _checkoutInFlight = true;
+    try {
     // Play Store / Play-Billing-capable TWA: use Google Play Billing via Digital Goods API
     if ('getDigitalGoodsService' in window) {
       const _billingResult = await _openPlayBilling(plan);
@@ -3870,6 +3938,9 @@
     } catch(e) {
       if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'checkout', error: e?.message, plan });
       spawnDropBanner('◆  Could not start checkout — try again');
+    }
+    } finally {
+      _checkoutInFlight = false;
     }
   }
 
@@ -6685,6 +6756,8 @@
     // First Directive — fullscreen overlay on very first dashboard visit (never for veterans past level 1)
     if (!localStorage.getItem('weebji_mission_done') && (p.level || 1) < 2) setTimeout(() => showMissionBriefing(cls, color), 1200);
     // YouTube Notice Board removed — CORS proxy was fragile
+    // Push permission banner — needs a real tap to trigger the browser prompt
+    if (typeof WeebjPush !== 'undefined') setTimeout(() => WeebjPush.maybeShowEnableBanner(), 2500);
   }
 
   /* ── Day-1 Welcome Card ──────────────────── */
@@ -10952,6 +11025,24 @@
     };
   }
 
+  // Filled by prefetchLeaderboard() during boot so renderLeaderboard can paint
+  // instantly when the user opens Profile instead of showing its own spinner.
+  let _lbCache = null; // { rows, ts }
+
+  async function prefetchLeaderboard() {
+    if (typeof SupabaseSync === 'undefined') return;
+    const client = SupabaseSync._client();
+    if (!client) return;
+    try {
+      const { data: rows } = await client
+        .from('leaderboard')
+        .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title,is_plus,updated_at,last_active')
+        .order('level', { ascending: false })
+        .limit(50);
+      if (rows) _lbCache = { rows, ts: Date.now() };
+    } catch(_) {}
+  }
+
   async function renderLeaderboard(color) {
     const el = document.getElementById('profile-leaderboard');
     if (!el) return;
@@ -10964,13 +11055,23 @@
 
     const ri = parseInt(color.slice(1,3),16), gi = parseInt(color.slice(3,5),16), bi = parseInt(color.slice(5,7),16);
     const rgb = `${ri},${gi},${bi}`;
-    el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;font-size:13px">Loading...</div></div>`;
 
-    const { data: rows } = await client
-      .from('leaderboard')
-      .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title,is_plus,updated_at,last_active')
-      .order('level', { ascending: false })
-      .limit(50);
+    let rows;
+    const useCache = _lbCache && (Date.now() - _lbCache.ts) < 60000;
+    if (useCache) {
+      rows = _lbCache.rows.map(r => ({ ...r }));
+      // Refresh cache in the background for next visit
+      prefetchLeaderboard();
+    } else {
+      el.innerHTML = `<div class="lb-card" style="border-color:rgba(${rgb},0.2)"><div class="lb-card__header" style="color:${color}">◈ STREAK LEADERBOARD</div><div style="text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;font-size:13px">Loading...</div></div>`;
+      const { data } = await client
+        .from('leaderboard')
+        .select('user_id,display_name,class,color,hunter_number,level,streak,best_streak,dungeon_title,is_plus,updated_at,last_active')
+        .order('level', { ascending: false })
+        .limit(50);
+      rows = data;
+      if (rows) _lbCache = { rows: rows.map(r => ({ ...r })), ts: Date.now() };
+    }
 
     // Overlay live streaks from progress — only use progress value if it's newer than leaderboard
     if (rows?.length) {
@@ -13645,6 +13746,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
             }
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
               pullProgress().then(() => { try { ReferralSystem.sync(); } catch(_) {} }).catch(() => {});
+              // Prefetch leaderboard during boot so Profile renders instantly instead
+              // of showing its own "Loading..." spinner when the user navigates there.
+              prefetchLeaderboard();
             }
             if (event === 'INITIAL_SESSION' && document.getElementById('dashboard')?.classList.contains('active')) initDashboard();
 

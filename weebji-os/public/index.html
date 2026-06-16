@@ -2545,6 +2545,7 @@
         </div>`;
       document.body.appendChild(banner);
       document.getElementById('sw-update-btn').addEventListener('click', () => {
+        sessionStorage.setItem('weebji_sw_banner_dismissed', '1');
         banner.querySelector('#sw-update-btn').textContent = 'Installing…';
         // Fallback: force reload after 5s if controllerchange never fires
         setTimeout(() => window.location.reload(), 5000);
@@ -10547,7 +10548,7 @@
   function renderMastermindPillarPanel() {
     const panel = document.getElementById('mastermind-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'mastermind' || (isWeebjiPlus() && (loadProgress().level || 1) >= _secondaryUnlockLevel(cls, 'mastermind'));
+    const canAccess = cls === 'mastermind' || isWeebjiPlus();
     _setPillarBg('mastermind');
     if (!canAccess) {
       const _bcIdx = _localDayIndex(BRAIN_CHALLENGES.length);
@@ -10616,7 +10617,7 @@
   function renderMonkPillarPanel() {
     const panel = document.getElementById('monk-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'monk' || (isWeebjiPlus() && (loadProgress().level || 1) >= _secondaryUnlockLevel(cls, 'monk'));
+    const canAccess = cls === 'monk' || isWeebjiPlus();
     _setPillarBg('monk');
     if (!canAccess) {
       panel.innerHTML = `
@@ -10721,7 +10722,7 @@
   function renderMonarchPillarPanel() {
     const panel = document.getElementById('monarch-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'monarch' || (isWeebjiPlus() && (loadProgress().level || 1) >= _secondaryUnlockLevel(cls, 'monarch'));
+    const canAccess = cls === 'monarch' || isWeebjiPlus();
     _setPillarBg('monarch');
     if (!canAccess) {
       // Demo preview block — sample stats strip + 7-day grid + sample exercise rows

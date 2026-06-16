@@ -1010,6 +1010,22 @@
   .qb__save { padding: 16px; border-radius: 12px; border: 1px solid rgba(0,245,255,0.4); background: rgba(0,245,255,0.07); font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #00F5FF; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: transform 0.15s; }
   .qb__save:active { transform: scale(0.96); }
   .qb__skip { padding: 12px; border: none; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: #333355; cursor: pointer; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
+  #ex-customize-overlay, #monk-customize-overlay { position: absolute; inset: 0; background: rgba(8,8,12,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 855; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 32px 20px 24px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; overflow-y: auto; }
+  #ex-customize-overlay.active, #monk-customize-overlay.active { opacity: 1; pointer-events: all; }
+  .ex-cust__system { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.35em; color: #555577; text-transform: uppercase; flex-shrink: 0; }
+  .ex-cust__title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; color: #FFFFFF; flex-shrink: 0; margin: 0; }
+  .ex-cust__sub { font-family: 'Inter', sans-serif; font-size: 12px; color: #8888AA; flex-shrink: 0; margin: 0; }
+  .ex-cust__list { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 340px; }
+  .ex-cust__row { display: flex; align-items: center; gap: 6px; }
+  .ex-cust__name-in { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; font-family: 'Inter', sans-serif; font-size: 13px; color: #FFFFFF; outline: none; min-width: 0; }
+  .ex-cust__name-in:focus { border-color: rgba(0,245,255,0.3); }
+  .ex-cust__del { width: 32px; height: 38px; border-radius: 8px; border: 1px solid rgba(255,80,80,0.3); background: rgba(255,80,80,0.06); color: #FF5050; font-size: 18px; line-height: 1; cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+  .ex-cust__del:disabled { opacity: 0.2; cursor: default; }
+  .ex-cust__add { width: 100%; max-width: 340px; padding: 12px; border-radius: 10px; border: 1px dashed rgba(0,245,255,0.2); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: rgba(0,245,255,0.6); cursor: pointer; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
+  .ex-cust__btns { display: flex; gap: 10px; width: 100%; max-width: 340px; flex-shrink: 0; }
+  .ex-cust__save { flex: 1; padding: 14px; border-radius: 10px; border: 1px solid rgba(0,245,255,0.4); background: rgba(0,245,255,0.07); font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: #00F5FF; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ex-cust__cancel { flex: 1; padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: #444466; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .forge-cust-btn { background: transparent; border: 1px solid rgba(0,245,255,0.18); border-radius: 6px; color: rgba(0,245,255,0.65); font-size: 12px; padding: 3px 9px; cursor: pointer; -webkit-tap-highlight-color: transparent; margin-left: 6px; vertical-align: middle; }
 
   /* ══ PHASE 3 — GHOST TOKEN OVERLAY ══════════ */
   #ghost-intervention { position: absolute; inset: 0; background: rgba(8,8,12,0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 860; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
@@ -2368,6 +2384,32 @@
       </div>
     </div>
 
+    <!-- Exercise Customize Overlay -->
+    <div id="ex-customize-overlay">
+      <p class="ex-cust__system" id="ex-cust-system">FORGE — CUSTOMIZE</p>
+      <h2 class="ex-cust__title" id="ex-cust-title">Customize Exercises</h2>
+      <p class="ex-cust__sub">Edit your list. Min 4 exercises required.</p>
+      <div class="ex-cust__list" id="ex-cust-list"></div>
+      <button class="ex-cust__add" id="ex-cust-add">+ Add Exercise</button>
+      <div class="ex-cust__btns">
+        <button class="ex-cust__save" id="ex-cust-save">Save</button>
+        <button class="ex-cust__cancel" id="ex-cust-cancel">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Monk Ritual Customize Overlay -->
+    <div id="monk-customize-overlay">
+      <p class="ex-cust__system">SANCTUARY — CUSTOMIZE</p>
+      <h2 class="ex-cust__title">Customize Rituals</h2>
+      <p class="ex-cust__sub">Edit your ritual list. Min 4 required.</p>
+      <div class="ex-cust__list" id="monk-cust-list"></div>
+      <button class="ex-cust__add" id="monk-cust-add">+ Add Ritual</button>
+      <div class="ex-cust__btns">
+        <button class="ex-cust__save" id="monk-cust-save">Save</button>
+        <button class="ex-cust__cancel" id="monk-cust-cancel">Cancel</button>
+      </div>
+    </div>
+
     <!-- Ghost Token Intervention overlay -->
     <div id="ghost-intervention">
       <p class="ghost-int__system">System Intervention</p>
@@ -3063,6 +3105,11 @@
     { name: 'Evening body scan — 10 min',   xp: 8  },
   ];
 
+  function getMonkRituals() {
+    const ov = JSON.parse(localStorage.getItem('weebji_monk_overrides') || '[]');
+    return ov.length >= 1 ? ov : MONK_RITUALS;
+  }
+
   const MM_MODES = {
     sprint:    { label: 'Sprint',     mins: 10, xp: 6  },
     standard:  { label: 'Standard',   mins: 25, xp: 14 },
@@ -3403,12 +3450,12 @@
       p.yesterdayCountDate = p.lastDate;
 
       // Monk grid: mark day done on most rituals (4+/8) — was: all 8 (too punishing)
-      if (p.lastDate && (p.monkChecked || []).length >= Math.max(4, Math.ceil(MONK_RITUALS.length / 2))) {
+      if (p.lastDate && (p.monkChecked || []).length >= Math.max(4, Math.ceil(getMonkRituals().length / 2))) {
         const grid = p.monkGrid || [];
         if (!grid.includes(p.lastDate)) { grid.push(p.lastDate); p.monkGrid = grid; }
       }
       // Monarch grid: mark day done on workoutBonus OR most checks (3+/4) — v207 looser
-      if (p.lastDate && (p.workoutBonus || (p.workoutChecked || []).length >= 3)) {
+      if (p.lastDate && (p.workoutBonus || (p.workoutChecked || []).length >= 2)) {
         const grid = p.monarchGrid || [];
         if (!grid.includes(p.lastDate)) { grid.push(p.lastDate); p.monarchGrid = grid; }
         p.totalWorkoutDays = (p.totalWorkoutDays || 0) + 1;
@@ -3642,9 +3689,9 @@
     const todayStr   = new Date().toDateString();
 
     // Today's live state (grids only update at rollover, so check live progress)
-    const todayMonarch = p.workoutBonus || (p.workoutChecked||[]).length >= 3;
+    const todayMonarch = p.workoutBonus || (p.workoutChecked||[]).length >= 2;
     const todayMm      = (p.mmSessions||0) > 0;
-    const todayMonk    = (p.monkChecked||[]).length >= Math.max(4, Math.ceil(MONK_RITUALS.length / 2));
+    const todayMonk    = (p.monkChecked||[]).length >= Math.max(4, Math.ceil(getMonkRituals().length / 2));
 
     const cells = Array.from({ length: 90 }, (_, i) => {
       const d = new Date(); d.setDate(d.getDate() - (89 - i));
@@ -4199,7 +4246,7 @@
   function checkDayComplete(p) {
     const today = new Date().toISOString().slice(0,10);
     if (localStorage.getItem('weebji_protocol_done') === today) return;
-    const workoutDone = p.workoutBonus || (p.workoutChecked||[]).length >= 3;
+    const workoutDone = p.workoutBonus || (p.workoutChecked||[]).length >= 2;
     const questsDone  = (p.questsChecked||[]).length >= 3;
     if (!workoutDone || !questsDone) return;
     localStorage.setItem('weebji_protocol_done', today);
@@ -7041,7 +7088,7 @@
       monk: [
         { id: 'k_five',  xp: 60, text: 'Five rituals before the day ends. Stillness is built in repetitions.', check: p => (p.monkChecked || []).length >= 5 },
         { id: 'k_combo', xp: 50, text: 'Three rituals + two quests. Calm, then order.', check: p => (p.monkChecked || []).length >= 3 && _qs(p) >= 2 },
-        { id: 'k_all',   xp: 80, minLvl: 8, text: 'Every ritual. All of them. Total command of the inner world.', check: p => (p.monkChecked || []).length >= MONK_RITUALS.length },
+        { id: 'k_all',   xp: 80, minLvl: 8, text: 'Every ritual. All of them. Total command of the inner world.', check: p => (p.monkChecked || []).length >= getMonkRituals().length },
       ],
     };
 
@@ -7648,8 +7695,13 @@
       forgeCard.style.boxShadow   = `0 0 14px ${hexRgba('#A8D8A8', 0.07)}`;
       titleEl.textContent = 'THE SANCTUARY';
       titleEl.style.color = '#A8D8A8'; titleEl.style.textShadow = `0 0 14px rgba(168,216,168,0.5)`;
-      subEl.textContent = `${p.monkChecked.length}/${MONK_RITUALS.length} TODAY`;
+      subEl.textContent = `${p.monkChecked.length}/${getMonkRituals().length} TODAY`;
       bonusEl.classList.add('hidden');
+      const _mwm = document.getElementById('forge-mode-wrap');
+      if (_mwm) {
+        _mwm.innerHTML = `<button class="forge-cust-btn" id="monk-cust-open-btn" title="Customize rituals">✎ Rituals</button>`;
+        _mwm.querySelector('#monk-cust-open-btn').addEventListener('click', () => openMonkCustomize(cls));
+      }
       renderMonkUI(p);
       return;
     }
@@ -7676,13 +7728,17 @@
       const wMode = localStorage.getItem('weebji_workout_mode') || 'home';
       const mw = document.getElementById('forge-mode-wrap');
       if (mw) {
-        mw.innerHTML = `<div class="forge-mode-toggle"><button class="forge-mode-btn${wMode==='home'?' active':''}" id="forge-home-btn">🏠 Home</button><button class="forge-mode-btn${wMode==='gym'?' active':''}" id="forge-gym-btn">🏋️ Gym</button></div>` + diffToggleHTML('forge');
+        mw.innerHTML = `<div class="forge-mode-toggle"><button class="forge-mode-btn${wMode==='home'?' active':''}" id="forge-home-btn">🏠 Home</button><button class="forge-mode-btn${wMode==='gym'?' active':''}" id="forge-gym-btn">🏋️ Gym</button></div>` + diffToggleHTML('forge') + `<button class="forge-cust-btn" id="forge-cust-btn" title="Customize exercises">✎</button>`;
         mw.querySelector('#forge-home-btn').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','home'); renderForgeArea(loadProgress(), cls); });
         mw.querySelector('#forge-gym-btn').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','gym'); renderForgeArea(loadProgress(), cls); });
         bindDiffToggle(mw, 'forge', () => renderForgeArea(loadProgress(), cls));
+        mw.querySelector('#forge-cust-btn').addEventListener('click', () => openExCustomize(wMode, type, cls));
       }
-      // customs NOT passed here — renderExercises appends them itself (was double-adding before)
-      renderExercises(p, applyDifficulty(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]));
+      // Use per-mode exercise overrides if set, else fall back to defaults
+      const _exKey = `${wMode}_${type}`;
+      const _exOv  = JSON.parse(localStorage.getItem('weebji_ex_overrides') || '{}');
+      const _baseEx = (_exOv[_exKey] && _exOv[_exKey].length >= 1) ? _exOv[_exKey] : applyDifficulty(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]);
+      renderExercises(p, _baseEx);
     }
     // Monarch: calendar + PR board appended after exercise list (clear first to prevent duplication)
     requestAnimationFrame(() => {
@@ -8664,7 +8720,7 @@
         <div class="sanctuary-sessions" id="sanctuary-sessions">No sessions yet</div>
       </div>
     `;
-    const rows = MONK_RITUALS.map((r, i) => {
+    const rows = getMonkRituals().map((r, i) => {
       const done = p.monkChecked.includes(i);
       return `<div class="monk-ritual-row${done?' done':''}" data-idx="${i}">
         <div class="monk-check">${done ? CHECK_SVG : ''}</div>
@@ -8691,12 +8747,12 @@
     const guideBtn = document.getElementById('sanctuary-guide-btn');
     if (guideBtn) guideBtn.addEventListener('click', () => { Sound.play('tap'); Sanctuary.toggleGuide(); });
     Sanctuary.syncUI();
-    document.getElementById('forge-sub').textContent = `${p.monkChecked.length}/${MONK_RITUALS.length} TODAY`;
+    document.getElementById('forge-sub').textContent = `${p.monkChecked.length}/${getMonkRituals().length} TODAY`;
     requestAnimationFrame(() => {
       listEl.querySelectorAll('.dopamine-section').forEach(el => el.remove());
       const calSection = document.createElement('div');
       calSection.className = 'dopamine-section';
-      renderMonthCalendar(calSection, p.monkGrid || [], p.monkChecked.length === MONK_RITUALS.length, '52,211,153', 'Monk Days');
+      renderMonthCalendar(calSection, p.monkGrid || [], p.monkChecked.length === getMonkRituals().length, '52,211,153', 'Monk Days');
       listEl.appendChild(calSection);
     });
   }
@@ -8707,16 +8763,16 @@
     if (!row) return;
     if (p.monkChecked.includes(index)) {
       if (p.monkBonus) { p.xp = Math.max(0, p.xp - 25); p.monkBonus = false; }
-      p.xp = Math.max(0, p.xp - MONK_RITUALS[index].xp);
+      p.xp = Math.max(0, p.xp - getMonkRituals()[index].xp);
       p.monkChecked = p.monkChecked.filter(i => i !== index);
       row.classList.remove('done'); row.querySelector('.monk-check').innerHTML = '';
     } else {
       p.monkChecked.push(index);
       row.classList.add('done'); row.querySelector('.monk-check').innerHTML = CHECK_SVG;
       popCheck(row.querySelector('.monk-check'));
-      p.xp += rollCriticalDrop(MONK_RITUALS[index].xp, row.querySelector('.monk-ritual-xp'), p);
+      p.xp += rollCriticalDrop(getMonkRituals()[index].xp, row.querySelector('.monk-ritual-xp'), p);
       Sound.play('check');
-      if (p.monkChecked.length === MONK_RITUALS.length && !p.monkBonus) {
+      if (p.monkChecked.length === getMonkRituals().length && !p.monkBonus) {
         p.monkBonus = true; p.xp += 25;
         Sound.play('workoutComplete');
         triggerFlash('flash-white', '#FFFFFF', null);
@@ -8733,7 +8789,7 @@
         }
       }
     }
-    document.getElementById('forge-sub').textContent = `${p.monkChecked.length}/${MONK_RITUALS.length} TODAY`;
+    document.getElementById('forge-sub').textContent = `${p.monkChecked.length}/${getMonkRituals().length} TODAY`;
     const leveled = checkLevelUp(p);
     checkSecretTitles(p, localStorage.getItem('weebji_class'));
     saveProgress(p); updateXPBar(p); updateStats(p);
@@ -8958,7 +9014,7 @@
     // ── Rituals ──
     const ritualWrap = document.createElement('div');
     ritualWrap.style.cssText = 'border-top:1px solid rgba(168,216,168,0.07);padding-top:12px;margin-top:4px';
-    MONK_RITUALS.forEach((r, i) => {
+    getMonkRituals().forEach((r, i) => {
       const done = p.monkChecked.includes(i);
       const row = document.createElement('div');
       row.className = `monk-ritual-row${done ? ' done' : ''}`;
@@ -8977,7 +9033,7 @@
           popCheck(row.querySelector('.monk-check'));
           p2.xp += rollCriticalDrop(r.xp, row.querySelector('.monk-ritual-xp'), p2);
           Sound.play('check');
-          if (p2.monkChecked.length === MONK_RITUALS.length && !p2.monkBonus) {
+          if (p2.monkChecked.length === getMonkRituals().length && !p2.monkBonus) {
             p2.monkBonus = true; p2.xp += 25; Sound.play('milestone');
           }
         }
@@ -8988,7 +9044,7 @@
       ritualWrap.appendChild(row);
     });
     el.appendChild(ritualWrap);
-    if ((p.monkChecked || []).length >= MONK_RITUALS.length) {
+    if ((p.monkChecked || []).length >= getMonkRituals().length) {
       const banner = document.createElement('div');
       banner.style.cssText = 'margin-top:16px;padding:14px 16px;background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.18);border-radius:14px;text-align:center';
       banner.innerHTML = `
@@ -10545,7 +10601,7 @@
         <div class="pillar-quote">${_pillarQuote('monk')}</div>
         <div class="pillar-stats-strip">
           <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
-            <div class="pillar-stat__val" style="color:#34D399">${ritualsToday}/${MONK_RITUALS.length}</div>
+            <div class="pillar-stat__val" style="color:#34D399">${ritualsToday}/${getMonkRituals().length}</div>
             <div class="pillar-stat__lbl">Today</div>
           </div>
           <div class="pillar-stat" style="border-color:rgba(52,211,153,0.12)">
@@ -12232,15 +12288,101 @@
     }, 3000);
   }
 
+  /* ══ EXERCISE / RITUAL CUSTOMIZATION ════════ */
+  function openExCustomize(wMode, type, cls) {
+    const exKey = `${wMode}_${type}`;
+    const allOv  = JSON.parse(localStorage.getItem('weebji_ex_overrides') || '{}');
+    const defaultEx = applyDifficulty(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]);
+    let exercises = (allOv[exKey] && allOv[exKey].length >= 1) ? allOv[exKey].map(e => ({...e})) : defaultEx.map(e => ({...e}));
+    const overlay = document.getElementById('ex-customize-overlay');
+    const listEl  = document.getElementById('ex-cust-list');
+    document.getElementById('ex-cust-title').textContent = `${type} DAY — ${wMode.toUpperCase()}`;
+    function _rows() {
+      listEl.innerHTML = '';
+      exercises.forEach((ex, i) => {
+        const row = document.createElement('div');
+        row.className = 'ex-cust__row';
+        const safeVal = ex.name.replace(/"/g, '&quot;');
+        row.innerHTML = `<input class="ex-cust__name-in" maxlength="40" value="${safeVal}" placeholder="Exercise name"><button class="ex-cust__del" ${exercises.length <= 4 ? 'disabled' : ''}>×</button>`;
+        row.querySelector('.ex-cust__del').addEventListener('click', () => { if (exercises.length > 4) { exercises.splice(i, 1); _rows(); } });
+        listEl.appendChild(row);
+      });
+    }
+    _rows();
+    document.getElementById('ex-cust-add').onclick = () => {
+      exercises.push({ name: '', sets: 3, reps: 12, xp: 5 });
+      _rows();
+      const ins = listEl.querySelectorAll('.ex-cust__name-in');
+      if (ins.length) ins[ins.length - 1].focus();
+    };
+    document.getElementById('ex-cust-save').onclick = () => {
+      const inputs = [...listEl.querySelectorAll('.ex-cust__name-in')];
+      const saved  = [];
+      inputs.forEach((inp, i) => {
+        const name = inp.value.trim();
+        if (name) saved.push({ ...(exercises[i] || { sets: 3, reps: 12, xp: 5 }), name });
+      });
+      if (saved.length < 4) return;
+      const ov2 = JSON.parse(localStorage.getItem('weebji_ex_overrides') || '{}');
+      ov2[exKey] = saved;
+      localStorage.setItem('weebji_ex_overrides', JSON.stringify(ov2));
+      const p = loadProgress(); p.workoutChecked = []; p.workoutBonus = false; saveProgress(p);
+      overlay.classList.remove('active');
+      renderForgeArea(loadProgress(), cls);
+      Sound.play('tap');
+    };
+    document.getElementById('ex-cust-cancel').onclick = () => overlay.classList.remove('active');
+    overlay.classList.add('active');
+  }
+
+  function openMonkCustomize(cls) {
+    const overlay = document.getElementById('monk-customize-overlay');
+    const listEl  = document.getElementById('monk-cust-list');
+    let rituals = getMonkRituals().map(r => ({...r}));
+    function _rows() {
+      listEl.innerHTML = '';
+      rituals.forEach((r, i) => {
+        const row = document.createElement('div');
+        row.className = 'ex-cust__row';
+        const safeVal = r.name.replace(/"/g, '&quot;');
+        row.innerHTML = `<input class="ex-cust__name-in" maxlength="50" value="${safeVal}" placeholder="Ritual name"><button class="ex-cust__del" ${rituals.length <= 4 ? 'disabled' : ''}>×</button>`;
+        row.querySelector('.ex-cust__del').addEventListener('click', () => { if (rituals.length > 4) { rituals.splice(i, 1); _rows(); } });
+        listEl.appendChild(row);
+      });
+    }
+    _rows();
+    document.getElementById('monk-cust-add').onclick = () => {
+      rituals.push({ name: '', xp: 6 });
+      _rows();
+      const ins = listEl.querySelectorAll('.ex-cust__name-in');
+      if (ins.length) ins[ins.length - 1].focus();
+    };
+    document.getElementById('monk-cust-save').onclick = () => {
+      const inputs = [...listEl.querySelectorAll('.ex-cust__name-in')];
+      const saved  = [];
+      inputs.forEach((inp, i) => {
+        const name = inp.value.trim();
+        if (name) saved.push({ ...(rituals[i] || { xp: 6 }), name });
+      });
+      if (saved.length < 4) return;
+      localStorage.setItem('weebji_monk_overrides', JSON.stringify(saved));
+      const p = loadProgress(); p.monkChecked = []; p.monkBonus = false; saveProgress(p);
+      overlay.classList.remove('active');
+      renderForgeArea(loadProgress(), cls);
+      Sound.play('tap');
+    };
+    document.getElementById('monk-cust-cancel').onclick = () => overlay.classList.remove('active');
+    overlay.classList.add('active');
+  }
+
   /* ══ DAILY QUEST BRIEFING ════════════════════ */
   function maybeShowQuestBriefing(cls) {
     if (!localStorage.getItem('weebji_tour_done')) return; // don't stack on the onboarding tour
     const today = new Date().toDateString();
     if (localStorage.getItem('weebji_quest_briefing_seen') === today) return;
     const hour = new Date().getHours();
-    const isMorning = hour >= 5  && hour < 12;
-    const isEvening = hour >= 18 && hour < 24;
-    if (!isMorning && !isEvening) return;
+    const isMorning = hour < 18;
+    const isEvening = hour >= 18;
     if (document.querySelector('#levelup-overlay.active, #anomaly-overlay.active, #mission-briefing.active, #ghost-intervention.active, #rating-prompt.active')) return;
 
     const quests    = CLASS_QUESTS[cls] || CLASS_QUESTS.monarch;

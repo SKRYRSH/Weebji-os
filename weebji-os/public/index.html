@@ -8859,7 +8859,7 @@
       hasAny = true;
 
       const requiredLevel = idx === 0 ? 3 : 7;
-      if ((p.level || 1) < requiredLevel) {
+      if ((p.level || 1) < requiredLevel && !isWeebjiPlus()) {
         // Level not met — show locked card with level requirement
         const card = document.createElement('div');
         card.className = 'unlock-card locked';

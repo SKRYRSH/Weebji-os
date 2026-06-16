@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v310 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v310';
+// ── WEEBJI OS — Service Worker v311 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v311';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
 
@@ -71,7 +71,9 @@ self.addEventListener('fetch', e => {
         const clone = res.clone();
         caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
         return res;
-      }).catch(() => caches.match(BASE));
+      });
+      // No catch fallback — let asset failures fail cleanly so broken images
+      // don't get served as HTML and permanently poison the cache
     })
   );
 });

@@ -2528,6 +2528,8 @@
     function _showUpdateBanner(reg) {
       if (document.getElementById('sw-update-banner')) return;
       if (sessionStorage.getItem('weebji_sw_banner_dismissed')) return;
+      const lastReload = parseInt(sessionStorage.getItem('weebji_sw_reload_at') || '0');
+      if (Date.now() - lastReload < 30000) return;
       const color = localStorage.getItem('weebji_color') || '#00F5FF';
       const banner = document.createElement('div');
       banner.id = 'sw-update-banner';

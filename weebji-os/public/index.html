@@ -12431,13 +12431,13 @@
 
   /* ══ DAILY QUEST BRIEFING ════════════════════ */
   function maybeShowQuestBriefing(cls) {
-    if (!localStorage.getItem('weebji_tour_done')) return; // don't stack on the onboarding tour
+    if (!cls || !localStorage.getItem('weebji_class')) return; // not onboarded yet
     const today = new Date().toDateString();
     if (localStorage.getItem('weebji_quest_briefing_seen') === today) return;
     const hour = new Date().getHours();
     const isMorning = hour < 18;
     const isEvening = hour >= 18;
-    if (document.querySelector('#levelup-overlay.active, #anomaly-overlay.active, #mission-briefing.active, #ghost-intervention.active, #rating-prompt.active')) return;
+    if (document.querySelector('#levelup-overlay.active, #anomaly-overlay.active, #mission-briefing.active, #ghost-intervention.active, #rating-prompt.active, #tour-card.active')) return;
 
     const quests    = CLASS_QUESTS[cls] || CLASS_QUESTS.monarch;
     const overrides = getQuestOverrides(cls) || [];

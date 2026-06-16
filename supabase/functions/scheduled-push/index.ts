@@ -149,6 +149,10 @@ Deno.serve(async (req) => {
           ? `Day ${streak} secured. The System acknowledges your discipline.`
           : body;
       }
+      if (type === 'morning_activation') {
+        const streak = streakMap.get(sub.user_id) || 0;
+        if (streak === 0) pBody = 'YOUR FIRST DIRECTIVE HAS BEEN ASSIGNED. REPORT IN NOW AND CLAIM IT.';
+      }
       const payload = JSON.stringify({ type, title, body: pBody });
       try {
         await webpush.sendNotification(

@@ -1272,6 +1272,7 @@
   .mm-btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.05); color: #2A2A44; }
   .mm-btn-cancel:active { transform: scale(0.95); }
   .mm-xp-info { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444466; text-align: center; margin-top: 12px; letter-spacing: 0.08em; }
+  .mm-mute-btn { background: transparent; border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; color: #444466; font-size: 11px; padding: 5px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; letter-spacing: 0.06em; }
   .mm-topic-wrap { text-align:center; margin-top:2px; margin-bottom:16px; }
   .mm-topic-wrap-label { font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:0.25em; color:rgba(230,57,70,0.28); text-transform:uppercase; margin-bottom:7px; }
   .mm-topic-row { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; row-gap:10px; }
@@ -8467,6 +8468,9 @@
         <button class="mm-btn mm-btn-start" id="mm-start-btn">${Pomo.running ? 'Pause' : 'Begin Session'}</button>
         <button class="mm-btn mm-btn-cancel" id="mm-cancel-btn">Cancel</button>
       </div>
+      <div style="display:flex;justify-content:center;margin-top:4px">
+        <button class="mm-mute-btn" id="mm-mute-btn" title="Toggle session music">${MusicEngine.currentTheme() ? '🔇 Silence' : '🔊 Sound'}</button>
+      </div>
       <p class="mm-xp-info">Deep focus mode — leave this screen and The Void drains your HP. Stay. Ascend.</p>
       <div class="mm-topic-wrap">
         <div class="mm-topic-wrap-label">Focus Topic</div>
@@ -8483,6 +8487,11 @@
     document.getElementById('mm-cancel-btn').addEventListener('click', () => { Sound.play('tap'); Pomo.cancel(); });
     document.querySelectorAll('.mm-topic-chip').forEach(b =>
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectTopic(b.dataset.topic); }));
+    const _muteBtn = document.getElementById('mm-mute-btn');
+    if (_muteBtn) _muteBtn.addEventListener('click', () => {
+      if (MusicEngine.currentTheme()) { MusicEngine.silenceSession(); _muteBtn.textContent = '🔊 Sound'; }
+      else { MusicEngine.resumeSession(); _muteBtn.textContent = '🔇 Silence'; }
+    });
     // Topic breakdown
     listEl.querySelectorAll('.mm-topic-breakdown').forEach(el => el.remove());
     const _bd = renderTopicBreakdown();
@@ -9649,7 +9658,7 @@
       { const sd = snareBuf.getChannelData(0); for (let i = 0; i < sd.length; i++) sd[i] = Math.random() * 2 - 1; }
       let _lb = 0, _mmNext = _ctx.currentTime;
       function _mmSched() {
-        while (_mmNext < _ctx.currentTime + 0.5) {
+        while (_mmNext < _ctx.currentTime + 1.5) {
           const now = _mmNext, note = bassNotes[_lb % bassNotes.length];
           const b = _ctx.createOscillator(); const bg = _ctx.createGain();
           b.type = 'sine';
@@ -9671,7 +9680,7 @@
           });
           _lb++; _mmNext += bar;
         }
-        _timers.push(setTimeout(_mmSched, 250));
+        _timers.push(setTimeout(_mmSched, 600));
       }
       _mmSched();
       _fadeIn(0.13, 2.5);
@@ -9705,7 +9714,7 @@
       // Monarch beat — lookahead scheduler: 250ms poll, 500ms audio lookahead
       let _mnNext = _ctx.currentTime;
       function _mnSched() {
-        while (_mnNext < _ctx.currentTime + 0.5) {
+        while (_mnNext < _ctx.currentTime + 1.5) {
           const now = _mnNext;
           [0, beat * 2].forEach(off => {
             const o = _ctx.createOscillator(); const g = _ctx.createGain();
@@ -9731,7 +9740,7 @@
           }
           _mnNext += bar;
         }
-        _timers.push(setTimeout(_mnSched, 250));
+        _timers.push(setTimeout(_mnSched, 600));
       }
       _mnSched();
       _fadeIn(0.18, 1.5);
@@ -9786,6 +9795,17 @@
     function isEnabled() { return _enabled; }
     function currentTheme() { return _theme; }
 
+    // Kill all oscillators + timers without touching _enabled or _theme — "hot mute" for sessions
+    function silenceSession() {
+      _timers.forEach(t => clearTimeout(t)); _timers = [];
+      _fadeOut(0.4, null);
+    }
+
+    // Re-fire current theme if one is set — used by the session mute toggle to unmute
+    function resumeSession() {
+      if (_theme && _enabled) { const t = _theme; _theme = null; play(t); }
+    }
+
     // Auto-resume AudioContext when page returns to foreground (mobile tab-switch / screen unlock)
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && _ctx && _ctx.state === 'suspended' && _enabled && _theme) {
@@ -9793,7 +9813,7 @@
       }
     });
 
-    return { play, stop, toggle, isEnabled, currentTheme };
+    return { play, stop, toggle, isEnabled, currentTheme, silenceSession, resumeSession };
   })();
 
   // Start music on the very first gesture — covers onboarding screens (contract, vow,

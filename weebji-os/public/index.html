@@ -12,6 +12,8 @@
   <title>WEEBJI OS</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" type="image/png" />
+  <link rel="preload" href="assets/bg-class-select.jpeg" as="image" />
+  <link rel="preload" href="assets/bg-levelup.jpeg" as="image" />
   <!-- PostHog Analytics -->
   <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);window._initPostHog=function(){posthog.init('phc_rUZFK8D1ws0J87t0xXS5m2pgivBILx5gXB0fqw52otw',{api_host:'https://us.i.posthog.com',defaults:'2026-01-30',autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true})};if(localStorage.getItem('weebji_analytics_ok')==='1')window._initPostHog();</script>
   <!-- Global error capture → PostHog (must be early to catch boot errors) -->
@@ -163,7 +165,7 @@
   .legal-section__version { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.1); text-align: center; margin-top: 14px; letter-spacing: 0.2em; }
 
   /* ══ SCREEN 03 — CONTRACT ═════════════════════ */
-  #contract { overflow-y: auto; scrollbar-width: none; }
+  #contract { overflow-y: auto; scrollbar-width: none; background: linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.88) 100%), url('assets/bg-class-select.jpeg') top center / cover no-repeat, #03030A; }
   #contract::-webkit-scrollbar { display: none; }
   .particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
   .particle { position: absolute; bottom: -10px; border-radius: 50%; opacity: 0; animation: kf-particle-rise linear infinite; }
@@ -610,7 +612,7 @@
   /* LEVEL UP text — SLAMS in like Solo Leveling */
   .levelup__eyebrow {
     font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.45em;
-    text-transform:uppercase; color:rgba(255,255,255,0.35); margin-bottom:10px;
+    text-transform:uppercase; color:rgba(255,255,255,0.6); margin-bottom:10px;
     position:relative; z-index:1;
     animation: kf-lu-fade-up 0.5s 0.05s ease both;
   }
@@ -643,7 +645,7 @@
   }
   .levelup__quote {
     font-family:'Inter',sans-serif; font-size:13px; font-style:italic;
-    color:rgba(255,255,255,0.45); margin-top:22px; max-width:260px; line-height:1.7;
+    color:rgba(255,255,255,0.7); margin-top:22px; max-width:260px; line-height:1.7;
     position:relative; z-index:1;
     animation: kf-lu-fade-up 0.5s 0.85s ease both;
   }
@@ -6072,6 +6074,7 @@
       return;
     }
     localStorage.setItem('weebji_age_ok', '1');
+    sessionStorage.setItem('weebji_age_ok', '1');
     if (el) el.style.display = 'none';
     playInkWash(() => {
       showScreen('class-select');
@@ -6135,7 +6138,7 @@
       State.playerName    = localStorage.getItem('weebji_name')  || 'Hunter';
       enterDashboard(false);
     } else {
-      if (!localStorage.getItem('weebji_age_ok')) {
+      if (!localStorage.getItem('weebji_age_ok') && !sessionStorage.getItem('weebji_age_ok')) {
         const ageEl = document.getElementById('age-gate-overlay');
         if (ageEl) ageEl.style.display = 'flex';
       } else {

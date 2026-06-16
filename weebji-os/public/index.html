@@ -94,7 +94,7 @@
   .splash__loader span:nth-child(3) { animation-delay: 0.4s; }
 
   /* ══ SCREEN 02 — CLASS SELECT ════════════════ */
-  #class-select { overflow-y: auto; scrollbar-width: none; background: linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.85) 100%), url('assets/bg-class-select.png') top center / cover no-repeat, #03030A; }
+  #class-select { overflow-y: auto; scrollbar-width: none; background: linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.85) 100%), url('assets/bg-class-select.jpeg') top center / cover no-repeat, #03030A; }
   #class-select::-webkit-scrollbar { display: none; }
   .class-select__header { flex-shrink: 0; padding: 52px 24px 24px; text-align: center; }
   .class-select__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: #555577; margin-bottom: 10px; }
@@ -221,9 +221,9 @@
 
   /* ══ SCREEN 05 — DASHBOARD ═══════════════════ */
   #dashboard { overflow: hidden; background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,8,0.95) 100%), radial-gradient(ellipse at 50% 10%, rgba(0,70,255,0.11) 0%, transparent 60%), radial-gradient(ellipse at 15% 90%, rgba(61,0,255,0.07) 0%, transparent 40%), #03030A; }
-  #dashboard.bg-monarch    { background: linear-gradient(to bottom, rgba(0,8,22,0.72) 0%, rgba(0,4,14,0.92) 65%), url('assets/bg-monarch.png') top center / cover no-repeat, #03030A; }
-  #dashboard.bg-mastermind { background: linear-gradient(to bottom, rgba(20,0,2,0.72) 0%, rgba(10,0,1,0.92) 65%), url('assets/bg-mastermind.png') top center / cover no-repeat, #03030A; }
-  #dashboard.bg-monk       { background: linear-gradient(to bottom, rgba(0,14,6,0.72) 0%, rgba(0,8,3,0.92) 65%), url('assets/bg-monk.png') top center / cover no-repeat, #03030A; }
+  #dashboard.bg-monarch    { background: linear-gradient(to bottom, rgba(0,8,22,0.72) 0%, rgba(0,4,14,0.92) 65%), url('assets/bg-monarch.jpeg') top center / cover no-repeat, #03030A; }
+  #dashboard.bg-mastermind { background: linear-gradient(to bottom, rgba(20,0,2,0.72) 0%, rgba(10,0,1,0.92) 65%), url('assets/bg-mastermind.jpeg') top center / cover no-repeat, #03030A; }
+  #dashboard.bg-monk       { background: linear-gradient(to bottom, rgba(0,14,6,0.72) 0%, rgba(0,8,3,0.92) 65%), url('assets/bg-monk.jpeg') top center / cover no-repeat, #03030A; }
   #dashboard::before { content:''; position:absolute; inset:0; pointer-events:none; z-index:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='stone'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' seed='3'/%3E%3CfeColorMatrix type='matrix' values='0.22 0.22 0.22 0 0.06 0.22 0.22 0.22 0 0.06 0.28 0.28 0.28 0 0.08 0 0 0 0.22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23stone)'/%3E%3C/svg%3E"); opacity:0.55; mix-blend-mode:screen; }
   @keyframes kf-mist-drift { 0%,100%{transform:translateX(-5%) scaleX(1);opacity:0.35;} 50%{transform:translateX(5%) scaleX(1.04);opacity:0.55;} }
   .mist-layer { position:absolute; bottom:0; left:-10%; right:-10%; height:110px; background:linear-gradient(to top,rgba(160,190,255,0.16) 0%,rgba(90,130,255,0.08) 55%,transparent 100%); filter:blur(18px); pointer-events:none; animation:kf-mist-drift 14s ease-in-out infinite; z-index:6; }
@@ -451,9 +451,9 @@
   .nav-btn[data-tab="monarch"].active::after { background:#00F5FF!important; box-shadow:0 0 6px #00F5FF,0 0 14px rgba(0,245,255,0.4)!important; }
   /* Pillar panels */
   .pillar-panel { flex:1; min-height:0; overflow:hidden; display:none; flex-direction:column; background-size:cover; background-position:top center; background-repeat:no-repeat; position:relative; }
-  .pillar-panel.panel-mastermind { background-image: linear-gradient(to bottom, rgba(20,0,2,0.65) 0%, rgba(14,0,2,0.90) 65%), url('assets/bg-mastermind.png'); }
-  .pillar-panel.panel-monk       { background-image: linear-gradient(to bottom, rgba(0,38,16,0.44) 0%, rgba(0,12,5,0.90) 65%), url('assets/bg-monk.png'); }
-  .pillar-panel.panel-monarch    { background-image: linear-gradient(to bottom, rgba(0,18,42,0.44) 0%, rgba(0,6,18,0.90) 65%), url('assets/bg-monarch.png'); }
+  .pillar-panel.panel-mastermind { background-image: linear-gradient(to bottom, rgba(20,0,2,0.65) 0%, rgba(14,0,2,0.90) 65%), url('assets/bg-mastermind.jpeg'); }
+  .pillar-panel.panel-monk       { background-image: linear-gradient(to bottom, rgba(0,38,16,0.44) 0%, rgba(0,12,5,0.90) 65%), url('assets/bg-monk.jpeg'); }
+  .pillar-panel.panel-monarch    { background-image: linear-gradient(to bottom, rgba(0,18,42,0.44) 0%, rgba(0,6,18,0.90) 65%), url('assets/bg-monarch.jpeg'); }
   .pillar-ambient { position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:380px; height:380px; border-radius:50%; filter:blur(90px); pointer-events:none; z-index:0; }
   .pillar-panel-inner { position:relative; z-index:1; flex:1; overflow-y:auto; scrollbar-width:none; padding:12px 16px 80px; }
   .pillar-panel-inner::-webkit-scrollbar { display:none; }
@@ -581,7 +581,7 @@
     position: absolute; inset: 0; z-index: 800;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center; padding: 40px 32px;
-    background: linear-gradient(to bottom, rgba(4,4,10,0.82) 0%, rgba(4,4,10,0.15) 100%), url('assets/bg-levelup.png') bottom center / cover no-repeat, #03030A;
+    background: linear-gradient(to bottom, rgba(4,4,10,0.82) 0%, rgba(4,4,10,0.15) 100%), url('assets/bg-levelup.jpeg') bottom center / cover no-repeat, #03030A;
     opacity: 0; pointer-events: none; overflow: hidden;
   }
   #levelup-overlay::before {
@@ -744,9 +744,9 @@
 
   /* ══ PHASE 3 — PROFILE SCREEN ═══════════════ */
   #profile { overflow: hidden; }
-  #profile.bg-monarch    { background: linear-gradient(to bottom, rgba(0,8,22,0.72) 0%, rgba(0,4,14,0.92) 55%), url('assets/bg-monarch.png') top center / cover no-repeat, #03030A; }
-  #profile.bg-mastermind { background: linear-gradient(to bottom, rgba(20,0,2,0.72) 0%, rgba(10,0,1,0.92) 55%), url('assets/bg-mastermind.png') top center / cover no-repeat, #03030A; }
-  #profile.bg-monk       { background: linear-gradient(to bottom, rgba(0,14,6,0.72) 0%, rgba(0,8,3,0.92) 55%), url('assets/bg-monk.png') top center / cover no-repeat, #03030A; }
+  #profile.bg-monarch    { background: linear-gradient(to bottom, rgba(0,8,22,0.72) 0%, rgba(0,4,14,0.92) 55%), url('assets/bg-monarch.jpeg') top center / cover no-repeat, #03030A; }
+  #profile.bg-mastermind { background: linear-gradient(to bottom, rgba(20,0,2,0.72) 0%, rgba(10,0,1,0.92) 55%), url('assets/bg-mastermind.jpeg') top center / cover no-repeat, #03030A; }
+  #profile.bg-monk       { background: linear-gradient(to bottom, rgba(0,14,6,0.72) 0%, rgba(0,8,3,0.92) 55%), url('assets/bg-monk.jpeg') top center / cover no-repeat, #03030A; }
   .profile-header { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 52px 20px 8px; }
   .profile-back { background: none; border: none; color: #555577; cursor: pointer; padding: 8px; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
   .profile-back svg { width: 22px; height: 22px; display: block; }
@@ -1168,7 +1168,7 @@
   @media (prefers-reduced-motion: reduce) { .identity-ray.fire { display: none; } }
 
   /* ══ CONTRACT SCREEN ═══════════════════════ */
-  #contract-screen { position:fixed; inset:0; z-index:960; background: linear-gradient(to bottom, rgba(0,0,0,0.58) 0%, rgba(0,0,0,0.88) 100%), url('assets/bg-oath.png') top center / cover no-repeat, #07090F; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 28px 40px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; }
+  #contract-screen { position:fixed; inset:0; z-index:960; background: linear-gradient(to bottom, rgba(0,0,0,0.58) 0%, rgba(0,0,0,0.88) 100%), url('assets/bg-oath.jpeg') top center / cover no-repeat, #07090F; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 28px 40px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; }
   #contract-screen.csc-visible { opacity:1; pointer-events:all; }
   #contract-screen.csc-exit { opacity:0; pointer-events:none; }
   .csc__glow { position:absolute; top:42%; left:50%; transform:translate(-50%,-50%); width:300px; height:300px; border-radius:50%; background:radial-gradient(circle,var(--cc,#00F5FF) 0%,transparent 70%); opacity:0; filter:blur(72px); animation:kf-csc-glow 3.5s 0.6s ease-in-out infinite alternate; }
@@ -1503,7 +1503,7 @@
   .profile-manifest__text { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(255,255,255,0.45); font-style: italic; line-height: 1.65; }
 
   /* ══ RITUAL CLOCK ════════════════════════════════ */
-  #ritual-dormant { position:fixed; inset:0; background: linear-gradient(to bottom, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.90) 100%), url('assets/bg-dungeon.png') top center / cover no-repeat, #000; z-index:950; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:52px 32px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; text-align:center; }
+  #ritual-dormant { position:fixed; inset:0; background: linear-gradient(to bottom, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.90) 100%), url('assets/bg-dungeon.jpeg') top center / cover no-repeat, #000; z-index:950; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:52px 32px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; text-align:center; }
   #ritual-dormant.active { opacity:1; pointer-events:all; }
   .dormant__glyph { font-size:44px; opacity:0.12; animation:kf-dormant-pulse 4s ease-in-out infinite; }
   @keyframes kf-dormant-pulse { 0%,100%{opacity:0.08;} 50%{opacity:0.18;} }
@@ -1558,7 +1558,7 @@
   @keyframes kf-void-breathe { 0%,100%{opacity:0.55;} 50%{opacity:1;} }
   #void-overlay {
     position:fixed; inset:0; z-index:940;
-    background: linear-gradient(rgba(0,0,0,0.76) 0%, rgba(0,0,0,0.93) 100%), url('assets/bg-city.png') center / cover no-repeat, #000;
+    background: linear-gradient(rgba(0,0,0,0.76) 0%, rgba(0,0,0,0.93) 100%), url('assets/bg-city.jpeg') center / cover no-repeat, #000;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:18px; padding:52px 32px;
     opacity:0; pointer-events:none; transition:opacity 0.6s ease;

@@ -13673,7 +13673,7 @@ ${particles}
       'Identifying weakness...',
     ];
     try {
-      const streak = JSON.parse(localStorage.getItem('weebji_progress') || '{}').streak || 0;
+      const streak = parseInt(localStorage.getItem('weebji_streak') || '0');
       if (streak > 1) MSGS.unshift(`${streak}-day streak detected. The System remembers.`);
     } catch (_) {}
     if (!localStorage.getItem('weebji_class')) MSGS.unshift('The System has detected you.');

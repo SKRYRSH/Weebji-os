@@ -75,13 +75,14 @@
   .hidden { display: none !important; }
 
   /* ══ SCREEN 01 — SPLASH ══════════════════════ */
-  #splash { align-items: center; justify-content: center; overflow: hidden; }
+  #splash { align-items: center; justify-content: center; overflow: hidden; background: url('assets/bg-class-select.jpeg') center center / cover no-repeat, #03030A; }
   #splash::before {
     content: ''; position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 75% 50% at 50% 38%, rgba(0,245,255,0.09) 0%, transparent 65%),
-      radial-gradient(ellipse 50% 45% at 20% 88%, rgba(123,47,255,0.06) 0%, transparent 55%),
-      radial-gradient(ellipse 40% 40% at 85% 15%, rgba(0,200,220,0.04) 0%, transparent 60%);
+      linear-gradient(rgba(3,3,10,0.82), rgba(3,3,10,0.82)),
+      radial-gradient(ellipse 75% 50% at 50% 38%, rgba(0,245,255,0.10) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 45% at 20% 88%, rgba(123,47,255,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 85% 15%, rgba(0,200,220,0.05) 0%, transparent 60%);
     pointer-events: none;
   }
   .splash__inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; padding: 40px 24px; }
@@ -92,6 +93,7 @@
   .splash__loader span { display: block; width: 5px; height: 5px; border-radius: 50%; background: #00F5FF; box-shadow: 0 0 6px rgba(0,245,255,0.8), 0 0 14px rgba(0,245,255,0.3); opacity: 0.25; animation: kf-dot-blink 1.4s ease-in-out infinite; }
   .splash__loader span:nth-child(2) { animation-delay: 0.2s; }
   .splash__loader span:nth-child(3) { animation-delay: 0.4s; }
+  .splash__msg { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(0,245,255,0.42); margin-top: 6px; min-height: 16px; transition: opacity 0.4s ease; animation: kf-fade-up 1s 0.7s cubic-bezier(0.16,1,0.3,1) both; }
 
   /* ══ SCREEN 02 — CLASS SELECT ════════════════ */
   #class-select { overflow-y: auto; scrollbar-width: none; background: linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.85) 100%), url('assets/bg-class-select.jpeg') top center / cover no-repeat, #03030A; }
@@ -221,9 +223,9 @@
 
   /* ══ SCREEN 05 — DASHBOARD ═══════════════════ */
   #dashboard { overflow: hidden; background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,8,0.95) 100%), radial-gradient(ellipse at 50% 10%, rgba(0,70,255,0.11) 0%, transparent 60%), radial-gradient(ellipse at 15% 90%, rgba(61,0,255,0.07) 0%, transparent 40%), #03030A; }
-  #dashboard.bg-monarch    { background: linear-gradient(to bottom, rgba(0,8,22,0.72) 0%, rgba(0,4,14,0.92) 65%), url('assets/bg-monarch.jpeg') top center / cover no-repeat, #03030A; }
-  #dashboard.bg-mastermind { background: linear-gradient(to bottom, rgba(20,0,2,0.50) 0%, rgba(10,0,1,0.82) 65%), url('assets/bg-mastermind.jpeg') top center / cover no-repeat, #03030A; }
-  #dashboard.bg-monk       { background: linear-gradient(to bottom, rgba(0,14,6,0.48) 0%, rgba(0,8,3,0.82) 65%), url('assets/bg-monk.jpeg') top center / cover no-repeat, #03030A; }
+  #dashboard.bg-monarch    { background: linear-gradient(rgba(0,8,22,0.55), rgba(0,4,14,0.68)), url('assets/bg-monarch.jpeg') center center / cover no-repeat, #03030A; }
+  #dashboard.bg-mastermind { background: linear-gradient(rgba(20,0,2,0.45), rgba(10,0,1,0.65)), url('assets/bg-mastermind.jpeg') center center / cover no-repeat, #03030A; }
+  #dashboard.bg-monk       { background: linear-gradient(rgba(0,14,6,0.42), rgba(0,8,3,0.65)), url('assets/bg-monk.jpeg') center center / cover no-repeat, #03030A; }
   #dashboard::before { content:''; position:absolute; inset:0; pointer-events:none; z-index:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='stone'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' seed='3'/%3E%3CfeColorMatrix type='matrix' values='0.22 0.22 0.22 0 0.06 0.22 0.22 0.22 0 0.06 0.28 0.28 0.28 0 0.08 0 0 0 0.22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23stone)'/%3E%3C/svg%3E"); opacity:0.55; mix-blend-mode:screen; }
   @keyframes kf-mist-drift { 0%,100%{transform:translateX(-5%) scaleX(1);opacity:0.35;} 50%{transform:translateX(5%) scaleX(1.04);opacity:0.55;} }
   .mist-layer { position:absolute; bottom:0; left:-10%; right:-10%; height:110px; background:linear-gradient(to top,rgba(160,190,255,0.16) 0%,rgba(90,130,255,0.08) 55%,transparent 100%); filter:blur(18px); pointer-events:none; animation:kf-mist-drift 14s ease-in-out infinite; z-index:6; }
@@ -451,9 +453,9 @@
   .nav-btn[data-tab="monarch"].active::after { background:#00F5FF!important; box-shadow:0 0 6px #00F5FF,0 0 14px rgba(0,245,255,0.4)!important; }
   /* Pillar panels */
   .pillar-panel { flex:1; min-height:0; overflow:hidden; display:none; flex-direction:column; background-size:cover; background-position:center 20%; background-repeat:no-repeat; position:relative; }
-  .pillar-panel.panel-mastermind { background-image: linear-gradient(to bottom, rgba(20,0,2,0.38) 0%, rgba(14,0,2,0.75) 65%), url('assets/bg-mastermind.jpeg'); }
-  .pillar-panel.panel-monk       { background-image: linear-gradient(to bottom, rgba(0,38,16,0.30) 0%, rgba(0,12,5,0.75) 65%), url('assets/bg-monk.jpeg'); }
-  .pillar-panel.panel-monarch    { background-image: linear-gradient(to bottom, rgba(0,18,42,0.36) 0%, rgba(0,6,18,0.75) 65%), url('assets/bg-monarch.jpeg'); }
+  .pillar-panel.panel-mastermind { background: transparent; }
+  .pillar-panel.panel-monk       { background: transparent; }
+  .pillar-panel.panel-monarch    { background: transparent; }
   .pillar-ambient { position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:380px; height:380px; border-radius:50%; filter:blur(90px); pointer-events:none; z-index:0; }
   .pillar-panel-inner { position:relative; z-index:1; flex:1; overflow-y:auto; scrollbar-width:none; padding:12px 16px 80px; }
   .pillar-panel-inner::-webkit-scrollbar { display:none; }
@@ -1787,6 +1789,7 @@
         <h1 class="splash__title">WEEBJI OS</h1>
         <p class="splash__subtitle">The Awakening</p>
         <div class="splash__loader"><span></span><span></span><span></span></div>
+        <p class="splash__msg" id="splash-msg"></p>
       </div>
     </div>
 
@@ -13659,6 +13662,32 @@ ${particles}
      After 3s: returning user → dashboard,
                new user     → class select.
   ══════════════════════════════════════════════ */
+  (function initSplashMessages() {
+    const MSGS = [
+      'Scanning potential...',
+      'Calibrating resistance...',
+      'Cross-referencing warrior database...',
+      'Initializing discipline engine...',
+      'Awakening the System...',
+      'Loading your protocol...',
+      'Identifying weakness...',
+    ];
+    try {
+      const streak = JSON.parse(localStorage.getItem('weebji_progress') || '{}').streak || 0;
+      if (streak > 1) MSGS.unshift(`${streak}-day streak detected. The System remembers.`);
+    } catch (_) {}
+    if (!localStorage.getItem('weebji_class')) MSGS.unshift('The System has detected you.');
+    let idx = 0;
+    const el = document.getElementById('splash-msg');
+    if (!el) return;
+    el.textContent = MSGS[idx];
+    const iv = setInterval(() => {
+      el.style.opacity = '0';
+      setTimeout(() => { idx = (idx + 1) % MSGS.length; el.textContent = MSGS[idx]; el.style.opacity = '1'; }, 420);
+    }, 1800);
+    document.getElementById('splash').addEventListener('transitionend', () => clearInterval(iv), { once: true });
+  })();
+
   (function boot() {
     const cls   = localStorage.getItem('weebji_class');
     const color = localStorage.getItem('weebji_color');

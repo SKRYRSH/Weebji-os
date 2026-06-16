@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v311 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v311';
+// ── WEEBJI OS — Service Worker v313 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v313';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
 
@@ -27,12 +27,26 @@ self.addEventListener('message', e => {
   }
 });
 
+const BG_IMAGES = [
+  'assets/bg-monarch.jpeg','assets/bg-mastermind.jpeg','assets/bg-monk.jpeg',
+  'assets/bg-city.jpeg','assets/bg-dungeon.jpeg','assets/bg-class-select.jpeg',
+  'assets/bg-oath.jpeg','assets/bg-levelup.jpeg',
+];
+
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
   );
   self.clients.claim();
+  // Non-blocking: pre-warm image cache so they're instant on next load
+  caches.open(CACHE_NAME).then(cache => {
+    BG_IMAGES.forEach(img => {
+      fetch(BASE + img, { cache: 'no-store' })
+        .then(res => { if (res && res.status === 200) cache.put(BASE + img, res); })
+        .catch(() => {});
+    });
+  });
 });
 
 self.addEventListener('fetch', e => {

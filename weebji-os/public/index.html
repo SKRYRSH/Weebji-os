@@ -4303,7 +4303,7 @@
       ],
       img:'bosses/iron-warden.jpg',
       gates:[
-        { day:'Monday',   task:'Full workout + all 3 quests + 3-day active streak. Open with everything.',        check: p => ((p.workoutChecked||[]).length>=4||p.workoutBonus) && (p.questsChecked||[]).length>=3 && (p.streak||0)>=3 },
+        { day:'Monday',   task:'Full workout + all 3 quests + 3-day active streak. Open with everything.',        check: p => ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.questsChecked||[]).length>=3 && (p.streak||0)>=3 },
         { day:'Wednesday',task:'75-minute unbroken focus session + 3-day active streak.',                        check: p => Object.values(p.mmDaily||{}).some(v=>v>=75) && (p.streak||0)>=3 },
         { day:'Friday',   task:'All 3 quests + daily challenge + full workout + 5-day active streak.',           check: p => (p.questsChecked||[]).length>=3 && !!p.dailyChallengeDone && ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.streak||0)>=5 },
       ],
@@ -4375,7 +4375,7 @@
       ],
       img:'bosses/crimson-beast.jpg',
       gates:[
-        { day:'Monday',   task:'Full workout + all 3 quests + 30-min focus + 5-day active streak. Beasts demand more.', check: p => ((p.workoutChecked||[]).length>=4||p.workoutBonus) && (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=30) && (p.streak||0)>=5 },
+        { day:'Monday',   task:'Full workout + all 3 quests + 30-min focus + 5-day active streak. Beasts demand more.', check: p => ((p.workoutChecked||[]).length>=3||p.workoutBonus) && (p.questsChecked||[]).length>=3 && Object.values(p.mmDaily||{}).some(v=>v>=30) && (p.streak||0)>=5 },
         { day:'Wednesday',task:'Best streak of 14+ days in your history + current streak 5+.',                     check: p => (p.bestStreak||0)>=14 && (p.streak||0)>=5 },
         { day:'Friday',   task:'Challenge + all quests + workout + 60-min focus + 5-day active streak.',           check: p => !!p.dailyChallengeDone && (p.questsChecked||[]).length>=3 && ((p.workoutChecked||[]).length>=3||p.workoutBonus) && Object.values(p.mmDaily||{}).some(v=>v>=60) && (p.streak||0)>=5 },
       ],
@@ -4691,7 +4691,14 @@
         const p = loadProgress();
         const gate = dungeon.gates[gNum - 1];
         if (!gate.check(p)) {
-          SystemVoice.speak(`Gate ${gNum} is sealed. Complete the task first, Hunter.`);
+          const missing = [];
+          if ((p.workoutChecked||[]).length < 3 && !p.workoutBonus) missing.push(`workout (${(p.workoutChecked||[]).length}/3 exercises)`);
+          if ((p.questsChecked||[]).length < 3) missing.push(`quests (${(p.questsChecked||[]).length}/3)`);
+          if (!p.dailyChallengeDone && gate.task.toLowerCase().includes('challenge')) missing.push('daily challenge');
+          if ((p.streak||0) < 3) missing.push(`streak (${p.streak||0} days short)`);
+          if (!Object.values(p.mmDaily||{}).some(v=>v>=30) && gate.task.toLowerCase().includes('focus')) missing.push('focus session (30+ min)');
+          const hint = missing.length ? `Missing: ${missing.join(', ')}.` : 'Not all conditions met yet.';
+          SystemVoice.speak(`Gate ${gNum} sealed. ${hint}`);
           return;
         }
         btn.textContent = '...'; btn.disabled = true;

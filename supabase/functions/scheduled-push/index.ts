@@ -153,6 +153,10 @@ Deno.serve(async (req) => {
         const streak = streakMap.get(sub.user_id) || 0;
         if (streak === 0) pBody = 'YOUR FIRST DIRECTIVE HAS BEEN ASSIGNED. REPORT IN NOW AND CLAIM IT.';
       }
+      if (type === 'streak_reminder') {
+        const streak = streakMap.get(sub.user_id) || 0;
+        if (streak === 1) pBody = 'DAY 1 STREAK ON THE LINE. One day built. Don\'t let it die tonight — train before midnight.';
+      }
       const payload = JSON.stringify({ type, title, body: pBody });
       try {
         await webpush.sendNotification(

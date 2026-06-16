@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0A0A0F" />
   <meta name="description" content="WEEBJI OS — The Awakening" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -4253,14 +4253,22 @@
     localStorage.setItem('weebji_protocol_done', today);
     WeebjPush.clearStale(['weebji-morning', 'weebji-streak']);
     const streak = p.streak || 0;
-    const sub = streak > 0 ? `Day ${streak} streak locked in. Come back tomorrow.` : 'Full protocol executed. The System acknowledges.';
+    const isDay1 = streak === 0;
+    const sub = isDay1
+      ? 'Day 1 locked. The System expects you at 9am tomorrow.'
+      : `Day ${streak} streak locked in. Come back tomorrow.`;
     const subEl = document.getElementById('protocol-complete-sub');
     if (subEl) subEl.textContent = sub;
     const banner = document.getElementById('protocol-complete-banner');
     if (banner) {
       banner.classList.add('active');
       Sound.play('milestone');
-      setTimeout(() => banner.classList.remove('active'), 5000);
+      setTimeout(() => banner.classList.remove('active'), isDay1 ? 9000 : 5000);
+    }
+    if (isDay1) {
+      setTimeout(() => {
+        spawnDropBanner('⚔ Tomorrow: your first Boss Fight awakens. Come back.');
+      }, 3500);
     }
     // Push permission prompt — contextual ask at peak motivation (just completed protocol)
     if (Notification.permission === 'default' && SupabaseSync.getUser()) {
@@ -4525,6 +4533,25 @@
   async function renderDungeonCard() {
     const el = document.getElementById('dungeon-card');
     if (!el) return;
+    // Day-1 teaser — user has no streak yet, show a sealed preview instead of the full card
+    const _dp = loadProgress();
+    if ((_dp.streak || 0) === 0 && (_dp.level || 1) <= 1) {
+      const { dungeonIndex, daysLeft, hoursLeft } = getDungeonWeekInfo();
+      const _dd = DUNGEONS[dungeonIndex];
+      const _timerTxt = daysLeft > 0 ? `Resets in ${daysLeft}d ${hoursLeft}h` : `Resets in ${hoursLeft}h`;
+      el.style.display = 'block';
+      el.innerHTML = `<div class="dungeon-card" style="position:relative;overflow:hidden">
+        <div class="dungeon-card__eyebrow">⚔ WEEKLY DUNGEON — SEALED</div>
+        <div class="dungeon-card__boss" style="margin-bottom:6px">${_dd.boss}</div>
+        <div class="dungeon-boss-img" style="opacity:0.35;filter:blur(2px)"><img src="${_dd.img}" alt="${_dd.boss}" loading="lazy"></div>
+        <div style="margin:14px 0 6px;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.28em;color:rgba(139,0,255,0.55);margin-bottom:8px">ACCESS DENIED</div>
+          <div style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6">Complete your first full protocol.<br>The dungeon awakens when you prove yourself.</div>
+        </div>
+        <div class="dungeon-timer" style="margin-top:10px">${_timerTxt}</div>
+      </div>`;
+      return;
+    }
     el.style.display = 'block';
     try {
     const plus = isWeebjiPlus();

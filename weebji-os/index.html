@@ -586,7 +586,8 @@
     position: absolute; inset: 0; z-index: 800;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center; padding: 40px 32px;
-    background: linear-gradient(to bottom, rgba(4,4,10,0.82) 0%, rgba(4,4,10,0.15) 100%), url('assets/bg-levelup.jpeg') bottom center / cover no-repeat, #03030A;
+    background: linear-gradient(to bottom, rgba(4,4,10,0.82) 0%, rgba(4,4,10,0.15) 100%), url('assets/bg-levelup.jpeg') bottom center / cover no-repeat, var(--lu-color, #00F5FF);
+    background-blend-mode: normal, color, normal;
     opacity: 0; pointer-events: none; overflow: hidden;
   }
   #levelup-overlay::before {
@@ -7148,7 +7149,7 @@
     const PROTOCOL = {
       2: { xp: 40, text: {
             monarch:    'Complete one real workout in The Forge. Anything counts. Everything is recorded.',
-            mastermind: 'Run one deep work session. Build, study, or learn — the System logs all of it.',
+            mastermind: 'Run one focus session — any length. Build, study, or learn — the System logs all of it.',
             monk:       'Complete one ritual — meditation, breathwork, or stillness. Prove the first time was not luck.' },
            check: (p, c) => _pillar(p, c) >= 1 },
       3: { xp: 50, text: {
@@ -7168,12 +7169,12 @@
            check: (p, c) => _pillar(p, c) >= 1 && !!p.dailyChallengeDone },
       6: { xp: 85, text: {
             monarch:    'Full workout protocol. Every exercise. No partial credit on Day 6.',
-            mastermind: 'Two deep work sessions. The summit is one day away.',
+            mastermind: 'Two focus sessions, any length. The summit is one day away.',
             monk:       'Five rituals. The path narrows near the summit.' },
            check: (p, c) => c === 'monk' ? (p.monkChecked || []).length >= 5 : _fullPillar(p, c) },
       7: { xp: 100, text: {
             monarch:    'The final seal. Full workout + every quest. Complete this, and the System stops calling you a candidate.',
-            mastermind: 'The final seal. Two deep work sessions + every quest. Complete this, and the System stops calling you a candidate.',
+            mastermind: 'The final seal. Two focus sessions + every quest. Complete this, and the System stops calling you a candidate.',
             monk:       'The final seal. Six rituals + every quest. Complete this, and the System stops calling you a candidate.' },
            check: (p, c) => _fullPillar(p, c) && _qs(p) >= 3 },
     };
@@ -7258,7 +7259,10 @@
 
     // Hooked into updateStats() — fires the completion cinematic exactly once
     function evaluate(p) {
-      const st = _get();
+      // _ensureToday (not _get) — without this, completing an action before the
+      // directive card has ever rendered today silently drops the completion:
+      // no state exists yet to mark done, and the card later renders fresh.
+      const st = _ensureToday(p);
       if (!st || st.date !== _today() || st.done) return;
       if (st.day > 7) return; // day-8+ belongs to the Oath — procedural directives never grant XP again
       const cls = _cls();

@@ -6056,13 +6056,22 @@
     overlay.classList.remove('flash-class', 'flash-white');
     void overlay.offsetWidth;
     overlay.classList.add(type);
-    overlay.addEventListener('animationend', () => {
+    let _done = false;
+    const _cleanup = () => {
+      if (_done) return; // animationend + fallback timer can both fire — only run once
+      _done = true;
       overlay.classList.remove('flash-class', 'flash-white');
       overlay.style.transition = 'opacity 0.4s ease';
       overlay.style.opacity    = '0';
       setTimeout(() => { overlay.style.cssText = ''; }, 450);
       if (onEnd) onEnd();
-    }, { once: true });
+    };
+    overlay.addEventListener('animationend', _cleanup, { once: true });
+    // Fallback — Android/Pixel Chrome can drop animationend under background
+    // throttling or battery saver, leaving this full-screen (z-index 999)
+    // overlay stuck opaque and hiding everything animating underneath it.
+    const _maxMs = type === 'flash-white' ? 1500 : 1200;
+    setTimeout(_cleanup, _maxMs + 200);
   }
 
   /* ══ CONTRACT PARTICLES ══════════════════════ */

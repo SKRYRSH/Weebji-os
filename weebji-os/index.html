@@ -2750,13 +2750,28 @@
             <div style="font-family:'Cinzel',serif;font-size:13px;color:#fff;letter-spacing:0.06em;">Notifications Blocked</div>
             <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:rgba(255,255,255,0.45);margin-top:4px;line-height:1.5;">Settings → Apps → WEEBJI OS → Notifications → Allow</div>
           </div>
-          <button id="push-enable-dismiss" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:18px;line-height:1;cursor:pointer;padding:4px;flex-shrink:0;-webkit-tap-highlight-color:transparent;">✕</button>`;
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+            <button id="push-enable-dismiss" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:16px;line-height:1;cursor:pointer;padding:2px;-webkit-tap-highlight-color:transparent;">✕</button>
+            <button id="push-denied-done" style="background:${color}18;border:1px solid ${color}55;border-radius:8px;padding:7px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:${color};cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;text-transform:uppercase;">Done</button>
+          </div>`;
         document.body.appendChild(banner);
         if (typeof posthog !== 'undefined') posthog.capture('push_denied_banner_shown');
         document.getElementById('push-enable-dismiss').addEventListener('click', () => {
           localStorage.setItem('weebji_push_denied_banner_at', String(Date.now()));
           if (typeof posthog !== 'undefined') posthog.capture('push_banner_dismissed', { state: 'denied' });
           banner.remove();
+        });
+        document.getElementById('push-denied-done').addEventListener('click', async () => {
+          const result = await subscribe();
+          if (result === true) {
+            if (typeof posthog !== 'undefined') posthog.capture('push_banner_enabled', { from: 'denied' });
+            banner.remove();
+            if (document.getElementById('profile')?.classList.contains('active') && typeof renderProfile === 'function') renderProfile();
+          } else {
+            if (typeof posthog !== 'undefined') posthog.capture('push_banner_enable_failed', { result: String(result), from: 'denied' });
+            const doneBtn = document.getElementById('push-denied-done');
+            if (doneBtn) doneBtn.textContent = 'Still blocked';
+          }
         });
         return;
       }
@@ -2783,6 +2798,7 @@
         banner.remove();
         if (result === true) {
           if (typeof posthog !== 'undefined') posthog.capture('push_banner_enabled');
+          if (document.getElementById('profile')?.classList.contains('active') && typeof renderProfile === 'function') renderProfile();
         } else {
           localStorage.setItem('weebji_push_banner_dismissed_at', String(Date.now()));
           if (typeof posthog !== 'undefined') posthog.capture('push_banner_enable_failed', { result: String(result) });
@@ -2920,9 +2936,10 @@
     }, 12000);
   }
 
-  document.getElementById('notif-yes-btn').addEventListener('click', () => {
+  document.getElementById('notif-yes-btn').addEventListener('click', async () => {
     document.getElementById('notif-prompt').classList.remove('visible');
-    WeebjPush.subscribe();
+    await WeebjPush.subscribe();
+    if (document.getElementById('profile')?.classList.contains('active') && typeof renderProfile === 'function') renderProfile();
   });
 
   document.getElementById('notif-no-btn').addEventListener('click', () => {

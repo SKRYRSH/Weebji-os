@@ -2328,6 +2328,7 @@
       <div class="void__mode-label" id="void-mode-label">Standard Session</div>
       <div class="void__clock" id="void-clock">--:--</div>
       <p class="void__warning">"The System is watching. Leave this screen and you bleed. Stay. Ascend."</p>
+      <button class="mm-mute-btn" id="void-mute-btn" title="Toggle session music" style="margin-bottom:8px">🔊 Sound</button>
       <button class="void__surrender" id="void-surrender-btn">Surrender Session</button>
     </div>
 
@@ -5351,6 +5352,12 @@
       document.body.classList.add('void-active');
       Sound.play('tap');
       syncClock();
+      syncMuteBtn();
+    }
+
+    function syncMuteBtn() {
+      const btn = document.getElementById('void-mute-btn');
+      if (btn) btn.textContent = MusicEngine.currentTheme() ? '🔇 Silence' : '🔊 Sound';
     }
 
     function exit() {
@@ -5400,7 +5407,7 @@
 
     function isActive() { return _active; }
 
-    return { enter, exit, syncTimer, syncClock, onBreach, recordLeave, cancelPendingBreach, isActive };
+    return { enter, exit, syncTimer, syncClock, syncMuteBtn, onBreach, recordLeave, cancelPendingBreach, isActive };
   })();
 
   // Tab visibility breach detection — 45s grace so quick notification checks never trigger penalty
@@ -5443,6 +5450,15 @@
     TheVoid.exit();
     Sound.play('tap');
     SystemVoice.say('Session surrendered. The System records this.');
+  });
+
+  // Void mute button
+  document.getElementById('void-mute-btn').addEventListener('click', (e) => {
+    if (MusicEngine.currentTheme()) MusicEngine.silenceSession();
+    else MusicEngine.resumeSession();
+    e.target.textContent = MusicEngine.currentTheme() ? '🔇 Silence' : '🔊 Sound';
+    const mmBtn = document.getElementById('mm-mute-btn');
+    if (mmBtn) mmBtn.textContent = e.target.textContent;
   });
 
 
@@ -9730,28 +9746,37 @@
       // Sub harmonic root
       _drone(108, 'sine', 0.18, 0.03, 0.12);
 
-      // Bowl strike — pre-schedule 20 bowls on audio clock (20 × 7.5s = 150s lookahead)
-      for (let i = 0; i < 20; i++) {
-        const t = _ctx.currentTime + i * 7.5;
-        const o = _ctx.createOscillator(); const g = _ctx.createGain();
-        o.type = 'sine';
-        o.frequency.setValueAtTime(432, t);
-        o.frequency.exponentialRampToValueAtTime(380, t + 5);
-        g.gain.setValueAtTime(0.32, t);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 6);
-        o.connect(g); g.connect(_master);
-        o.start(t); o.stop(t + 6.5); _nodes.push(o);
-      }
-
-      // Breathing pad — pre-schedule all ramps on audio clock (10 × 16s = 160s lookahead)
+      // Breathing pad drone — fed by the lookahead scheduler below
       const padG = _drone(135, 'sine', 0, 0.04, 0.15);
-      for (let i = 0; i < 10; i++) {
-        const t = _ctx.currentTime + i * 16;
-        padG.gain.linearRampToValueAtTime(0.18, t + 4);
-        padG.gain.linearRampToValueAtTime(0.18, t + 8);
-        padG.gain.linearRampToValueAtTime(0.01, t + 12);
-        padG.gain.linearRampToValueAtTime(0.01, t + 16);
+
+      // Bowl strikes (7.5s) + breathing pad (16s) — continuous lookahead scheduler instead of
+      // pre-generating the whole session upfront, which was heavy enough at session start to
+      // glitch the System Voice line and went silent once the session outlasted the pre-scheduled window
+      let _bowlNext = _ctx.currentTime, _padNext = _ctx.currentTime;
+      function _scSched() {
+        while (_bowlNext < _ctx.currentTime + 1.5) {
+          const t = _bowlNext;
+          const o = _ctx.createOscillator(); const g = _ctx.createGain();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(432, t);
+          o.frequency.exponentialRampToValueAtTime(380, t + 5);
+          g.gain.setValueAtTime(0.32, t);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 6);
+          o.connect(g); g.connect(_master);
+          o.start(t); o.stop(t + 6.5); _nodes.push(o);
+          _bowlNext += 7.5;
+        }
+        while (_padNext < _ctx.currentTime + 1.5) {
+          const t = _padNext;
+          padG.gain.linearRampToValueAtTime(0.18, t + 4);
+          padG.gain.linearRampToValueAtTime(0.18, t + 8);
+          padG.gain.linearRampToValueAtTime(0.01, t + 12);
+          padG.gain.linearRampToValueAtTime(0.01, t + 16);
+          _padNext += 16;
+        }
+        _timers.push(setTimeout(_scSched, 600));
       }
+      _scSched();
       _fadeIn(0.15, 3.5);
     }
 

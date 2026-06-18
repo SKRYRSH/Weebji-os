@@ -9909,12 +9909,14 @@
       if (!_enabled) return;
       _init();
       if (!_ctx) return;
-      _sessionMuted = false;
       if (_theme === theme) {
-        // Same theme — just make sure context is running (handles iOS re-suspend)
+        // Same theme — just make sure context is running (handles iOS re-suspend).
+        // Don't touch _sessionMuted here: a redundant same-theme call (e.g. a background
+        // sync re-render) must not silently clear a user's active session mute.
         if (_ctx.state === 'suspended') _ctx.resume();
         return;
       }
+      _sessionMuted = false;
       const target = theme;
       _theme = theme;
       _timers.forEach(t => clearTimeout(t)); _timers = [];

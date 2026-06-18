@@ -6378,17 +6378,26 @@
         cta.id = 'identity-push-cta';
         cta.style.cssText = `position:absolute;bottom:0;left:0;right:0;padding:28px 24px 48px;display:flex;flex-direction:column;align-items:center;gap:12px;animation:fadeInUp 0.6s ease forwards;`;
         cta.innerHTML = `
-          <p style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.35em;color:${_color}88;text-transform:uppercase;margin:0 0 4px;">The System will reach you</p>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.35em;color:${_color}88;text-transform:uppercase;margin:0 0 4px;">Without this, your streak dies silently</p>
           <button id="identity-push-btn" style="width:100%;max-width:320px;background:${_color}18;border:1px solid ${_color}66;border-radius:14px;padding:16px 24px;font-family:'Cinzel',serif;font-size:15px;letter-spacing:0.1em;color:${_color};cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 0 24px ${_color}22;">Activate System Alerts</button>
           <button id="identity-skip-btn" style="background:none;border:none;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;cursor:pointer;padding:8px;-webkit-tap-highlight-color:transparent;">Begin without alerts →</button>`;
         document.getElementById('identity').appendChild(cta);
+        if (typeof posthog !== 'undefined') posthog.capture('push_onboarding_cta_shown');
         document.getElementById('identity-push-btn').addEventListener('click', async () => {
+          if (typeof posthog !== 'undefined') posthog.capture('push_onboarding_enable_clicked');
           document.getElementById('identity-push-btn').textContent = 'Activating...';
           document.getElementById('identity-push-btn').style.pointerEvents = 'none';
-          await WeebjPush.subscribe();
+          const result = await WeebjPush.subscribe();
+          if (typeof posthog !== 'undefined') {
+            if (result === true) posthog.capture('push_onboarding_enabled');
+            else posthog.capture('push_onboarding_enable_failed', { result: String(result) });
+          }
           enterDashboard(true);
         });
-        document.getElementById('identity-skip-btn').addEventListener('click', () => enterDashboard(true));
+        document.getElementById('identity-skip-btn').addEventListener('click', () => {
+          if (typeof posthog !== 'undefined') posthog.capture('push_onboarding_skipped');
+          enterDashboard(true);
+        });
       }, _identityDelay);
     }
   }

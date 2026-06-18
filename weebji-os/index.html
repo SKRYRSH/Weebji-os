@@ -734,7 +734,7 @@
   .stat-mini__best.is-best { color: #FFD700; text-shadow: 0 0 8px rgba(255,215,0,0.7); }
   @keyframes kf-stat-gold { 0%,100% { transform: scale(1); } 50% { transform: scale(1.22); } }
   .stat-gold-pulse { animation: kf-stat-gold 0.55s cubic-bezier(0.16,1,0.3,1); }
-  .rival-line { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.05em; color: #2A2A44; padding: 2px 2px 10px; text-align: center; line-height: 1.65; }
+  .rival-line { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.05em; color: rgba(170,170,215,0.55); padding: 2px 2px 10px; text-align: center; line-height: 1.65; }
   .rival-line em { font-style: normal; color: #444466; }
 
   /* ══ PHASE 1 — RESET CONFIRMATION ═══════════ */
@@ -1465,17 +1465,17 @@
   .shadow-card { border-radius:16px; padding:14px 16px; margin-bottom:12px; background:rgba(255,255,255,0.018); border:1px solid rgba(70,70,120,0.16); position:relative; overflow:hidden; transition:border-color 0.4s ease, box-shadow 0.4s ease; }
   .shadow-card.shadow-winning { border-color:rgba(200,30,50,0.4); box-shadow:0 0 18px rgba(200,30,50,0.07); animation:kf-shadow-shake 6s ease-in-out infinite; }
   @keyframes kf-shadow-shake { 0%,91%,100%{transform:translateX(0);} 93%{transform:translateX(-2px);} 95%{transform:translateX(2px);} 97%{transform:translateX(-1px);} 99%{transform:translateX(0.5px);} }
-  .shadow-card__sys { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.35em; color:#202038; text-transform:uppercase; margin-bottom:10px; }
+  .shadow-card__sys { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.35em; color:rgba(160,160,210,0.45); text-transform:uppercase; margin-bottom:10px; }
   .shadow-card__inner { display:flex; align-items:center; gap:12px; }
   .shadow-card__portrait { width:44px; height:44px; border-radius:50%; overflow:hidden; border:1.5px solid rgba(60,60,100,0.28); background:rgba(255,255,255,0.02); flex-shrink:0; display:flex; align-items:center; justify-content:center; filter:grayscale(0.65) brightness(0.52); }
   .shadow-card.shadow-winning .shadow-card__portrait { border-color:rgba(200,30,50,0.4); filter:grayscale(0.2) brightness(0.65); box-shadow:0 0 10px rgba(200,30,50,0.18); }
   .shadow-card__portrait svg { width:52px; height:62px; flex-shrink:0; }
   .shadow-card__info { flex:1; min-width:0; }
-  .shadow-card__name { font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:0.1em; color:#2E2E52; margin-bottom:4px; }
+  .shadow-card__name { font-family:'Cinzel',serif; font-size:11px; font-weight:700; letter-spacing:0.1em; color:rgba(195,195,235,0.75); margin-bottom:4px; }
   .shadow-card.shadow-winning .shadow-card__name { color:rgba(200,30,50,0.6); }
-  .shadow-card__stats { font-family:'JetBrains Mono',monospace; font-size:10px; color:#1C1C36; letter-spacing:0.04em; line-height:1.5; }
+  .shadow-card__stats { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(170,170,215,0.55); letter-spacing:0.04em; line-height:1.5; }
   .shadow-card__delta { font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; text-align:right; flex-shrink:0; }
-  .shadow-card__delta.ahead { color:#2E2E52; }
+  .shadow-card__delta.ahead { color:rgba(120,220,160,0.8); text-shadow:0 0 8px rgba(120,220,160,0.25); }
   .shadow-card__delta.behind { color:rgba(200,30,50,0.72); text-shadow:0 0 8px rgba(200,30,50,0.3); }
 
   /* ══ PHASE 4 — AVATAR EVOLUTION OVERLAY ════════ */

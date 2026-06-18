@@ -5357,7 +5357,7 @@
 
     function syncMuteBtn() {
       const btn = document.getElementById('void-mute-btn');
-      if (btn) btn.textContent = MusicEngine.currentTheme() ? '🔇 Silence' : '🔊 Sound';
+      if (btn) btn.textContent = MusicEngine.isSessionMuted() ? '🔊 Sound' : '🔇 Silence';
     }
 
     function exit() {
@@ -5454,9 +5454,9 @@
 
   // Void mute button
   document.getElementById('void-mute-btn').addEventListener('click', (e) => {
-    if (MusicEngine.currentTheme()) MusicEngine.silenceSession();
-    else MusicEngine.resumeSession();
-    e.target.textContent = MusicEngine.currentTheme() ? '🔇 Silence' : '🔊 Sound';
+    if (MusicEngine.isSessionMuted()) MusicEngine.resumeSession();
+    else MusicEngine.silenceSession();
+    e.target.textContent = MusicEngine.isSessionMuted() ? '🔊 Sound' : '🔇 Silence';
     const mmBtn = document.getElementById('mm-mute-btn');
     if (mmBtn) mmBtn.textContent = e.target.textContent;
   });
@@ -8616,7 +8616,7 @@
         <button class="mm-btn mm-btn-cancel" id="mm-cancel-btn">Cancel</button>
       </div>
       <div style="display:flex;justify-content:center;margin-top:4px">
-        <button class="mm-mute-btn" id="mm-mute-btn" title="Toggle session music">${MusicEngine.currentTheme() ? '🔇 Silence' : '🔊 Sound'}</button>
+        <button class="mm-mute-btn" id="mm-mute-btn" title="Toggle session music">${MusicEngine.isSessionMuted() ? '🔊 Sound' : '🔇 Silence'}</button>
       </div>
       <p class="mm-xp-info">Deep focus mode — leave this screen and The Void drains your HP. Stay. Ascend.</p>
       <div class="mm-topic-wrap">
@@ -8636,8 +8636,10 @@
       b.addEventListener('click', () => { Sound.play('tap'); Pomo.selectTopic(b.dataset.topic); }));
     const _muteBtn = document.getElementById('mm-mute-btn');
     if (_muteBtn) _muteBtn.addEventListener('click', () => {
-      if (MusicEngine.currentTheme()) { MusicEngine.silenceSession(); _muteBtn.textContent = '🔊 Sound'; }
-      else { MusicEngine.resumeSession(); _muteBtn.textContent = '🔇 Silence'; }
+      if (MusicEngine.isSessionMuted()) { MusicEngine.resumeSession(); _muteBtn.textContent = '🔇 Silence'; }
+      else { MusicEngine.silenceSession(); _muteBtn.textContent = '🔊 Sound'; }
+      const voidBtn = document.getElementById('void-mute-btn');
+      if (voidBtn) voidBtn.textContent = _muteBtn.textContent;
     });
     // Topic breakdown
     listEl.querySelectorAll('.mm-topic-breakdown').forEach(el => el.remove());
@@ -9613,6 +9615,7 @@
     let _timers = [];
     let _enabled = localStorage.getItem('weebji_music_on') !== '0';
     let _fadeGen = 0;          // generation counter — prevents stale fades killing new oscillators
+    let _sessionMuted = false; // hot-mute state — currentTheme() stays set while muted, so this is the source of truth for the toggle buttons
 
     function _init() {
       if (_ctx) return;
@@ -9906,6 +9909,7 @@
       if (!_enabled) return;
       _init();
       if (!_ctx) return;
+      _sessionMuted = false;
       if (_theme === theme) {
         // Same theme — just make sure context is running (handles iOS re-suspend)
         if (_ctx.state === 'suspended') _ctx.resume();
@@ -9953,14 +9957,18 @@
 
     // Kill all oscillators + timers without touching _enabled or _theme — "hot mute" for sessions
     function silenceSession() {
+      _sessionMuted = true;
       _timers.forEach(t => clearTimeout(t)); _timers = [];
       _fadeOut(0.4, null);
     }
 
     // Re-fire current theme if one is set — used by the session mute toggle to unmute
     function resumeSession() {
+      _sessionMuted = false;
       if (_theme && _enabled) { const t = _theme; _theme = null; play(t); }
     }
+
+    function isSessionMuted() { return _sessionMuted; }
 
     // Auto-resume AudioContext when page returns to foreground (mobile tab-switch / screen unlock)
     document.addEventListener('visibilitychange', () => {
@@ -9969,7 +9977,7 @@
       }
     });
 
-    return { play, stop, toggle, isEnabled, currentTheme, silenceSession, resumeSession };
+    return { play, stop, toggle, isEnabled, currentTheme, silenceSession, resumeSession, isSessionMuted };
   })();
 
   // Start music on the very first gesture — covers onboarding screens (contract, vow,

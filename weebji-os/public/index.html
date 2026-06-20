@@ -6385,7 +6385,18 @@
     const _identityDelay = 300 + revealIds.length * 800 + 1000;
     const _canAskPush = ('Notification' in window) && ('PushManager' in window) && Notification.permission === 'default';
     if (!_canAskPush) {
-      setTimeout(() => enterDashboard(true), _identityDelay);
+      if (typeof posthog !== 'undefined') {
+        const _reason = !('Notification' in window) ? 'no_notification_api'
+          : !('PushManager' in window) ? 'no_push_manager'
+          : 'permission_' + Notification.permission;
+        posthog.capture('push_onboarding_cta_skipped', { reason: _reason });
+      }
+      // PushManager is usually missing because the app isn't installed yet (iOS Safari
+      // requires home-screen install before push works at all). This was the only chance
+      // most new users ever got to install — triggerInstallPrompt() existed but was never
+      // wired to fire automatically anywhere in the app.
+      setTimeout(() => { if (typeof triggerInstallPrompt === 'function') triggerInstallPrompt(); }, _identityDelay);
+      setTimeout(() => enterDashboard(true), _identityDelay + 600);
     } else {
       setTimeout(() => {
         const _color = selectedColor;

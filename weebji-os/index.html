@@ -666,6 +666,43 @@
   }
   @keyframes kf-lu-scanline { from { background-position:0 0; } to { background-position:0 4px; } }
 
+  /* God rays — rotating conic gradient behind the title, masked to a soft disc */
+  .lu-rays-wrap {
+    position:absolute; left:50%; top:44%; width:360px; height:360px; margin:-180px 0 0 -180px;
+    opacity:0; pointer-events:none; z-index:0;
+    mask-image: radial-gradient(circle, rgba(0,0,0,0.55) 0%, transparent 68%);
+    -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,0.55) 0%, transparent 68%);
+    animation: kf-lu-rays-in 0.8s 0.05s ease-out both;
+  }
+  .lu-rays {
+    position:absolute; inset:0;
+    background: conic-gradient(from 0deg,
+      transparent 0deg, var(--lu-color,#00F5FF) 10deg, transparent 20deg, transparent 50deg,
+      var(--lu-color,#00F5FF) 60deg, transparent 70deg, transparent 100deg, var(--lu-color,#00F5FF) 110deg,
+      transparent 120deg, transparent 150deg, var(--lu-color,#00F5FF) 160deg, transparent 170deg,
+      transparent 200deg, var(--lu-color,#00F5FF) 210deg, transparent 220deg, transparent 250deg,
+      var(--lu-color,#00F5FF) 260deg, transparent 270deg, transparent 300deg, var(--lu-color,#00F5FF) 310deg,
+      transparent 320deg, transparent 350deg, var(--lu-color,#00F5FF) 360deg);
+    animation: kf-lu-rays-spin 7s linear infinite;
+  }
+  @keyframes kf-lu-rays-in { from { opacity:0; } to { opacity:0.55; } }
+  @keyframes kf-lu-rays-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+
+  /* Vignette pulse — darkens edges right as the flash lands, pulls focus to the title */
+  .lu-vignette {
+    position:absolute; inset:0; pointer-events:none; z-index:2;
+    background: radial-gradient(ellipse 60% 50% at 50% 44%, transparent 40%, rgba(0,0,0,0.55) 100%);
+    opacity:0; animation: kf-lu-vignette 0.9s 0.05s ease-out both;
+  }
+  @keyframes kf-lu-vignette { 0% { opacity:0; } 30% { opacity:1; } 100% { opacity:0.6; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    #levelup-overlay, #levelup-overlay * { animation-duration:0.01ms !important; animation-iteration-count:1 !important; }
+    .lu-rays { animation:none !important; }
+    .lu-rays-wrap { opacity:0.35 !important; }
+    .app-shaking { animation:none !important; }
+  }
+
   /* Letterbox bars — cinematic black bands */
   .lbox { position:absolute; left:0; right:0; height:0; background:#000; z-index:5; transition:height 0.12s ease-out; }
   .lbox-t { top:0; }
@@ -2193,6 +2230,8 @@
     <div id="levelup-overlay">
       <div class="lbox lbox-t"></div>
       <div class="lbox lbox-b"></div>
+      <div class="lu-rays-wrap"><div class="lu-rays"></div></div>
+      <div class="lu-vignette"></div>
       <p class="levelup__eyebrow">System Alert</p>
       <h2 class="levelup__title" id="levelup-title">LEVEL UP</h2>
       <p class="levelup__num" id="levelup-num">LVL 2</p>
@@ -10384,10 +10423,11 @@
     }
 
     // t=0: white flash + shake + 3-ring burst
+    const _reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     triggerFlash('flash-white', '#FFFFFF', null);
-    shakeApp(1.2);
+    if (!_reduceMotion) shakeApp(1.2);
     const cx = luEl.offsetWidth / 2, cy = luEl.offsetHeight * 0.44;
-    CinCanvas.ringBurst(cx, cy, color, 3);
+    if (!_reduceMotion) CinCanvas.ringBurst(cx, cy, color, 3);
 
     // Show share button at every 5th level or tier change
     const _shareBtn = document.getElementById('levelup-share-btn');
@@ -10412,7 +10452,7 @@
     }, 60);
 
     // t=180ms: particle burst from center
-    setTimeout(() => {
+    if (!_reduceMotion) setTimeout(() => {
       CinCanvas.burst(cx, cy, 65, color, 16);
       // Spray of white sparks too
       CinCanvas.burst(cx, cy, 25, '#FFFFFF', 10);

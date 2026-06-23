@@ -1237,17 +1237,44 @@
   #contract-screen.csc-visible .csc__cta   { animation:kf-csc-up 0.5s 3.0s  ease both; }
 
   /* ══ CINEMATIC ENGINE — STREAK MILESTONE ════ */
-  #streak-milestone { position: absolute; inset: 0; z-index: 810; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; opacity: 0; }
-  #streak-milestone.active { animation: kf-smilestone 0.5s cubic-bezier(0.16,1,0.3,1) forwards; pointer-events: all; opacity:1; }
-  @keyframes kf-smilestone { 0% { opacity:0; transform:scale(0.9); } 100% { opacity:1; transform:scale(1); } }
-  .smilestone__tap { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.3em; color:rgba(255,215,0,0.35); text-transform:uppercase; animation:kf-smilestone-tap 1.4s ease 1.2s both; }
+  #streak-milestone { position: absolute; inset: 0; z-index: 810; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; opacity: 0; overflow: hidden; background: radial-gradient(ellipse 90% 70% at 50% 44%, rgba(10,8,0,0.92) 0%, rgba(4,3,0,0.97) 100%); }
+  #streak-milestone.active { animation: kf-smilestone 0.4s ease forwards; pointer-events: all; opacity:1; }
+  @keyframes kf-smilestone { from { opacity:0; } to { opacity:1; } }
+
+  /* Gold god rays, rotating behind the number */
+  .sm-rays-wrap { position:absolute; left:50%; top:44%; width:360px; height:360px; margin:-180px 0 0 -180px; opacity:0; pointer-events:none; z-index:0; mask-image: radial-gradient(circle, rgba(0,0,0,0.55) 0%, transparent 68%); -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,0.55) 0%, transparent 68%); }
+  #streak-milestone.active .sm-rays-wrap { animation: kf-sm-rays-in 0.8s 0.05s ease-out both; }
+  .sm-rays { position:absolute; inset:0; background: conic-gradient(from 0deg, transparent 0deg, #FFD700 10deg, transparent 20deg, transparent 50deg, #FFD700 60deg, transparent 70deg, transparent 100deg, #FFD700 110deg, transparent 120deg, transparent 150deg, #FFD700 160deg, transparent 170deg, transparent 200deg, #FFD700 210deg, transparent 220deg, transparent 250deg, #FFD700 260deg, transparent 270deg, transparent 300deg, #FFD700 310deg, transparent 320deg, transparent 350deg, #FFD700 360deg); animation: kf-lu-rays-spin 9s linear infinite; }
+  @keyframes kf-sm-rays-in { from { opacity:0; } to { opacity:0.5; } }
+
+  /* Vignette pulse pulls focus to the number as it lands */
+  .sm-vignette { position:absolute; inset:0; pointer-events:none; z-index:2; background: radial-gradient(ellipse 60% 50% at 50% 44%, transparent 38%, rgba(0,0,0,0.6) 100%); opacity:0; }
+  #streak-milestone.active .sm-vignette { animation: kf-sm-vignette 0.9s 0.05s ease-out both; }
+  @keyframes kf-sm-vignette { 0% { opacity:0; } 30% { opacity:1; } 100% { opacity:0.65; } }
+
+  /* Letterbox bars — cinematic black bands, smaller than level-up's */
+  #streak-milestone.active .lbox-t, #streak-milestone.active .lbox-b { height:42px; }
+
+  .smilestone__tap { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.3em; color:rgba(255,215,0,0.35); text-transform:uppercase; position:relative; z-index:1; animation:kf-smilestone-tap 1.4s ease 1.2s both; }
   @keyframes kf-smilestone-tap { from{opacity:0} to{opacity:1} }
-  .smilestone__bg { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 55% at 50% 40%, rgba(255,215,0,0.13) 0%, transparent 70%); pointer-events: none; }
+  .smilestone__bg { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 55% at 50% 40%, rgba(255,215,0,0.16) 0%, transparent 70%); pointer-events: none; opacity:0; }
+  #streak-milestone.active .smilestone__bg { animation: kf-sm-bloom 0.6s ease-out both; }
+  @keyframes kf-sm-bloom { from { opacity:0; transform:scale(0.4); } to { opacity:1; transform:scale(1); } }
   .smilestone__label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.4em; color: rgba(255,215,0,0.55); text-transform: uppercase; position: relative; z-index: 1; }
+  #streak-milestone.active .smilestone__label { animation: kf-sm-fade-up 0.5s 0.05s ease both; }
   .smilestone__num   { font-family: 'Cinzel', serif; font-size: clamp(80px,24vw,108px); font-weight: 900; color: #FFD700; text-shadow: 0 0 40px rgba(255,215,0,0.85), 0 0 100px rgba(255,215,0,0.3); position: relative; z-index: 1; line-height: 1; }
+  #streak-milestone.active .smilestone__num { animation: kf-sm-slam 0.55s 0.08s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+  @keyframes kf-sm-slam { 0% { opacity:0; transform:scale(4) translateY(-8px); filter:blur(12px); } 45% { opacity:1; transform:scale(0.9); filter:blur(0); } 65% { transform:scale(1.08); } 82% { transform:scale(0.97); } 100% { transform:scale(1); } }
   .smilestone__days  { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; letter-spacing: 0.18em; color: rgba(255,255,255,0.8); position: relative; z-index: 1; }
+  #streak-milestone.active .smilestone__days { animation: kf-sm-fade-up 0.5s 0.55s ease both; }
   .smilestone__quote { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(255,215,0,0.4); font-style: italic; max-width: 270px; text-align: center; line-height: 1.7; position: relative; z-index: 1; }
-  @media (prefers-reduced-motion: reduce) { #streak-milestone.active { animation: none; opacity: 1; } }
+  #streak-milestone.active .smilestone__quote { animation: kf-sm-fade-up 0.5s 0.85s ease both; }
+  @keyframes kf-sm-fade-up { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    #streak-milestone, #streak-milestone * { animation-duration:0.01ms !important; animation-iteration-count:1 !important; }
+    #streak-milestone .sm-rays { animation:none !important; }
+    #streak-milestone .sm-rays-wrap { opacity:0.35 !important; }
+  }
 
   /* ══ STREAK REWARD GATE ══════════════════════ */
   #streak-reward-gate { position:absolute; inset:0; z-index:815; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.92); opacity:0; pointer-events:none; transition:opacity 0.4s; }
@@ -2254,7 +2281,11 @@
 
     <!-- Streak Milestone cinematic overlay -->
     <div id="streak-milestone">
+      <div class="lbox lbox-t"></div>
+      <div class="lbox lbox-b"></div>
+      <div class="sm-rays-wrap"><div class="sm-rays"></div></div>
       <div class="smilestone__bg"></div>
+      <div class="sm-vignette"></div>
       <p class="smilestone__label" id="smilestone-label">Streak Milestone</p>
       <div class="smilestone__num"  id="smilestone-num">7</div>
       <p class="smilestone__days">DAYS</p>
@@ -10102,9 +10133,16 @@
       if (p.xp >= xpForLevel(100, p.prestige)) localStorage.setItem('weebji_prestige_ready', '1');
       return false;
     }
-    const needed = xpForLevel(p.level, p.prestige);
-    if (p.xp >= needed) { p.xp -= needed; p.level += 1; return true; }
-    return false;
+    // Loop so a single big XP grant (e.g. streak reward) resolves all due
+    // levels immediately instead of leaking extra level-ups into later,
+    // unrelated actions once p.xp is back under the per-level threshold.
+    let leveled = false;
+    while (p.level < 100) {
+      const needed = xpForLevel(p.level, p.prestige);
+      if (p.xp < needed) break;
+      p.xp -= needed; p.level += 1; leveled = true;
+    }
+    return leveled;
   }
 
   function updateXPBar(p) {

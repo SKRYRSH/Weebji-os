@@ -97,6 +97,12 @@
   .splash__loader span:nth-child(3) { animation-delay: 0.4s; }
   .splash__msg { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(0,245,255,0.42); margin-top: 6px; min-height: 16px; transition: opacity 0.4s ease; animation: kf-fade-up 1s 0.7s cubic-bezier(0.16,1,0.3,1) both; }
 
+  /* ══ SCREEN 01b — THE AWAKENING CUTSCENE ═════ */
+  #awakening-cutscene { background: #000; align-items: center; justify-content: center; overflow: hidden; }
+  #awakening-cutscene video { width: 100%; height: 100%; object-fit: cover; }
+  .awakening-skip { position: absolute; right: 18px; bottom: 28px; z-index: 5; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.55); background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 9px 16px; cursor: pointer; transition: opacity 0.3s ease, background 0.2s ease; }
+  .awakening-skip:active { background: rgba(255,255,255,0.12); }
+
   /* ══ SCREEN 02 — CLASS SELECT ════════════════ */
   #class-select { overflow-y: auto; scrollbar-width: none; background: linear-gradient(to bottom, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.85) 100%), url('assets/bg-class-select.jpeg') top center / cover no-repeat, #03030A; }
   #class-select::-webkit-scrollbar { display: none; }
@@ -1479,6 +1485,14 @@
     backdrop-filter: blur(20px);
   }
   #install-prompt.visible { transform: translateY(0); }
+  #lore-prompt {
+    position: fixed; bottom: 68px; left: 0; right: 0; z-index: 870;
+    background: rgba(10,10,15,0.98); border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 10px;
+    transform: translateY(calc(100% + 68px)); transition: transform 0.38s cubic-bezier(0.16,1,0.3,1);
+    backdrop-filter: blur(20px);
+  }
+  #lore-prompt.visible { transform: translateY(0); }
   .install__sys   { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.4em; color:#555577; text-transform:uppercase; }
   .install__title { font-family:'Cinzel',serif; font-size:17px; font-weight:700; letter-spacing:0.1em; color:#FFFFFF; }
   .install__sub   { font-family:'Inter',sans-serif; font-size:12px; color:#555577; line-height:1.6; }
@@ -1858,6 +1872,12 @@
         <div class="splash__loader"><span></span><span></span><span></span></div>
         <p class="splash__msg" id="splash-msg"></p>
       </div>
+    </div>
+
+    <!-- ══ S01b: THE AWAKENING CUTSCENE ═════════ -->
+    <div id="awakening-cutscene" class="screen">
+      <video id="awakening-video" src="assets/cutscenes/the-awakening.mp4" playsinline preload="auto"></video>
+      <button class="awakening-skip" id="awakening-skip-btn" type="button">Skip ›</button>
     </div>
 
     <!-- ══ S02: CLASS SELECT ════════════════════ -->
@@ -2527,6 +2547,17 @@
       </div>
     </div>
 
+    <!-- Awakening Lore Offer (returning users who never saw the intro cutscene) -->
+    <div id="lore-prompt">
+      <p class="install__sys">System Log Recovered</p>
+      <p class="install__title">The Beginning Is Available</p>
+      <p class="install__sub">A record of your Awakening was found. Would you like to see how it started?</p>
+      <div class="install__btns">
+        <button class="install__yes" id="lore-yes-btn">Watch</button>
+        <button class="install__no" id="lore-no-btn">Not now</button>
+      </div>
+    </div>
+
     <!-- Notification Permission Prompt -->
     <div id="notif-prompt">
       <p class="notif__sys">System Protocol</p>
@@ -2954,6 +2985,24 @@
   window.addEventListener('appinstalled', () => {
     document.getElementById('install-prompt').classList.remove('visible');
     localStorage.setItem('weebji_install_dismissed', '1');
+  });
+
+  /* ══ AWAKENING LORE OFFER (returning users) ══ */
+  function maybeOfferAwakeningLore() {
+    if (localStorage.getItem('weebji_seen_awakening') === '1') return;
+    if (localStorage.getItem('weebji_awakening_offer_dismissed') === '1') return;
+    document.getElementById('lore-prompt').classList.add('visible');
+  }
+
+  document.getElementById('lore-yes-btn').addEventListener('click', () => {
+    document.getElementById('lore-prompt').classList.remove('visible');
+    localStorage.setItem('weebji_awakening_offer_dismissed', '1');
+    playAwakeningCutscene(() => showScreen('dashboard'));
+  });
+
+  document.getElementById('lore-no-btn').addEventListener('click', () => {
+    document.getElementById('lore-prompt').classList.remove('visible');
+    localStorage.setItem('weebji_awakening_offer_dismissed', '1');
   });
 
   /* ══ NOTIFICATION PERMISSION PROMPT ══════════ */
@@ -6217,11 +6266,11 @@
     localStorage.setItem('weebji_age_ok', '1');
     sessionStorage.setItem('weebji_age_ok', '1');
     if (el) el.style.display = 'none';
-    playInkWash(() => {
+    playAwakeningCutscene(() => playInkWash(() => {
       showScreen('class-select');
       document.querySelectorAll('.class-card').forEach((card, i) =>
         setTimeout(() => card.classList.add('visible'), 120 + i * 130));
-    });
+    }));
   };
 
   window._togglePenanceMode = function() {
@@ -6283,11 +6332,11 @@
         const ageEl = document.getElementById('age-gate-overlay');
         if (ageEl) ageEl.style.display = 'flex';
       } else {
-        playInkWash(() => {
+        playAwakeningCutscene(() => playInkWash(() => {
           showScreen('class-select');
           document.querySelectorAll('.class-card').forEach((card, i) =>
             setTimeout(() => card.classList.add('visible'), 120 + i * 130));
-        });
+        }));
       }
     }
   }, 3000);
@@ -6904,6 +6953,7 @@
       maybeShowNotifPrompt();
       RitualClock.check();
       setTimeout(() => WhatsNew.check(), 2600);
+      if (!fromOnboarding) setTimeout(() => maybeOfferAwakeningLore(), 3400);
       maybeShowSignInNudge();
       maybeShowRatingPrompt();
       setTimeout(() => maybeShowQuestBriefing(State.selectedClass || localStorage.getItem('weebji_class') || 'monarch'), 5000);
@@ -11868,6 +11918,32 @@
   }
 
   /* ══ CINEMATIC ENGINE ════════════════════════ */
+
+  // 0. THE AWAKENING — pre-rendered opening cutscene, plays once before class-select
+  // for brand-new users only. Falls straight through to onDone if already seen
+  // (e.g. user reloaded mid-onboarding before picking a class) or if playback fails.
+  function playAwakeningCutscene(onDone) {
+    if (localStorage.getItem('weebji_seen_awakening') === '1') { onDone(); return; }
+    const video = document.getElementById('awakening-video');
+    const skipBtn = document.getElementById('awakening-skip-btn');
+    if (!video) { onDone(); return; }
+    let fired = false;
+    const done = () => {
+      if (fired) return;
+      fired = true;
+      localStorage.setItem('weebji_seen_awakening', '1');
+      video.pause();
+      skipBtn.removeEventListener('click', done);
+      video.removeEventListener('ended', done);
+      onDone();
+    };
+    skipBtn.addEventListener('click', done);
+    video.addEventListener('ended', done, { once: true });
+    video.addEventListener('error', done, { once: true });
+    showScreen('awakening-cutscene');
+    video.currentTime = 0;
+    video.play().catch(done); // autoplay can be blocked silently — fall through rather than stall onboarding
+  }
 
   // 1. INK WASH — plays on splash→class-select transition
   function playInkWash(onDone) {

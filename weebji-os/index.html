@@ -55,13 +55,13 @@
   <style>
   /* ══ RESET ══════════════════════════════════ */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: #07090F; }
+  html, body { height: 100%; height: 100dvh; background: #07090F; }
   body { background: #07090F; color: #FFFFFF; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
 
   /* ══ APP SHELL ══════════════════════════════ */
   #app {
     width: 100%; max-width: 390px;
-    height: 100%;
+    height: 100%; height: 100dvh;
     margin: 0 auto; background: #07090F;
     position: relative; overflow: hidden;
   }
@@ -11942,7 +11942,18 @@
     video.addEventListener('error', done, { once: true });
     showScreen('awakening-cutscene');
     video.currentTime = 0;
-    video.play().catch(done); // autoplay can be blocked silently — fall through rather than stall onboarding
+    // On a cold/slow connection the file may still be buffering — wait briefly for
+    // enough lookahead (HAVE_FUTURE_DATA) so playback doesn't stutter from frame one,
+    // but don't block onboarding forever if that never arrives.
+    const start = () => video.play().catch(done);
+    if (video.readyState >= 3) {
+      start();
+    } else {
+      let started = false;
+      const onReady = () => { if (started) return; started = true; start(); };
+      video.addEventListener('canplay', onReady, { once: true });
+      setTimeout(onReady, 2500);
+    }
   }
 
   // 1. INK WASH — plays on splash→class-select transition

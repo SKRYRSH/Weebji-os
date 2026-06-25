@@ -2248,6 +2248,7 @@
           Share Your Arc
         </button>
         <button class="tour-replay-btn" id="tour-replay-btn">◈ Replay Feature Guide</button>
+        <button class="tour-replay-btn" id="awakening-replay-btn">◈ Replay The Awakening</button>
         <div id="profile-auth-section"></div>
         <div id="profile-plus-section"></div>
         <div id="profile-analytics"></div>
@@ -11922,8 +11923,8 @@
   // 0. THE AWAKENING — pre-rendered opening cutscene, plays once before class-select
   // for brand-new users only. Falls straight through to onDone if already seen
   // (e.g. user reloaded mid-onboarding before picking a class) or if playback fails.
-  function playAwakeningCutscene(onDone) {
-    if (localStorage.getItem('weebji_seen_awakening') === '1') { onDone(); return; }
+  function playAwakeningCutscene(onDone, forceReplay = false) {
+    if (!forceReplay && localStorage.getItem('weebji_seen_awakening') === '1') { onDone(); return; }
     const video = document.getElementById('awakening-video');
     const skipBtn = document.getElementById('awakening-skip-btn');
     if (!video) { onDone(); return; }
@@ -12599,6 +12600,10 @@
   document.getElementById('profile-share-btn').addEventListener('click', shareProfile);
   // Tour replay button
   document.getElementById('tour-replay-btn').addEventListener('click', () => { Sound.play('tap'); Tour.start(); });
+  document.getElementById('awakening-replay-btn').addEventListener('click', () => {
+    Sound.play('tap');
+    playAwakeningCutscene(() => showScreen('profile'), true);
+  });
 
   // Phase 5: Voice toggle
   function _updateMusicBtn() {

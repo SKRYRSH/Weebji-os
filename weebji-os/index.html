@@ -1753,6 +1753,9 @@
   .profile-voice { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: border-color 0.2s ease; }
   .profile-voice:active { transform: scale(0.98); }
   .profile-voice__icon { font-size: 20px; line-height: 1; }
+  #voice-toggle-btn .profile-voice__icon   { color: #00F5FF; text-shadow: 0 0 8px rgba(0,245,255,0.65), 0 0 18px rgba(0,245,255,0.25); }
+  #penance-toggle-btn .profile-voice__icon { color: #FF6B35; text-shadow: 0 0 8px rgba(255,107,53,0.65), 0 0 18px rgba(255,107,53,0.25); }
+  .profile-voice__toggle.on-warn { color: #FF6B35; text-shadow: 0 0 10px rgba(255,107,53,0.7); }
   .profile-voice__info { flex: 1; }
   .profile-voice__label { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #6A6A8A; }
   .profile-voice__sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: #6A6A8A; text-transform: uppercase; margin-top: 2px; }
@@ -2241,7 +2244,7 @@
             <span class="profile-voice__label">Penance Mode</span>
             <span class="profile-voice__sub" id="penance-toggle-sub">HP loss triggers penance protocol</span>
           </div>
-          <span class="profile-voice__toggle" id="penance-toggle-state">ON</span>
+          <span class="profile-voice__toggle on-warn" id="penance-toggle-state">ON</span>
         </button>
         <button class="profile-share-btn" id="profile-share-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -6281,7 +6284,7 @@
     const stateEl = document.getElementById('penance-toggle-state');
     if (stateEl) {
       stateEl.textContent = next ? 'ON' : 'OFF';
-      stateEl.className = next ? 'profile-voice__toggle' : 'profile-voice__toggle off';
+      stateEl.className = next ? 'profile-voice__toggle on-warn' : 'profile-voice__toggle off';
     }
   };
 
@@ -11354,7 +11357,7 @@
     if (penanceStateEl) {
       const isOn = localStorage.getItem('weebji_penance_mode') !== '0';
       penanceStateEl.textContent = isOn ? 'ON' : 'OFF';
-      penanceStateEl.className = isOn ? 'profile-voice__toggle' : 'profile-voice__toggle off';
+      penanceStateEl.className = isOn ? 'profile-voice__toggle on-warn' : 'profile-voice__toggle off';
     }
     // Ritual Clock settings
     RitualClock.renderSettings();

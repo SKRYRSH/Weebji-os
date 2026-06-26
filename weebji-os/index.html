@@ -2633,6 +2633,7 @@
       if (Date.now() - lastReload < 15000) return;
       _swRefreshing = true;
       sessionStorage.setItem('weebji_sw_reload_at', String(Date.now()));
+      try { const _t = document.getElementById('profile')?.classList.contains('active') ? 'profile' : (document.querySelector('.nav-btn.active')?.dataset?.tab||'home'); sessionStorage.setItem('weebji_sw_restore_tab',_t); } catch(_){}
       window.location.reload();
     });
 
@@ -2659,6 +2660,7 @@
       document.getElementById('sw-update-btn').addEventListener('click', () => {
         sessionStorage.setItem('weebji_sw_banner_dismissed', '1');
         banner.querySelector('#sw-update-btn').textContent = 'Installing…';
+        try { const _t = document.getElementById('profile')?.classList.contains('active') ? 'profile' : (document.querySelector('.nav-btn.active')?.dataset?.tab||'home'); sessionStorage.setItem('weebji_sw_restore_tab',_t); } catch(_){}
         // Fallback: force reload after 5s if controllerchange never fires
         setTimeout(() => window.location.reload(), 5000);
         const waitingSW = reg.waiting;
@@ -6295,6 +6297,7 @@
   };
 
   /* ══ FLOW: S01 → S02 ══════════════════════════ */
+  const _swRestoreTab = sessionStorage.getItem('weebji_sw_restore_tab');
   const splashTimer = setTimeout(async () => {
     // A returning-user login is in flight (e.g. mid Google OAuth redirect) —
     // don't race it with our own routing guess. onAuthStateChange owns this case
@@ -6349,7 +6352,7 @@
         }));
       }
     }
-  }, 3000);
+  }, _swRestoreTab ? 400 : 3000);
 
   /* ══ FLOW: S02 → S03 ══════════════════════════ */
   document.querySelectorAll('.class-card').forEach(card => {
@@ -6953,6 +6956,17 @@
       }).catch(() => {});
     }
     initDashboard();
+    // Restore nav tab after SW update reload
+    const _rt = sessionStorage.getItem('weebji_sw_restore_tab');
+    if (_rt) {
+      sessionStorage.removeItem('weebji_sw_restore_tab');
+      setTimeout(() => {
+        if (_rt === 'profile') { renderProfile(); showScreen('profile'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab==='profile')); }
+        else if (_rt === 'mastermind') { document.querySelector('.dash-scroll').style.display='none'; document.querySelectorAll('.pillar-panel').forEach(p=>p.style.display='none'); const mp=document.getElementById('mastermind-panel'); if(mp){mp.style.display='flex';renderMastermindPillarPanel();} document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab==='mastermind')); }
+        else if (_rt === 'monk') { document.querySelector('.dash-scroll').style.display='none'; document.querySelectorAll('.pillar-panel').forEach(p=>p.style.display='none'); const mp=document.getElementById('monk-panel'); if(mp){mp.style.display='flex';renderMonkPillarPanel();} document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab==='monk')); }
+        else if (_rt === 'monarch') { document.querySelector('.dash-scroll').style.display='none'; document.querySelectorAll('.pillar-panel').forEach(p=>p.style.display='none'); const mp=document.getElementById('monarch-panel'); if(mp){mp.style.display='flex';renderMonarchPillarPanel();} document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab==='monarch')); }
+      }, 150);
+    }
     // On contract-accept sessions, voice fires from speakContractOnce.onend instead of here.
     setTimeout(() => { if (!window._contractJustAccepted && !SystemVoice.firstContact()) SystemVoice.greet(); }, 900);
     setTimeout(() => {

@@ -44,13 +44,16 @@
       } catch (_) {}
     });
   </script>
-  <!-- Supabase JS (jsdelivr with unpkg fallback) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';document.head.appendChild(s)"></script>
+  <!-- Supabase JS — async so it doesn't block first paint -->
+  <script>
+    (function(){var s=document.createElement('script');s.async=true;s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';s.onerror=function(){var f=document.createElement('script');f.async=true;f.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';document.head.appendChild(f);};document.head.appendChild(s);})();
+  </script>
   <!-- Razorpay Checkout (defer — blocks page load outside India without this) -->
   <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" /></noscript>
 
   <style>
   /* ══ RESET ══════════════════════════════════ */
@@ -99,6 +102,7 @@
 
   /* ══ SCREEN 01b — THE AWAKENING CUTSCENE ═════ */
   #awakening-cutscene { background: #000; align-items: center; justify-content: center; overflow: hidden; }
+  #awakening-cutscene.active { z-index: 100001 !important; }
   #awakening-cutscene video { width: 100%; height: 100%; object-fit: cover; }
   .awakening-skip { position: absolute; right: 18px; bottom: 28px; z-index: 5; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.55); background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 9px 16px; cursor: pointer; transition: opacity 0.3s ease, background 0.2s ease; }
   .awakening-skip:active { background: rgba(255,255,255,0.12); }
@@ -1879,7 +1883,7 @@
 
     <!-- ══ S01b: THE AWAKENING CUTSCENE ═════════ -->
     <div id="awakening-cutscene" class="screen">
-      <video id="awakening-video" src="assets/cutscenes/the-awakening.mp4" playsinline preload="auto"></video>
+      <video id="awakening-video" src="assets/cutscenes/the-awakening.mp4" playsinline preload="none"></video>
       <button class="awakening-skip" id="awakening-skip-btn" type="button">Skip ›</button>
     </div>
 
@@ -2637,6 +2641,7 @@
       if (sessionStorage.getItem('weebji_sw_banner_dismissed')) return;
       const lastReload = parseInt(sessionStorage.getItem('weebji_sw_reload_at') || '0');
       if (Date.now() - lastReload < 30000) return;
+      if (document.querySelector('#awakening-cutscene.active')) { setTimeout(() => _showUpdateBanner(reg), 6000); return; }
       const color = localStorage.getItem('weebji_color') || '#00F5FF';
       const banner = document.createElement('div');
       banner.id = 'sw-update-banner';
@@ -6076,6 +6081,7 @@
 
   // One-time System notice so users know anomalies exist
   function spawnAnomalyNotice(color) {
+    if (document.querySelector('#awakening-cutscene.active')) return;
     const el = document.createElement('div');
     el.style.cssText = `position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:960; max-width:330px; width:calc(100% - 40px); padding:14px 18px; background:rgba(7,9,15,0.96); border:1px solid ${hexRgba(color,0.35)}; border-radius:12px; box-shadow:0 0 24px ${hexRgba(color,0.15)}; font-family:'JetBrains Mono',monospace; text-align:center; cursor:pointer; -webkit-tap-highlight-color:transparent;`;
     el.innerHTML = `
@@ -11945,18 +11951,29 @@
     video.addEventListener('ended', done, { once: true });
     video.addEventListener('error', done, { once: true });
     showScreen('awakening-cutscene');
+    // Trigger buffering now (preload="none" saves bandwidth for returning users)
+    video.preload = 'auto';
     video.currentTime = 0;
     // On a cold/slow connection the file may still be buffering — wait briefly for
     // enough lookahead (HAVE_FUTURE_DATA) so playback doesn't stutter from frame one,
     // but don't block onboarding forever if that never arrives.
-    const start = () => video.play().catch(done);
+    const start = () => {
+      const p = video.play();
+      if (p) p.catch(err => {
+        if (err && err.name === 'NotAllowedError') {
+          // iOS denied autoplay (no prior user gesture) — mute and retry
+          video.muted = true;
+          video.play().catch(done);
+        } else { done(); }
+      });
+    };
     if (video.readyState >= 3) {
       start();
     } else {
       let started = false;
       const onReady = () => { if (started) return; started = true; start(); };
       video.addEventListener('canplay', onReady, { once: true });
-      setTimeout(onReady, 2500);
+      setTimeout(onReady, 3000);
     }
   }
 
@@ -12773,7 +12790,7 @@
     const hour = new Date().getHours();
     const isMorning = hour < 18;
     const isEvening = hour >= 18;
-    if (document.querySelector('#levelup-overlay.active, #anomaly-overlay.active, #mission-briefing.active, #ghost-intervention.active, #rating-prompt.active, #tour-card.active')) return;
+    if (document.querySelector('#levelup-overlay.active, #anomaly-overlay.active, #mission-briefing.active, #ghost-intervention.active, #rating-prompt.active, #tour-card.active, #awakening-cutscene.active')) return;
 
     const quests    = CLASS_QUESTS[cls] || CLASS_QUESTS.monarch;
     const overrides = getQuestOverrides(cls) || [];

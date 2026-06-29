@@ -610,6 +610,65 @@
   .app-shaking { animation: kf-app-shake 0.5s cubic-bezier(0.36,0.07,0.19,0.97) both; }
 
   /* ══ CINEMATIC — LEVEL UP (game-grade) ═══════ */
+  /* ══ LEVEL UP CUTSCENE ══════════════════════════════ */
+  #levelup-cutscene {
+    position: fixed; inset: 0; z-index: 99998;
+    background: #000; display: none; overflow: hidden;
+  }
+  #levelup-cutscene.active { display: block; }
+  .luc-shot {
+    position: absolute; inset: 0; opacity: 0;
+    transition: opacity 0.55s ease;
+  }
+  .luc-shot.active { opacity: 1; }
+  .luc-shot img { width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: center center; }
+  .luc-shot--1.active img { animation: luc-kb-1 2.8s ease-out forwards; }
+  .luc-shot--2.active img { animation: luc-kb-2 2.8s ease-out forwards; }
+  .luc-shot--3.active img { animation: luc-kb-3 2.8s ease-out forwards; }
+  .luc-shot--4.active img { animation: luc-kb-4 2.8s ease-out forwards; }
+  @keyframes luc-kb-1 { from { transform: scale(1.08) translateY(1%); } to { transform: scale(1) translateY(0); } }
+  @keyframes luc-kb-2 { from { transform: scale(1) translateY(2%); } to { transform: scale(1.06) translateY(0); } }
+  @keyframes luc-kb-3 { from { transform: scale(1.06); } to { transform: scale(1); } }
+  @keyframes luc-kb-4 { from { transform: scale(1) translateY(-1%); } to { transform: scale(1.08) translateY(0); } }
+  .luc-vignette {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.72) 100%);
+  }
+  .luc-text {
+    position: absolute; bottom: 26%; left: 0; right: 0; z-index: 3;
+    text-align: center; pointer-events: none;
+    opacity: 0; transition: opacity 0.9s ease;
+  }
+  .luc-text.visible { opacity: 1; }
+  .luc-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.38em; text-transform: uppercase;
+    color: rgba(255,255,255,0.45); margin-bottom: 10px;
+  }
+  .luc-level-num {
+    font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: clamp(48px, 15vw, 72px); letter-spacing: 0.05em;
+    color: #FFD700;
+    text-shadow: 0 0 40px rgba(255,215,0,0.9), 0 0 90px rgba(255,215,0,0.4);
+    margin: 0 0 6px; line-height: 1;
+  }
+  .luc-achieved {
+    font-family: 'Cinzel', serif; font-size: 12px;
+    letter-spacing: 0.42em; text-transform: uppercase;
+    color: rgba(255,215,0,0.7);
+  }
+  .luc-skip-btn {
+    position: absolute; top: max(20px, env(safe-area-inset-top, 20px)); right: 20px; z-index: 10;
+    background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.55); font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em; padding: 6px 14px;
+    border-radius: 4px; cursor: pointer; touch-action: manipulation;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .luc-shot--1.active img, .luc-shot--2.active img,
+    .luc-shot--3.active img, .luc-shot--4.active img { animation: none; }
+  }
+
   #levelup-overlay {
     position: absolute; inset: 0; z-index: 800;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -2300,6 +2359,21 @@
     <canvas id="cinematic-canvas"></canvas>
 
     <!-- Level-up overlay (inside #app, not a .screen) -->
+    <!-- ══ LEVEL UP CUTSCENE ════════════════════════ -->
+    <div id="levelup-cutscene">
+      <div class="luc-shot luc-shot--1"><img src="assets/cutscenes/levelup/shot-1.jpg" alt="" draggable="false"></div>
+      <div class="luc-shot luc-shot--2"><img src="assets/cutscenes/levelup/shot-2.jpg" alt="" draggable="false"></div>
+      <div class="luc-shot luc-shot--3"><img src="assets/cutscenes/levelup/shot-3.jpg" alt="" draggable="false"></div>
+      <div class="luc-shot luc-shot--4"><img src="assets/cutscenes/levelup/shot-4.jpg" alt="" draggable="false"></div>
+      <div class="luc-vignette"></div>
+      <div class="luc-text" id="luc-text">
+        <p class="luc-eyebrow">System Alert</p>
+        <p class="luc-level-num" id="luc-level-num">LEVEL 2</p>
+        <p class="luc-achieved">Achieved</p>
+      </div>
+      <button class="luc-skip-btn" id="luc-skip-btn" type="button">Skip ›</button>
+    </div>
+
     <div id="levelup-overlay">
       <div class="lbox lbox-t"></div>
       <div class="lbox lbox-b"></div>
@@ -10524,93 +10598,106 @@
     '"You are becoming what you feared you couldn\'t be."',
   ];
 
+  function playLevelUpCutscene(newLevel, onDone) {
+    const el     = document.getElementById('levelup-cutscene');
+    const textEl = document.getElementById('luc-text');
+    const numEl  = document.getElementById('luc-level-num');
+    const skipBtn= document.getElementById('luc-skip-btn');
+    if (!el) { onDone(); return; }
+
+    numEl.textContent = `LEVEL ${newLevel}`;
+    textEl.classList.remove('visible');
+
+    const shots = el.querySelectorAll('.luc-shot');
+    shots.forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+
+    let fired = false;
+    let t1, t2, t3, t4, t5;
+    const done = () => {
+      if (fired) return; fired = true;
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5);
+      skipBtn.removeEventListener('click', done);
+      el.classList.remove('active');
+      shots.forEach(s => s.classList.remove('active'));
+      textEl.classList.remove('visible');
+      onDone();
+    };
+    skipBtn.addEventListener('click', done);
+
+    shots[0].classList.add('active');
+    t1 = setTimeout(() => { shots[0].classList.remove('active'); shots[1].classList.add('active'); }, 2200);
+    t2 = setTimeout(() => { shots[1].classList.remove('active'); shots[2].classList.add('active'); }, 4400);
+    t3 = setTimeout(() => {
+      textEl.classList.add('visible');
+      if (typeof glitchReveal === 'function') glitchReveal(numEl, `LEVEL ${newLevel}`, 480);
+    }, 5000);
+    t4 = setTimeout(() => { shots[2].classList.remove('active'); shots[3].classList.add('active'); }, 6600);
+    t5 = setTimeout(done, 9800);
+  }
+
   function triggerLevelUp(newLevel) {
     const cls   = State.selectedClass  || localStorage.getItem('weebji_class')  || 'monarch';
     const color = State.selectedColor  || localStorage.getItem('weebji_color')  || '#00F5FF';
     if (typeof posthog !== 'undefined') posthog.capture('level_up', { level: newLevel, class: cls });
 
-    // Phase 4: Check avatar tier change → trigger evolution cinematic
     const newTier = getAvatarTier(newLevel);
     const oldTier = getAvatarTier(newLevel - 1);
-    if (newTier > oldTier) {
-      setTimeout(() => triggerAvatarEvolution(oldTier, newTier, cls, color), 2200);
-    }
-    // Update dashboard avatar mini
     updateAvatarMini(cls, newTier);
-    const ri    = parseInt(color.slice(1,3),16);
-    const gi    = parseInt(color.slice(3,5),16);
-    const bi    = parseInt(color.slice(5,7),16);
 
-    const luEl = document.getElementById('levelup-overlay');
-    luEl.style.setProperty('--lu-color', color);
-    luEl.style.setProperty('--lu-rgb',   `${ri},${gi},${bi}`);
-
-    document.getElementById('levelup-title').style.color = color;
-    document.getElementById('levelup-title').style.setProperty('--lu-color', color);
-    document.getElementById('levelup-num').textContent   = `LVL ${newLevel}`;
-    document.getElementById('levelup-quote').textContent = LU_QUOTES[(newLevel - 1) % LU_QUOTES.length];
-    const _hookEl = document.getElementById('levelup-directive-hook');
-    if (_hookEl) {
-      if (newLevel === 2) {
-        _hookEl.textContent = 'THE SYSTEM HAS ASSIGNED YOUR FIRST DIRECTIVE\nRETURN TOMORROW TO CLAIM IT';
-        _hookEl.style.display = 'block';
-      } else {
-        _hookEl.style.display = 'none';
-      }
-    }
-
-    // t=0: white flash + shake + 3-ring burst
-    const _reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    triggerFlash('flash-white', '#FFFFFF', null);
-    if (!_reduceMotion) shakeApp(1.2);
-    const cx = luEl.offsetWidth / 2, cy = luEl.offsetHeight * 0.44;
-    if (!_reduceMotion) CinCanvas.ringBurst(cx, cy, color, 3);
-
-    // Show share button at every 5th level or tier change
-    const _shareBtn = document.getElementById('levelup-share-btn');
-    if (_shareBtn) _shareBtn.classList.toggle('visible', newLevel % 5 === 0 || newTier > oldTier);
-
-    // Peak-moment upsell — fires once the overlay is dismissed (skip onboarding + tier evolutions)
-    if (newLevel >= 3 && newTier === oldTier) {
-      const _puClick = () => {
-        if (luEl.classList.contains('active')) return;
-        luEl.removeEventListener('click', _puClick);
-        setTimeout(() => PeakUpsell.maybeShow('levelup'), 1200);
-      };
-      setTimeout(() => luEl.addEventListener('click', _puClick), 800);
-    }
-
-    // t=60ms: overlay appears
-    setTimeout(() => {
-      luEl.classList.add('active');
-      Sound.play('levelup');
-      // Phase 5: System Voice
-      SystemVoice.onLevelUp(newLevel);
-    }, 60);
-
-    // t=180ms: particle burst from center
-    if (!_reduceMotion) setTimeout(() => {
-      CinCanvas.burst(cx, cy, 65, color, 16);
-      // Spray of white sparks too
-      CinCanvas.burst(cx, cy, 25, '#FFFFFF', 10);
-    }, 180);
-
-    // Re-render secondary pillars so newly unlocked pillars appear immediately
-    const _cls = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
-    const _p   = loadProgress();
-    renderSecondaryPillars(_p, _cls);
-
-    // Fire unlock animation if this level is a pillar unlock threshold
-    if (newLevel === 3 || newLevel === 7) {
-      setTimeout(() => triggerPillarUnlock(newLevel, _cls), 2400);
-    }
-
-    // Local notification
+    // Local notification fires immediately regardless of cutscene
     WeebjPush.local('level_up', `LEVEL ${newLevel} ACHIEVED`, 'Evolution detected. The System has upgraded your rank.');
 
-    // Tap anywhere to dismiss (share btn has its own handler)
-    const _dismissLU = (e) => { if (e.target.id === 'levelup-share-btn') return; luEl.classList.remove('active'); luEl.removeEventListener('click', _dismissLU); };
-    luEl.addEventListener('click', _dismissLU);
+    const _reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const afterCutscene = () => {
+      // Avatar evolution cinematic
+      if (newTier > oldTier) setTimeout(() => triggerAvatarEvolution(oldTier, newTier, cls, color), 400);
+
+      // Sound + System Voice
+      Sound.play('levelup');
+      SystemVoice.onLevelUp(newLevel);
+
+      // Particle burst
+      if (!_reduceMotion) {
+        const cx = window.innerWidth / 2, cy = window.innerHeight * 0.44;
+        CinCanvas.burst(cx, cy, 65, color, 16);
+        CinCanvas.burst(cx, cy, 25, '#FFFFFF', 10);
+      }
+
+      // Re-render secondary pillars
+      const _p = loadProgress();
+      renderSecondaryPillars(_p, cls);
+
+      // Pillar unlock animation
+      if (newLevel === 3 || newLevel === 7) setTimeout(() => triggerPillarUnlock(newLevel, cls), 600);
+
+      // Peak upsell
+      if (newLevel >= 3 && newTier === oldTier) setTimeout(() => PeakUpsell.maybeShow('levelup'), 1200);
+
+      // Share card at every 5th level or tier change
+      if (newLevel % 5 === 0 || newTier > oldTier) setTimeout(showArcCard, 800);
+    };
+
+    // Reduced-motion: skip cutscene, show old overlay directly
+    if (_reduceMotion) {
+      const ri = parseInt(color.slice(1,3),16), gi = parseInt(color.slice(3,5),16), bi = parseInt(color.slice(5,7),16);
+      const luEl = document.getElementById('levelup-overlay');
+      luEl.style.setProperty('--lu-color', color); luEl.style.setProperty('--lu-rgb', `${ri},${gi},${bi}`);
+      document.getElementById('levelup-title').style.color = color;
+      document.getElementById('levelup-num').textContent = `LVL ${newLevel}`;
+      document.getElementById('levelup-quote').textContent = LU_QUOTES[(newLevel - 1) % LU_QUOTES.length];
+      const _hookEl = document.getElementById('levelup-directive-hook');
+      if (_hookEl) { _hookEl.style.display = newLevel === 2 ? 'block' : 'none'; if (newLevel === 2) _hookEl.textContent = 'THE SYSTEM HAS ASSIGNED YOUR FIRST DIRECTIVE\nRETURN TOMORROW TO CLAIM IT'; }
+      setTimeout(() => { luEl.classList.add('active'); afterCutscene(); }, 60);
+      const _dismissLU = (e) => { if (e.target.id === 'levelup-share-btn') return; luEl.classList.remove('active'); luEl.removeEventListener('click', _dismissLU); };
+      luEl.addEventListener('click', _dismissLU);
+      return;
+    }
+
+    // Play cutscene → fire everything after
+    triggerFlash('flash-white', '#FFFFFF', null);
+    playLevelUpCutscene(newLevel, afterCutscene);
   }
 
   /* ══ PILLAR UNLOCK TOAST ══════════════════════ */

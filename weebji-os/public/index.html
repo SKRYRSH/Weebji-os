@@ -3678,6 +3678,7 @@
         }
         localStorage.setItem('weebji_ghost_reset_month', _thisMonth);
         saveProgress(p);
+        try { if (typeof SupabaseSync !== 'undefined' && SupabaseSync.getUser()) SupabaseSync.pushProgress().catch(()=>{}); } catch(_) {}
       }
     }
 
@@ -6164,6 +6165,9 @@
         }
         leveled = checkLevelUp(p);
         saveProgress(p); updateXPBar(p); updateStats(p);
+        if (reward.type === 'ghost') {
+          try { if (typeof SupabaseSync !== 'undefined' && SupabaseSync.getUser()) SupabaseSync.pushProgress().catch(()=>{}); } catch(_) {}
+        }
       }, 1300);
       const dismiss = () => {
         overlay.removeEventListener('click', dismiss);
@@ -14821,6 +14825,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
         p.mmSessions = Math.max(p.mmSessions || 0, fresh.mmSessions || 0);
         p.totalStudyMins = Math.max(p.totalStudyMins || 0, fresh.totalStudyMins || 0);
         if (fresh.mmDaily) { p.mmDaily = p.mmDaily || {}; for (const _k in fresh.mmDaily) p.mmDaily[_k] = Math.max(p.mmDaily[_k] || 0, fresh.mmDaily[_k] || 0); }
+        // Never let pull reduce ghost tokens below what's currently in localStorage
+        p.ghostTokens = Math.max(p.ghostTokens || 0, fresh.ghostTokens || 0);
         saveProgress(p);
         if (typeof checkGoodwillOverlay === 'function') checkGoodwillOverlay();
         // Always refresh visible stats immediately — user may be on any screen

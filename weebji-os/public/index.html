@@ -1043,6 +1043,41 @@
   .dungeon-defeated__title { font-family:'Cinzel',serif; font-size:14px; font-weight:900; color:#CC44FF; text-shadow:0 0 16px rgba(139,0,255,0.6); letter-spacing:0.12em; margin-bottom:4px; }
   .dungeon-defeated__sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(139,0,255,0.45); letter-spacing:0.15em; }
 
+  /* ══ BOSS SIEGE ═══════════════════════════════ */
+  .boss-siege-card { position:relative; background:rgba(4,4,14,0.97); border:1px solid rgba(255,60,0,0.3); border-radius:20px; padding:20px 18px; margin-bottom:14px; overflow:hidden; }
+  .boss-siege-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(255,60,0,0.1) 0%, transparent 65%); pointer-events:none; }
+  .boss-siege__eyebrow { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.4em; color:rgba(255,100,0,0.65); text-transform:uppercase; margin-bottom:6px; }
+  .boss-siege__name { font-family:'Cinzel',serif; font-size:18px; font-weight:900; letter-spacing:0.1em; color:#fff; text-shadow:0 0 20px rgba(255,80,0,0.6), 0 0 40px rgba(255,40,0,0.2); margin-bottom:4px; }
+  .boss-siege__quote { font-family:'Inter',sans-serif; font-size:11px; font-style:italic; color:rgba(255,255,255,0.55); margin-bottom:16px; line-height:1.5; }
+  .boss-siege__img-wrap { width:100%; height:220px; border-radius:14px; overflow:hidden; margin:12px 0 18px; position:relative; }
+  .boss-siege__img-wrap img { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; }
+  .boss-siege__img-wrap::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent,#07090F); pointer-events:none; }
+  .boss-siege__hp-track { margin-bottom:16px; }
+  .boss-siege__hp-label { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.25em; color:rgba(255,100,0,0.6); text-transform:uppercase; margin-bottom:5px; display:flex; justify-content:space-between; }
+  .boss-siege__hp-bar { width:100%; height:8px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; }
+  .boss-siege__hp-fill { height:100%; border-radius:99px; box-shadow:0 0 10px rgba(255,80,0,0.6); transition:width 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .boss-siege__task-hint { font-family:'Inter',sans-serif; font-size:12px; color:rgba(255,255,255,0.45); line-height:1.6; text-align:center; margin:8px 0; }
+  .boss-siege__defeated { text-align:center; padding:16px 0 8px; }
+  .boss-siege__defeated-glyph { font-size:32px; margin-bottom:8px; }
+  .boss-siege__defeated-title { font-family:'Cinzel',serif; font-size:14px; font-weight:700; letter-spacing:0.15em; color:#FFD700; text-shadow:0 0 20px rgba(255,215,0,0.5); }
+  .boss-siege__defeated-sub { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,215,0,0.45); margin-top:4px; }
+  .boss-siege__timer { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,100,0,0.45); letter-spacing:0.15em; text-align:center; margin-top:12px; }
+  .boss-siege__reward { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; background:rgba(255,215,0,0.04); border:1px solid rgba(255,215,0,0.12); margin-bottom:14px; }
+  .boss-siege__reward-xp { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:#FFD700; text-shadow:0 0 10px rgba(255,215,0,0.5); }
+  .boss-siege__reward-note { font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,80,80,0.55); letter-spacing:0.08em; margin-top:3px; }
+  .boss-siege__penance-warn { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; color:rgba(255,80,80,0.7); text-align:center; margin:6px 0; padding:6px 12px; border:1px solid rgba(255,80,80,0.2); border-radius:8px; background:rgba(255,0,0,0.04); }
+  @keyframes bossDmgFloat { 0%{opacity:1;transform:translateY(0) scale(1)} 80%{opacity:0.8} 100%{opacity:0;transform:translateY(-70px) scale(0.8)} }
+  .boss-dmg-float { position:fixed; font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#FF4400; text-shadow:0 0 10px rgba(255,80,0,0.8); pointer-events:none; z-index:999; animation:bossDmgFloat 1.4s ease forwards; }
+  #boss-defeat-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.97); z-index:901; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:52px 32px; opacity:0; pointer-events:none; transition:opacity 0.6s ease; text-align:center; }
+  #boss-defeat-overlay.active { opacity:1; pointer-events:all; }
+  .boss-defeat__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.4em; color:rgba(255,215,0,0.7); text-transform:uppercase; }
+  .boss-defeat__title { font-family:'Cinzel',serif; font-size:26px; font-weight:900; letter-spacing:0.12em; color:#FFD700; text-shadow:0 0 30px rgba(255,215,0,0.8), 0 0 60px rgba(255,215,0,0.3); }
+  .boss-defeat__boss-name { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.2em; color:rgba(255,255,255,0.45); }
+  .boss-defeat__rewards { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .boss-defeat__reward-chip { background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.3); border-radius:10px; padding:10px 16px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#FFD700; }
+  .boss-defeat__btn { font-family:'Cinzel',serif; font-size:13px; font-weight:700; letter-spacing:0.15em; padding:14px 36px; border-radius:12px; border:1px solid rgba(255,215,0,0.5); background:rgba(255,215,0,0.08); color:#FFD700; cursor:pointer; -webkit-tap-highlight-color:transparent; text-transform:uppercase; margin-top:8px; }
+  .boss-defeat__btn:active { transform:scale(0.97); }
+
   /* ══ FRIEND BATTLES ══════════════════════════ */
   .battle-card { position:relative; background:rgba(4,4,14,0.97); border:1px solid rgba(255,60,60,0.25); border-radius:20px; padding:20px 18px; margin-bottom:14px; overflow:hidden; }
   .battle-card::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(255,60,60,0.08) 0%, transparent 65%); pointer-events:none; }
@@ -2113,7 +2148,7 @@
         <div style="display:flex;align-items:center;gap:10px">
           <button class="music-btn" id="music-toggle-btn" title="Toggle music">♪</button>
           <div style="display:flex;align-items:center;gap:6px">
-            <span id="hp-label" style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.18em;color:rgba(255,255,255,0.32);text-transform:uppercase">HP 100</span>
+            <span id="hp-label" style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.18em;color:rgba(255,255,255,0.32);text-transform:uppercase">HP 3/3</span>
             <div class="hp-row" id="hp-row"></div>
           </div>
         </div>
@@ -2554,6 +2589,18 @@
         <span class="penance__escape-or">— or —</span>
         <button class="penance__escape-btn" id="penance-escape-btn">👻 Use Ghost Token to skip penance</button>
       </div>
+    </div>
+
+    <div id="boss-defeat-overlay">
+      <p class="boss-defeat__eyebrow">⚔ BOSS DESTROYED</p>
+      <h2 class="boss-defeat__title" id="boss-defeat-boss-name">BOSS DEFEATED</h2>
+      <p class="boss-defeat__boss-name" id="boss-defeat-sub"></p>
+      <div class="boss-defeat__rewards">
+        <div class="boss-defeat__reward-chip">+300 XP</div>
+        <div class="boss-defeat__reward-chip">+1 HP Restored</div>
+      </div>
+      <p style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;max-width:280px">The System acknowledges your dominance. Vitality restored.</p>
+      <button class="boss-defeat__btn" id="boss-defeat-dismiss">CLAIM REWARD</button>
     </div>
 
     <!-- Rating Prompt Overlay -->
@@ -3713,7 +3760,7 @@
           p.streakLostToday = true;
         } else {
           p.streak = (p.streak || 0) + 1;
-          p.hp = Math.min(5, p.hp + 1);
+          p.hp = Math.min(3, p.hp + 1);
           // Clear stale loss flag from a previous day — while true it blocks
           // pullProgress from ever restoring the cloud streak (v270)
           p.streakLostToday = false;
@@ -4753,6 +4800,103 @@
     },
   ];
 
+  const BossSiege = (() => {
+    const BOSS_HP_MAX = 3;
+    const STORAGE_KEY = 'weebji_boss_siege';
+
+    function _getWeekKey() {
+      const now = new Date();
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      const weekNum = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+      return `${now.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+    }
+
+    function _load() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch { return null; }
+    }
+
+    function _save(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function _bossForWeek(yearWeek) {
+      const weekNum = parseInt(yearWeek.split('-W')[1]);
+      return DUNGEONS[(weekNum - 1) % DUNGEONS.length];
+    }
+
+    function init() {
+      const currentWeek = _getWeekKey();
+      const stored = _load();
+      if (stored && stored.yearWeek !== currentWeek) {
+        // Week rolled over — boss survived = penance
+        if (!stored.defeated && stored.hp > 0) {
+          localStorage.setItem('weebji_penance_active', '1');
+        }
+        _save({ yearWeek: currentWeek, hp: BOSS_HP_MAX, defeated: false, dmgThisWeek: 0 });
+      } else if (!stored) {
+        _save({ yearWeek: currentWeek, hp: BOSS_HP_MAX, defeated: false, dmgThisWeek: 0 });
+      }
+    }
+
+    function getState() {
+      const currentWeek = _getWeekKey();
+      const state = _load();
+      if (!state || state.yearWeek !== currentWeek) return { yearWeek: currentWeek, hp: BOSS_HP_MAX, defeated: false, dmgThisWeek: 0 };
+      return state;
+    }
+
+    function dealDamage(amount) {
+      const state = getState();
+      if (state.defeated || state.hp <= 0) return;
+      const prevHp = state.hp;
+      state.hp = Math.max(0, state.hp - amount);
+      state.dmgThisWeek = (state.dmgThisWeek || 0) + amount;
+      _save(state);
+      _showDamageFloat(amount);
+      renderDungeonCard();
+      if (prevHp > 0 && state.hp <= 0) {
+        state.defeated = true;
+        _save(state);
+        const p = loadProgress();
+        p.xp += 300;
+        p.hp = Math.min(BOSS_HP_MAX, (p.hp || 0) + 1);
+        const leveled = checkLevelUp(p);
+        saveProgress(p);
+        updateXPBar(p);
+        renderHearts(p.hp);
+        if (leveled) triggerLevelUp(p.level);
+        Sound.play('levelUp');
+        _showDefeatOverlay(_bossForWeek(state.yearWeek));
+      }
+    }
+
+    function _showDamageFloat(amount) {
+      const el = document.createElement('div');
+      el.className = 'boss-dmg-float';
+      el.textContent = `-${amount} DMG`;
+      const card = document.getElementById('dungeon-card');
+      const rect = card ? card.getBoundingClientRect() : { top: 200, left: window.innerWidth / 2, width: 200 };
+      el.style.top = (rect.top + 50 + Math.random() * 30) + 'px';
+      el.style.left = (rect.left + rect.width / 2 - 30 + (Math.random() - 0.5) * 50) + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1500);
+    }
+
+    function _showDefeatOverlay(boss) {
+      const ov = document.getElementById('boss-defeat-overlay');
+      if (!ov) return;
+      const nameEl = document.getElementById('boss-defeat-boss-name');
+      const subEl  = document.getElementById('boss-defeat-sub');
+      if (nameEl) nameEl.textContent = boss.boss;
+      if (subEl)  subEl.textContent  = (boss.quote || '').replace(/^"|"$/g,'');
+      ov.classList.add('active');
+      const btn = document.getElementById('boss-defeat-dismiss');
+      if (btn) btn.onclick = () => { ov.classList.remove('active'); renderDungeonCard(); };
+    }
+
+    return { init, getState, dealDamage };
+  })();
+
   function getDungeonWeekInfo() {
     const now = new Date();
     const startOfYear = new Date(now.getFullYear(), 0, 1);
@@ -4808,211 +4952,62 @@
     }
   }
 
-  async function renderDungeonCard() {
+  function renderDungeonCard() {
     const el = document.getElementById('dungeon-card');
     if (!el) return;
-    // Day-1 teaser — user has no streak yet, show a sealed preview instead of the full card
-    const _dp = loadProgress();
-    if ((_dp.streak || 0) === 0 && (_dp.level || 1) <= 1) {
-      const { dungeonIndex, daysLeft, hoursLeft } = getDungeonWeekInfo();
-      const _dd = DUNGEONS[dungeonIndex];
-      const _timerTxt = daysLeft > 0 ? `Resets in ${daysLeft}d ${hoursLeft}h` : `Resets in ${hoursLeft}h`;
-      el.style.display = 'block';
-      el.innerHTML = `<div class="dungeon-card" style="position:relative;overflow:hidden">
-        <div class="dungeon-card__eyebrow">⚔ WEEKLY DUNGEON — SEALED</div>
-        <div class="dungeon-card__boss" style="margin-bottom:6px">${_dd.boss}</div>
-        <div class="dungeon-boss-img" style="opacity:0.35;filter:blur(2px)"><img src="${_dd.img}" alt="${_dd.boss}" loading="lazy"></div>
-        <div style="margin:14px 0 6px;text-align:center">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.28em;color:rgba(139,0,255,0.55);margin-bottom:8px">ACCESS DENIED</div>
-          <div style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6">Complete your first full protocol.<br>The dungeon awakens when you prove yourself.</div>
+    el.style.display = 'block';
+    const state = BossSiege.getState();
+    const { daysLeft, hoursLeft } = getDungeonWeekInfo();
+    const weekNum = parseInt(state.yearWeek.split('-W')[1]);
+    const boss = DUNGEONS[(weekNum - 1) % DUNGEONS.length];
+    const timerTxt = daysLeft > 0 ? `Resets in ${daysLeft}d ${hoursLeft}h` : `Closes in ${hoursLeft}h`;
+    if (state.defeated) {
+      el.innerHTML = `<div class="boss-siege-card">
+        <div class="boss-siege__eyebrow">⚔ WEEKLY BOSS — DEFEATED</div>
+        <div class="boss-siege__img-wrap"><img src="${boss.img}" alt="${boss.boss}" loading="lazy" style="filter:grayscale(0.4)"></div>
+        <div class="boss-siege__defeated">
+          <div class="boss-siege__defeated-glyph">${boss.glyph}</div>
+          <div class="boss-siege__defeated-title">${boss.boss} — SLAIN</div>
+          <div class="boss-siege__defeated-sub">+300 XP · Vitality restored · ${boss.title}</div>
         </div>
-        <div class="dungeon-timer" style="margin-top:10px">${_timerTxt}</div>
+        <div class="boss-siege__timer">${timerTxt}</div>
       </div>`;
       return;
     }
-    el.style.display = 'block';
-    try {
-    const plus = isWeebjiPlus();
-    const { yearWeek, dungeonIndex, gatesUnlocked, bossUnlocked, daysLeft, hoursLeft } = getDungeonWeekInfo();
-    const dungeon = DUNGEONS[dungeonIndex];
-    const progress = plus ? await loadDungeonProgress(yearWeek) : null;
-    const gatesDone = progress?.gates_completed || 0;
-    const bossDone = progress?.boss_defeated || false;
-    const hpPct = bossDone ? 0 : Math.max(0, 100 - (gatesDone * 25) - (bossUnlocked ? 10 : 0));
-    const timerTxt = daysLeft > 0 ? `Dungeon closes in ${daysLeft}d ${hoursLeft}h` : `Closes in ${hoursLeft}h`;
-
-    const gatesHtml = dungeon.gates.map((g, i) => {
-      const gNum = i + 1;
-      const isUnlocked = gatesUnlocked >= gNum;
-      const isClaimed = !!progress?.[`gate${gNum}_at`];
-      let stateClass = 'locked';
-      if (isClaimed) stateClass = 'claimed';
-      else if (isUnlocked) stateClass = 'unlocked';
-      const actionHtml = !plus ? '' : isClaimed
-        ? `<span class="dungeon-gate__done">✓</span>`
-        : isUnlocked
-          ? `<button class="dungeon-gate__btn" data-gate="${gNum}">Claim</button>`
-          : `<span style="font-size:11px;opacity:0.3">🔒</span>`;
-      return `<div class="dungeon-gate ${stateClass}">
-        <span class="dungeon-gate__icon">${isClaimed?'✅':'🚪'}</span>
-        <div class="dungeon-gate__info">
-          <div class="dungeon-gate__day">Gate ${gNum} — Unlocks ${g.day}</div>
-          <div class="dungeon-gate__task">${g.task}</div>
-        </div>
-        ${actionHtml}
-      </div>`;
-    }).join('');
-
-    const allGatesClaimed = !!(progress?.gate1_at && progress?.gate2_at && progress?.gate3_at);
-    const bossHtml = allGatesClaimed && plus ? bossDone ? '' : `
-      <div class="dungeon-boss-fight">
-        <div class="dungeon-boss-fight__label">⚔ Final Confrontation — Boss Fight</div>
-        <div class="dungeon-boss-fight__task">${dungeon.boss_task}</div>
-        <button class="dungeon-boss-fight__btn" id="dungeon-boss-btn">Defeat The Boss</button>
-      </div>` : '';
-
-    const lockedHtml = !plus ? `
-      <div class="dungeon-locked-overlay">
-        <div class="dungeon-locked-overlay__label">⚔ DUNGEON SEALED — WEEBJI+ REQUIRED</div>
-        <div class="dungeon-locked-overlay__reward">
-          <span class="dungeon-locked-overlay__xp">+${dungeon.xp} XP</span>
-          <span class="dungeon-locked-overlay__title-badge">${dungeon.title}</span>
-        </div>
-        <p class="dungeon-locked-overlay__pitch">Defeat <strong>${dungeon.boss}</strong> this week. Claim the title. Most hunters never make it past Gate 1.</p>
-        <div class="dungeon-locked-overlay__urgency">⏳ ${timerTxt} — dungeon resets next week</div>
-        <div class="dungeon-locked-overlay__btn" onclick="showPlusSheet()">UNLOCK WEEBJI+ — ENTER NOW →</div>
-        <div class="dungeon-locked-overlay__price">From $9.99/mo · Cancel anytime</div>
-      </div>` : '';
-
-    const defeatedHtml = bossDone ? `
-      <div class="dungeon-defeated">
-        <div class="dungeon-defeated__glyph">${dungeon.glyph}</div>
-        <div class="dungeon-defeated__title">BOSS DEFEATED</div>
-        <div class="dungeon-defeated__sub">${dungeon.title}</div>
-      </div>` : '';
-
-    el.style.display = 'block';
-    el.innerHTML = `<div class="dungeon-card">
-      <div class="dungeon-card__eyebrow">⚔ Weekly Dungeon ${plus?'':'— WEEBJI+'}</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <div class="dungeon-card__boss" style="margin-bottom:0">${dungeon.boss}</div>
-        <button id="boss-voice-btn" title="Hear boss speak" style="background:none;border:1px solid rgba(139,0,255,0.35);border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;">🔊</button>
-      </div>
-      <div class="dungeon-card__quote">${dungeon.quote}</div>
-      <div class="dungeon-boss-img"><img src="${dungeon.img}" alt="${dungeon.boss}" loading="lazy"></div>
-      <div style="margin:10px 0 4px;padding:10px 14px;border-left:2px solid rgba(255,255,255,${plus?'0.18':'0.08'});background:rgba(255,255,255,0.02);border-radius:0 8px 8px 0">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:rgba(255,255,255,${plus?'0.55':'0.25'});line-height:1.6;font-style:italic">${plus ? dungeon.taunt_plus : dungeon.taunt_free}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,255,255,${plus?'0.18':'0.22'});margin-top:5px">— ${dungeon.boss}</div>
-      </div>
-      <div class="dungeon-reward">
+    const hpPct = Math.round((state.hp / 3) * 100);
+    const hpColor = state.hp <= 1 ? '#FF2200' : state.hp <= 2 ? '#FF6600' : '#FF4400';
+    el.innerHTML = `<div class="boss-siege-card">
+      <div class="boss-siege__eyebrow">⚔ WEEKLY BOSS SIEGE — FREE FOR ALL</div>
+      <div class="boss-siege__name">${boss.boss}</div>
+      <div class="boss-siege__quote">${boss.quote}</div>
+      <div class="boss-siege__img-wrap"><img src="${boss.img}" alt="${boss.boss}" loading="lazy"></div>
+      <div class="boss-siege__reward">
         <div>
-          <div class="dungeon-reward__xp">+${dungeon.xp} XP</div>
-          <div class="dungeon-reward__title">${dungeon.title}</div>
+          <div class="boss-siege__reward-xp">+300 XP + HP Restore on defeat</div>
+          <div class="boss-siege__reward-note">Boss survives Monday reset → PENANCE triggers</div>
         </div>
       </div>
-      <div class="dungeon-boss-hp">
-        <div class="dungeon-boss-hp__label"><span>BOSS HP</span><span>${hpPct}%</span></div>
-        <div class="dungeon-boss-hp__track"><div class="dungeon-boss-hp__fill" style="width:${hpPct}%"></div></div>
+      <div class="boss-siege__hp-track">
+        <div class="boss-siege__hp-label"><span>BOSS HP</span><span style="color:${hpColor}">${state.hp} / 3</span></div>
+        <div class="boss-siege__hp-bar"><div class="boss-siege__hp-fill" style="width:${hpPct}%;background:linear-gradient(90deg,${hpColor},${hpColor}BB)"></div></div>
       </div>
-      <div class="dungeon-gates">${gatesHtml}</div>
-      ${bossHtml}
-      ${defeatedHtml}
-      ${lockedHtml}
-      <div class="dungeon-timer">${timerTxt}</div>
+      <div class="boss-siege__task-hint">Complete tasks to deal damage:<br>Workout / MM Focus → −15 · Quests / Monk Ritual → −20 · Perfect Set → −10 bonus</div>
+      ${state.hp <= 1 ? '<div class="boss-siege__penance-warn">⚠ One more hit defeats the boss. Or wait and face PENANCE Monday.</div>' : ''}
+      <div class="boss-siege__timer">${timerTxt}</div>
     </div>`;
-
-    // Boss speaks once per session when dungeon card scrolls into view.
-    // Free users hear taunt_free — that line IS the upsell, never silence it.
-    if (!bossDone) {
-      const voiceKey = `dungeon_voiced_${yearWeek}_${dungeonIndex}`;
-      if (!sessionStorage.getItem(voiceKey)) {
-        const obs = new IntersectionObserver((entries, o) => {
-          if (entries[0].isIntersecting) {
-            o.disconnect();
-            sessionStorage.setItem(voiceKey, '1');
-            const _pool = plus ? [dungeon.taunt_plus, ...(dungeon.taunts_plus_extra || [])] : [dungeon.taunt_free];
-            setTimeout(() => SystemVoice.speakBoss(_pool[Math.floor(Math.random() * _pool.length)], !plus), 400);
-          }
-        }, { threshold: 0.5 });
-        obs.observe(el);
-      }
-    }
-
-    // Boss voice button — works for all users (taunt_free for non-Plus, taunt_plus for Plus)
-    const bossVoiceBtn = document.getElementById('boss-voice-btn');
-    if (bossVoiceBtn) {
-      bossVoiceBtn.addEventListener('click', () => {
-        if (!('speechSynthesis' in window)) return;
-        const _pool = plus ? [dungeon.taunt_plus, ...(dungeon.taunts_plus_extra || [])] : [dungeon.taunt_free];
-        const text = _pool[Math.floor(Math.random() * _pool.length)].replace(/^"|"$/g, '');
-        window.speechSynthesis.cancel();
-        const utt = new SpeechSynthesisUtterance(text);
-        utt.rate = 0.86; utt.pitch = 0.6; utt.volume = 1.0;
-        const voices = window.speechSynthesis.getVoices();
-        const _isMale = v => /male/i.test(v.name) || /david|mark|alex|daniel|rishi|thomas|jorge|diego|luca|oliver|reed/i.test(v.name);
-        const _isQuality = v => /natural|neural|enhanced|premium/i.test(v.name);
-        const male = voices.find(v => _isQuality(v) && _isMale(v))
-          || voices.find(v => _isMale(v))
-          || voices.find(v => v.lang.startsWith('en') && !/female|zira|samantha|karen|victoria|fiona|moira|tessa|veena/i.test(v.name));
-        if (male) utt.voice = male;
-        const ind = document.getElementById('voice-indicator');
-        if (ind) { ind.style.setProperty('--vd-color', '#8B00FF'); ind.classList.add('speaking'); utt.onend = () => ind.classList.remove('speaking'); }
-        window.speechSynthesis.speak(utt);
-        Sound.play('tap');
-      });
-    }
-
-    // Gate claim buttons
-    el.querySelectorAll('.dungeon-gate__btn[data-gate]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const gNum = parseInt(btn.dataset.gate);
-        const p = loadProgress();
-        const gate = dungeon.gates[gNum - 1];
-        if (!gate.check(p)) {
-          const missing = [];
-          if ((p.workoutChecked||[]).length < 3 && !p.workoutBonus) missing.push(`workout (${(p.workoutChecked||[]).length}/3 exercises)`);
-          if ((p.questsChecked||[]).length < 3) missing.push(`quests (${(p.questsChecked||[]).length}/3)`);
-          if (!p.dailyChallengeDone && gate.task.toLowerCase().includes('challenge')) missing.push('daily challenge');
-          if ((p.streak||0) < 3) missing.push(`streak (${p.streak||0} days short)`);
-          if (!Object.values(p.mmDaily||{}).some(v=>v>=30) && gate.task.toLowerCase().includes('focus')) missing.push('focus session (30+ min)');
-          const hint = missing.length ? `Missing: ${missing.join(', ')}.` : 'Not all conditions met yet.';
-          SystemVoice.speak(`Gate ${gNum} sealed. ${hint}`);
-          return;
+    // One-time boss taunt per session
+    const voiceKey = `boss_siege_voiced_${state.yearWeek}`;
+    if (!sessionStorage.getItem(voiceKey)) {
+      const obs = new IntersectionObserver((entries, o) => {
+        if (entries[0].isIntersecting) {
+          o.disconnect();
+          sessionStorage.setItem(voiceKey, '1');
+          const pool = [boss.taunt_free, boss.quote.replace(/^"|"$/g,'')];
+          setTimeout(() => SystemVoice.speakBoss(pool[Math.floor(Math.random() * pool.length)], true), 400);
         }
-        btn.textContent = '...'; btn.disabled = true;
-        await saveDungeonGate(yearWeek, dungeonIndex, gNum, false);
-        Sound.play('levelUp');
-        SystemVoice.speak(`Gate ${gNum} falls. The boss grows closer.`);
-        renderDungeonCard();
-      });
-    });
-
-    // Boss fight button
-    const bossBtn = document.getElementById('dungeon-boss-btn');
-    if (bossBtn) {
-      bossBtn.addEventListener('click', async () => {
-        const p = loadProgress();
-        if (!dungeon.boss_check(p)) {
-          SystemVoice.speak(`The boss does not accept weakness. Complete the final trial first.`);
-          return;
-        }
-        bossBtn.textContent = '...'; bossBtn.disabled = true;
-        await saveDungeonGate(yearWeek, dungeonIndex, 0, true);
-        // Grant XP and title
-        p.xp += dungeon.xp;
-        const titleId = `dungeon_${dungeonIndex}`;
-        if (!p.titles) p.titles = [];
-        if (!p.titles.includes(titleId)) p.titles.push(titleId);
-        const leveled = checkLevelUp(p);
-        saveProgress(p);
-        if (leveled) triggerLevelUp(p.level);
-        Sound.play('levelUp');
-        SystemVoice.onBossDefeat();
-        renderDungeonCard();
-        updateXPBar(p);
-      });
+      }, { threshold: 0.5 });
+      obs.observe(el);
     }
-    } catch(e) { console.warn('dungeon render error', e); }
   }
 
   /* ══ FRIEND BATTLES ══════════════════════════════ */
@@ -5891,7 +5886,7 @@
     // Consistency checks — catch impossible values even if hash passes
     const maxPossibleXP = xpForLevel(p.level) * 3; // generous ceiling
     // bestStreak < streak is a valid transient state (streak just updated, bestStreak not yet) — not suspicious
-    const isSuspicious = p.xp > maxPossibleXP || p.level > 100 || p.hp > 5 || p.hp < 0
+    const isSuspicious = p.xp > maxPossibleXP || p.level > 100 || p.hp > 3 || p.hp < 0
       || p.streak > 3650 || p.ghostTokens > 60;
 
     if (isSuspicious) {
@@ -5900,7 +5895,7 @@
       if (p.xp     > maxPossibleXP) { p.xp = 0;         localStorage.setItem('weebji_xp',           '0'); }
       if (p.level  > 100)           { p.level = 100;     localStorage.setItem('weebji_level',        '100'); }
       if (p.streak > 3650)          { p.streak = 0;      localStorage.setItem('weebji_streak',       '0'); }
-      if (p.hp > 5 || p.hp < 0)    { p.hp = 3;          localStorage.setItem('weebji_hp',           '3'); }
+      if (p.hp > 3 || p.hp < 0)    { p.hp = 3;          localStorage.setItem('weebji_hp',           '3'); }
       if (p.ghostTokens > 60)       { p.ghostTokens = 1; localStorage.setItem('weebji_ghost_tokens', '1'); }
       _writeHash(p);
       return false;
@@ -7065,6 +7060,7 @@
         updateStats(_p);
       }).catch(() => {});
     }
+    BossSiege.init();
     initDashboard();
     // Restore nav tab after SW update reload
     const _rt = sessionStorage.getItem('weebji_sw_restore_tab');
@@ -7982,16 +7978,13 @@
   function renderHearts(hp) {
     const c = document.getElementById('hp-row');
     const lbl = document.getElementById('hp-label');
-    if (lbl) lbl.textContent = `HP ${hp * 20}`;
+    if (lbl) lbl.textContent = `HP ${hp}/3`;
     c.innerHTML = '';
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       const seg = document.createElement('div');
       const isFull = i < hp;
       seg.classList.add('hp-seg', isFull ? 'full' : 'empty');
-      if (isFull) {
-        if (hp <= 1) seg.classList.add('critical-danger');
-        else if (hp <= 2) seg.classList.add('critical-low');
-      }
+      if (isFull && hp <= 1) seg.classList.add('critical-danger');
       c.appendChild(seg);
     }
     // HP vignette cinematic
@@ -8012,7 +8005,7 @@
     } else if (hp <= 2) {
       const warnEl = document.createElement('p');
       warnEl.className = 'hp-warn';
-      warnEl.textContent = 'Vitality low. The system is watching.';
+      warnEl.textContent = 'Vitality low. Deal damage to the weekly boss. The system is watching.';
       anchor.insertAdjacentElement('afterend', warnEl);
     }
   }
@@ -8572,10 +8565,12 @@
       p.xp += rollCriticalDrop(exercises[index].xp, row.querySelector('.ex-xp'), p);
       Sound.play('check');
       markFirstActionDone();
+      BossSiege.dealDamage(15);
 
       // Perfect set
       if (p.workoutChecked.length === exercises.length && !p.workoutBonus) {
         p.workoutBonus = true; p.xp += 25;
+        BossSiege.dealDamage(10);
         Sound.play('workoutComplete');
         haptic([80, 40, 80, 40, 200]);
         WeebjPush.local('workout_complete', 'MISSION ACCOMPLISHED', 'Full protocol executed. +25 XP bonus recorded by the System.');
@@ -8628,6 +8623,7 @@
       popCheck(row.querySelector('.quest-check'));
       p.xp += rollCriticalDrop(quests[index].xp, row.querySelector('.quest-xp'), p); Sound.play('check');
       markFirstActionDone();
+      BossSiege.dealDamage(20);
     }
     const leveled = checkLevelUp(p);
     saveProgress(p); updateXPBar(p); updateStats(p);
@@ -8793,6 +8789,7 @@
       p.xp += mmXP; p.mmSessions += 1;
       p.totalStudyMins = (p.totalStudyMins || 0) + cfg.mins;
       markFirstActionDone();
+      BossSiege.dealDamage(15);
       // Track today in mm_grid and mm_daily
       const _today = new Date().toDateString();
       if (!p.mmGrid.includes(_today)) p.mmGrid.push(_today);
@@ -9194,6 +9191,7 @@
       popCheck(row.querySelector('.monk-check'));
       p.xp += rollCriticalDrop(getMonkRituals()[index].xp, row.querySelector('.monk-ritual-xp'), p);
       Sound.play('check');
+      BossSiege.dealDamage(20);
       if (p.monkChecked.length === getMonkRituals().length && !p.monkBonus) {
         p.monkBonus = true; p.xp += 25;
         Sound.play('workoutComplete');
@@ -10390,7 +10388,7 @@
       streakEl.textContent = `${p.streak}d`;
       streakEl.style.fontSize = '';
     }
-    document.getElementById('stat-hp').textContent     = `${p.hp * 20}/100`;
+    document.getElementById('stat-hp').textContent     = `${p.hp}/3`;
     document.getElementById('stat-level').textContent  = `${p.level}`;
     document.getElementById('dash-level').textContent  = `LVL ${p.level}`;
     // 5-day streak hint
@@ -11309,7 +11307,7 @@
       <div class="profile-stat"><div class="profile-stat__label">Level</div><div class="profile-stat__value" style="color:${color}">${p.level}</div></div>
       <div class="profile-stat"><div class="profile-stat__label">Best Streak</div><div class="profile-stat__value" style="color:${color}">${p.bestStreak}d</div></div>
       <div class="profile-stat"><div class="profile-stat__label">Days Active</div><div class="profile-stat__value" style="color:${color}">${totalDays}d</div></div>
-      <div class="profile-stat"><div class="profile-stat__label">HP</div><div class="profile-stat__value" style="color:${color}">${p.hp * 20}/100</div></div>
+      <div class="profile-stat"><div class="profile-stat__label">HP</div><div class="profile-stat__value" style="color:${color}">${p.hp}/3</div></div>
       <div class="profile-stat"><div class="profile-stat__label">Total XP</div><div class="profile-stat__value" style="color:${color}">${xpTotal}</div></div>
       <div class="profile-stat"><div class="profile-stat__label">Streak</div><div class="profile-stat__value" style="color:${color}">${p.streak}d</div></div>
     `;
@@ -13017,7 +13015,7 @@
     p.ghostTokens  -= 1;
     p.streak        = p.prevStreak || 0;
     p.streakLostToday = false;
-    p.hp = Math.min(5, p.hp + 1); // ghost token also restores the HP lost from missing
+    p.hp = Math.min(3, p.hp + 1); // ghost token also restores the HP lost from missing
     // Ghost Whisperer: earned when saving a streak of ≥ 7
     if ((p.prevStreak || 0) >= 7) p.ghostWhisperEarned = true;
     checkSecretTitles(p, localStorage.getItem('weebji_class'));

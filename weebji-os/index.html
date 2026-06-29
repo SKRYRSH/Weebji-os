@@ -6316,6 +6316,13 @@
 
   /* ══ FLOW: S01 → S02 ══════════════════════════ */
   const _swRestoreTab = sessionStorage.getItem('weebji_sw_restore_tab');
+  // Give the awakening MP4 a head start — new users who haven't seen it yet get
+  // preloading fired immediately so the entire splash wait time becomes buffer time.
+  if (!localStorage.getItem('weebji_seen_awakening')) {
+    const _awVid = document.getElementById('awakening-video');
+    if (_awVid) _awVid.preload = 'auto';
+  }
+
   const splashTimer = setTimeout(async () => {
     // A returning-user login is in flight (e.g. mid Google OAuth redirect) —
     // don't race it with our own routing guess. onAuthStateChange owns this case
@@ -12006,7 +12013,7 @@
       let started = false;
       const onReady = () => { if (started) return; started = true; start(); };
       video.addEventListener('canplay', onReady, { once: true });
-      setTimeout(onReady, 3000);
+      setTimeout(onReady, 8000);
     }
   }
 

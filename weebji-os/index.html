@@ -11970,18 +11970,19 @@
     const skipBtn = document.getElementById('awakening-skip-btn');
     if (!video) { onDone(); return; }
     let fired = false;
-    const done = () => {
+    const done = (markSeen = true) => {
       if (fired) return;
       fired = true;
-      localStorage.setItem('weebji_seen_awakening', '1');
+      if (markSeen) localStorage.setItem('weebji_seen_awakening', '1');
       video.pause();
       skipBtn.removeEventListener('click', done);
       video.removeEventListener('ended', done);
       onDone();
     };
+    const fail = () => done(false);
     skipBtn.addEventListener('click', done);
     video.addEventListener('ended', done, { once: true });
-    video.addEventListener('error', done, { once: true });
+    video.addEventListener('error', fail, { once: true });
     showScreen('awakening-cutscene');
     // Trigger buffering now (preload="none" saves bandwidth for returning users)
     video.preload = 'auto';
@@ -11995,8 +11996,8 @@
         if (err && err.name === 'NotAllowedError') {
           // iOS denied autoplay (no prior user gesture) — mute and retry
           video.muted = true;
-          video.play().catch(done);
-        } else { done(); }
+          video.play().catch(fail);
+        } else { fail(); }
       });
     };
     if (video.readyState >= 3) {

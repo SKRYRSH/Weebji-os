@@ -123,6 +123,27 @@
   #awakening-cutscene.active { z-index: 100001 !important; }
   #awakening-cutscene video { width: 100%; height: 100%; object-fit: cover; }
   .awakening-skip { position: absolute; right: 18px; bottom: 28px; z-index: 5; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.55); background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 9px 16px; cursor: pointer; transition: opacity 0.3s ease, background 0.2s ease; }
+
+  /* ══ PENANCE CUTSCENE ════════════════════════ */
+  #penance-cutscene { background: #000; overflow: hidden; }
+  #penance-cutscene.active { z-index: 100002 !important; }
+  .pc-shot { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.7s ease; }
+  .pc-shot.active { opacity: 1; }
+  @keyframes pc-kb-zoom-in  { from { transform: scale(1)    } to { transform: scale(1.12) } }
+  @keyframes pc-kb-zoom-out { from { transform: scale(1.12) } to { transform: scale(1)    } }
+  @keyframes pc-kb-pan-r    { from { transform: scale(1.08) translateX(-2%) } to { transform: scale(1.08) translateX(2%) } }
+  @keyframes pc-kb-pan-l    { from { transform: scale(1.08) translateX(2%)  } to { transform: scale(1.08) translateX(-2%) } }
+  .pc-shot.kb-zoom-in  { animation: pc-kb-zoom-in  3s ease forwards; }
+  .pc-shot.kb-zoom-out { animation: pc-kb-zoom-out 3s ease forwards; }
+  .pc-shot.kb-pan-r    { animation: pc-kb-pan-r    3s ease forwards; }
+  .pc-shot.kb-pan-l    { animation: pc-kb-pan-l    3s ease forwards; }
+  .pc-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.5) 100%); z-index: 2; pointer-events: none; }
+  .pc-text { position: absolute; bottom: 80px; left: 0; right: 0; z-index: 3; text-align: center; padding: 0 28px; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
+  .pc-text.visible { opacity: 1; }
+  .pc-text__line { font-family: 'Cinzel', serif; font-size: clamp(16px, 5vw, 22px); font-weight: 900; letter-spacing: 0.12em; color: #fff; text-shadow: 0 0 30px rgba(180,0,0,0.9), 0 0 60px rgba(180,0,0,0.4); line-height: 1.3; }
+  .pc-text__sub  { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: rgba(255,100,100,0.7); text-transform: uppercase; margin-top: 8px; }
+  .pc-vignette { position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.8) 100%); pointer-events: none; }
+  .pc-skip { position: absolute; right: 18px; bottom: 28px; z-index: 10; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 9px 16px; cursor: pointer; }
   .awakening-skip:active { background: rgba(255,255,255,0.12); }
 
   /* ══ SCREEN 02 — CLASS SELECT ════════════════ */
@@ -2000,6 +2021,18 @@
     <div id="awakening-cutscene" class="screen">
       <video id="awakening-video" src="assets/cutscenes/the-awakening.mp4" playsinline preload="none"></video>
       <button class="awakening-skip" id="awakening-skip-btn" type="button">Skip ›</button>
+    </div>
+
+    <!-- ══ PENANCE CUTSCENE ════════════════════ -->
+    <div id="penance-cutscene" class="screen">
+      <div class="pc-shot" id="pc-shot-1" style="background-image:url('assets/cutscenes/penance-1-fall.jpg')"></div>
+      <div class="pc-shot" id="pc-shot-2" style="background-image:url('assets/cutscenes/penance-2-judgment.jpg')"></div>
+      <div class="pc-shot" id="pc-shot-3" style="background-image:url('assets/cutscenes/penance-3-chains.jpg')"></div>
+      <div class="pc-shot" id="pc-shot-4" style="background-image:url('assets/cutscenes/penance-4-oath.jpg')"></div>
+      <div class="pc-vignette"></div>
+      <div class="pc-overlay"></div>
+      <div class="pc-text" id="pc-text"></div>
+      <button class="pc-skip" id="pc-skip-btn" type="button">Skip ›</button>
     </div>
 
     <!-- ══ S02: CLASS SELECT ════════════════════ -->
@@ -13061,7 +13094,7 @@
     p.streakLostToday = false;
     saveProgress(p);
     document.getElementById('ghost-intervention').classList.remove('active');
-    triggerPenanceProtocol(p);
+    playPenanceCutscene(() => triggerPenanceProtocol(p));
   });
 
   /* ══ SUMMON A HUNTER — referral system ══════
@@ -13277,6 +13310,46 @@
     }
   }
 
+  /* ══ PENANCE CUTSCENE ════════════════════════ */
+  function playPenanceCutscene(onDone) {
+    const SHOTS = [
+      { id:'pc-shot-1', kb:'kb-zoom-in',  line:'THE SYSTEM HAS JUDGED YOU',   sub:'your streak is forfeit' },
+      { id:'pc-shot-2', kb:'kb-zoom-out', line:'YOU CHOSE TO RETREAT',        sub:'the void remembers' },
+      { id:'pc-shot-3', kb:'kb-pan-l',    line:'THE CHAINS ARE EARNED',       sub:'failure has a price' },
+      { id:'pc-shot-4', kb:'kb-zoom-in',  line:'PROVE YOURSELF OR STAY FALLEN', sub:'type your pledge to return' },
+    ];
+    const DURATION = 2800;
+    let fired = false;
+    const done = () => { if (fired) return; fired = true; document.getElementById('pc-skip-btn').removeEventListener('click', done); _pcCleanup(); onDone(); };
+    const _pcCleanup = () => {
+      SHOTS.forEach(s => { const el = document.getElementById(s.id); if (el) { el.className = 'pc-shot'; } });
+      const txt = document.getElementById('pc-text'); if (txt) { txt.className = 'pc-text'; txt.innerHTML = ''; }
+      if (document.getElementById('penance-cutscene')?.classList.contains('active')) showScreen('dashboard');
+    };
+    document.getElementById('pc-skip-btn').addEventListener('click', done);
+    showScreen('penance-cutscene');
+    Sound.play('appOpen');
+    let idx = 0;
+    const showShot = () => {
+      if (fired) return;
+      const prev = idx > 0 ? document.getElementById(SHOTS[idx-1].id) : null;
+      if (prev) { prev.classList.remove('active', SHOTS[idx-1].kb); }
+      if (idx >= SHOTS.length) { setTimeout(done, 400); return; }
+      const shot = SHOTS[idx];
+      const el = document.getElementById(shot.id);
+      const txt = document.getElementById('pc-text');
+      el.classList.add('active');
+      setTimeout(() => { el.classList.add(shot.kb); }, 20);
+      txt.className = 'pc-text';
+      txt.innerHTML = `<div class="pc-text__line">${shot.line}</div><div class="pc-text__sub">${shot.sub}</div>`;
+      setTimeout(() => txt.classList.add('visible'), 300);
+      setTimeout(() => txt.classList.remove('visible'), DURATION - 500);
+      idx++;
+      setTimeout(showShot, DURATION);
+    };
+    showShot();
+  }
+
   /* ══ PENANCE PROTOCOL ════════════════════════ */
   function triggerPenanceProtocol(p) {
     if (localStorage.getItem('weebji_penance_mode') === '0') return;
@@ -13343,7 +13416,7 @@
         localStorage.removeItem('weebji_penance_active');
         return;
       }
-      triggerPenanceProtocol(p);
+      playPenanceCutscene(() => triggerPenanceProtocol(p));
     }
   }
 

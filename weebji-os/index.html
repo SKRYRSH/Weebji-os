@@ -4801,7 +4801,7 @@
   ];
 
   const BossSiege = (() => {
-    const BOSS_HP_MAX = 3;
+    const BOSS_HP_MAX = 300;
     const STORAGE_KEY = 'weebji_boss_siege';
 
     function _getWeekKey() {
@@ -4827,6 +4827,11 @@
     function init() {
       const currentWeek = _getWeekKey();
       const stored = _load();
+      // Migrate old state where boss was accidentally set with player HP scale (max 3)
+      if (stored && stored.yearWeek === currentWeek && stored.hp <= 3 && !stored.defeated) {
+        _save({ yearWeek: currentWeek, hp: BOSS_HP_MAX, defeated: false, dmgThisWeek: 0 });
+        return;
+      }
       if (stored && stored.yearWeek !== currentWeek) {
         // Week rolled over — boss survived = penance
         if (!stored.defeated && stored.hp > 0) {
@@ -4894,7 +4899,7 @@
       if (btn) btn.onclick = () => { ov.classList.remove('active'); renderDungeonCard(); };
     }
 
-    return { init, getState, dealDamage };
+    return { init, getState, dealDamage, HP_MAX: BOSS_HP_MAX };
   })();
 
   function getDungeonWeekInfo() {
@@ -4974,8 +4979,8 @@
       </div>`;
       return;
     }
-    const hpPct = Math.round((state.hp / 3) * 100);
-    const hpColor = state.hp <= 1 ? '#FF2200' : state.hp <= 2 ? '#FF6600' : '#FF4400';
+    const hpPct = Math.round((state.hp / BossSiege.HP_MAX) * 100);
+    const hpColor = hpPct <= 20 ? '#FF2200' : hpPct <= 50 ? '#FF6600' : '#FF4400';
     el.innerHTML = `<div class="boss-siege-card">
       <div class="boss-siege__eyebrow">⚔ WEEKLY BOSS SIEGE — FREE FOR ALL</div>
       <div class="boss-siege__name">${boss.boss}</div>
@@ -4988,11 +4993,11 @@
         </div>
       </div>
       <div class="boss-siege__hp-track">
-        <div class="boss-siege__hp-label"><span>BOSS HP</span><span style="color:${hpColor}">${state.hp} / 3</span></div>
+        <div class="boss-siege__hp-label"><span>BOSS HP</span><span style="color:${hpColor}">${state.hp} / ${BossSiege.HP_MAX}</span></div>
         <div class="boss-siege__hp-bar"><div class="boss-siege__hp-fill" style="width:${hpPct}%;background:linear-gradient(90deg,${hpColor},${hpColor}BB)"></div></div>
       </div>
       <div class="boss-siege__task-hint">Complete tasks to deal damage:<br>Workout / MM Focus → −15 · Quests / Monk Ritual → −20 · Perfect Set → −10 bonus</div>
-      ${state.hp <= 1 ? '<div class="boss-siege__penance-warn">⚠ One more hit defeats the boss. Or wait and face PENANCE Monday.</div>' : ''}
+      ${hpPct <= 20 ? '<div class="boss-siege__penance-warn">⚠ Boss nearly dead. Keep going or face PENANCE Monday.</div>' : ''}
       <div class="boss-siege__timer">${timerTxt}</div>
     </div>`;
     // One-time boss taunt per session

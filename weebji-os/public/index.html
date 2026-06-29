@@ -124,6 +124,25 @@
   #awakening-cutscene video { width: 100%; height: 100%; object-fit: cover; }
   .awakening-skip { position: absolute; right: 18px; bottom: 28px; z-index: 5; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.55); background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 9px 16px; cursor: pointer; transition: opacity 0.3s ease, background 0.2s ease; }
 
+  /* ══ BOSS DEFEAT CUTSCENE ═══════════════════ */
+  #boss-defeat-cutscene { background: #000; overflow: hidden; }
+  #boss-defeat-cutscene.active { z-index: 100002 !important; }
+  .bdc-shot { position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transition:opacity 0.7s ease; }
+  .bdc-shot.active { opacity:1; }
+  @keyframes bdc-kb-zoom-in  { from{transform:scale(1)}    to{transform:scale(1.12)} }
+  @keyframes bdc-kb-zoom-out { from{transform:scale(1.12)} to{transform:scale(1)}    }
+  @keyframes bdc-kb-pan-up   { from{transform:scale(1.08) translateY(2%)} to{transform:scale(1.08) translateY(-2%)} }
+  .bdc-shot.kb-zoom-in  { animation:bdc-kb-zoom-in  3s ease forwards; }
+  .bdc-shot.kb-zoom-out { animation:bdc-kb-zoom-out 3s ease forwards; }
+  .bdc-shot.kb-pan-up   { animation:bdc-kb-pan-up   3s ease forwards; }
+  .bdc-vignette { position:absolute; inset:0; z-index:1; background:radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.75) 100%); pointer-events:none; }
+  .bdc-overlay  { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.4) 100%); z-index:2; pointer-events:none; }
+  .bdc-text { position:absolute; bottom:80px; left:0; right:0; z-index:3; text-align:center; padding:0 28px; opacity:0; transition:opacity 0.5s ease; pointer-events:none; }
+  .bdc-text.visible { opacity:1; }
+  .bdc-text__line { font-family:'Cinzel',serif; font-size:clamp(16px,5vw,22px); font-weight:900; letter-spacing:0.12em; color:#FFD700; text-shadow:0 0 30px rgba(255,200,0,0.9), 0 0 60px rgba(255,200,0,0.4); line-height:1.3; }
+  .bdc-text__sub  { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.3em; color:rgba(255,215,0,0.65); text-transform:uppercase; margin-top:8px; }
+  .bdc-skip { position:absolute; right:18px; bottom:28px; z-index:10; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,0.4); background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.15); border-radius:20px; padding:9px 16px; cursor:pointer; }
+
   /* ══ PENANCE CUTSCENE ════════════════════════ */
   #penance-cutscene { background: #000; overflow: hidden; }
   #penance-cutscene.active { z-index: 100002 !important; }
@@ -2021,6 +2040,18 @@
     <div id="awakening-cutscene" class="screen">
       <video id="awakening-video" src="assets/cutscenes/the-awakening.mp4" playsinline preload="none"></video>
       <button class="awakening-skip" id="awakening-skip-btn" type="button">Skip ›</button>
+    </div>
+
+    <!-- ══ BOSS DEFEAT CUTSCENE ══════════════════ -->
+    <div id="boss-defeat-cutscene" class="screen">
+      <div class="bdc-shot" id="bdc-shot-1" style="background-image:url('assets/cutscenes/defeat-1-strike.jpg')"></div>
+      <div class="bdc-shot" id="bdc-shot-2" style="background-image:url('assets/cutscenes/defeat-2-fall.jpg')"></div>
+      <div class="bdc-shot" id="bdc-shot-3" style="background-image:url('assets/cutscenes/defeat-3-reward.jpg')"></div>
+      <div class="bdc-shot" id="bdc-shot-4" style="background-image:url('assets/cutscenes/defeat-4-rise.jpg')"></div>
+      <div class="bdc-vignette"></div>
+      <div class="bdc-overlay"></div>
+      <div class="bdc-text" id="bdc-text"></div>
+      <button class="bdc-skip" id="bdc-skip-btn" type="button">Skip ›</button>
     </div>
 
     <!-- ══ PENANCE CUTSCENE ════════════════════ -->
@@ -4903,8 +4934,7 @@
         updateXPBar(p);
         renderHearts(p.hp);
         if (leveled) triggerLevelUp(p.level);
-        Sound.play('levelUp');
-        _showDefeatOverlay(_bossForWeek(state.yearWeek));
+        playBossDefeatCutscene(() => _showDefeatOverlay(_bossForWeek(state.yearWeek)));
       }
     }
 
@@ -13308,6 +13338,45 @@
         rivalEl.classList.remove('hidden');
       }
     }
+  }
+
+  /* ══ BOSS DEFEAT CUTSCENE ═══════════════════ */
+  function playBossDefeatCutscene(onDone) {
+    const SHOTS = [
+      { id:'bdc-shot-1', kb:'kb-zoom-in',  line:'BOSS ELIMINATED',          sub:'the system has witnessed' },
+      { id:'bdc-shot-2', kb:'kb-zoom-out', line:'THE MIGHTY HAVE FALLEN',   sub:'you stood when others fled' },
+      { id:'bdc-shot-3', kb:'kb-pan-up',   line:'THE SYSTEM REWARDS YOU',   sub:'+300 xp · vitality restored' },
+      { id:'bdc-shot-4', kb:'kb-zoom-in',  line:'RISE, HUNTER',             sub:'the hunt continues' },
+    ];
+    const DURATION = 2800;
+    let fired = false;
+    const done = () => { if (fired) return; fired = true; document.getElementById('bdc-skip-btn').removeEventListener('click', done); _bdcCleanup(); onDone(); };
+    const _bdcCleanup = () => {
+      SHOTS.forEach(s => { const el = document.getElementById(s.id); if (el) el.className = 'bdc-shot'; });
+      const txt = document.getElementById('bdc-text'); if (txt) { txt.className = 'bdc-text'; txt.innerHTML = ''; }
+      if (document.getElementById('boss-defeat-cutscene')?.classList.contains('active')) showScreen('dashboard');
+    };
+    document.getElementById('bdc-skip-btn').addEventListener('click', done);
+    showScreen('boss-defeat-cutscene');
+    Sound.play('levelUp');
+    let idx = 0;
+    const showShot = () => {
+      if (fired) return;
+      if (idx > 0) { const prev = document.getElementById(SHOTS[idx-1].id); if (prev) prev.classList.remove('active', SHOTS[idx-1].kb); }
+      if (idx >= SHOTS.length) { setTimeout(done, 400); return; }
+      const shot = SHOTS[idx];
+      const el = document.getElementById(shot.id);
+      const txt = document.getElementById('bdc-text');
+      el.classList.add('active');
+      setTimeout(() => el.classList.add(shot.kb), 20);
+      txt.className = 'bdc-text';
+      txt.innerHTML = `<div class="bdc-text__line">${shot.line}</div><div class="bdc-text__sub">${shot.sub}</div>`;
+      setTimeout(() => txt.classList.add('visible'), 300);
+      setTimeout(() => txt.classList.remove('visible'), DURATION - 500);
+      idx++;
+      setTimeout(showShot, DURATION);
+    };
+    showShot();
   }
 
   /* ══ PENANCE CUTSCENE ════════════════════════ */

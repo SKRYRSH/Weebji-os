@@ -14198,11 +14198,11 @@ ${particles}
     const label = localStorage.getItem('weebji_label');
     const name  = localStorage.getItem('weebji_name');
     if (cls && color && label && name) {
-      // Session exists — rehydrate State, let splash play, go to dashboard
+      // Session exists — rehydrate State, brief splash, go to dashboard
       clearTimeout(splashTimer);
       State.selectedClass = cls; State.selectedColor = color;
       State.selectedLabel = label; State.playerName   = name;
-      setTimeout(() => playInkWash(() => enterDashboard()), 3000);
+      setTimeout(() => playInkWash(() => enterDashboard()), 800);
     }
     // No session → splashTimer fires normally at 3s → class select
   })();

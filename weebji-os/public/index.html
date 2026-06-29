@@ -635,27 +635,30 @@
     background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.72) 100%);
   }
   .luc-text {
-    position: absolute; bottom: 26%; left: 0; right: 0; z-index: 3;
+    position: absolute; bottom: 22%; left: 0; right: 0; z-index: 3;
     text-align: center; pointer-events: none;
     opacity: 0; transition: opacity 0.9s ease;
+    padding: 24px 20px 20px;
+    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.65) 70%, transparent);
   }
   .luc-text.visible { opacity: 1; }
   .luc-eyebrow {
-    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
     letter-spacing: 0.38em; text-transform: uppercase;
-    color: rgba(255,255,255,0.45); margin-bottom: 10px;
+    color: rgba(255,255,255,0.55); margin-bottom: 10px;
   }
   .luc-level-num {
     font-family: 'Cinzel', serif; font-weight: 700;
-    font-size: clamp(48px, 15vw, 72px); letter-spacing: 0.05em;
+    font-size: clamp(58px, 18vw, 88px); letter-spacing: 0.05em;
     color: #FFD700;
-    text-shadow: 0 0 40px rgba(255,215,0,0.9), 0 0 90px rgba(255,215,0,0.4);
-    margin: 0 0 6px; line-height: 1;
+    text-shadow: 0 0 20px rgba(0,0,0,0.9), 0 0 50px rgba(255,215,0,1), 0 0 100px rgba(255,215,0,0.5);
+    margin: 0 0 8px; line-height: 1;
   }
   .luc-achieved {
-    font-family: 'Cinzel', serif; font-size: 12px;
-    letter-spacing: 0.42em; text-transform: uppercase;
-    color: rgba(255,215,0,0.7);
+    font-family: 'Cinzel', serif; font-size: 14px;
+    letter-spacing: 0.45em; text-transform: uppercase;
+    color: rgba(255,215,0,0.85);
+    text-shadow: 0 0 16px rgba(0,0,0,0.8);
   }
   .luc-skip-btn {
     position: absolute; top: max(20px, env(safe-area-inset-top, 20px)); right: 20px; z-index: 10;
@@ -6397,6 +6400,10 @@
     if (_awVid) _awVid.preload = 'auto';
   }
 
+  // Returning users skip the full 3s splash — go straight to dashboard after a minimal beat
+  const _isReturningUser = !!localStorage.getItem('weebji_class');
+  const _splashDelay = _swRestoreTab ? 400 : (_isReturningUser ? 600 : 3000);
+
   const splashTimer = setTimeout(async () => {
     // A returning-user login is in flight (e.g. mid Google OAuth redirect) —
     // don't race it with our own routing guess. onAuthStateChange owns this case
@@ -6451,7 +6458,7 @@
         }));
       }
     }
-  }, _swRestoreTab ? 400 : 3000);
+  }, _splashDelay);
 
   /* ══ FLOW: S02 → S03 ══════════════════════════ */
   document.querySelectorAll('.class-card').forEach(card => {
@@ -8574,7 +8581,7 @@
         if (_cnv) {
           const _col = localStorage.getItem('weebji_color') || '#00F5FF';
           const _cx = _cnv.offsetWidth / 2, _cy = _cnv.offsetHeight * 0.45;
-          setTimeout(() => { CinCanvas.burst(_cx, _cy, 40, _col, 12); CinCanvas.ringBurst(_cx, _cy, _col, 2); }, 80);
+          setTimeout(() => { CinCanvas.burst(_cx, _cy, 40, _col, 12); }, 80);
         }
         const bonusEl = document.getElementById('forge-bonus');
         bonusEl.classList.remove('hidden');
@@ -8766,14 +8773,14 @@
       WakeLock.release();
       if (typeof TheVoid !== 'undefined') TheVoid.exit();
       MusicEngine.play('ambient');
-      Sound.play('levelup');
+      Sound.play('workoutComplete');
       triggerFlash('flash-white', '#FFFFFF', null);
-      shakeApp(0.8);
+      shakeApp(0.5);
       const _col2 = localStorage.getItem('weebji_color') || '#E63946';
       const _cnv2 = document.getElementById('cinematic-canvas');
       if (_cnv2) {
         const _cx2 = _cnv2.offsetWidth / 2, _cy2 = _cnv2.offsetHeight * 0.4;
-        setTimeout(() => { CinCanvas.burst(_cx2, _cy2, 50, _col2, 14); CinCanvas.ringBurst(_cx2, _cy2, _col2, 2); }, 100);
+        setTimeout(() => { CinCanvas.burst(_cx2, _cy2, 50, _col2, 14); }, 100);
       }
       const cfg = MM_MODES[this.mode];
       const p = loadProgress();
@@ -10625,14 +10632,25 @@
     };
     skipBtn.addEventListener('click', done);
 
+    // Opening pulse
+    haptic([30]);
+
     shots[0].classList.add('active');
-    t1 = setTimeout(() => { shots[0].classList.remove('active'); shots[1].classList.add('active'); }, 2200);
+    t1 = setTimeout(() => {
+      shots[0].classList.remove('active'); shots[1].classList.add('active');
+      haptic([50]);
+    }, 2200);
     t2 = setTimeout(() => { shots[1].classList.remove('active'); shots[2].classList.add('active'); }, 4400);
     t3 = setTimeout(() => {
       textEl.classList.add('visible');
       if (typeof glitchReveal === 'function') glitchReveal(numEl, `LEVEL ${newLevel}`, 480);
+      Sound.play('levelup');
+      haptic([80, 40, 80, 40, 200]);
     }, 5000);
-    t4 = setTimeout(() => { shots[2].classList.remove('active'); shots[3].classList.add('active'); }, 6600);
+    t4 = setTimeout(() => {
+      shots[2].classList.remove('active'); shots[3].classList.add('active');
+      haptic([60]);
+    }, 6600);
     t5 = setTimeout(done, 9800);
   }
 

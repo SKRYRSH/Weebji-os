@@ -2779,15 +2779,14 @@
       const c = SupabaseSync._client();
       if (!c) return;
       try {
-        await c.from('push_subscriptions').delete().eq('user_id', _userId);
-        const { error } = await c.from('push_subscriptions').insert({
+        const { error } = await c.from('push_subscriptions').upsert({
           user_id:    _userId,
           endpoint:   j.endpoint,
           p256dh:     j.keys?.p256dh,
           auth:       j.keys?.auth,
           timezone:   Intl.DateTimeFormat().resolvedOptions().timeZone,
           updated_at: new Date().toISOString(),
-        });
+        }, { onConflict: 'endpoint' });
         if (error && typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: error.message });
       } catch(e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: e?.message });

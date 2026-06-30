@@ -4866,6 +4866,7 @@
 
   const BossSiege = (() => {
     const BOSS_HP_MAX = 300;
+    const DAILY_DMG_CAP = 100;
     const STORAGE_KEY = 'weebji_boss_siege';
 
     function _getWeekKey() {
@@ -4917,11 +4918,17 @@
     function dealDamage(amount) {
       const state = getState();
       if (state.defeated || state.hp <= 0) return;
+      const today = new Date().toDateString();
+      if (state.dmgDate !== today) { state.dmgToday = 0; state.dmgDate = today; }
+      const remaining = Math.max(0, DAILY_DMG_CAP - (state.dmgToday || 0));
+      const actual = Math.min(amount, remaining);
+      if (actual <= 0) { _showDamageFloat(0, 'DAILY MAX'); return; }
       const prevHp = state.hp;
-      state.hp = Math.max(0, state.hp - amount);
-      state.dmgThisWeek = (state.dmgThisWeek || 0) + amount;
+      state.hp = Math.max(0, state.hp - actual);
+      state.dmgToday = (state.dmgToday || 0) + actual;
+      state.dmgThisWeek = (state.dmgThisWeek || 0) + actual;
       _save(state);
-      _showDamageFloat(amount);
+      _showDamageFloat(actual);
       renderDungeonCard();
       if (prevHp > 0 && state.hp <= 0) {
         state.defeated = true;
@@ -4938,10 +4945,11 @@
       }
     }
 
-    function _showDamageFloat(amount) {
+    function _showDamageFloat(amount, label) {
       const el = document.createElement('div');
       el.className = 'boss-dmg-float';
-      el.textContent = `-${amount} DMG`;
+      el.textContent = label ? label : `-${amount} DMG`;
+      if (label) el.style.color = '#FFD700';
       const card = document.getElementById('dungeon-card');
       const rect = card ? card.getBoundingClientRect() : { top: 200, left: window.innerWidth / 2, width: 200 };
       el.style.top = (rect.top + 50 + Math.random() * 30) + 'px';

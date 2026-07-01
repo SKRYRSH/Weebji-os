@@ -23,6 +23,8 @@ const NOTIF: Record<string, (e: Record<string, unknown>) => { title: string; bod
   streak_365:         () => ({ title: '👑 ONE FULL YEAR', body: '365 days. The System has never met your equal. Legend confirmed.' }),
 };
 
+const PUSH_OPTS = { TTL: 86400, urgency: 'high' as const };
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -55,7 +57,7 @@ Deno.serve(async (req) => {
     let sent = 0, failed = 0;
     for (const sub of subs) {
       try {
-        await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload);
+        await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload, PUSH_OPTS);
         sent++;
       } catch (e: unknown) {
         failed++;

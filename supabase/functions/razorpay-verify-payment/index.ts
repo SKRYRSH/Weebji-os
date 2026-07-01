@@ -54,6 +54,18 @@ Deno.serve(async (req) => {
 
     // ghost plans: never touch user_plans (would overwrite an existing plus subscription)
     if (!isGhostPlan) {
+      const durationMs = plan === 'annual' ? 365 * 86400000 : 30 * 86400000;
+
+      // extend from existing expiry if still active (renewal), else from now
+      const { data: existing } = await serviceClient
+        .from('user_plans')
+        .select('expires_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      const existingExpiry = existing?.expires_at ? new Date(existing.expires_at) : null;
+      const base = existingExpiry && existingExpiry > new Date() ? existingExpiry : new Date();
+      const expiresAt = new Date(base.getTime() + durationMs).toISOString();
+
       const { error: insertErr } = await serviceClient.from('user_plans').upsert({
         user_id:    user.id,
         email:      user.email,
@@ -61,6 +73,7 @@ Deno.serve(async (req) => {
         status:     'active',
         order_id:   razorpay_order_id,
         payment_id: razorpay_payment_id,
+        expires_at: expiresAt,
       }, { onConflict: 'user_id' });
       if (insertErr) throw insertErr;
     }

@@ -34,6 +34,10 @@ const COMEBACK_LOCAL_HOUR = 17;
 const MORNING_LOCAL_HOUR = 9;
 const STREAK_LOCAL_HOUR  = 20;
 
+// Same Doze-deferral fix send-push already has — without this, Android can sit on
+// the push for hours and it lands well after the "haven't trained today" window meant it for.
+const PUSH_OPTS = { TTL: 86400, urgency: 'high' as const };
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -162,6 +166,7 @@ Deno.serve(async (req) => {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           payload,
+          PUSH_OPTS,
         );
         sent++;
       } catch (e: unknown) {

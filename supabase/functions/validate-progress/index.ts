@@ -6,7 +6,7 @@ const CORS = {
 };
 
 const MAX_XP_PER_PUSH  = 600;  // generous — full study session worth
-const MAX_LEVEL        = 100;
+const MAX_LEVEL        = 500; // free users can't prestige — levels >100 are legitimate
 const MAX_STREAK_DAYS  = 3650; // 10 years
 const MAX_GHOST_TOKENS = 60;
 const MAX_GHOST_REFILL = 5;    // monthly WEEBJI+ refill
@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
     // Sanitise all incoming values
     const level       = clamp(parseInt(inc.level)        || 1, 1, MAX_LEVEL);
-    const xp          = clamp(parseInt(inc.xp)           || 0, 0, 999999);
+    const xp          = clamp(parseInt(inc.xp)           || 0, 0, 500000);
     const hp          = clamp(parseInt(inc.hp)           || 3, 0, 5);
     const streak      = clamp(parseInt(inc.streak)       || 0, 0, MAX_STREAK_DAYS);
     const bestStreak  = clamp(parseInt(inc.best_streak)  || 0, 0, MAX_STREAK_DAYS);
@@ -142,8 +142,9 @@ Deno.serve(async (req) => {
       ? new Intl.DateTimeFormat('en-CA', { timeZone: userTz }).format(new Date())
       : new Date().toISOString().slice(0, 10);
 
-    // Write validated progress
-    const { error: writeErr } = await supabase.from('progress').upsert({
+    // Service role — values are already validated above; the user-JWT client
+    // can be vetoed by RLS caps and 500-loop forever (level>100 outage, Jun 2026)
+    const { error: writeErr } = await sbAdmin.from('progress').upsert({
       user_id:            user.id,
       level:              vLevel,
       xp:                 vXp,

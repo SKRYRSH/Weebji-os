@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v357 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v357';
+// ── WEEBJI OS — Service Worker v358 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v358';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
 
@@ -59,19 +59,25 @@ self.addEventListener('fetch', e => {
     || url.pathname.endsWith('.html');
 
   if (isHTML) {
-    // Network-first for HTML — always serve fresh app code when online
+    // Stale-while-revalidate for HTML — serve the cached shell instantly (Duolingo-style
+    // app-shell load), refresh the cache in the background for next visit. Safe because
+    // CACHE_NAME is bumped every deploy and old caches are wiped on activate, so a fresh
+    // network fetch always happens at least once per version.
     // NOTE: Cannot use new Request(navigate-mode-request, ...) — throws TypeError.
-    // Fetch by URL string with cache-busting headers instead.
+    // Fetch by URL string instead.
     e.respondWith(
-      fetch(url.href, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } })
-        .then(res => {
-          if (res.ok) {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-          }
-          return res;
-        })
-        .catch(() => caches.match(e.request).then(r => r || caches.match(BASE)))
+      caches.match(e.request).then(cached => {
+        const network = fetch(url.href, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } })
+          .then(res => {
+            if (res.ok) {
+              const clone = res.clone();
+              caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+            }
+            return res;
+          })
+          .catch(() => cached || caches.match(BASE));
+        return cached || network;
+      })
     );
     return;
   }

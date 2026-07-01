@@ -123,7 +123,24 @@ Deno.serve(async (req) => {
       || vStreak > (cur?.streak || 0)
       || vWorkout > (cur?.total_workout_days || 0)
       || vStudy > (cur?.total_study_mins || 0);
-    const todayDate = new Date().toISOString().slice(0, 10);
+    // Must match scheduled-push's localToday(tz) exactly, or a user training near
+    // midnight UTC gets last_trained_date stamped a day behind their local calendar
+    // day and still gets a false "you haven't trained today" streak_reminder push.
+    let userTz: string | null = null;
+    if (didTrain) {
+      try {
+        const { data: subRow } = await sbAdmin
+          .from('push_subscriptions')
+          .select('timezone')
+          .eq('user_id', user.id)
+          .limit(1)
+          .maybeSingle();
+        userTz = subRow?.timezone ?? null;
+      } catch { /* no subscription yet — fall back to UTC */ }
+    }
+    const todayDate = userTz
+      ? new Intl.DateTimeFormat('en-CA', { timeZone: userTz }).format(new Date())
+      : new Date().toISOString().slice(0, 10);
 
     // Write validated progress
     const { error: writeErr } = await supabase.from('progress').upsert({

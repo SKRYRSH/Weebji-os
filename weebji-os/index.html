@@ -151,6 +151,7 @@
   #chapter-cutscene .bdc-text__sub  { color:rgba(125,249,255,0.55); }
   .ch-scanlines { position:absolute; inset:0; z-index:2; pointer-events:none; opacity:0.3; background:repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,0.3) 2px 4px); }
   .ch-glitch { animation:kf-ch-glitch 0.72s steps(2,end) 3; }
+  .ch-leak { color:#FF3344 !important; text-shadow:0 0 26px rgba(255,51,68,0.85), 0 0 70px rgba(255,51,68,0.35) !important; }
   @keyframes kf-ch-glitch {
     0%,100% { transform:translateX(0); text-shadow:0 0 26px rgba(0,245,255,0.8); clip-path:none; }
     20% { transform:translateX(-4px) skewX(-4deg); text-shadow:-3px 0 #FF3344, 3px 0 #00F5FF; clip-path:inset(12% 0 34% 0); }
@@ -2100,7 +2101,7 @@
       <button class="bdc-skip" id="ch-skip-btn" type="button">Skip ›</button>
       <div class="ch-endcard" id="ch-endcard">
         <div class="ch-endcard__line">NEXT TRANSMISSION: TOMORROW.</div>
-        <div class="ch-endcard__sub">the system will find you</div>
+        <div class="ch-endcard__sub">you saw nothing.</div>
         <div class="ch-endcard__tap">tap to continue</div>
       </div>
     </div>
@@ -13524,9 +13525,9 @@
     { id: 2, title: 'SIGNAL DECAY',  unlockText: 'DAY 2',
       shots: [
         { id:'ch-shot-1', kb:'kb-zoom-in',  line:'INCOMING TRANSMISSION',            sub:'routine synchronization · protocol day 2' },
-        { id:'ch-shot-2', kb:'kb-zoom-out', line:'YOU RETURNED',                     sub:'the system logs your persistence' },
-        { id:'ch-shot-3', kb:'kb-pan-up',   line:'CONTINUE, HUNTER. YOUR P–ATH IS S—', sub:'▓ signal integrity 99.7% ▓', glitch:true },
-        { id:'ch-shot-4', kb:'kb-zoom-in',  line:'YOUR PATH IS STABLE.',             sub:'disregard prior artifact · all systems nominal' },
+        { id:'ch-shot-2', kb:'kb-zoom-out', line:'THE SYSTEM ACKNOWLEDGES YOUR RETURN', sub:'few return. fewer remain.' },
+        { id:'ch-shot-3', kb:'kb-pan-up',   line:'YOUR PATH IS PROCEEDING AS DESIG—', sub:'▓ signal integrity 99.7% ▓', glitch:true, leak:'THE SIGNAL IS DYING' },
+        { id:'ch-shot-4', kb:'kb-zoom-in',  line:'DISREGARD PRIOR ARTIFACT.',        sub:'transmission integrity: absolute' },
       ] },
     { id: 3, title: 'THE OTHERS',          unlockText: 'DAY 3' },
     { id: 4, title: 'WHAT THE VOID TAKES', unlockText: 'DAY 5' },
@@ -13576,10 +13577,18 @@
       setTimeout(() => txt.classList.add('visible'), 300);
       if (shot.glitch) {
         setTimeout(() => {
-          txt.querySelector('.bdc-text__line')?.classList.add('ch-glitch');
+          const lineEl = txt.querySelector('.bdc-text__line');
+          lineEl?.classList.add('ch-glitch');
           scr.classList.add('ch-glitching');
           haptic([30, 40, 30, 40, 80]);
-          setTimeout(() => scr.classList.remove('ch-glitching'), 900);
+          // The leak: for one broken moment, something else speaks through the
+          // System's sentence — then it's gone, as if it was never there.
+          if (shot.leak && lineEl) {
+            const original = shot.line;
+            setTimeout(() => { lineEl.textContent = shot.leak; lineEl.classList.add('ch-leak'); }, 380);
+            setTimeout(() => { lineEl.textContent = original; lineEl.classList.remove('ch-leak'); }, 820);
+          }
+          setTimeout(() => scr.classList.remove('ch-glitching'), 1100);
         }, 800);
       }
       setTimeout(() => txt.classList.remove('visible'), DURATION - 500);

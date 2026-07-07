@@ -19,7 +19,31 @@ const NOTIF: Record<string, { title: string; body: string }> = {
   week_close:         { title: '⚠ WEEK CLOSES TONIGHT',   body: "Sunday ends in hours. Don't let this week die without a session." },
   streak5_trial_ending: { title: '⏳ YOUR FREE TRIAL IS ENDING', body: 'Your 7-day WEEBJI+ trial ends in 2 days. Subscribe now so you never lose what you unlocked.' },
   streak5_trial_ended:  { title: '◆ YOUR FREE TRIAL HAS ENDED', body: "WEEBJI+ access has reverted to free tier. You know what you had — now go get it back." },
+  boss_taunt:           { title: '⚔ THE BOSS TAUNTS YOU',       body: 'No damage dealt today. The siege will not win itself.' },
 };
+
+// Weekly siege boss roster — MUST mirror DUNGEONS order + week math in index.html
+// (BossSiege._getWeekKey / _bossForWeek) or the taunt names the wrong boss.
+const BOSSES = [
+  'THE IRON WARDEN', 'THE VOID ARCHITECT', 'THE HOLLOW KING', 'THE SILENT SOVEREIGN',
+  'THE CRIMSON BEAST', 'THE OBSIDIAN MONK', 'THE PLAGUE DOCTOR', 'THE ASHEN TITAN',
+  'THE FRACTURED MIRROR', 'THE ETERNAL HUNTER',
+];
+const TAUNTS = [
+  'Midday, and not a scratch on me. I was told you were dangerous.',
+  'You have dealt no damage today. I would mock you, but silence says it better.',
+  'The walls hold. The hunter hides. Come test me.',
+  'Every hour you wait, I stand taller. Strike before dusk.',
+  'Your siege has gone quiet. Shall I tell the leaderboard you surrendered?',
+];
+const BOSS_TAUNT_LOCAL_HOUR = 13;
+
+function bossThisWeek(): string {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const weekNum = Math.ceil(((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
+  return BOSSES[(weekNum - 1) % BOSSES.length];
+}
 
 // Re-engagement bands: comeback_Nd targets users whose last sync is N..N+1 days old.
 // Cron fires hourly; we only push band users whose LOCAL hour is 17 (5pm their evening,
@@ -79,7 +103,7 @@ Deno.serve(async (req) => {
     let userIds: string[] = [];
     let streakMap = new Map<string, number>();
 
-    if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check' || type === 'daily_complete') {
+    if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check' || type === 'daily_complete' || type === 'boss_taunt') {
       const { data: subs } = await sb.from('push_subscriptions').select('user_id, timezone');
       const allIds = (subs || []).map(r => r.user_id);
       if (allIds.length) {
@@ -95,6 +119,9 @@ Deno.serve(async (req) => {
           if (trainedToday) return false;
           if (type === 'morning_activation') return localHour(tz) === MORNING_LOCAL_HOUR;
           if (type === 'streak_reminder')    return localHour(tz) === STREAK_LOCAL_HOUR;
+          // Boss damage only comes from checks, so "untrained today" ≈ "hasn't
+          // struck the boss today" — the server can't see localStorage boss HP.
+          if (type === 'boss_taunt')         return localHour(tz) === BOSS_TAUNT_LOCAL_HOUR;
           return true;
         });
       }
@@ -146,7 +173,11 @@ Deno.serve(async (req) => {
 
     let sent = 0, failed = 0;
     for (const sub of (subs || [])) {
-      let pBody = body;
+      let pBody = body, pTitle = title;
+      if (type === 'boss_taunt') {
+        pTitle = `⚔ ${bossThisWeek()} TAUNTS YOU`;
+        pBody  = TAUNTS[Math.floor(Math.random() * TAUNTS.length)];
+      }
       if (type === 'daily_complete') {
         const streak = streakMap.get(sub.user_id) || 0;
         pBody = streak > 0
@@ -161,7 +192,7 @@ Deno.serve(async (req) => {
         const streak = streakMap.get(sub.user_id) || 0;
         if (streak === 1) pBody = 'DAY 1 STREAK ON THE LINE. One day built. Don\'t let it die tonight — train before midnight.';
       }
-      const payload = JSON.stringify({ type, title, body: pBody });
+      const payload = JSON.stringify({ type, title: pTitle, body: pBody });
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },

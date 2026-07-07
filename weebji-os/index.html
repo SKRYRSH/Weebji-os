@@ -13604,6 +13604,11 @@
     } catch(_) {}
   }
 
+  // Safety net: the fast-resume boot path (v358 instant app-shell) can skip the
+  // _launchDashboard chain where checkChapterOnBoot lives — a day-2 user must
+  // never miss the appointment. Idempotent (seen-flag + penance guards inside).
+  setTimeout(() => { try { checkChapterOnBoot(); } catch(_) {} }, 5000);
+
   function renderTransmissions() {
     const host = document.getElementById('profile-transmissions');
     if (!host) return;

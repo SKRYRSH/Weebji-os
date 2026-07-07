@@ -2485,7 +2485,6 @@
           Share Your Arc
         </button>
         <button class="tour-replay-btn" id="tour-replay-btn">◈ Replay Feature Guide</button>
-        <button class="tour-replay-btn" id="awakening-replay-btn">◈ Replay The Awakening</button>
         <div id="profile-auth-section"></div>
         <div id="profile-plus-section"></div>
         <div id="profile-analytics"></div>
@@ -12876,10 +12875,7 @@
   document.getElementById('profile-share-btn').addEventListener('click', shareProfile);
   // Tour replay button
   document.getElementById('tour-replay-btn').addEventListener('click', () => { Sound.play('tap'); Tour.start(); });
-  document.getElementById('awakening-replay-btn').addEventListener('click', () => {
-    Sound.play('tap');
-    playAwakeningCutscene(() => showScreen('profile'), true);
-  });
+  // Awakening replay moved into the profile TRANSMISSIONS list (Ch I row)
 
   // Phase 5: Voice toggle
   function _updateMusicBtn() {
@@ -13555,7 +13551,9 @@
         end.classList.remove('visible');
         end.removeEventListener('click', dismiss);
         if (typeof posthog !== 'undefined') posthog.capture(skipped ? 'chapter_skipped' : 'chapter_completed', { chapter: ch.id });
-        showScreen('dashboard');
+        showScreen(ch._ret || 'dashboard');
+        if (ch._ret === 'profile') renderProfile();
+        ch._ret = null;
       };
       setTimeout(() => end.addEventListener('click', dismiss), 600);
     };
@@ -13615,7 +13613,7 @@
     const days = getTotalDays();
     const ch2Seen = !!localStorage.getItem('weebji_ch2_seen');
     const rows = [
-      { n:'I',   name:'THE AWAKENING',       state:'RECEIVED', locked:false },
+      { n:'I',   name:'THE AWAKENING',       state:'RECEIVED · REPLAY', locked:false },
       { n:'II',  name:'SIGNAL DECAY',        state: ch2Seen ? 'RECEIVED · REPLAY' : (days >= 2 ? 'INCOMING' : 'DAY 2'), locked: !ch2Seen && days < 2 },
       { n:'III', name:'THE OTHERS',          state:'DAY 3', locked:true },
       { n:'IV',  name:'WHAT THE VOID TAKES', state:'DAY 5', locked:true },
@@ -13624,10 +13622,15 @@
     ];
     host.innerHTML = `<div class="tx-section"><div class="tx-title">◈ Transmissions — Season 1</div>` +
       rows.map((r,i) => `<div class="tx-row${r.locked?' locked':''}${!r.locked&&r.state==='INCOMING'?' next':''}" data-tx="${i}"><div class="tx-row__num">${r.n}</div><div class="tx-row__name">${r.name}</div><div class="tx-row__state">${r.state}</div></div>`).join('') + `</div>`;
+    const ch1row = host.querySelector('[data-tx="0"]');
+    if (ch1row) {
+      ch1row.style.cursor = 'pointer';
+      ch1row.onclick = () => { Sound.play('tap'); playAwakeningCutscene(() => { showScreen('profile'); renderProfile(); }, true); };
+    }
     const ch2row = host.querySelector('[data-tx="1"]');
     if (ch2row && (ch2Seen || days >= 2)) {
       ch2row.style.cursor = 'pointer';
-      ch2row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch2_seen', '1'); playChapterCutscene(CHAPTERS[1]); };
+      ch2row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch2_seen', '1'); CHAPTERS[1]._ret = 'profile'; playChapterCutscene(CHAPTERS[1]); };
     }
   }
 

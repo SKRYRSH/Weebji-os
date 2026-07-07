@@ -107,8 +107,9 @@ Deno.serve(async (req) => {
       const { data: subs } = await sb.from('push_subscriptions').select('user_id, timezone');
       const allIds = (subs || []).map(r => r.user_id);
       if (allIds.length) {
-        const { data: prog } = await sb.from('progress').select('user_id, last_trained_date, streak').in('user_id', allIds);
+        const { data: prog } = await sb.from('progress').select('user_id, last_trained_date, streak, updated_at').in('user_id', allIds);
         const trainedMap = new Map((prog || []).map(r => [r.user_id, r.last_trained_date as string | null]));
+        const updatedMap = new Map((prog || []).map(r => [r.user_id, r.updated_at as string | null]));
         streakMap = new Map((prog || []).map(r => [r.user_id, (r.streak as number | null) || 0]));
         const tzMap = new Map((subs || []).map(r => [r.user_id, r.timezone as string | null]));
         userIds = allIds.filter(id => {
@@ -121,7 +122,13 @@ Deno.serve(async (req) => {
           if (type === 'streak_reminder')    return localHour(tz) === STREAK_LOCAL_HOUR;
           // Boss damage only comes from checks, so "untrained today" ≈ "hasn't
           // struck the boss today" — the server can't see localStorage boss HP.
-          if (type === 'boss_taunt')         return localHour(tz) === BOSS_TAUNT_LOCAL_HOUR;
+          // Active-users-only (synced <72h): lapsed users belong to the comeback
+          // bands' 3 single touches, not a daily taunt forever.
+          if (type === 'boss_taunt') {
+            const upd = updatedMap.get(id);
+            const active = !!upd && (Date.now() - new Date(upd).getTime()) < 72 * 3600 * 1000;
+            return active && localHour(tz) === BOSS_TAUNT_LOCAL_HOUR;
+          }
           return true;
         });
       }

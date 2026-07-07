@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v366 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v366';
+// ── WEEBJI OS — Service Worker v367 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v367';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
 
@@ -31,6 +31,9 @@ const BG_IMAGES = [
   'assets/bg-monarch.jpeg','assets/bg-mastermind.jpeg','assets/bg-monk.jpeg',
   'assets/bg-city.jpeg','assets/bg-dungeon.jpeg','assets/bg-class-select.jpeg',
   'assets/bg-oath.jpeg','assets/bg-levelup.jpeg',
+  // Ch2 stills — every new user plays this on day 2; must be instant + offline-safe
+  'assets/cutscenes/ch2-1.jpg','assets/cutscenes/ch2-2.jpg',
+  'assets/cutscenes/ch2-3.jpg','assets/cutscenes/ch2-4.jpg',
 ];
 
 self.addEventListener('activate', e => {

@@ -2967,14 +2967,19 @@
       const c = SupabaseSync._client();
       if (!c) return;
       try {
-        const { error } = await c.from('push_subscriptions').upsert({
-          user_id:    _userId,
-          endpoint:   j.endpoint,
-          p256dh:     j.keys?.p256dh,
-          auth:       j.keys?.auth,
-          timezone:   Intl.DateTimeFormat().resolvedOptions().timeZone,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'endpoint' });
+        // Save via edge fn (service role): a direct upsert can't re-own an endpoint
+        // row created under a previously signed-in account — RLS blocks the update
+        // silently, leaving this device's pushes bound to the wrong user forever.
+        const { data: { session: subSess } } = await c.auth.getSession();
+        const { error } = await c.functions.invoke('save-push-sub', {
+          body: {
+            endpoint: j.endpoint,
+            p256dh:   j.keys?.p256dh,
+            auth:     j.keys?.auth,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+          ...(subSess?.access_token ? { headers: { Authorization: `Bearer ${subSess.access_token}` } } : {}),
+        });
         if (error && typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: error.message });
       } catch(e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: e?.message });
@@ -4865,7 +4870,7 @@
   ];
 
   const BossSiege = (() => {
-    const BOSS_HP_MAX = 300;
+    const BOSS_HP_MAX = 500;
     const DAILY_DMG_CAP = 100;
     const STORAGE_KEY = 'weebji_boss_siege';
 
@@ -4935,7 +4940,7 @@
         _save(state);
         const p = loadProgress();
         p.xp += 300;
-        p.hp = Math.min(BOSS_HP_MAX, (p.hp || 0) + 1);
+        p.hp = Math.min(3, (p.hp || 0) + 1);
         const leveled = checkLevelUp(p);
         saveProgress(p);
         updateXPBar(p);
@@ -14679,11 +14684,18 @@ DEV.skipSplash()      → go straight to class select (if no session)
       }
     }
 
+    let _rlRetry = false; // one pending rate-limit retry max
     async function pushProgress() {
       if (!client || !currentUser) return;
       const uid = currentUser.id; // snapshot — currentUser can be nulled by sign-out mid-await
       const p = loadProgress();
       let richData = null, lbPayload = null; // hoisted — catch-block fallback needs them in scope
+      // Fallback upserts must stamp last_trained_date themselves, or a day where every
+      // validate-progress call fails still sends a false "you haven't trained" push.
+      // The check arrays are wiped by the daily reset, so any entry = trained today.
+      const trainedToday = (p.workoutChecked || []).length > 0 || (p.questsChecked || []).length > 0
+        || (p.monkChecked || []).length > 0 || (p.customDone || []).length > 0;
+      const localDate = new Intl.DateTimeFormat('en-CA').format(new Date());
       try {
         richData = {
           monkGrid: p.monkGrid, monarchGrid: p.monarchGrid, mmGrid: p.mmGrid,
@@ -14748,6 +14760,13 @@ DEV.skipSplash()      → go straight to class select (if no session)
         if (!vpError && !vpResult?.violations?.includes('rate_limited')) {
           localStorage.removeItem('weebji_ghost_spend_pending');
         }
+        // Server drops pushes made <5s after the previous write (anti-grind) and the
+        // client never retried — the final save of a quick check-burst (and its
+        // last_trained_date stamp) was silently lost. Retry once after the window.
+        if (!vpError && vpResult?.violations?.includes('rate_limited') && !_rlRetry) {
+          _rlRetry = true;
+          setTimeout(() => { _rlRetry = false; pushProgress().catch(() => {}); }, 6000);
+        }
         // Always upsert leaderboard + progress directly — covers 401s and any edge fn failure
         if (vpError) {
           await Promise.allSettled([
@@ -14761,6 +14780,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
               total_workout_days: p.totalWorkoutDays || 0,
               data: richData,
               updated_at: new Date().toISOString(),
+              ...(trainedToday ? { last_trained_date: localDate } : {}),
             }, { onConflict: 'user_id' }),
           ]);
         }
@@ -14779,6 +14799,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
               total_workout_days: p.totalWorkoutDays || 0,
               data: richData,
               updated_at: new Date().toISOString(),
+              ...(trainedToday ? { last_trained_date: localDate } : {}),
             }, { onConflict: 'user_id' }),
           ]);
         } catch(_) {}

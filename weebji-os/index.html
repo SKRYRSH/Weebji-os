@@ -12584,35 +12584,6 @@
     const infoY = avatarDrawn ? 1050 : 890;
     ctx.textAlign = 'center';
 
-    // Plus crown rays — draw behind name
-    if (plus) {
-      const rayOriginX = W/2, rayOriginY = infoY + 30;
-      const rays = [
-        { angle: -90, w: 90 }, { angle: -72, w: 68 }, { angle: -108, w: 68 },
-        { angle: -55, w: 50 }, { angle: -125, w: 50 }, { angle: -40, w: 36 }, { angle: -140, w: 36 },
-      ];
-      rays.forEach(({ angle, w }) => {
-        const rad = (angle * Math.PI) / 180;
-        const len = 820;
-        const ex = rayOriginX + Math.cos(rad) * len;
-        const ey = rayOriginY + Math.sin(rad) * len;
-        const perpX = -Math.sin(rad), perpY = Math.cos(rad);
-        const hw = w / 2;
-        ctx.beginPath();
-        ctx.moveTo(rayOriginX + perpX*hw, rayOriginY + perpY*hw);
-        ctx.lineTo(ex + perpX*(w*0.08), ey + perpY*(w*0.08));
-        ctx.lineTo(ex - perpX*(w*0.08), ey - perpY*(w*0.08));
-        ctx.lineTo(rayOriginX - perpX*hw, rayOriginY - perpY*hw);
-        ctx.closePath();
-        const rg = ctx.createLinearGradient(rayOriginX, rayOriginY, ex, ey);
-        rg.addColorStop(0, 'rgba(255,215,0,0.13)');
-        rg.addColorStop(0.5, 'rgba(255,215,0,0.07)');
-        rg.addColorStop(1, 'rgba(255,215,0,0)');
-        ctx.fillStyle = rg;
-        ctx.fill();
-      });
-    }
-
     // Name
     const nameFontSize = Math.min(130, Math.max(56, Math.floor(10800 / Math.max(name.length, 5))));
     ctx.font = `900 ${nameFontSize}px "Cinzel", serif`;

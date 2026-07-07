@@ -20,6 +20,7 @@ const NOTIF: Record<string, { title: string; body: string }> = {
   streak5_trial_ending: { title: '⏳ YOUR FREE TRIAL IS ENDING', body: 'Your 7-day WEEBJI+ trial ends in 2 days. Subscribe now so you never lose what you unlocked.' },
   streak5_trial_ended:  { title: '◆ YOUR FREE TRIAL HAS ENDED', body: "WEEBJI+ access has reverted to free tier. You know what you had — now go get it back." },
   boss_taunt:           { title: '⚔ THE BOSS TAUNTS YOU',       body: 'No damage dealt today. The siege will not win itself.' },
+  day2_transmission:    { title: '◈ INCOMING TRANSMISSION',     body: 'A signal awaits, Hunter. The System has something you should see. Open the channel.' },
 };
 
 // Weekly siege boss roster — MUST mirror DUNGEONS order + week math in index.html
@@ -37,6 +38,9 @@ const TAUNTS = [
   'Your siege has gone quiet. Shall I tell the leaderboard you surrendered?',
 ];
 const BOSS_TAUNT_LOCAL_HOUR = 13;
+// Ch2 SIGNAL DECAY appointment (STORY_BIBLE): the day-2 push IS the transmission.
+// Targets users who signed up 24-48h ago, at their local evening.
+const DAY2_LOCAL_HOUR = 18;
 
 function bossThisWeek(): string {
   const now = new Date();
@@ -143,6 +147,19 @@ Deno.serve(async (req) => {
         const { data: tzRows } = await sb.from('push_subscriptions').select('user_id, timezone').in('user_id', bandIds);
         const eveningNow = new Set((tzRows || []).filter(r => localHour(r.timezone) === COMEBACK_LOCAL_HOUR).map(r => r.user_id));
         userIds = bandIds.filter(id => eveningNow.has(id));
+      }
+    } else if (type === 'day2_transmission') {
+      // progress has no created_at — signup time lives in auth.users (admin API)
+      const { data: usersPage } = await sb.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const d2Ids = (usersPage?.users || [])
+        .filter(u => {
+          const age = Date.now() - new Date(u.created_at).getTime();
+          return age >= 24 * 3600 * 1000 && age < 48 * 3600 * 1000;
+        })
+        .map(u => u.id);
+      if (d2Ids.length) {
+        const { data: tzRows } = await sb.from('push_subscriptions').select('user_id, timezone').in('user_id', d2Ids);
+        userIds = (tzRows || []).filter(r => localHour(r.timezone) === DAY2_LOCAL_HOUR).map(r => r.user_id);
       }
     } else if (type === 'streak5_trial_ending' || type === 'streak5_trial_ended') {
       // ending: trial started 5-6 days ago (~2 days left) | ended: started 7-8 days ago (just lapsed)

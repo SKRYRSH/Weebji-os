@@ -144,6 +144,39 @@
   .bdc-skip { position:absolute; right:18px; bottom:28px; z-index:10; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,0.4); background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.15); border-radius:20px; padding:9px 16px; cursor:pointer; }
 
   /* ══ PENANCE CUTSCENE ════════════════════════ */
+  /* ── SEASON 1 CHAPTER CUTSCENES — Ch2 SIGNAL DECAY (STORY_BIBLE §5) ── */
+  #chapter-cutscene { background:#000; overflow:hidden; }
+  #chapter-cutscene.active { z-index:100002 !important; }
+  #chapter-cutscene .bdc-text__line { color:#7DF9FF; text-shadow:0 0 26px rgba(0,245,255,0.8), 0 0 60px rgba(0,245,255,0.3); }
+  #chapter-cutscene .bdc-text__sub  { color:rgba(125,249,255,0.55); }
+  .ch-scanlines { position:absolute; inset:0; z-index:2; pointer-events:none; opacity:0.3; background:repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,0.3) 2px 4px); }
+  .ch-glitch { animation:kf-ch-glitch 0.72s steps(2,end) 3; }
+  @keyframes kf-ch-glitch {
+    0%,100% { transform:translateX(0); text-shadow:0 0 26px rgba(0,245,255,0.8); clip-path:none; }
+    20% { transform:translateX(-4px) skewX(-4deg); text-shadow:-3px 0 #FF3344, 3px 0 #00F5FF; clip-path:inset(12% 0 34% 0); }
+    40% { transform:translateX(3px); text-shadow:3px 0 #FF3344, -3px 0 #00F5FF; clip-path:inset(52% 0 8% 0); }
+    60% { transform:translateX(-2px) skewX(3deg); text-shadow:-2px 0 #FF3344, 2px 0 #00F5FF; clip-path:inset(30% 0 44% 0); }
+    80% { transform:translateX(2px); clip-path:none; }
+  }
+  #chapter-cutscene.ch-glitching .ch-scanlines { opacity:0.7; animation:kf-ch-static 0.12s steps(2) 6; }
+  @keyframes kf-ch-static { from{transform:translateY(0)} to{transform:translateY(3px)} }
+  .ch-endcard { position:absolute; inset:0; z-index:20; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; opacity:0; pointer-events:none; transition:opacity 0.8s ease; -webkit-tap-highlight-color:transparent; }
+  .ch-endcard.visible { opacity:1; pointer-events:auto; }
+  .ch-endcard__line { font-family:'JetBrains Mono',monospace; font-size:clamp(14px,4.4vw,19px); font-weight:700; letter-spacing:0.24em; color:#7DF9FF; text-shadow:0 0 24px rgba(0,245,255,0.6); text-align:center; padding:0 20px; }
+  .ch-endcard__sub { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.3em; color:rgba(255,255,255,0.3); text-transform:uppercase; }
+  .ch-endcard__tap { position:absolute; bottom:44px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:rgba(255,255,255,0.25); text-transform:uppercase; animation:kf-ch-tap 2.4s ease-in-out infinite; }
+  @keyframes kf-ch-tap { 0%,100%{opacity:0.25} 50%{opacity:0.6} }
+  .tx-section { margin-top:22px; }
+  .tx-title { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.28em; color:rgba(0,245,255,0.5); text-transform:uppercase; margin-bottom:10px; }
+  .tx-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid rgba(255,255,255,0.07); border-radius:10px; margin-bottom:7px; background:rgba(255,255,255,0.02); -webkit-tap-highlight-color:transparent; }
+  .tx-row__num { font-family:'Cinzel',serif; font-size:13px; font-weight:900; color:rgba(0,245,255,0.7); width:28px; }
+  .tx-row__name { flex:1; font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.1em; color:rgba(255,255,255,0.75); }
+  .tx-row__state { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.2em; color:rgba(255,255,255,0.3); text-transform:uppercase; }
+  .tx-row.locked { opacity:0.45; }
+  .tx-row.next .tx-row__state { color:#7DF9FF; }
+  @media (prefers-reduced-motion: reduce) {
+    .ch-glitch, #chapter-cutscene.ch-glitching .ch-scanlines, .ch-endcard__tap { animation:none !important; }
+  }
   #penance-cutscene { background: #000; overflow: hidden; }
   #penance-cutscene.active { z-index: 100002 !important; }
   .pc-shot { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.7s ease; }
@@ -2055,6 +2088,23 @@
     </div>
 
     <!-- ══ PENANCE CUTSCENE ════════════════════ -->
+    <div id="chapter-cutscene" class="screen">
+      <div class="bdc-shot" id="ch-shot-1" style="background:radial-gradient(ellipse at 50% 30%, rgba(0,60,90,0.55) 0%, #01060a 70%)"></div>
+      <div class="bdc-shot" id="ch-shot-2" style="background:radial-gradient(ellipse at 50% 80%, rgba(0,245,255,0.14) 0%, #020409 60%)"></div>
+      <div class="bdc-shot" id="ch-shot-3" style="background:radial-gradient(ellipse at 55% 40%, rgba(120,10,30,0.35) 0%, #050208 65%)"></div>
+      <div class="bdc-shot" id="ch-shot-4" style="background:radial-gradient(ellipse at 50% 50%, rgba(20,40,60,0.4) 0%, #010305 70%)"></div>
+      <div class="ch-scanlines"></div>
+      <div class="bdc-vignette"></div>
+      <div class="bdc-overlay"></div>
+      <div class="bdc-text" id="ch-text"></div>
+      <button class="bdc-skip" id="ch-skip-btn" type="button">Skip ›</button>
+      <div class="ch-endcard" id="ch-endcard">
+        <div class="ch-endcard__line">NEXT TRANSMISSION: TOMORROW.</div>
+        <div class="ch-endcard__sub">the system will find you</div>
+        <div class="ch-endcard__tap">tap to continue</div>
+      </div>
+    </div>
+
     <div id="penance-cutscene" class="screen">
       <div class="pc-shot" id="pc-shot-1" style="background-image:url('assets/cutscenes/penance-1-fall.jpg')"></div>
       <div class="pc-shot" id="pc-shot-2" style="background-image:url('assets/cutscenes/penance-2-judgment.jpg')"></div>
@@ -2354,6 +2404,7 @@
         <div class="profile-stats" id="profile-stats"></div>
         <div class="profile-arc" id="profile-arc"></div>
         <div class="profile-titles" id="profile-titles"></div>
+        <div id="profile-transmissions"></div>
         <button id="profile-share-arc-btn" style="display:none;width:100%;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:13px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.25em;color:rgba(255,255,255,0.4);text-transform:uppercase;cursor:pointer;-webkit-tap-highlight-color:transparent;" onclick="Sound.play('tap');showArcCard()">↗ Share Your Arc</button>
         <div class="profile-enemy hidden" id="profile-enemy">
           <div class="profile-enemy__label">Sworn Enemy</div>
@@ -5382,7 +5433,7 @@
 
     const features = [
       { icon: '◈', title: 'The White Room & The Sanctuary', desc: 'Two more entire classes — Mastermind and Monk. Walk every path, not just one.' },
-      { icon: '⚔', title: 'Weekly Dungeon', desc: 'Mon→Sun boss fights. Defeat them to earn exclusive titles no one else can get.' },
+      { icon: '👤', title: 'Shadow Rival', desc: 'A phantom copy of your best self hunts your XP every day. Beat it — or watch it beat you.' },
       { icon: '◈', title: 'Prestige System', desc: 'Hit Level 100 and reset — harder. Each prestige earns a ◈ badge. Free hunters stay capped.' },
       { icon: '🗣', title: 'System Voice', desc: 'The System speaks your name. Knows your streak, your class, your enemy. Personal. Unsettling. Effective.' },
       { icon: '👻', title: '5 Ghost Tokens/month', desc: 'One missed day can erase months of progress. Free tier gets 1 token. Plus hunters get 5, refreshed every month.' },
@@ -7159,6 +7210,7 @@
     setTimeout(() => {
       const p = loadProgress();
       checkPenanceOnBoot();
+      checkChapterOnBoot();
       checkGhostIntervention(p);
       showInstallPromptWhenReady();
       maybeShowNotifPrompt();
@@ -7492,6 +7544,9 @@
     if (localStorage.getItem('weebji_first_action_done')) return;
     localStorage.setItem('weebji_first_action_done', '1');
     if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: localStorage.getItem('weebji_class') });
+    // Ch2 day-2 appointment seed (STORY_BIBLE §5) — planted at the peak moment.
+    // Data (Jul 2026): 100% reach this event, then 80% never return. This line is the hook.
+    setTimeout(() => { try { spawnDropBanner('◈ Return tomorrow. There is something you should see.'); } catch(_) {} }, 2600);
     const card = document.getElementById('welcome-day1-card');
     if (card) {
       card.style.transition = 'opacity 0.4s ease';
@@ -11346,6 +11401,7 @@
     const hunterNum = localStorage.getItem('weebji_hunter_num') || generateHunterNum(name, cls);
     const enemy     = localStorage.getItem('weebji_enemy') || '';
     const p         = loadProgress();
+    renderTransmissions();
 
     // Profile background per class
     const profileEl = document.getElementById('profile');
@@ -12300,14 +12356,15 @@
     const p = loadProgress();
     // Don't show if already claimed
     if (p.titles && p.titles.includes(reward.title)) return;
-    const plus = isWeebjiPlus();
+    // Streak rewards are FREE (2026-07-07): locking a trophy the user already
+    // earned by showing up 7/14/30 days punished exactly the users who retained.
     _srgCurrentStreak = streak;
     document.getElementById('srg-days').textContent        = streak;
     document.getElementById('srg-reward-title').textContent = reward.display;
     document.getElementById('srg-reward-xp').textContent   = `+${reward.xp} XP · TITLE UNLOCKED`;
-    document.getElementById('srg-lock-overlay').style.display = plus ? 'none' : 'flex';
-    document.getElementById('srg-claim-btn').style.display    = plus ? 'block' : 'none';
-    document.getElementById('srg-upgrade-btn').style.display  = plus ? 'none' : 'block';
+    document.getElementById('srg-lock-overlay').style.display = 'none';
+    document.getElementById('srg-claim-btn').style.display    = 'block';
+    document.getElementById('srg-upgrade-btn').style.display  = 'none';
     document.getElementById('streak-reward-gate').classList.add('visible');
   }
 
@@ -12317,7 +12374,7 @@
   }
 
   function claimStreakReward() {
-    if (!isWeebjiPlus() || !_srgCurrentStreak) return;
+    if (!_srgCurrentStreak) return;
     const STREAK_REWARDS = {
       7:   { title: 'streak_7_warrior',    display: '7-DAY WARRIOR',    xp: 500  },
       14:  { title: 'streak_14_relentless', display: 'THE RELENTLESS',   xp: 1000 },
@@ -13459,6 +13516,114 @@
     Sound.play('penanceUnlock');
     // Phase 5: System Voice
     setTimeout(() => SystemVoice.onPenance(), 500);
+  }
+
+  /* ══ SEASON 1 — CHAPTER ENGINE (STORY_BIBLE.md §5-6) ═══════════════
+     Ship order: Ch2 alone — the day-2 appointment (Day-2 retention = 0 fix).
+     Shell reuses the bdc-* Ken Burns skeleton; chapter defs are data, not code.
+     Shot backgrounds are CSS gradients until AI stills exist — swap the inline
+     background on #ch-shot-N for background-image URLs when Sahil generates them. */
+  const CHAPTERS = [
+    { id: 1, title: 'THE AWAKENING', unlockText: 'DAY 0' },
+    { id: 2, title: 'SIGNAL DECAY',  unlockText: 'DAY 2',
+      shots: [
+        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'INCOMING TRANSMISSION',            sub:'routine synchronization · protocol day 2' },
+        { id:'ch-shot-2', kb:'kb-zoom-out', line:'YOU RETURNED',                     sub:'the system logs your persistence' },
+        { id:'ch-shot-3', kb:'kb-pan-up',   line:'CONTINUE, HUNTER. YOUR P–ATH IS S—', sub:'▓ signal integrity 99.7% ▓', glitch:true },
+        { id:'ch-shot-4', kb:'kb-zoom-in',  line:'YOUR PATH IS STABLE.',             sub:'disregard prior artifact · all systems nominal' },
+      ] },
+    { id: 3, title: 'THE OTHERS',          unlockText: 'DAY 3' },
+    { id: 4, title: 'WHAT THE VOID TAKES', unlockText: 'DAY 5' },
+    { id: 5, title: 'THE AWAKENED',        unlockText: 'DAY 7' },
+  ];
+
+  function playChapterCutscene(ch) {
+    const SHOTS = ch.shots || [];
+    if (!SHOTS.length) return;
+    const DURATION = 3000;
+    const scr = document.getElementById('chapter-cutscene');
+    let fired = false, skipped = false;
+    const finish = () => {
+      if (fired) return; fired = true;
+      document.getElementById('ch-skip-btn').removeEventListener('click', onSkip);
+      SHOTS.forEach(s => { const el = document.getElementById(s.id); if (el) el.className = 'bdc-shot'; });
+      const txt = document.getElementById('ch-text'); if (txt) { txt.className = 'bdc-text'; txt.innerHTML = ''; }
+      const end = document.getElementById('ch-endcard');
+      end.classList.add('visible');
+      Sound.play('check');
+      const dismiss = () => {
+        end.classList.remove('visible');
+        end.removeEventListener('click', dismiss);
+        if (typeof posthog !== 'undefined') posthog.capture(skipped ? 'chapter_skipped' : 'chapter_completed', { chapter: ch.id });
+        showScreen('dashboard');
+      };
+      setTimeout(() => end.addEventListener('click', dismiss), 600);
+    };
+    const onSkip = () => { skipped = true; finish(); };
+    document.getElementById('ch-skip-btn').addEventListener('click', onSkip);
+    showScreen('chapter-cutscene');
+    Sound.play('appOpen');
+    let idx = 0;
+    const showShot = () => {
+      if (fired) return;
+      if (idx > 0) { const prev = document.getElementById(SHOTS[idx-1].id); if (prev) prev.classList.remove('active', SHOTS[idx-1].kb); }
+      if (idx >= SHOTS.length) { setTimeout(finish, 400); return; }
+      const shot = SHOTS[idx];
+      const el  = document.getElementById(shot.id);
+      const txt = document.getElementById('ch-text');
+      el.classList.add('active');
+      setTimeout(() => el.classList.add(shot.kb), 20);
+      txt.className = 'bdc-text';
+      txt.innerHTML = `<div class="bdc-text__line">${shot.line}</div><div class="bdc-text__sub">${shot.sub}</div>`;
+      setTimeout(() => txt.classList.add('visible'), 300);
+      if (shot.glitch) {
+        setTimeout(() => {
+          txt.querySelector('.bdc-text__line')?.classList.add('ch-glitch');
+          scr.classList.add('ch-glitching');
+          haptic([30, 40, 30, 40, 80]);
+          setTimeout(() => scr.classList.remove('ch-glitching'), 900);
+        }, 800);
+      }
+      setTimeout(() => txt.classList.remove('visible'), DURATION - 500);
+      idx++;
+      setTimeout(showShot, DURATION);
+    };
+    showShot();
+  }
+
+  function checkChapterOnBoot() {
+    try {
+      if (localStorage.getItem('weebji_penance_active') === '1') return; // penance owns the boot
+      if (!localStorage.getItem('weebji_class')) return;                 // not onboarded yet
+      if (localStorage.getItem('weebji_ch2_seen')) return;
+      if (getTotalDays() < 2) return;
+      // Mark seen at playback start — a mid-scene crash must never loop the cutscene
+      localStorage.setItem('weebji_ch2_seen', '1');
+      if (typeof posthog !== 'undefined') posthog.capture('chapter_unlocked', { chapter: 2 });
+      setTimeout(() => playChapterCutscene(CHAPTERS[1]), 1200);
+    } catch(_) {}
+  }
+
+  function renderTransmissions() {
+    const host = document.getElementById('profile-transmissions');
+    if (!host) return;
+    const days = getTotalDays();
+    const ch2Seen = !!localStorage.getItem('weebji_ch2_seen');
+    const rows = [
+      { n:'I',   name:'THE AWAKENING',       state:'RECEIVED', locked:false },
+      { n:'II',  name:'SIGNAL DECAY',        state: ch2Seen ? 'RECEIVED · REPLAY' : (days >= 2 ? 'INCOMING' : 'DAY 2'), locked: !ch2Seen && days < 2 },
+      { n:'III', name:'THE OTHERS',          state:'DAY 3', locked:true },
+      { n:'IV',  name:'WHAT THE VOID TAKES', state:'DAY 5', locked:true },
+      { n:'V',   name:'THE AWAKENED',        state:'DAY 7', locked:true },
+      { n:'?',   name:'SIGNAL BURIED',       state:'EARN IT', locked:true },
+    ];
+    host.innerHTML = `<div class="tx-section"><div class="tx-title">◈ Transmissions — Season 1</div>` +
+      rows.map((r,i) => `<div class="tx-row${r.locked?' locked':''}${!r.locked&&r.state==='INCOMING'?' next':''}" data-tx="${i}"><div class="tx-row__num">${r.n}</div><div class="tx-row__name">${r.name}</div><div class="tx-row__state">${r.state}</div></div>`).join('') + `</div>`;
+    const ch2row = host.querySelector('[data-tx="1"]');
+    if (ch2row && (ch2Seen || days >= 2)) {
+      ch2row.style.cursor = 'pointer';
+      ch2row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch2_seen', '1'); playChapterCutscene(CHAPTERS[1]); };
+    }
   }
 
   function checkPenanceOnBoot() {

@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v361 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v361';
+// ── WEEBJI OS — Service Worker v362 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v362';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
 
@@ -103,6 +103,7 @@ const NOTIF_CFG = {
   // Server-push types
   streak_reminder:    { vibrate: [200,100,200,100,200], tag: 'weebji-streak',   requireInteraction: false },
   boss_taunt:         { vibrate: [300,80,120,80,300],   tag: 'weebji-boss',     requireInteraction: false },
+  day2_transmission:  { vibrate: [80,60,80,60,240],     tag: 'weebji-ch2',      requireInteraction: true  },
   hp_critical:        { vibrate: [400,150,400,150,800], tag: 'weebji-hp',       requireInteraction: true  },
   power_window:       { vibrate: [100,50,100],          tag: 'weebji-power',    requireInteraction: false },
   morning_activation: { vibrate: [100,50,100,50,100],   tag: 'weebji-morning',  requireInteraction: false },

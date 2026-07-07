@@ -13589,12 +13589,19 @@
     showShot();
   }
 
+  // weebji_start_date is device-local and resets on reinstall — a veteran with a
+  // live streak would look like day 0. Any of these signals proves day 2+.
+  function getChapterDay() {
+    const p = loadProgress();
+    return Math.max(getTotalDays(), p.streak || 0, p.bestStreak || 0);
+  }
+
   function checkChapterOnBoot() {
     try {
       if (localStorage.getItem('weebji_penance_active') === '1') return; // penance owns the boot
       if (!localStorage.getItem('weebji_class')) return;                 // not onboarded yet
       if (localStorage.getItem('weebji_ch2_seen')) return;
-      if (getTotalDays() < 2) return;
+      if (getChapterDay() < 2) return;
       // Mark seen at playback start — a mid-scene crash must never loop the cutscene
       localStorage.setItem('weebji_ch2_seen', '1');
       if (typeof posthog !== 'undefined') posthog.capture('chapter_unlocked', { chapter: 2 });
@@ -13610,7 +13617,7 @@
   function renderTransmissions() {
     const host = document.getElementById('profile-transmissions');
     if (!host) return;
-    const days = getTotalDays();
+    const days = getChapterDay();
     const ch2Seen = !!localStorage.getItem('weebji_ch2_seen');
     const rows = [
       { n:'I',   name:'THE AWAKENING',       state:'RECEIVED · REPLAY', locked:false },

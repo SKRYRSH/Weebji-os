@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v367 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v367';
+// ── WEEBJI OS — Service Worker v368 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v368';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
 
@@ -31,9 +31,13 @@ const BG_IMAGES = [
   'assets/bg-monarch.jpeg','assets/bg-mastermind.jpeg','assets/bg-monk.jpeg',
   'assets/bg-city.jpeg','assets/bg-dungeon.jpeg','assets/bg-class-select.jpeg',
   'assets/bg-oath.jpeg','assets/bg-levelup.jpeg',
-  // Ch2 stills — every new user plays this on day 2; must be instant + offline-safe
+  // Ch2/Ch3 stills — every new user plays these on day 2/3; must be instant +
+  // offline-safe. Pre-warm skips missing files (status 200 check), so listing
+  // Ch3 before its stills land is safe.
   'assets/cutscenes/ch2-1.jpg','assets/cutscenes/ch2-2.jpg',
   'assets/cutscenes/ch2-3.jpg','assets/cutscenes/ch2-4.jpg',
+  'assets/cutscenes/ch3-1.jpg','assets/cutscenes/ch3-2.jpg',
+  'assets/cutscenes/ch3-3.jpg','assets/cutscenes/ch3-4.jpg',
 ];
 
 self.addEventListener('activate', e => {
@@ -107,6 +111,7 @@ const NOTIF_CFG = {
   streak_reminder:    { vibrate: [200,100,200,100,200], tag: 'weebji-streak',   requireInteraction: false },
   boss_taunt:         { vibrate: [300,80,120,80,300],   tag: 'weebji-boss',     requireInteraction: false },
   day2_transmission:  { vibrate: [80,60,80,60,240],     tag: 'weebji-ch2',      requireInteraction: true  },
+  day3_transmission:  { vibrate: [80,60,80,60,240],     tag: 'weebji-ch3',      requireInteraction: true  },
   hp_critical:        { vibrate: [400,150,400,150,800], tag: 'weebji-hp',       requireInteraction: true  },
   power_window:       { vibrate: [100,50,100],          tag: 'weebji-power',    requireInteraction: false },
   morning_activation: { vibrate: [100,50,100,50,100],   tag: 'weebji-morning',  requireInteraction: false },

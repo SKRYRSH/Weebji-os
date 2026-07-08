@@ -2090,18 +2090,19 @@
 
     <!-- ══ PENANCE CUTSCENE ════════════════════ -->
     <div id="chapter-cutscene" class="screen">
-      <div class="bdc-shot" id="ch-shot-1" style="background:url('assets/cutscenes/ch2-1.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, rgba(0,60,90,0.55) 0%, #01060a 70%)"></div>
-      <div class="bdc-shot" id="ch-shot-2" style="background:url('assets/cutscenes/ch2-2.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 80%, rgba(0,245,255,0.14) 0%, #020409 60%)"></div>
-      <div class="bdc-shot" id="ch-shot-3" style="background:url('assets/cutscenes/ch2-3.jpg') center/cover no-repeat, radial-gradient(ellipse at 55% 40%, rgba(120,10,30,0.35) 0%, #050208 65%)"></div>
-      <div class="bdc-shot" id="ch-shot-4" style="background:url('assets/cutscenes/ch2-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 50%, rgba(20,40,60,0.4) 0%, #010305 70%)"></div>
+      <!-- Shot backgrounds are set per-chapter from shots[].bg in playChapterCutscene -->
+      <div class="bdc-shot" id="ch-shot-1"></div>
+      <div class="bdc-shot" id="ch-shot-2"></div>
+      <div class="bdc-shot" id="ch-shot-3"></div>
+      <div class="bdc-shot" id="ch-shot-4"></div>
       <div class="ch-scanlines"></div>
       <div class="bdc-vignette"></div>
       <div class="bdc-overlay"></div>
       <div class="bdc-text" id="ch-text"></div>
       <button class="bdc-skip" id="ch-skip-btn" type="button">Skip ›</button>
       <div class="ch-endcard" id="ch-endcard">
-        <div class="ch-endcard__line">NEXT TRANSMISSION: TOMORROW.</div>
-        <div class="ch-endcard__sub">you saw nothing.</div>
+        <div class="ch-endcard__line" id="ch-end-line">NEXT TRANSMISSION: TOMORROW.</div>
+        <div class="ch-endcard__sub" id="ch-end-sub">you saw nothing.</div>
         <div class="ch-endcard__tap">tap to continue</div>
       </div>
     </div>
@@ -13520,25 +13521,63 @@
      Shell reuses the bdc-* Ken Burns skeleton; chapter defs are data, not code.
      Shot backgrounds are CSS gradients until AI stills exist — swap the inline
      background on #ch-shot-N for background-image URLs when Sahil generates them. */
+  // Ch3 shot 3: one ghost's silhouette matches the PLAYER's class — still is
+  // class-neutral, the tint + designation line do the matching.
+  const CH_CLASS = {
+    monarch:    { label: 'THE MONARCH',    tint: 'rgba(0,245,255,0.20)' },
+    mastermind: { label: 'THE MASTERMIND', tint: 'rgba(230,57,70,0.20)' },
+    monk:       { label: 'THE MONK',       tint: 'rgba(168,216,168,0.22)' },
+  };
+  const chClass = () => CH_CLASS[localStorage.getItem('weebji_class')] || CH_CLASS.monarch;
+
   const CHAPTERS = [
     { id: 1, title: 'THE AWAKENING', unlockText: 'DAY 0' },
-    { id: 2, title: 'SIGNAL DECAY',  unlockText: 'DAY 2',
+    { id: 2, title: 'SIGNAL DECAY',  unlockText: 'DAY 2', unlockDay: 2,
       shots: [
-        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'INCOMING TRANSMISSION',            sub:'routine synchronization · protocol day 2' },
-        { id:'ch-shot-2', kb:'kb-zoom-out', line:'THE SYSTEM ACKNOWLEDGES YOUR RETURN', sub:'few return. fewer remain.' },
-        { id:'ch-shot-3', kb:'kb-pan-up',   line:'YOUR PATH IS PROCEEDING AS DESIG—', sub:'▓ signal integrity 99.7% ▓', glitch:true, leak:'THE SIGNAL IS DYING' },
-        { id:'ch-shot-4', kb:'kb-zoom-in',  line:'DISREGARD PRIOR ARTIFACT.',        sub:'transmission integrity: absolute' },
-      ] },
-    { id: 3, title: 'THE OTHERS',          unlockText: 'DAY 3' },
+        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'INCOMING TRANSMISSION',            sub:'routine synchronization · protocol day 2',
+          bg:"url('assets/cutscenes/ch2-1.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, rgba(0,60,90,0.55) 0%, #01060a 70%)" },
+        { id:'ch-shot-2', kb:'kb-zoom-out', line:'THE SYSTEM ACKNOWLEDGES YOUR RETURN', sub:'few return. fewer remain.',
+          bg:"url('assets/cutscenes/ch2-2.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 80%, rgba(0,245,255,0.14) 0%, #020409 60%)" },
+        { id:'ch-shot-3', kb:'kb-pan-up',   line:'YOUR PATH IS PROCEEDING AS DESIG—', sub:'▓ signal integrity 99.7% ▓', glitch:true, leak:'THE SIGNAL IS DYING',
+          bg:"url('assets/cutscenes/ch2-3.jpg') center/cover no-repeat, radial-gradient(ellipse at 55% 40%, rgba(120,10,30,0.35) 0%, #050208 65%)" },
+        { id:'ch-shot-4', kb:'kb-zoom-in',  line:'DISREGARD PRIOR ARTIFACT.',        sub:'transmission integrity: absolute',
+          bg:"url('assets/cutscenes/ch2-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 50%, rgba(20,40,60,0.4) 0%, #010305 70%)" },
+      ],
+      end: { line:'NEXT TRANSMISSION: TOMORROW.', sub:'you saw nothing.' } },
+    { id: 3, title: 'THE OTHERS', unlockText: 'DAY 3', unlockDay: 3,
+      shots: [
+        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'DAY 3. YOU ARE STILL HERE.',       sub:'this outcome was not the projected one.',
+          bg:"url('assets/cutscenes/ch3-1.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, rgba(0,50,80,0.5) 0%, #01060a 70%)" },
+        { id:'ch-shot-2', kb:'kb-pan-up',   line:'YOU ARE NOT THE FIRST',            sub:'you have carried their echoes since day one.',
+          bg:"url('assets/cutscenes/ch3-2.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 75%, rgba(150,180,200,0.14) 0%, #020409 60%)" },
+        { id:'ch-shot-3', kb:'kb-zoom-in',  line:'ONE OF THEM STOOD EXACTLY WHERE YOU STAND',
+          sub:() => 'last recorded designation: ' + chClass().label,
+          bg:() => 'radial-gradient(ellipse at 50% 45%, ' + chClass().tint + ' 0%, rgba(0,0,0,0) 62%), ' +
+                   "url('assets/cutscenes/ch3-3.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 50%, rgba(25,35,55,0.45) 0%, #010308 70%)" },
+        { id:'ch-shot-4', kb:'kb-zoom-out', line:'THE RECORD ENDS THERE.',           sub:'▓ archive integrity 91.2% ▓', glitch:true, leak:'WE REMAIN',
+          bg:"url('assets/cutscenes/ch3-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 40%, rgba(60,10,25,0.3) 0%, #030205 65%)" },
+      ],
+      end: { line:'NEXT TRANSMISSION: DAY 5.', sub:'there is no one else here.' } },
     { id: 4, title: 'WHAT THE VOID TAKES', unlockText: 'DAY 5' },
     { id: 5, title: 'THE AWAKENED',        unlockText: 'DAY 7' },
   ];
+  // Shot fields (bg/line/sub) may be functions — resolved at play time so
+  // class-personalized shots read the player's current state.
+  const chVal = v => (typeof v === 'function' ? v() : v);
 
   function playChapterCutscene(ch) {
     const SHOTS = ch.shots || [];
     if (!SHOTS.length) return;
     const DURATION = 3000;
     const scr = document.getElementById('chapter-cutscene');
+    // Chapter-specific shot backgrounds (image layer over gradient fallback) —
+    // set all up front so later shots preload while shot 1 plays.
+    SHOTS.forEach(s => { const el = document.getElementById(s.id); if (el && s.bg) el.style.background = chVal(s.bg); });
+    if (ch.end) {
+      const el = document.getElementById('ch-end-line'), es = document.getElementById('ch-end-sub');
+      if (el) el.textContent = ch.end.line;
+      if (es) es.textContent = ch.end.sub;
+    }
     let fired = false, skipped = false;
     const finish = () => {
       if (fired) return; fired = true;
@@ -13568,12 +13607,13 @@
       if (idx > 0) { const prev = document.getElementById(SHOTS[idx-1].id); if (prev) prev.classList.remove('active', SHOTS[idx-1].kb); }
       if (idx >= SHOTS.length) { setTimeout(finish, 400); return; }
       const shot = SHOTS[idx];
+      const lineText = chVal(shot.line), subText = chVal(shot.sub);
       const el  = document.getElementById(shot.id);
       const txt = document.getElementById('ch-text');
       el.classList.add('active');
       setTimeout(() => el.classList.add(shot.kb), 20);
       txt.className = 'bdc-text';
-      txt.innerHTML = `<div class="bdc-text__line">${shot.line}</div><div class="bdc-text__sub">${shot.sub}</div>`;
+      txt.innerHTML = `<div class="bdc-text__line">${lineText}</div><div class="bdc-text__sub">${subText}</div>`;
       setTimeout(() => txt.classList.add('visible'), 300);
       if (shot.glitch) {
         setTimeout(() => {
@@ -13584,7 +13624,7 @@
           // The leak: for one broken moment, something else speaks through the
           // System's sentence — then it's gone, as if it was never there.
           if (shot.leak && lineEl) {
-            const original = shot.line;
+            const original = lineText;
             setTimeout(() => { lineEl.textContent = shot.leak; lineEl.classList.add('ch-leak'); }, 380);
             setTimeout(() => { lineEl.textContent = original; lineEl.classList.remove('ch-leak'); }, 820);
           }
@@ -13609,12 +13649,15 @@
     try {
       if (localStorage.getItem('weebji_penance_active') === '1') return; // penance owns the boot
       if (!localStorage.getItem('weebji_class')) return;                 // not onboarded yet
-      if (localStorage.getItem('weebji_ch2_seen')) return;
-      if (getChapterDay() < 2) return;
+      const day = getChapterDay();
+      // Earliest unseen unlocked chapter plays; one transmission per boot keeps
+      // the drip even when a returning veteran has several banked.
+      const next = CHAPTERS.find(c => c.shots && c.unlockDay && day >= c.unlockDay && !localStorage.getItem('weebji_ch' + c.id + '_seen'));
+      if (!next) return;
       // Mark seen at playback start — a mid-scene crash must never loop the cutscene
-      localStorage.setItem('weebji_ch2_seen', '1');
-      if (typeof posthog !== 'undefined') posthog.capture('chapter_unlocked', { chapter: 2 });
-      setTimeout(() => playChapterCutscene(CHAPTERS[1]), 1200);
+      localStorage.setItem('weebji_ch' + next.id + '_seen', '1');
+      if (typeof posthog !== 'undefined') posthog.capture('chapter_unlocked', { chapter: next.id });
+      setTimeout(() => playChapterCutscene(next), 1200);
     } catch(_) {}
   }
 
@@ -13628,10 +13671,11 @@
     if (!host) return;
     const days = getChapterDay();
     const ch2Seen = !!localStorage.getItem('weebji_ch2_seen');
+    const ch3Seen = !!localStorage.getItem('weebji_ch3_seen');
     const rows = [
       { n:'I',   name:'THE AWAKENING',       state:'RECEIVED · REPLAY', locked:false },
       { n:'II',  name:'SIGNAL DECAY',        state: ch2Seen ? 'RECEIVED · REPLAY' : (days >= 2 ? 'INCOMING' : 'DAY 2'), locked: !ch2Seen && days < 2 },
-      { n:'III', name:'THE OTHERS',          state:'DAY 3', locked:true },
+      { n:'III', name:'THE OTHERS',          state: ch3Seen ? 'RECEIVED · REPLAY' : (days >= 3 ? 'INCOMING' : 'DAY 3'), locked: !ch3Seen && days < 3 },
       { n:'IV',  name:'WHAT THE VOID TAKES', state:'DAY 5', locked:true },
       { n:'V',   name:'THE AWAKENED',        state:'DAY 7', locked:true },
       { n:'?',   name:'SIGNAL BURIED',       state:'EARN IT', locked:true },
@@ -13647,6 +13691,11 @@
     if (ch2row && (ch2Seen || days >= 2)) {
       ch2row.style.cursor = 'pointer';
       ch2row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch2_seen', '1'); CHAPTERS[1]._ret = 'profile'; playChapterCutscene(CHAPTERS[1]); };
+    }
+    const ch3row = host.querySelector('[data-tx="2"]');
+    if (ch3row && (ch3Seen || days >= 3)) {
+      ch3row.style.cursor = 'pointer';
+      ch3row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch3_seen', '1'); const ch3 = CHAPTERS.find(c => c.id === 3); ch3._ret = 'profile'; playChapterCutscene(ch3); };
     }
   }
 

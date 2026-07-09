@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v368 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v368';
+// ── WEEBJI OS — Service Worker v369 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v369';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
 
@@ -38,6 +38,8 @@ const BG_IMAGES = [
   'assets/cutscenes/ch2-3.jpg','assets/cutscenes/ch2-4.jpg',
   'assets/cutscenes/ch3-1.jpg','assets/cutscenes/ch3-2.jpg',
   'assets/cutscenes/ch3-3.jpg','assets/cutscenes/ch3-4.jpg',
+  'assets/cutscenes/ch4-1.jpg','assets/cutscenes/ch4-2.jpg',
+  'assets/cutscenes/ch4-3.jpg','assets/cutscenes/ch4-4.jpg',
 ];
 
 self.addEventListener('activate', e => {

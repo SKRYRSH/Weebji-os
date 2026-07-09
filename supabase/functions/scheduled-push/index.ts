@@ -22,6 +22,7 @@ const NOTIF: Record<string, { title: string; body: string }> = {
   boss_taunt:           { title: '⚔ THE BOSS TAUNTS YOU',       body: 'No damage dealt today. The siege will not win itself.' },
   day2_transmission:    { title: '◈ INCOMING TRANSMISSION',     body: 'A signal awaits, Hunter. The System has something you should see. Open the channel.' },
   day3_transmission:    { title: '◈ INCOMING TRANSMISSION',     body: 'You were not the first to be chosen, Hunter. The archive has opened. See who stood where you stand.' },
+  day5_transmission:    { title: '◈ INCOMING TRANSMISSION',     body: 'Disclosure protocol is open, Hunter. The System has named what took the ones who stopped. Come and hear it.' },
 };
 
 // Weekly siege boss roster — MUST mirror DUNGEONS order + week math in index.html
@@ -39,8 +40,8 @@ const TAUNTS = [
   'Your siege has gone quiet. Shall I tell the leaderboard you surrendered?',
 ];
 const BOSS_TAUNT_LOCAL_HOUR = 13;
-// Ch2/Ch3 chapter appointments (STORY_BIBLE): the push IS the transmission.
-// day2 targets signups 24-48h old, day3 targets 48-72h — both at local evening.
+// Ch2/Ch3/Ch4 chapter appointments (STORY_BIBLE): the push IS the transmission.
+// day2 targets signups 24-48h old, day3 48-72h, day5 96-120h — all at local evening.
 const DAY2_LOCAL_HOUR = 18;
 
 function bossThisWeek(): string {
@@ -149,9 +150,9 @@ Deno.serve(async (req) => {
         const eveningNow = new Set((tzRows || []).filter(r => localHour(r.timezone) === COMEBACK_LOCAL_HOUR).map(r => r.user_id));
         userIds = bandIds.filter(id => eveningNow.has(id));
       }
-    } else if (type === 'day2_transmission' || type === 'day3_transmission') {
+    } else if (type === 'day2_transmission' || type === 'day3_transmission' || type === 'day5_transmission') {
       // progress has no created_at — signup time lives in auth.users (admin API)
-      const [ageMinH, ageMaxH] = type === 'day2_transmission' ? [24, 48] : [48, 72];
+      const [ageMinH, ageMaxH] = type === 'day2_transmission' ? [24, 48] : type === 'day3_transmission' ? [48, 72] : [96, 120];
       const { data: usersPage } = await sb.auth.admin.listUsers({ page: 1, perPage: 1000 });
       const d2Ids = (usersPage?.users || [])
         .filter(u => {

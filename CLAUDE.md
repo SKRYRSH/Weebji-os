@@ -24,6 +24,9 @@
 ## Security
 - Never bypass git hooks (--no-verify)
 - Input validation at system boundaries only
+- CLIENT WORK IS PRIVATE: `barbaros/` (and any future client folder) must NEVER be committed
+  or pushed — this repo (SKRYRSH/Weebji-os) is PUBLIC. .gitignore enforces this; never remove
+  those entries, never `git add -f` client files. New client folder = add it to .gitignore first.
 
 ## Session Workflow (start every session here)
 1. Read memory MEMORY.md index — recent session files carry open TODOs and root-cause context

@@ -10,6 +10,10 @@
 .DS_Store
 Thumbs.db
 
+# CLIENT WORK — private assets (menus, photos, deliverables). This repo is PUBLIC.
+# Never remove these lines; new client folders get added here too.
+barbaros/
+
 # Root screenshots (large, not needed in repo)
 /*.png
 /*.jpg

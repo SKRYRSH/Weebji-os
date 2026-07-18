@@ -16,6 +16,12 @@
   <link rel="preload" href="assets/bg-levelup.jpeg" as="image" />
   <!-- PostHog Analytics -->
   <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);window._initPostHog=function(){posthog.init('phc_rUZFK8D1ws0J87t0xXS5m2pgivBILx5gXB0fqw52otw',{api_host:'https://us.i.posthog.com',defaults:'2026-01-30',autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true})};if(localStorage.getItem('weebji_analytics_ok')==='1')window._initPostHog();</script>
+  <!-- Until consent runs _initPostHog, posthog is a bare stub array with NO
+       capture/identify — `typeof posthog !== 'undefined'` passes and the call
+       THROWS, killing the caller mid-flight (found 2026-07-18: broke
+       _launchDashboard for every consent-declined device, taking the directive
+       card and later boot steps with it). No-op them until init overwrites. -->
+  <script>(function(){var n=function(){};['capture','identify'].forEach(function(m){if(typeof window.posthog[m]!=='function')window.posthog[m]=n;});})();</script>
   <!-- Global error capture → PostHog (must be early to catch boot errors) -->
   <script>
     window.addEventListener('error', (e) => {
@@ -7601,6 +7607,143 @@
       return pool.find(t => t.id === st.tpl) || pool[0];
     }
 
+    /* Day 8+ Quest Board (v375) — rolls 2 directives (3 at Lv10+): one universal,
+       one class, plus one extra pick. Seeded by date so re-renders never re-roll;
+       independent 15% Priority (2× XP) chance per slot. */
+    function _rollQuests(p, day) {
+      const cls = _cls();
+      const lvl = p.level || 1;
+      const uni = POOL.universal.filter(t => (t.minLvl || 0) <= lvl);
+      const own = (POOL[cls] || []).filter(t => (t.minLvl || 0) <= lvl);
+      const h   = _hash(_today() + '|' + day);
+      const picks = [];
+      if (uni.length) picks.push(uni[h % uni.length]);
+      if (own.length) picks.push(own[(h >>> 4) % own.length]);
+      if (lvl >= 10) {
+        const rest = uni.concat(own).filter(t => !picks.includes(t));
+        if (rest.length) picks.push(rest[(h >>> 12) % rest.length]);
+      }
+      return picks.map((t, i) => ({ tpl: t.id, priority: ((h >>> (8 + i * 5)) % 100) < 15, done: false }));
+    }
+
+    // Day 8+ — each directive completes independently; sealing all pays +15 bonus
+    // and locks the board until midnight. st.done doubles as "board sealed".
+    function _evaluateBoard(p, st) {
+      if (!st.quests || !st.quests.length) return;
+      const cls  = _cls();
+      const pool = POOL.universal.concat(POOL[cls] || []);
+      let gained = 0, completed = 0, hadPriority = false;
+      st.quests.forEach(q => {
+        if (q.done) return;
+        const t = pool.find(x => x.id === q.tpl);
+        if (!t) return;
+        let ok = false;
+        try { ok = !!t.check(p, cls); } catch (e) {}
+        if (!ok) return;
+        q.done = true; completed++;
+        const xp = t.xp * (q.priority ? 2 : 1);
+        gained += xp;
+        if (q.priority) hadPriority = true;
+        if (typeof posthog !== 'undefined') posthog.capture('directive_completed', { day: 'daily', tpl: q.tpl, priority: !!q.priority, xp });
+      });
+      if (!completed) return;
+      const allDone = st.quests.every(q => q.done);
+      if (allDone) { st.done = true; gained += 15; }
+      _set(st);
+      const p2 = loadProgress();
+      p2.xp += gained;
+      const leveled = checkLevelUp(p2);
+      checkSecretTitles(p2, cls);
+      saveProgress(p2); updateXPBar(p2);
+      spawnDropBanner(allDone
+        ? `⟁ ALL DIRECTIVES SEALED — +${gained} XP`
+        : `⟁ DIRECTIVE COMPLETE — +${gained} XP${hadPriority ? ' (PRIORITY 2×)' : ''}`);
+      triggerFlash('flash-class', localStorage.getItem('weebji_color') || '#00F5FF', null);
+      Sound.play(allDone ? 'milestone' : 'check');
+      haptic(allDone ? [80, 50, 80, 50, 200] : [50, 30, 90]);
+      try { SystemVoice.speakDirective(allDone
+        ? 'All directives sealed. The System is satisfied. For today.'
+        : 'Directive complete. Experience granted.'); } catch(_) {}
+      renderCard(p2, cls);
+      if (leveled) setTimeout(() => triggerLevelUp(p2.level), 600);
+    }
+
+    function _startCountdown(color, cls) {
+      const mid = new Date(); mid.setHours(24, 0, 0, 0);
+      const unlock = mid.getTime();
+      const pad = n => String(n).padStart(2, '0');
+      const tick = () => {
+        const el = document.getElementById('dir-count');
+        if (!el) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; return; }
+        const ms = unlock - Date.now();
+        if (ms <= 0) {
+          clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null;
+          triggerFlash('flash-class', color, null);
+          Sound.play('check');
+          haptic([40, 30, 80]);
+          renderCard(loadProgress(), cls);
+          return;
+        }
+        const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+        el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+      };
+      tick();
+      window._weebjiNDTimer = setInterval(tick, 1000);
+    }
+
+    // Day 8+ Quest Board card — rows are read-only status; actions happen in the
+    // pillars and quests, evaluate() detects them (same contract as the protocol).
+    function _renderBoard(p, st, cls) {
+      cls = cls || _cls();
+      if (!st.quests || !st.quests.length) return;
+      const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
+      const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
+      const pool = POOL.universal.concat(POOL[cls] || []);
+      const card = document.createElement('div');
+      card.id = 'directive-card';
+      card.style.cssText = `margin:0 16px 16px;padding:18px 20px;background:rgba(${r},${g},${b},0.04);border:1px solid rgba(${r},${g},${b},0.2);border-radius:16px;font-family:'JetBrains Mono',monospace;position:relative;overflow:hidden;box-shadow:0 0 18px rgba(${r},${g},${b},0.06);`;
+      card.style.setProperty('--nd-glow', `rgba(${r},${g},${b},0.45)`);
+      card.style.setProperty('--nd-dim',  `rgba(${r},${g},${b},0.06)`);
+      if (st.done) {
+        card.classList.add('dir-complete-pop');
+        card.style.textAlign = 'center';
+        card.innerHTML = `
+          <div class="nd-sweep"></div>
+          <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">✓ All Directives Sealed — Day ${st.day}</p>
+          <p class="nd-countdown" style="font-family:'Cinzel',serif;font-size:24px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);margin:0 0 10px" id="dir-count">--:--:--</p>
+          <p style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0">TOMORROW: <span class="dir-redacted">DIRECTIVES CLASSIFIED</span><br>"The System has already chosen your next trials.<br>Return when the seal breaks."</p>`;
+        _startCountdown(color, cls);
+      } else {
+        card.classList.add('nd-unlocked');
+        const anyPriority = st.quests.some(q => q.priority && !q.done);
+        if (anyPriority) card.classList.add('dir-priority');
+        const rows = st.quests.map(q => {
+          const t = pool.find(x => x.id === q.tpl);
+          if (!t) return '';
+          const xp = t.xp * (q.priority ? 2 : 1);
+          const dim = q.done;
+          return `
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(${r},${g},${b},0.10);${dim ? 'opacity:0.45;' : ''}">
+              <span style="font-size:13px;line-height:1.5;color:rgba(${r},${g},${b},${dim ? '0.9' : '0.5'});flex-shrink:0">${dim ? '✓' : '◇'}</span>
+              <span style="flex:1;font-size:12px;color:rgba(255,255,255,${dim ? '0.5' : '0.75'});line-height:1.55;text-align:left;${dim ? 'text-decoration:line-through;' : ''}">${t.text}</span>
+              <span style="flex-shrink:0;font-size:9px;letter-spacing:0.1em;padding-top:2px;color:${q.priority ? 'rgba(255,200,87,0.9)' : `rgba(${r},${g},${b},0.7)`}">${q.priority ? '⚠ ' : ''}+${xp}</span>
+            </div>`;
+        }).join('');
+        card.innerHTML = `
+          <p style="font-size:9px;letter-spacing:0.35em;color:${anyPriority ? 'rgba(255,200,87,0.8)' : `rgba(${r},${g},${b},0.55)`};text-transform:uppercase;margin:0 0 4px;text-align:center">⟁ Daily Directives — Day ${st.day}${anyPriority ? ' — Priority Active' : ''}</p>
+          <p style="font-size:10px;color:rgba(255,255,255,0.35);margin:0 0 6px;text-align:center">Seal all ${st.quests.length} for a +15 XP bonus.</p>
+          ${rows}`;
+      }
+      const forgeCard = document.getElementById('forge-card');
+      if (forgeCard && forgeCard.parentNode) forgeCard.parentNode.insertBefore(card, forgeCard);
+      else { const scroll = document.querySelector('.dash-scroll'); if (scroll) scroll.prepend(card); }
+      // Morning briefing — once per local day, normal voice
+      if (!st.done && localStorage.getItem('weebji_dir_tts_date') !== _today()) {
+        localStorage.setItem('weebji_dir_tts_date', _today());
+        try { SystemVoice.speakDirective(`New directives issued. ${st.quests.length} trials await.`); } catch(_) {}
+      }
+    }
+
     // Called from finishFirstDirective: day 1 done, day 2 sealed until midnight
     function beginProtocol() {
       _set({ date: _today(), day: 1, done: true });
@@ -7616,7 +7759,11 @@
         if (!localStorage.getItem(DAY_KEY)) localStorage.setItem(DAY_KEY, '8');
       }
       let st = _get();
-      if (st && st.date === _today()) return st;
+      if (st && st.date === _today()) {
+        // Migration: pre-v375 day-8+ state has a single tpl, no quests array
+        if (st.day > 7 && !st.quests) { st.quests = _rollQuests(p, st.day); st.done = false; _set(st); }
+        return st;
+      }
       // Migration: users mid-flow on the old next-directive card
       if (!st) {
         const oldUnlock = parseInt(localStorage.getItem('weebji_next_directive_unlock') || '0');
@@ -7629,19 +7776,18 @@
           return st;
         }
       }
-      // New day — the System assigns today's directive
+      // New day — the System assigns today's directives
       let day = Math.max(2, parseInt(localStorage.getItem(DAY_KEY) || '2'));
       // Level 20+ mid-protocol = veteran who slipped in — the Awakening is for
       // newcomers; their day's check auto-passes instantly anyway (v270)
       if (day <= 7 && (p.level || 1) >= 20) { day = 8; localStorage.setItem(DAY_KEY, '8'); }
-      st = { date: _today(), day, done: false };
-      if (day > 7) {
-        const cls = _cls();
-        const pool = POOL.universal.concat(POOL[cls] || []).filter(t => (t.minLvl || 0) <= (p.level || 1));
-        const h = _hash(_today() + '|' + day);
-        st.tpl = pool[h % pool.length].id;
-        st.priority = ((h >>> 8) % 100) < 15;
+      // Day 8+ counts issued directive-days — a new day advances it whether or
+      // not yesterday's board was sealed (v375; completion drove it pre-board)
+      if (day > 7 && st && st.date !== _today()) {
+        day = day + 1; localStorage.setItem(DAY_KEY, String(day));
       }
+      st = { date: _today(), day, done: false };
+      if (day > 7) st.quests = _rollQuests(p, day);
       _set(st);
       return st;
     }
@@ -7653,7 +7799,7 @@
       // no state exists yet to mark done, and the card later renders fresh.
       const st = _ensureToday(p);
       if (!st || st.date !== _today() || st.done) return;
-      if (st.day > 7) return; // day-8+ belongs to the Oath — procedural directives never grant XP again
+      if (st.day > 7) { _evaluateBoard(p, st); return; } // day-8+ = Quest Board (v375), alongside the Oath
       const cls = _cls();
       const t = _resolve(st, cls);
       if (!t) return;
@@ -7687,7 +7833,7 @@
       if (window._weebjiNDTimer) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; }
       const st = _ensureToday(p);
       if (!st) return;
-      if (st.day > 7) { OathEngine.renderCard(p, cls); return; } // the Awakened swear Oaths now
+      if (st.day > 7) { _renderBoard(p, st, cls); OathEngine.renderCard(p, cls); return; } // Quest Board + Oath coexist (v375)
       cls = cls || _cls();
       const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
       const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
@@ -14420,7 +14566,25 @@ ${particles}
     // 66+ js_errors in 7 days. `say` is just a thin alias for `speak` (one-liner
     // System lines). `speakBoss` was defined inside this IIFE but not surfaced.
     const say = (text) => speak(text, 0);
-    return { isEnabled, toggle, speak, say, speakBoss, speakContractOnce, greet, firstContact, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
+    // Quest Board announcements (v375) — NORMAL voice by explicit request: the
+    // deep-pitch tuning "sounded VERY VERY BAD" (Sahil, 2026-07-18). Do not
+    // lower pitch/rate here. Same Plus/trial gating as speak().
+    function speakDirective(text) {
+      if (!isWeebjiPlus() && !isInVoiceTrial()) return;
+      if (!isEnabled()) return;
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.rate = 1.0; utt.pitch = 1.0; utt.volume = 0.9;
+      const voices = window.speechSynthesis.getVoices();
+      const _isQuality = v => /natural|neural|enhanced|premium/i.test(v.name);
+      const preferred = voices.find(v => _isQuality(v) && v.lang && v.lang.startsWith('en'))
+        || voices.find(v => v.lang && v.lang.startsWith('en'));
+      if (preferred) utt.voice = preferred;
+      window.speechSynthesis.speak(utt);
+    }
+
+    return { isEnabled, toggle, speak, say, speakBoss, speakContractOnce, speakDirective, greet, firstContact, onLevelUp, onStreakLoss, onHPCritical, onPenance, onStreakMilestone, onCriticalDrop, onBossDefeat, onPrestige, onReturnAfterGap };
   })();
 
   /* ══ PHASE 5 — DASHBOARD EVOLUTION ═══════════ */

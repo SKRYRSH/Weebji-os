@@ -7737,14 +7737,53 @@
       card.style.cssText = `margin:0 16px 16px;padding:18px 20px;background:rgba(${r},${g},${b},0.04);border:1px solid rgba(${r},${g},${b},0.2);border-radius:16px;font-family:'JetBrains Mono',monospace;position:relative;overflow:hidden;box-shadow:0 0 18px rgba(${r},${g},${b},0.06);`;
       card.style.setProperty('--nd-glow', `rgba(${r},${g},${b},0.45)`);
       card.style.setProperty('--nd-dim',  `rgba(${r},${g},${b},0.06)`);
+      // v377 unified campaign card — ⟐ objective strip on top, directives in the
+      // middle, oath as a slim expandable row at the bottom. One card, one ladder.
+      let stripHtml = '';
+      try {
+        ObjectiveEngine.resolveIfDue(p);
+        const o = p.objective;
+        if (o && o.status === 'active') {
+          const i = ObjectiveEngine.info(o);
+          stripHtml = `
+          <div style="margin:0 0 12px;padding:10px 12px;background:rgba(255,200,87,0.05);border:1px solid rgba(255,200,87,0.22);border-radius:12px;text-align:left">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+              <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:0.06em;color:rgba(255,255,255,0.92)">⟐ ${i.esc}</span>
+              <span style="font-size:10px;letter-spacing:0.1em;color:${i.late ? '#FFC857' : 'rgba(255,200,87,0.75)'};flex-shrink:0">${i.left}D LEFT</span>
+            </div>
+            <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.07);overflow:hidden;margin:7px 0 5px">
+              <div style="height:100%;width:${i.pct}%;background:linear-gradient(90deg,rgba(255,200,87,0.55),rgba(255,200,87,0.9))"></div>
+            </div>
+            <div style="font-size:8px;letter-spacing:0.14em;color:rgba(255,255,255,0.38);text-transform:uppercase">Prime Objective · ${i.kept}/${i.total} kept · need 60%${i.late ? ' · <span style="color:#FFC857">final stretch</span>' : ''}</div>
+          </div>`;
+        } else if (!(o && (o.status === 'done' || o.status === 'failed') && Date.now() - (o.resolvedAt || 0) < 172800000)) {
+          stripHtml = `
+          <div id="obj-strip-declare" style="margin:0 0 12px;padding:10px 12px;border:1px dashed rgba(255,200,87,0.3);border-radius:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;-webkit-tap-highlight-color:transparent">
+            <span style="font-size:9px;letter-spacing:0.16em;color:rgba(255,200,87,0.6);text-transform:uppercase">⟐ Declare a Prime Objective</span>
+            <span style="font-size:9px;color:rgba(255,200,87,0.5)">→</span>
+          </div>`;
+        }
+      } catch (_) {}
+      let oathRowHtml = '';
+      try {
+        const s = OathEngine.summary(p);
+        const open = localStorage.getItem('weebji_oath_open') === '1';
+        oathRowHtml = `
+          <div id="oath-row" style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding:9px 12px;border:1px solid ${s.state === 'cold' ? 'rgba(255,59,92,0.25)' : `rgba(${r},${g},${b},0.14)`};border-radius:10px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+            <span style="font-size:9px;letter-spacing:0.14em;color:${s.state === 'cold' ? 'rgba(255,59,92,0.6)' : `rgba(${r},${g},${b},0.65)`};text-transform:uppercase;text-align:left">${s.text}</span>
+            <span id="oath-row-arrow" style="font-size:9px;color:rgba(255,255,255,0.3);flex-shrink:0">${open ? '▾' : '▸'}</span>
+          </div>`;
+      } catch (_) {}
       if (st.done) {
         card.classList.add('dir-complete-pop');
         card.style.textAlign = 'center';
         card.innerHTML = `
           <div class="nd-sweep"></div>
+          ${stripHtml}
           <p style="font-size:9px;letter-spacing:0.35em;color:rgba(${r},${g},${b},0.55);text-transform:uppercase;margin:0 0 10px">✓ All Directives Sealed — Day ${st.day}</p>
           <p class="nd-countdown" style="font-family:'Cinzel',serif;font-size:24px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);margin:0 0 10px" id="dir-count">--:--:--</p>
-          <p style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0">TOMORROW: <span class="dir-redacted">DIRECTIVES CLASSIFIED</span><br>"The System has already chosen your next trials.<br>Return when the seal breaks."</p>`;
+          <p style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0">TOMORROW: <span class="dir-redacted">DIRECTIVES CLASSIFIED</span><br>"The System has already chosen your next trials.<br>Return when the seal breaks."</p>
+          ${oathRowHtml}`;
         _startCountdown(color, cls);
       } else {
         card.classList.add('nd-unlocked');
@@ -7763,13 +7802,27 @@
             </div>`;
         }).join('');
         card.innerHTML = `
+          ${stripHtml}
           <p style="font-size:9px;letter-spacing:0.35em;color:${anyPriority ? 'rgba(255,200,87,0.8)' : `rgba(${r},${g},${b},0.55)`};text-transform:uppercase;margin:0 0 4px;text-align:center">⟁ Daily Directives — Day ${st.day}${anyPriority ? ' — Priority Active' : ''}</p>
           <p style="font-size:10px;color:rgba(255,255,255,0.35);margin:0 0 6px;text-align:center">Seal all ${st.quests.length} for a +15 XP bonus.</p>
-          ${rows}`;
+          ${rows}
+          ${oathRowHtml}`;
       }
       const forgeCard = document.getElementById('forge-card');
       if (forgeCard && forgeCard.parentNode) forgeCard.parentNode.insertBefore(card, forgeCard);
       else { const scroll = document.querySelector('.dash-scroll'); if (scroll) scroll.prepend(card); }
+      // Strip + oath row wiring
+      card.querySelector('#obj-strip-declare')?.addEventListener('click', () => { Sound.play('tap'); try { ObjectiveEngine.openOverlay(); } catch (_) {} });
+      const oathRowEl = card.querySelector('#oath-row');
+      if (oathRowEl) oathRowEl.addEventListener('click', () => {
+        Sound.play('tap');
+        const nowOpen = localStorage.getItem('weebji_oath_open') !== '1';
+        localStorage.setItem('weebji_oath_open', nowOpen ? '1' : '0');
+        const oc = document.getElementById('oath-card');
+        if (oc) oc.style.display = nowOpen ? '' : 'none';
+        const arrow = document.getElementById('oath-row-arrow');
+        if (arrow) arrow.textContent = nowOpen ? '▾' : '▸';
+      });
       // Morning briefing — once per local day, normal voice
       if (!st.done && localStorage.getItem('weebji_dir_tts_date') !== _today()) {
         localStorage.setItem('weebji_dir_tts_date', _today());
@@ -7866,7 +7919,16 @@
       if (window._weebjiNDTimer) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; }
       const st = _ensureToday(p);
       if (!st) return;
-      if (st.day > 7) { _renderBoard(p, st, cls); OathEngine.renderCard(p, cls); try { ObjectiveEngine.renderCard(p); } catch (_) {} return; } // Quest Board + Oath + Prime Objective coexist (v375/376)
+      if (st.day > 7) {
+        // v377 unified ladder: board card (objective strip + directives + oath row),
+        // full oath card collapsed behind the row, objective verdict card when due
+        _renderBoard(p, st, cls);
+        OathEngine.renderCard(p, cls);
+        const _oc = document.getElementById('oath-card');
+        if (_oc && localStorage.getItem('weebji_oath_open') !== '1') _oc.style.display = 'none';
+        try { ObjectiveEngine.renderCard(p); } catch (_) {}
+        return;
+      }
       cls = cls || _cls();
       const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
       const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
@@ -8002,6 +8064,12 @@
       return 'obj_' + (TYPES[o.type] ? o.type : 'custom') + (late ? '_hard' : '');
     }
 
+    // Compact numbers for the campaign strip on the unified board card (v377)
+    function info(o) {
+      return { name: o.name, typeLabel: TYPES[o.type]?.label || 'TARGET', left: _daysLeft(o), kept: _keptDays(o), total: _totalDays(o),
+               pct: Math.min(100, Math.round((_keptDays(o) / _totalDays(o)) * 100)), late: tplFor(o).endsWith('_hard'), esc: _esc(o.name) };
+    }
+
     function stampToday(p) {
       const o = isActive(p);
       if (!o) return;
@@ -8092,39 +8160,23 @@
       });
     }
 
-    // Card sits below the Quest Board — active campaign, fresh verdict, or the declare teaser
+    // v377: active/none states live as the strip INSIDE the unified board card
+    // (see DirectiveEngine._renderBoard) — this card only carries the 48h verdict.
     function renderCard(p) {
       document.getElementById('objective-card')?.remove();
       _resolveIfDue(p);
       const o = p.objective;
+      if (!(o && (o.status === 'done' || o.status === 'failed') && Date.now() - (o.resolvedAt || 0) < 172800000)) return;
       const card = document.createElement('div');
       card.id = 'objective-card';
       card.style.cssText = 'margin:0 16px 16px;padding:16px 20px;background:rgba(255,200,87,0.03);border:1px solid rgba(255,200,87,0.18);border-radius:16px;font-family:\'JetBrains Mono\',monospace;text-align:center;position:relative;overflow:hidden;';
-      if (o && o.status === 'active') {
-        const total = _totalDays(o), kept = _keptDays(o), left = _daysLeft(o);
-        const pct = Math.min(100, Math.round((kept / total) * 100));
-        const needPct = Math.round(KEEP_RATIO * 100);
-        const late = tplFor(o).endsWith('_hard');
-        card.innerHTML = `
-          <p style="font-size:9px;letter-spacing:0.3em;color:rgba(255,200,87,0.6);text-transform:uppercase;margin:0 0 6px">⟐ Prime Objective — ${TYPES[o.type]?.label || 'TARGET'}</p>
-          <p style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.92);margin:0 0 8px">${_esc(o.name)}</p>
-          <p style="font-size:22px;font-family:'Cinzel',serif;letter-spacing:0.12em;color:${late ? '#FFC857' : 'rgba(255,255,255,0.85)'};margin:0 0 8px">${left} DAY${left === 1 ? '' : 'S'} REMAIN</p>
-          <div style="height:5px;border-radius:3px;background:rgba(255,255,255,0.07);overflow:hidden;margin:0 8px 7px">
-            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,rgba(255,200,87,0.55),rgba(255,200,87,0.9));border-radius:3px"></div>
-          </div>
-          <p style="font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.4);margin:0">${kept}/${total} DAYS KEPT · NEED ${needPct}%${late ? ' · <span style="color:#FFC857">FINAL STRETCH — DEMANDS RAISED</span>' : ''}</p>`;
-      } else if (o && (o.status === 'done' || o.status === 'failed') && Date.now() - (o.resolvedAt || 0) < 172800000) {
+      {
         const won = o.status === 'done';
         card.innerHTML = `
           <p style="font-size:9px;letter-spacing:0.3em;color:${won ? 'rgba(255,200,87,0.7)' : 'rgba(230,57,70,0.6)'};text-transform:uppercase;margin:0 0 6px">⟐ Prime Objective — ${won ? 'Complete' : 'Failed'}</p>
           <p style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:rgba(255,255,255,0.9);margin:0 0 8px">${_esc(o.name)}</p>
           <p style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;margin:0 0 12px">${won ? `${_keptDays(o)}/${_totalDays(o)} days kept. "You said you would. Then you did. The System remembers both kinds of people."` : `${_keptDays(o)}/${_totalDays(o)} days kept. "The record stands. What you do next decides what it means."`}</p>
           <button id="obj-new-btn" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;background:transparent;border:1px solid rgba(255,200,87,0.4);border-radius:8px;color:#FFC857;padding:10px 18px;cursor:pointer;-webkit-tap-highlight-color:transparent">Declare New Objective →</button>`;
-      } else {
-        card.innerHTML = `
-          <p style="font-size:9px;letter-spacing:0.3em;color:rgba(255,200,87,0.55);text-transform:uppercase;margin:0 0 8px">⟐ Prime Objective — None Declared</p>
-          <p style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.65;margin:0 0 12px">"Give the System a real target — an exam, a body, a skill.<br>It will hold you to it, every single day."</p>
-          <button id="obj-new-btn" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;background:transparent;border:1px solid rgba(255,200,87,0.4);border-radius:8px;color:#FFC857;padding:10px 18px;cursor:pointer;-webkit-tap-highlight-color:transparent">Declare →</button>`;
       }
       card.querySelector('#obj-new-btn')?.addEventListener('click', () => { Sound.play('tap'); _openOverlay(); });
       const dirCard = document.getElementById('directive-card');
@@ -8135,7 +8187,7 @@
       }
     }
 
-    return { renderCard, declare, stampToday, isActive, tplFor };
+    return { renderCard, declare, stampToday, isActive, tplFor, info, openOverlay: _openOverlay, resolveIfDue: _resolveIfDue };
   })();
 
   /* ══ OATH ENGINE — day-8+ weekly vows. The Awakened give orders now. ══
@@ -8204,6 +8256,19 @@
         if (typeof posthog !== 'undefined') posthog.capture('oath_result', { kept: false, type: o.type, target: o.target });
       }
       renderCard(p2);
+    }
+
+    // One-line state for the unified campaign card's oath row (v377)
+    function summary(p) {
+      const o = p.oath;
+      const rank = o?.rank || 0;
+      if (o && o.status === 'active') {
+        const kept = Object.keys(o.days || {}).length;
+        const dLeft = Math.max(0, Math.ceil((o.endsAt - Date.now()) / DAY));
+        return { state: 'active', text: `⟁ OATH — ${TYPES[o.type]?.glyph || '⟁'} ${kept}/${o.target} DAYS · ${dLeft}D LEFT` };
+      }
+      if (o?.coldUntil && Date.now() < o.coldUntil) return { state: 'cold', text: '⟁ OATH BROKEN — RETURNS AT MIDNIGHT' };
+      return { state: 'none', text: `⟁ SWEAR AN OATH${rank > 0 ? ' — OATHKEEPER ' + _roman(rank) : ''}` };
     }
 
     function renderCard(p, cls) {
@@ -8406,7 +8471,7 @@
       }
     }
 
-    return { renderCard, evaluate };
+    return { renderCard, evaluate, summary };
   })();
 
   /* ── HP Bar (5 segmented blocks) ──────────── */

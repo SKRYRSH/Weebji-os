@@ -2346,7 +2346,7 @@
           </div>
         </div>
 
-        <!-- Secondary class pillars (unlocked at Level 3/7) -->
+        <!-- Secondary class pillars (unlocked at Level 4/8, free — WEEBJI+ skips the wait) -->
         <div class="unlock-section" id="secondary-pillars"></div>
 
         <!-- Daily Challenge -->
@@ -2588,7 +2588,7 @@
           </div>
         </div>
         <button class="srg__claim-btn" id="srg-claim-btn" onclick="claimStreakReward()">CLAIM REWARD</button>
-        <button class="srg__upgrade-btn" id="srg-upgrade-btn" onclick="closeStreakRewardGate();showPlusSheet()">UNLOCK WITH WEEBJI+ — $9.99/mo →</button>
+        <button class="srg__upgrade-btn" id="srg-upgrade-btn" onclick="closeStreakRewardGate();showPlusSheet()">UNLOCK WITH WEEBJI+ — ₹149/mo →</button>
       </div>
     </div>
 
@@ -3772,10 +3772,18 @@
     monk:       ['monarch', 'mastermind'],
   };
 
-  // Level required to unlock a secondary class for a given primary class (1st = Lv3, 2nd = Lv7)
+  // Level required to unlock a secondary class for a given primary class (1st = Lv4, 2nd = Lv8)
   function _secondaryUnlockLevel(primaryCls, secondaryCls) {
     const idx = (CLASS_UNLOCK_ORDER[primaryCls] || []).indexOf(secondaryCls);
-    return idx === 0 ? 3 : idx === 1 ? 7 : 1;
+    return idx === 0 ? 4 : idx === 1 ? 8 : 1;
+  }
+
+  // Pillar access: your own class always; other paths unlock by level (WEEBJI+ skips the wait)
+  function canAccessPillar(secondaryCls) {
+    const cls = localStorage.getItem('weebji_class') || 'monarch';
+    if (cls === secondaryCls || isWeebjiPlus()) return true;
+    const p = loadProgress();
+    return (p.level || 1) >= _secondaryUnlockLevel(cls, secondaryCls);
   }
 
   const CHECK_SVG = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6l3 3 5-5"/></svg>`;
@@ -4228,7 +4236,7 @@
 
   // Play Billing SKU IDs — must match exactly what you create in Play Console
   const PLAY_SKUS = { monthly: 'weebji_plus_monthly', annual: 'weebji_plus_annual', ghost_token: 'weebji_ghost_token', ghost_token_3: 'weebji_ghost_token_3' };
-  const PLAY_PRICES = { monthly: '9.99', annual: '59.99', ghost_token: '0.99', ghost_token_3: '1.99' };
+  const PLAY_PRICES = { monthly: '149.00', annual: '999.00', ghost_token: '29.00', ghost_token_3: '59.00' };
   const _SB_URL = 'https://qpcqbiicomlpsmkgqhsm.supabase.co';
   const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwY3FiaWljb21scHNta2dxaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTU0NjYsImV4cCI6MjA4OTQzMTQ2Nn0.RGHdyTDAea-85XNU5gOJ-lmwVTbGzkeadFXQH5w37aE';
 
@@ -4279,7 +4287,7 @@
 
       const request = new PaymentRequest(
         [{ supportedMethods: 'https://play.google.com/billing', data: { sku } }],
-        { total: { label: 'WEEBJI+', amount: { currency: 'USD', value: PLAY_PRICES[plan] || '9.99' } } }
+        { total: { label: 'WEEBJI+', amount: { currency: 'INR', value: PLAY_PRICES[plan] || '149.00' } } }
       );
       const canPay = await request.canMakePayment();
       if (!canPay) { _ph('billing_canpay_false', { sku, plan }); spawnDropBanner('◆  Google Play Billing unavailable'); return true; }
@@ -4464,8 +4472,8 @@
       el.innerHTML = `
         <div class="profile-plus-active">WEEBJI+ ACTIVE</div>
         <button class="ghost-shop-btn" onclick="Sound.play('tap');window.open('https://play.google.com/store/account/subscriptions?package=io.github.skryrsh.twa','_blank','noopener,noreferrer')" style="margin-bottom:8px;border-color:rgba(255,255,255,0.14);color:rgba(255,255,255,0.62);">⚙ Manage Subscription</button>
-        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
+        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — ₹59 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 32%</span></button>
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — ₹29</button>
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.5);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
     } else if (onFreeTrial) {
       el.innerHTML = `
@@ -4474,18 +4482,18 @@
         <div class="plus-plans">
           <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('monthly')">
             <div class="plus-plan__period">Monthly</div>
-            <div class="plus-plan__price">$9.99</div>
+            <div class="plus-plan__price">₹149</div>
             <div class="plus-plan__unit">/month</div>
           </div>
           <div class="plus-plan featured" id="plus-plan-annual" onclick="Sound.play('tap');_openCheckout('annual')">
             <div class="plus-plan__badge">BEST VALUE</div>
             <div class="plus-plan__period">Annual</div>
-            <div class="plus-plan__price">$59.99</div>
+            <div class="plus-plan__price">₹999</div>
             <div class="plus-plan__unit">/year — save 50%</div>
           </div>
         </div>
-        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
+        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — ₹59 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 32%</span></button>
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — ₹29</button>
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.5);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
     } else {
       const trialActive = isInVoiceTrial();
@@ -4535,24 +4543,24 @@
           <div class="plus-plans">
             <div class="plus-plan" id="plus-plan-monthly" onclick="Sound.play('tap');_openCheckout('monthly')">
               <div class="plus-plan__period">Monthly</div>
-              <div class="plus-plan__price">$9.99</div>
+              <div class="plus-plan__price">₹149</div>
               <div class="plus-plan__unit">/month</div>
             </div>
             <div class="plus-plan featured" id="plus-plan-annual" onclick="Sound.play('tap');_openCheckout('annual')">
               <div class="plus-plan__badge">BEST VALUE</div>
               <div class="plus-plan__period">Annual</div>
-              <div class="plus-plan__price">$59.99</div>
+              <div class="plus-plan__price">₹999</div>
               <div class="plus-plan__unit">/year — save 50%</div>
             </div>
           </div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.2);text-align:center;padding:6px 0 2px;line-height:1.7;">Billed via Google Play. Cancel anytime: Google Play → Subscriptions.<br>Monthly $9.99/mo · Annual $59.99/yr billed as one payment.</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.2);text-align:center;padding:6px 0 2px;line-height:1.7;">Billed via Google Play. Cancel anytime: Google Play → Subscriptions.<br>Monthly ₹149/mo · Annual ₹999/yr billed as one payment.</div>
         </div>
         <div style="text-align:center;margin:4px 0 8px">
           <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(255,255,255,0.22);text-transform:uppercase">— or start small —</div>
           <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.5);margin-top:3px;font-style:italic">Not ready for WEEBJI+? Grab a Ghost Token and feel what saving your streak is like.</div>
         </div>
-        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 33%</span></button>
-        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — $0.99</button>
+        <button class="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — ₹59 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 32%</span></button>
+        <button class="ghost-shop-btn" id="ghost-shop-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — ₹29</button>
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:rgba(255,255,255,0.5);text-align:center;padding:4px 0;">Ghost Tokens are virtual items. Non-refundable. No cash value outside WEEBJI OS.</div>`;
       // Async: fill social proof with real premium count
       _fetchPremiumCount();
@@ -4625,13 +4633,13 @@
       <div class="plus-plans" style="margin-bottom:16px">
         <div class="plus-plan" onclick="closePlusSheet();Sound.play('tap');_openCheckout('monthly')">
           <div class="plus-plan__period">Monthly</div>
-          <div class="plus-plan__price">$9.99</div>
+          <div class="plus-plan__price">₹149</div>
           <div class="plus-plan__unit">/month</div>
         </div>
         <div class="plus-plan featured" onclick="closePlusSheet();Sound.play('tap');_openCheckout('annual')">
           <div class="plus-plan__badge">BEST VALUE</div>
           <div class="plus-plan__period">Annual</div>
-          <div class="plus-plan__price">$59.99</div>
+          <div class="plus-plan__price">₹999</div>
           <div class="plus-plan__unit">/year — save 50%</div>
         </div>
       </div>
@@ -4639,8 +4647,8 @@
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(255,255,255,0.22);text-transform:uppercase">— or start small —</div>
         <div style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,0.5);margin-top:3px;font-style:italic">Not ready for WEEBJI+? Grab a Ghost Token and feel what saving your streak is like.</div>
       </div>
-      <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95)">👻 3 Ghost Tokens — $1.99 <span style="font-size:8px;opacity:0.6;margin-left:4px">SAVE 33%</span></button>
-      <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token')" style="margin-bottom:8px">👻 1 Ghost Token — $0.99</button>`;
+      <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95)">👻 3 Ghost Tokens — ₹59 <span style="font-size:8px;opacity:0.6;margin-left:4px">SAVE 32%</span></button>
+      <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token')" style="margin-bottom:8px">👻 1 Ghost Token — ₹29</button>`;
     document.getElementById('plus-sheet').classList.add('active');
     document.getElementById('plus-sheet-backdrop').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -5438,7 +5446,7 @@
     } else if (tBar) { tBar.style.display = 'none'; }
 
     const features = [
-      { icon: '◈', title: 'The White Room & The Sanctuary', desc: 'Two more entire classes — Mastermind and Monk. Walk every path, not just one.' },
+      { icon: '◈', title: 'Instant Path Access', desc: 'Every pillar — The Forge, The White Room, The Sanctuary — unsealed from Level 1. No level gates. No waiting.' },
       { icon: '👤', title: 'Shadow Rival', desc: 'A phantom copy of your best self hunts your XP every day. Beat it — or watch it beat you.' },
       { icon: '◈', title: 'Prestige System', desc: 'Hit Level 100 and reset — harder. Each prestige earns a ◈ badge. Free hunters stay capped.' },
       { icon: '🗣', title: 'System Voice', desc: 'The System speaks your name. Knows your streak, your class, your enemy. Personal. Unsettling. Effective.' },
@@ -5458,8 +5466,8 @@
           <div class="premium-hype__feature-text"><strong>${f.title}</strong> — ${f.desc}</div>
         </div>`).join('')}
       </div>
-      <button class="premium-hype__cta" onclick="showPlusSheet()">Unlock WEEBJI+ — $9.99/mo</button>
-      <div class="premium-hype__price">or $59.99/yr — save 50% · cancel anytime</div>
+      <button class="premium-hype__cta" onclick="showPlusSheet()">Unlock WEEBJI+ — ₹149/mo</button>
+      <div class="premium-hype__price">or ₹999/yr — save 44% · cancel anytime</div>
     </div>`;
   }
 
@@ -5486,7 +5494,7 @@
       el.innerHTML = `
         <p style="font-size:9px;letter-spacing:0.3em;color:rgba(255,200,87,0.8);text-transform:uppercase;margin:0 0 8px">${COPY[trigger].e}</p>
         <p style="font-size:12px;color:rgba(255,255,255,0.78);line-height:1.65;margin:0 0 14px">${COPY[trigger].b}</p>
-        <button id="peak-upsell-cta" style="display:block;width:100%;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;background:rgba(255,200,87,0.08);border:1px solid rgba(255,200,87,0.5);border-radius:8px;color:#FFC857;padding:12px;cursor:pointer;-webkit-tap-highlight-color:transparent">Unseal WEEBJI+ — $9.99/mo</button>
+        <button id="peak-upsell-cta" style="display:block;width:100%;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;background:rgba(255,200,87,0.08);border:1px solid rgba(255,200,87,0.5);border-radius:8px;color:#FFC857;padding:12px;cursor:pointer;-webkit-tap-highlight-color:transparent">Unseal WEEBJI+ — ₹149/mo</button>
         <button id="peak-upsell-no" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;background:transparent;border:none;color:rgba(255,255,255,0.35);padding:10px 16px 2px;cursor:pointer;-webkit-tap-highlight-color:transparent">Not yet</button>
       `;
       document.getElementById('app').appendChild(el);
@@ -8142,7 +8150,7 @@
       wrap.className = 'hp-shield-wrap';
       wrap.innerHTML = tokens > 0
         ? `<p class="hp-warn">System critical. One more miss triggers PENANCE.</p><span class="hp-shield-ready">👻 ${tokens} Ghost Token${tokens !== 1 ? 's' : ''} ready — your streak is protected</span>`
-        : `<p class="hp-warn">System critical. One more miss triggers PENANCE.</p><button class="hp-shield-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Buy Ghost Token — $0.99</button>`;
+        : `<p class="hp-warn">System critical. One more miss triggers PENANCE.</p><button class="hp-shield-btn" onclick="Sound.play('tap');_openCheckout('ghost_token')">👻 Buy Ghost Token — ₹29</button>`;
       anchor.insertAdjacentElement('afterend', wrap);
     } else if (hp <= 2) {
       const warnEl = document.createElement('p');
@@ -9371,16 +9379,17 @@
       const meta = CLASS_META[secondaryCls];
       hasAny = true;
 
-      const requiredLevel = idx === 0 ? 3 : 7;
+      const requiredLevel = _secondaryUnlockLevel(cls, secondaryCls);
+      const pillarName = secondaryCls === 'mastermind' ? 'THE WHITE ROOM' : secondaryCls === 'monk' ? 'THE SANCTUARY' : 'THE FORGE';
       if ((p.level || 1) < requiredLevel && !isWeebjiPlus()) {
-        // Level not met — show locked card with level requirement
+        // Level not met — locked teaser so Lv1 users see what the grind earns
         const card = document.createElement('div');
         card.className = 'unlock-card locked';
         card.innerHTML = `
           <div class="unlock-card__icon" style="background:${hexRgba(meta.color,0.06)};color:${meta.color}">${meta.icon}</div>
           <div class="unlock-card__meta">
-            <div class="unlock-card__name" style="color:rgba(255,255,255,0.3)">${meta.label}</div>
-            <div class="unlock-card__status" style="color:rgba(255,255,255,0.2)">LOCKED — Reach Level ${requiredLevel}</div>
+            <div class="unlock-card__name" style="color:rgba(255,255,255,0.35)">${pillarName}</div>
+            <div class="unlock-card__status" style="color:${hexRgba(meta.color,0.45)}">UNSEALS AT LEVEL ${requiredLevel} — YOU ARE LV.${p.level || 1}</div>
           </div>
           <div class="unlock-card__lock" style="color:rgba(255,255,255,0.2)">⊘</div>
         `;
@@ -9388,32 +9397,8 @@
         return;
       }
 
-      if (!isWeebjiPlus()) {
-        // Level met but not Plus — teaser card
-        const pillarName = secondaryCls === 'mastermind' ? 'THE WHITE ROOM' : secondaryCls === 'monk' ? 'THE SANCTUARY' : 'THE FORGE';
-        const pillarDesc = secondaryCls === 'mastermind'
-          ? 'Brain challenges, deep work sessions, task sealing.'
-          : secondaryCls === 'monk'
-          ? 'Breathwork, focus timers, daily ritual checklist.'
-          : 'Training logs, PR tracking, workout streaks.';
-        const card = document.createElement('div');
-        card.style.cssText = `border:1px solid ${hexRgba(meta.color,0.2)};border-radius:14px;padding:16px;background:${hexRgba(meta.color,0.04)};cursor:pointer;margin-bottom:2px;`;
-        card.onclick = () => { Sound.play('tap'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===secondaryCls)); showScreen('dashboard'); document.getElementById(secondaryCls+'-panel').style.display='flex'; document.querySelectorAll('.pillar-panel').forEach(pp=>{ if(pp.id!==secondaryCls+'-panel') pp.style.display='none'; }); if(secondaryCls==='mastermind') renderMastermindPillarPanel(); else if(secondaryCls==='monk') renderMonkPillarPanel(); };
-        card.innerHTML = `
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            <div class="unlock-card__icon" style="background:${hexRgba(meta.color,0.08)};color:${meta.color};border-radius:8px;flex-shrink:0">${meta.icon}</div>
-            <div>
-              <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:0.08em;color:${meta.color};text-shadow:0 0 10px ${hexRgba(meta.color,0.4)}">${pillarName}</div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.2em;color:${hexRgba(meta.color,0.4)};text-transform:uppercase">${meta.label}</div>
-            </div>
-            <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:${hexRgba(meta.color,0.35)};border:1px solid ${hexRgba(meta.color,0.2)};border-radius:6px;padding:3px 7px">PLUS</div>
-          </div>
-          <div style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:12px">${pillarDesc}</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:${hexRgba(meta.color,0.5)};text-transform:uppercase">Preview →</div>
-        `;
-        container.appendChild(card);
-      } else {
-        // Unlocked — show full pillar card
+      {
+        // Level met (or WEEBJI+) — full pillar card, no paywall
         const pillar = document.createElement('div');
         pillar.className = 'pillar-card';
         pillar.style.borderColor = hexRgba(meta.color, 0.22);
@@ -10865,7 +10850,7 @@
   /* ══ PILLAR UNLOCK TOAST ══════════════════════ */
   function triggerPillarUnlock(newLevel, cls) {
     const order = CLASS_UNLOCK_ORDER[cls] || [];
-    const unlockLevels = [3, 7];
+    const unlockLevels = [4, 8];
     const idx = unlockLevels.indexOf(newLevel);
     if (idx < 0 || !order[idx]) return;
 
@@ -11107,9 +11092,11 @@
   function renderMastermindPillarPanel() {
     const panel = document.getElementById('mastermind-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'mastermind' || isWeebjiPlus();
+    const canAccess = canAccessPillar('mastermind');
     _setPillarBg('mastermind');
     if (!canAccess) {
+      const _req = _secondaryUnlockLevel(cls, 'mastermind');
+      const _lvl = loadProgress().level || 1;
       const _bcIdx = _localDayIndex(BRAIN_CHALLENGES.length);
       const _bc    = BRAIN_CHALLENGES[_bcIdx];
       panel.innerHTML = `
@@ -11121,15 +11108,15 @@
           <div style="width:100%;max-width:300px;background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.2);border-radius:12px;padding:14px 16px;margin-bottom:20px;text-align:left">
             <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.3em;color:rgba(230,57,70,0.45);text-transform:uppercase;margin-bottom:8px">Today's Brain Challenge</div>
             <div style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:10px">${_bc.text}</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;color:rgba(230,57,70,0.3)">⊘ Answer sealed — Upgrade to reveal</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;color:rgba(230,57,70,0.3)">⊘ Answer sealed — unseals at Level ${_req}</div>
           </div>
           <ul class="pillar-locked-screen__features">
             <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Daily brain challenge + answer reveal</li>
             <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Deep focus sessions with The Void</li>
             <li class="pillar-locked-screen__feat" style="background:rgba(230,57,70,0.05);border:1px solid rgba(230,57,70,0.12);color:rgba(255,255,255,0.45)">◆ Task sealing + focus streak tracker</li>
           </ul>
-          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(230,57,70,0.5);background:rgba(230,57,70,0.1);color:#E63946;text-shadow:0 0 12px rgba(230,57,70,0.4);box-shadow:0 0 20px rgba(230,57,70,0.08)" onclick="showPlusSheet()">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
+          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(230,57,70,0.5);background:rgba(230,57,70,0.1);color:#E63946;text-shadow:0 0 12px rgba(230,57,70,0.4);box-shadow:0 0 20px rgba(230,57,70,0.08)" onclick="showScreen('dashboard')">REACH LEVEL ${_req} TO UNSEAL — LV.${_lvl}/${_req} →</button>
+          <div class="pillar-locked-screen__price" onclick="showPlusSheet()" style="cursor:pointer">Grind to unseal — or skip the wait with WEEBJI+ →</div>
         </div>`;
       return;
     }
@@ -11176,9 +11163,11 @@
   function renderMonkPillarPanel() {
     const panel = document.getElementById('monk-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'monk' || isWeebjiPlus();
+    const canAccess = canAccessPillar('monk');
     _setPillarBg('monk');
     if (!canAccess) {
+      const _req = _secondaryUnlockLevel(cls, 'monk');
+      const _lvl = loadProgress().level || 1;
       panel.innerHTML = `
         <div class="pillar-locked-screen">
           <div class="pillar-locked-screen__glow" style="background:#34D399"></div>
@@ -11190,15 +11179,15 @@
               <div style="width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(52,211,153,0.55);background:rgba(52,211,153,0.06);box-shadow:0 0 14px rgba(52,211,153,0.2)"></div>
             </div>
             <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.22em;color:rgba(52,211,153,0.4);text-transform:uppercase">Breathwork · Focus · Meditation</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;color:rgba(52,211,153,0.28)">⊘ Sealed — Upgrade to enter</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;color:rgba(52,211,153,0.28)">⊘ Sealed — unseals at Level ${_req}</div>
           </div>
           <ul class="pillar-locked-screen__features">
             <li class="pillar-locked-screen__feat" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.11);color:rgba(255,255,255,0.45)">◆ Guided box breathing + voice cues</li>
             <li class="pillar-locked-screen__feat" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.11);color:rgba(255,255,255,0.45)">◆ Pomodoro focus sessions + XP</li>
             <li class="pillar-locked-screen__feat" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.11);color:rgba(255,255,255,0.45)">◆ Daily ritual checklist + streak grid</li>
           </ul>
-          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(52,211,153,0.45);background:rgba(52,211,153,0.08);color:#34D399;text-shadow:0 0 12px rgba(52,211,153,0.4);box-shadow:0 0 20px rgba(52,211,153,0.07)" onclick="showPlusSheet()">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
+          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(52,211,153,0.45);background:rgba(52,211,153,0.08);color:#34D399;text-shadow:0 0 12px rgba(52,211,153,0.4);box-shadow:0 0 20px rgba(52,211,153,0.07)" onclick="showScreen('dashboard')">REACH LEVEL ${_req} TO UNSEAL — LV.${_lvl}/${_req} →</button>
+          <div class="pillar-locked-screen__price" onclick="showPlusSheet()" style="cursor:pointer">Grind to unseal — or skip the wait with WEEBJI+ →</div>
         </div>`;
       return;
     }
@@ -11281,9 +11270,11 @@
   function renderMonarchPillarPanel() {
     const panel = document.getElementById('monarch-panel');
     const cls = localStorage.getItem('weebji_class') || 'monarch';
-    const canAccess = cls === 'monarch' || isWeebjiPlus();
+    const canAccess = canAccessPillar('monarch');
     _setPillarBg('monarch');
     if (!canAccess) {
+      const _req = _secondaryUnlockLevel(cls, 'monarch');
+      const _lvl = loadProgress().level || 1;
       // Demo preview block — sample stats strip + 7-day grid + sample exercise rows
       const _demoDots = [1,1,0,1,1,1,0]; // 5 of 7 filled
       panel.innerHTML = `
@@ -11325,8 +11316,8 @@
             <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Forge Timer + PR Board</li>
             <li class="pillar-locked-screen__feat" style="background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.15);color:rgba(0,245,255,0.75)">◆ Weekly Boss Raids</li>
           </ul>
-          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(0,245,255,0.5);background:rgba(0,245,255,0.1);color:#00F5FF;text-shadow:0 0 12px rgba(0,245,255,0.4);box-shadow:0 0 20px rgba(0,245,255,0.08)" onclick="showPlusSheet()">UNLOCK WEEBJI+ — $9.99/mo →</button>
-          <div class="pillar-locked-screen__price">Every feature. All 3 paths. Cancel anytime.</div>
+          <button class="pillar-locked-screen__btn" style="border:1px solid rgba(0,245,255,0.5);background:rgba(0,245,255,0.1);color:#00F5FF;text-shadow:0 0 12px rgba(0,245,255,0.4);box-shadow:0 0 20px rgba(0,245,255,0.08)" onclick="showScreen('dashboard')">REACH LEVEL ${_req} TO UNSEAL — LV.${_lvl}/${_req} →</button>
+          <div class="pillar-locked-screen__price" onclick="showPlusSheet()" style="cursor:pointer">Grind to unseal — or skip the wait with WEEBJI+ →</div>
         </div>`;
       return;
     }
@@ -13105,9 +13096,9 @@
       upsell.id = 'ghost-int-upsell';
       upsell.style.cssText = 'width:100%;display:flex;flex-direction:column;gap:8px;margin-top:4px;';
       upsell.innerHTML = `
-        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token_3')" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(139,92,246,0.7);background:rgba(139,92,246,0.15);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.16em;color:rgba(200,160,255,1);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;position:relative;">👻 3 Ghost Tokens — $1.99 <span style="font-family:'JetBrains Mono',monospace;font-size:8px;opacity:0.7;margin-left:4px;">SAVE 33%</span></button>
-        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token')" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(139,92,246,0.3);background:transparent;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:400;letter-spacing:0.14em;color:rgba(139,92,246,0.7);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">👻 1 Token — $0.99</button>
-        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showPlusSheet()" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">◆ 5 Tokens/mo — WEEBJI+ $9.99</button>`;
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token_3')" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(139,92,246,0.7);background:rgba(139,92,246,0.15);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.16em;color:rgba(200,160,255,1);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;position:relative;">👻 3 Ghost Tokens — ₹59 <span style="font-family:'JetBrains Mono',monospace;font-size:8px;opacity:0.7;margin-left:4px;">SAVE 32%</span></button>
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token')" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(139,92,246,0.3);background:transparent;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:400;letter-spacing:0.14em;color:rgba(139,92,246,0.7);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">👻 1 Token — ₹29</button>
+        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showPlusSheet()" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">◆ 5 Tokens/mo — WEEBJI+ ₹149</button>`;
       useBtn.parentElement.insertBefore(upsell, useBtn);
     } else {
       useBtn.disabled = false;
@@ -13511,7 +13502,7 @@
           SystemVoice.say('Ghost Token consumed. The System forgives this once.');
         };
       } else {
-        escBtn.textContent = '👻 Buy a Ghost Token — $0.99';
+        escBtn.textContent = '👻 Buy a Ghost Token — ₹29';
         escBtn.onclick = () => { Sound.play('tap'); overlay.classList.remove('active'); _openCheckout('ghost_token'); };
       }
     }

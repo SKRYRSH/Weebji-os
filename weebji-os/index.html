@@ -6545,9 +6545,10 @@
     if (_awVid) _awVid.preload = 'auto';
   }
 
-  // Returning users skip the full 3s splash — go straight to dashboard after a minimal beat
+  // Returning users skip the full 3s splash — 600ms brand beat only; dashboard renders
+  // from localStorage so nothing is actually loading during a longer wait
   const _isReturningUser = !!localStorage.getItem('weebji_class');
-  const _splashDelay = _swRestoreTab ? 400 : (_isReturningUser ? 2000 : 3000);
+  const _splashDelay = _swRestoreTab ? 400 : (_isReturningUser ? 600 : 3000);
 
   const splashTimer = setTimeout(async () => {
     // A returning-user login is in flight (e.g. mid Google OAuth redirect) —

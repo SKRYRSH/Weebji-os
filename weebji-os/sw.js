@@ -1,7 +1,15 @@
-// ── WEEBJI OS — Service Worker v370 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v370';
+// ── WEEBJI OS — Service Worker v371 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v371';
+// Images/fonts survive version bumps — deploys only re-fetch the HTML shell.
+// Bump ASSET_CACHE ONLY when an existing asset file is replaced in place
+// (same filename, new content). New filenames need no bump — cache-on-miss.
+const ASSET_CACHE = 'weebji-assets-v1';
 const BASE = self.registration.scope;
 const SHELL = [BASE, BASE + 'manifest.json', BASE + 'icons/icon-192.png', BASE + 'icons/badge-96.png'];
+const _isPersistentAsset = (url) =>
+  (url.origin === self.location.origin && url.pathname.includes('/assets/'))
+  || url.hostname === 'fonts.gstatic.com'
+  || url.hostname === 'fonts.googleapis.com';
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
@@ -45,15 +53,19 @@ const BG_IMAGES = [
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME && k !== ASSET_CACHE).map(k => caches.delete(k))))
   );
   self.clients.claim();
-  // Non-blocking: pre-warm image cache so they're instant on next load
-  caches.open(CACHE_NAME).then(cache => {
+  // Non-blocking: pre-warm ONLY missing images — a warm asset cache survives
+  // version bumps, so updates no longer re-download megabytes over mobile data
+  caches.open(ASSET_CACHE).then(cache => {
     BG_IMAGES.forEach(img => {
-      fetch(BASE + img, { cache: 'no-store' })
-        .then(res => { if (res && res.status === 200) cache.put(BASE + img, res); })
-        .catch(() => {});
+      cache.match(BASE + img).then(hit => {
+        if (hit) return;
+        fetch(BASE + img)
+          .then(res => { if (res && res.status === 200) cache.put(BASE + img, res); })
+          .catch(() => {});
+      });
     });
   });
 });
@@ -91,14 +103,15 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cache-first for all other assets
+  // Cache-first for all other assets — images/fonts go to the persistent
+  // asset cache (survives deploys); everything else stays version-scoped
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
         if (!res || res.status !== 200 || res.type === 'opaque') return res;
         const clone = res.clone();
-        caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        caches.open(_isPersistentAsset(url) ? ASSET_CACHE : CACHE_NAME).then(c => c.put(e.request, clone));
         return res;
       });
       // No catch fallback — let asset failures fail cleanly so broken images

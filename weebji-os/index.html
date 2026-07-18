@@ -3335,7 +3335,21 @@
 
   document.getElementById('notif-yes-btn').addEventListener('click', async () => {
     document.getElementById('notif-prompt').classList.remove('visible');
-    await WeebjPush.subscribe();
+    const result = await WeebjPush.subscribe();
+    // subscribe() returns true on success, false/error-string on failure —
+    // failure MUST be surfaced or the settings toggle looks frozen (silent-drop)
+    if (result === true) {
+      spawnDropBanner('◆  SYSTEM VOICE ONLINE — reminders armed');
+    } else if (Notification.permission === 'denied' && localStorage.getItem('weebji_twa') === '1') {
+      // Android app-level notifications are off — the browser can't show a
+      // prompt. Send them to the one place that can fix it.
+      spawnDropBanner('◆  Notifications are OFF for this app in Android — opening settings');
+      setTimeout(() => { window.location.href = 'intent://#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;S.android.provider.extra.APP_PACKAGE=io.github.skryrsh.twa;end'; }, 1400);
+    } else if (Notification.permission === 'denied') {
+      spawnDropBanner('◆  Blocked by browser — Site Settings › Notifications › Allow, then tap again');
+    } else {
+      spawnDropBanner('◆  Could not subscribe — check connection and tap ENABLE in Settings');
+    }
     if (document.getElementById('profile')?.classList.contains('active') && typeof renderProfile === 'function') renderProfile();
   });
 

@@ -66,8 +66,6 @@
       document.head.appendChild(s);
     })();
   </script>
-  <!-- Razorpay Checkout (defer — blocks page load outside India without this) -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
@@ -4003,7 +4001,6 @@
   }
 
   /* ══ WEEBJI+ ═════════════════════════════════ */
-  const RAZORPAY_KEY_ID = 'rzp_live_T15djVyr744aBR';
 
   function isWeebjiPlus() {
     if (SupabaseSync.isPremium()) return true;
@@ -4251,7 +4248,7 @@
     // exists in any Chrome/TWA on Android, but only resolves a product if this
     // build is genuinely Play-Store-distributed with a registered SKU. Sideloaded
     // APKs (itch, etc.) throw here or return no details — treat as 'unavailable'
-    // so _openCheckout falls through to Razorpay instead of a false error banner.
+    // so _openCheckout falls through to the Play-Store banner instead of a false error.
     let service, details;
     try {
       service = await window.getDigitalGoodsService('https://play.google.com/billing');
@@ -4341,7 +4338,7 @@
       // returned product details (so it looked like a real Play Store install),
       // but the actual PaymentRequest has no genuine Play Billing backing
       // (e.g. itch-sideloaded TWA). Treat as 'unavailable' so _openCheckout
-      // falls through to Razorpay instead of permanently trapping the user here.
+      // falls through to the Play-Store banner instead of permanently trapping the user here.
       if (e.name === 'OperationError') {
         localStorage.removeItem('weebji_play_install');
         return 'unavailable';
@@ -4364,7 +4361,7 @@
       const _billingResult = await _openPlayBilling(plan);
       if (_billingResult !== 'unavailable') return;
       // DGA API surface exists but no real Play Billing connection (sideloaded
-      // APK, e.g. itch) — fall through to Razorpay below. Also clear any stale
+      // APK, e.g. itch) — fall through to the Play-Store banner below. Also clear any stale
       // weebji_play_install flag set by older buggy code on this device, so the
       // Play-policy block below doesn't fire on a non-Play-Store install.
       localStorage.removeItem('weebji_play_install');
@@ -4373,90 +4370,19 @@
     // is a genuine Play Store install (Play TWAs always render in Chrome, so
     // DGA is present on first launch). Play Policy 4.1 forbids alternative
     // billing here even if DGA is temporarily down (e.g. user changed default
-    // browser) — block Razorpay and point them back to Chrome instead.
+    // browser) — no alternative billing; point them back to Chrome instead.
     if (localStorage.getItem('weebji_play_install') === '1') {
       try { if (typeof posthog !== 'undefined') posthog.capture('billing_dga_unavailable', { plan, blocked: true, ua: navigator.userAgent }); } catch(_) {}
       spawnDropBanner('◆  Purchases need Google Chrome — set Chrome as your default browser, then reopen WEEBJI OS');
       return;
     }
-    // No Digital Goods API, never seen one on this device — web, itch, or
-    // sideloaded APK. Razorpay is the payment rail for these.
+    // No Digital Goods API, never seen one on this device — web PWA, itch, or
+    // sideloaded APK. Google Play Billing is the ONLY payment rail (Razorpay
+    // removed 2026-07-18) — route them to the Play Store build to purchase.
     const _inTWA = document.referrer.startsWith('android-app://') || localStorage.getItem('weebji_twa') === '1';
     try { if (typeof posthog !== 'undefined') posthog.capture('billing_dga_unavailable', { plan, in_twa: _inTWA, ua: navigator.userAgent }); } catch(_) {}
-
-    const user = SupabaseSync.getUser?.();
-    if (!user) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
-
-    try {
-      const client = SupabaseSync._client();
-      if (!client) throw new Error('Not connected');
-
-      const { data: { session } } = await client.auth.getSession();
-      if (!session?.access_token) { spawnDropBanner('◆  Sign in first to upgrade'); showScreen('sign-in-gate'); return; }
-
-      if (typeof Razorpay === 'undefined') throw new Error('Payment SDK not loaded — please refresh and try again');
-
-      const { data, error } = await client.functions.invoke('razorpay-create-order', {
-        body: { plan },
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (error || !data?.order_id) throw new Error(error?.message || 'Order creation failed');
-
-      if (data.currency === 'INR' && data.display_amount) {
-        const proceed = confirm(`Heads up: your payment provider may display this as ₹${(data.amount / 100).toFixed(0)} (INR) — that's just $${data.display_amount} USD, charged in your local currency. Continue to payment?`);
-        if (!proceed) return;
-      }
-
-      if (typeof posthog !== 'undefined') posthog.capture('checkout_opened', { plan, channel: 'razorpay', in_twa: _inTWA, class: localStorage.getItem('weebji_class') });
-
-      const options = {
-        key:              RAZORPAY_KEY_ID,
-        amount:           data.amount,
-        currency:         data.currency,
-        display_currency: data.display_currency,
-        display_amount:  data.display_amount,
-        order_id:    data.order_id,
-        name:        'WEEBJI OS',
-        description: data.description,
-        image:       'https://skryrsh.github.io/Weebji-os/icons/icon-192.png',
-        handler: async function(response) {
-          const verifyClient = SupabaseSync._client();
-          const { data: { session: vSess } } = await verifyClient.auth.getSession();
-          const { error: verifyErr } = await verifyClient.functions.invoke('razorpay-verify-payment', {
-            body: {
-              razorpay_order_id:   response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature:  response.razorpay_signature,
-              plan,
-            },
-            ...(vSess?.access_token ? { headers: { Authorization: `Bearer ${vSess.access_token}` } } : {})
-          });
-          if (verifyErr) { spawnDropBanner('◆  Verification failed — contact weebjiglobal@gmail.com'); return; }
-          try { await SupabaseSync.pullProgress(); } catch(e) {
-            if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'pullProgress_post_payment', error: e?.message });
-            spawnDropBanner('◆  Payment verified — refresh if Plus features are not active');
-          }
-          const _banners = { ghost_token: '◆  GHOST TOKEN ACQUIRED — Use it wisely', ghost_token_3: '◆  3 GHOST TOKENS ACQUIRED — Your streak is armoured' };
-          spawnDropBanner(_banners[plan] || '◆  WEEBJI+ ACTIVATED — The System recognises your commitment');
-          if (typeof posthog !== 'undefined') posthog.capture('payment_success', { plan, channel: 'razorpay', class: localStorage.getItem('weebji_class') });
-          renderProfile(); initDashboard();
-          if (plan !== 'ghost_token' && plan !== 'ghost_token_3') SystemVoice.say('WEEBJI plus activated. The System recognises your commitment.');
-        },
-        prefill: { email: user.email },
-        theme:   { color: '#00F5FF' },
-        modal:   { backdropclose: false },
-      };
-
-      const rzp = new Razorpay(options);
-      rzp.on('payment.failed', function(resp) {
-        spawnDropBanner('◆  Payment failed — ' + (resp.error?.description || 'Try again'));
-      });
-      rzp.open();
-
-    } catch(e) {
-      if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'checkout', error: e?.message, plan });
-      spawnDropBanner('◆  Could not start checkout — try again');
-    }
+    spawnDropBanner('◆  Purchases run through Google Play — get WEEBJI OS on the Play Store');
+    setTimeout(() => { try { window.open('https://play.google.com/store/apps/details?id=io.github.skryrsh.twa', '_blank'); } catch(_) {} }, 1400);
     } finally {
       _checkoutInFlight = false;
     }

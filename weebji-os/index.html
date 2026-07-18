@@ -3861,6 +3861,7 @@
       brainChallengeDone: (localStorage.getItem('weebji_brain_done') || '') === today,
       pinnedTitle       : localStorage.getItem('weebji_pinned_title') || null,
       oath              : JSON.parse(localStorage.getItem('weebji_oath') || 'null'),
+      objective         : JSON.parse(localStorage.getItem('weebji_objective') || 'null'),
     };
 
     // Monthly ghost token refill — MUST run before streak check so tokens are available
@@ -4000,6 +4001,7 @@
     if (p.pinnedTitle) localStorage.setItem('weebji_pinned_title', p.pinnedTitle);
     else localStorage.removeItem('weebji_pinned_title');
     if (p.oath !== undefined) localStorage.setItem('weebji_oath', JSON.stringify(p.oath || null));
+    if (p.objective !== undefined) localStorage.setItem('weebji_objective', JSON.stringify(p.objective || null));
     // Anti-tamper: write integrity hash
     _writeHash(p);
     // Phase 4: save daily shadow snapshot
@@ -7596,6 +7598,19 @@
         { id: 'k_combo', xp: 50, text: 'Three rituals + two quests. Calm, then order.', check: p => (p.monkChecked || []).length >= 3 && _qs(p) >= 2 },
         { id: 'k_all',   xp: 80, minLvl: 8, text: 'Every ritual. All of them. Total command of the inner world.', check: p => (p.monkChecked || []).length >= getMonkRituals().length },
       ],
+      // Prime Objective daily steps (v376) — appended by _rollQuests when an
+      // objective is active, never part of the random roll. _hard variants fire
+      // in the final quarter of the timeline.
+      objective: [
+        { id: 'obj_exam',         xp: 50, text: 'Prime Objective: one deep focus session on your target. The deadline does not negotiate.', check: p => (p.mmSessions || 0) >= 1 },
+        { id: 'obj_exam_hard',    xp: 70, text: 'Prime Objective: two focus sessions. The deadline is close enough to see.', check: p => (p.mmSessions || 0) >= 2 },
+        { id: 'obj_fitness',      xp: 50, text: 'Prime Objective: one real workout toward your target. The body keeps the score.', check: p => (p.workoutChecked || []).length >= 1 },
+        { id: 'obj_fitness_hard', xp: 70, text: 'Prime Objective: full workout protocol. The deadline is close enough to see.', check: p => p.workoutBonus || (p.workoutChecked || []).length >= 3 },
+        { id: 'obj_skill',        xp: 50, text: 'Prime Objective: one focused practice session on your craft. Repetition is the only teacher.', check: p => (p.mmSessions || 0) >= 1 },
+        { id: 'obj_skill_hard',   xp: 70, text: 'Prime Objective: two practice sessions. Mastery does not wait for the deadline.', check: p => (p.mmSessions || 0) >= 2 },
+        { id: 'obj_custom',       xp: 50, text: 'Prime Objective: clear every quest. Every day kept is a day closer to the target.', check: p => _qs(p) >= 3 },
+        { id: 'obj_custom_hard',  xp: 70, text: 'Prime Objective: every quest + one pillar action. The final stretch demands more.', check: (p, c) => _qs(p) >= 3 && _pillar(p, c) >= 1 },
+      ],
     };
 
     function _resolve(st, cls) {
@@ -7623,7 +7638,23 @@
         const rest = uni.concat(own).filter(t => !picks.includes(t));
         if (rest.length) picks.push(rest[(h >>> 12) % rest.length]);
       }
-      return picks.map((t, i) => ({ tpl: t.id, priority: ((h >>> (8 + i * 5)) % 100) < 15, done: false }));
+      const quests = picks.map((t, i) => ({ tpl: t.id, priority: ((h >>> (8 + i * 5)) % 100) < 15, done: false }));
+      // Prime Objective step — appended when a declared objective is live (v376)
+      try {
+        const o = ObjectiveEngine.isActive(p);
+        if (o) quests.push({ tpl: ObjectiveEngine.tplFor(o), priority: false, done: false, obj: true });
+      } catch (_) {}
+      return quests;
+    }
+
+    // Prime Objective declared mid-day — slot its step into today's live board
+    function addObjectiveQuest(tplId) {
+      const st = _get();
+      if (!st || st.date !== _today() || st.day <= 7 || !st.quests) return;
+      if (st.quests.some(q => q.obj)) return;
+      st.quests.push({ tpl: tplId, priority: false, done: false, obj: true });
+      st.done = false;
+      _set(st);
     }
 
     // Day 8+ — each directive completes independently; sealing all pays +15 bonus
@@ -7631,8 +7662,8 @@
     function _evaluateBoard(p, st) {
       if (!st.quests || !st.quests.length) return;
       const cls  = _cls();
-      const pool = POOL.universal.concat(POOL[cls] || []);
-      let gained = 0, completed = 0, hadPriority = false;
+      const pool = POOL.universal.concat(POOL[cls] || [], POOL.objective);
+      let gained = 0, completed = 0, hadPriority = false, objCompleted = false;
       st.quests.forEach(q => {
         if (q.done) return;
         const t = pool.find(x => x.id === q.tpl);
@@ -7644,6 +7675,7 @@
         const xp = t.xp * (q.priority ? 2 : 1);
         gained += xp;
         if (q.priority) hadPriority = true;
+        if (q.obj) objCompleted = true;
         if (typeof posthog !== 'undefined') posthog.capture('directive_completed', { day: 'daily', tpl: q.tpl, priority: !!q.priority, xp });
       });
       if (!completed) return;
@@ -7651,6 +7683,7 @@
       if (allDone) { st.done = true; gained += 15; }
       _set(st);
       const p2 = loadProgress();
+      if (objCompleted) { try { ObjectiveEngine.stampToday(p2); } catch (_) {} }
       p2.xp += gained;
       const leveled = checkLevelUp(p2);
       checkSecretTitles(p2, cls);
@@ -7698,7 +7731,7 @@
       if (!st.quests || !st.quests.length) return;
       const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
       const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
-      const pool = POOL.universal.concat(POOL[cls] || []);
+      const pool = POOL.universal.concat(POOL[cls] || [], POOL.objective);
       const card = document.createElement('div');
       card.id = 'directive-card';
       card.style.cssText = `margin:0 16px 16px;padding:18px 20px;background:rgba(${r},${g},${b},0.04);border:1px solid rgba(${r},${g},${b},0.2);border-radius:16px;font-family:'JetBrains Mono',monospace;position:relative;overflow:hidden;box-shadow:0 0 18px rgba(${r},${g},${b},0.06);`;
@@ -7724,7 +7757,7 @@
           const dim = q.done;
           return `
             <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(${r},${g},${b},0.10);${dim ? 'opacity:0.45;' : ''}">
-              <span style="font-size:13px;line-height:1.5;color:rgba(${r},${g},${b},${dim ? '0.9' : '0.5'});flex-shrink:0">${dim ? '✓' : '◇'}</span>
+              <span style="font-size:13px;line-height:1.5;color:${q.obj && !dim ? 'rgba(255,200,87,0.75)' : `rgba(${r},${g},${b},${dim ? '0.9' : '0.5'})`};flex-shrink:0">${dim ? '✓' : q.obj ? '⟐' : '◇'}</span>
               <span style="flex:1;font-size:12px;color:rgba(255,255,255,${dim ? '0.5' : '0.75'});line-height:1.55;text-align:left;${dim ? 'text-decoration:line-through;' : ''}">${t.text}</span>
               <span style="flex-shrink:0;font-size:9px;letter-spacing:0.1em;padding-top:2px;color:${q.priority ? 'rgba(255,200,87,0.9)' : `rgba(${r},${g},${b},0.7)`}">${q.priority ? '⚠ ' : ''}+${xp}</span>
             </div>`;
@@ -7833,7 +7866,7 @@
       if (window._weebjiNDTimer) { clearInterval(window._weebjiNDTimer); window._weebjiNDTimer = null; }
       const st = _ensureToday(p);
       if (!st) return;
-      if (st.day > 7) { _renderBoard(p, st, cls); OathEngine.renderCard(p, cls); return; } // Quest Board + Oath coexist (v375)
+      if (st.day > 7) { _renderBoard(p, st, cls); OathEngine.renderCard(p, cls); try { ObjectiveEngine.renderCard(p); } catch (_) {} return; } // Quest Board + Oath + Prime Objective coexist (v375/376)
       cls = cls || _cls();
       const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
       const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
@@ -7941,7 +7974,168 @@
       }
     }
 
-    return { renderCard, evaluate, beginProtocol };
+    return { renderCard, evaluate, beginProtocol, addObjectiveQuest };
+  })();
+
+  /* ══ PRIME OBJECTIVE (v376) — a declared real-life goal with a deadline. ══
+     p.objective = { name, type, start, end, daysDone:{dateString:true}, status:'active'|'done'|'failed', resolvedAt? }
+     Fully client-side. The daily step rides the Quest Board (obj-tagged quest);
+     keeping >= 60% of the days by the deadline completes the objective (+100 XP).
+     Day-8+ only — the Awakened declare objectives; the Protocol owns week one. */
+  const ObjectiveEngine = (() => {
+    const TYPES = {
+      exam:    { label: 'EXAM',    icon: '◈', hint: 'A test, an application, a certification' },
+      fitness: { label: 'BODY',    icon: '⚔', hint: 'A weight, a physique, a physical feat' },
+      skill:   { label: 'SKILL',   icon: '◆', hint: 'A craft, a language, an instrument' },
+      custom:  { label: 'CUSTOM',  icon: '⟐', hint: 'Anything the System should hold you to' },
+    };
+    const KEEP_RATIO = 0.6;
+    const _today = () => new Date().toDateString();
+    const _esc = s => String(s || '').replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+
+    function isActive(p) { const o = p && p.objective; return o && o.status === 'active' ? o : null; }
+    function _totalDays(o) { return Math.max(1, Math.round((o.end - o.start) / 86400000)); }
+    function _daysLeft(o)  { return Math.max(0, Math.ceil((o.end - Date.now()) / 86400000)); }
+    function _keptDays(o)  { return Object.keys(o.daysDone || {}).length; }
+    function tplFor(o) {
+      const late = (Date.now() - o.start) / Math.max(1, o.end - o.start) >= 0.75;
+      return 'obj_' + (TYPES[o.type] ? o.type : 'custom') + (late ? '_hard' : '');
+    }
+
+    function stampToday(p) {
+      const o = isActive(p);
+      if (!o) return;
+      o.daysDone = o.daysDone || {};
+      o.daysDone[_today()] = true;
+    }
+
+    // Deadline passed — judge the campaign. Called from renderCard.
+    function _resolveIfDue(p) {
+      const o = isActive(p);
+      if (!o || Date.now() <= o.end) return;
+      const ratio = _keptDays(o) / _totalDays(o);
+      o.status = ratio >= KEEP_RATIO ? 'done' : 'failed';
+      o.resolvedAt = Date.now();
+      if (o.status === 'done') {
+        p.xp += 100;
+        checkLevelUp(p);
+        spawnDropBanner('⟐ PRIME OBJECTIVE COMPLETE — +100 XP');
+        Sound.play('milestone');
+        haptic([80, 50, 80, 50, 200]);
+        try { SystemVoice.speakDirective('Prime objective complete. The System records what you are becoming.'); } catch (_) {}
+      } else {
+        spawnDropBanner('⟐ OBJECTIVE FAILED — THE SYSTEM RECORDS EVERYTHING');
+        try { SystemVoice.speakDirective('Objective failed. The record stands. Declare again when you mean it.'); } catch (_) {}
+      }
+      if (typeof posthog !== 'undefined') posthog.capture('objective_resolved', { outcome: o.status, type: o.type, kept: _keptDays(o), total: _totalDays(o) });
+      saveProgress(p); updateXPBar(p);
+    }
+
+    function declare(name, type, endTs) {
+      const p = loadProgress();
+      p.objective = { name: String(name).slice(0, 40), type, start: Date.now(), end: endTs, daysDone: {}, status: 'active' };
+      saveProgress(p);
+      const days = _daysLeft(p.objective);
+      try { DirectiveEngine.addObjectiveQuest(tplFor(p.objective)); } catch (_) {}
+      spawnDropBanner('⟐ PRIME OBJECTIVE REGISTERED — ' + days + ' DAYS');
+      triggerFlash('flash-class', localStorage.getItem('weebji_color') || '#00F5FF', null);
+      Sound.play('milestone');
+      haptic([60, 40, 60, 40, 160]);
+      try { SystemVoice.speakDirective('Prime objective registered. ' + days + ' days. The System will hold you to this.'); } catch (_) {}
+      if (typeof posthog !== 'undefined') posthog.capture('objective_declared', { type, days });
+      DirectiveEngine.renderCard(p);
+    }
+
+    function _openOverlay() {
+      document.getElementById('objective-overlay')?.remove();
+      const color = localStorage.getItem('weebji_color') || '#00F5FF';
+      const ov = document.createElement('div');
+      ov.id = 'objective-overlay';
+      ov.style.cssText = 'position:absolute;inset:0;background:rgba(8,8,12,0.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);z-index:858;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px 28px;text-align:center;overflow-y:auto;';
+      const minDate = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+      const maxDate = new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10);
+      ov.innerHTML = `
+        <p style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.35em;color:#555577;text-transform:uppercase">The System is listening</p>
+        <p style="font-family:'Cinzel',serif;font-size:20px;font-weight:700;letter-spacing:0.12em;color:#FFF">DECLARE PRIME OBJECTIVE</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;color:#8888AA;line-height:1.6;max-width:270px">Name a real target and its deadline. The System will issue one directive for it every day — keep 60% of the days, or fail on the record.</p>
+        <div id="obj-type-row" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          ${Object.entries(TYPES).map(([k, t], i) => `<button data-objtype="${k}" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;padding:9px 14px;border-radius:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:${i === 0 ? 'rgba(255,200,87,0.1)' : 'transparent'};border:1px solid ${i === 0 ? 'rgba(255,200,87,0.5)' : 'rgba(255,255,255,0.12)'};color:${i === 0 ? '#FFC857' : 'rgba(255,255,255,0.5)'}">${t.icon} ${t.label}</button>`).join('')}
+        </div>
+        <p id="obj-type-hint" style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.08em;color:#555577;margin:0">${TYPES.exam.hint}</p>
+        <input id="obj-name-input" type="text" maxlength="40" placeholder="Name the target. Be specific." autocomplete="off" style="width:100%;max-width:300px;padding:13px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:#FFF;font-family:'Inter',sans-serif;font-size:14px;outline:none;text-align:center" />
+        <input id="obj-date-input" type="date" min="${minDate}" max="${maxDate}" style="width:100%;max-width:300px;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:#FFF;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;text-align:center;color-scheme:dark" />
+        <button id="obj-declare-btn" style="width:100%;max-width:300px;padding:15px;border-radius:12px;border:1px solid rgba(255,200,87,0.5);background:rgba(255,200,87,0.08);font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:0.16em;color:#FFC857;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent">⟐ Declare — No Turning Back</button>
+        <button id="obj-cancel-btn" style="padding:10px;border:none;background:transparent;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#333355;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent">Not yet</button>`;
+      document.getElementById('app').appendChild(ov);
+      let selType = 'exam';
+      ov.querySelectorAll('[data-objtype]').forEach(btn => btn.addEventListener('click', () => {
+        selType = btn.dataset.objtype;
+        Sound.play('tap');
+        ov.querySelectorAll('[data-objtype]').forEach(b => {
+          const on = b === btn;
+          b.style.background = on ? 'rgba(255,200,87,0.1)' : 'transparent';
+          b.style.borderColor = on ? 'rgba(255,200,87,0.5)' : 'rgba(255,255,255,0.12)';
+          b.style.color = on ? '#FFC857' : 'rgba(255,255,255,0.5)';
+        });
+        document.getElementById('obj-type-hint').textContent = TYPES[selType].hint;
+      }));
+      ov.querySelector('#obj-cancel-btn').addEventListener('click', () => { Sound.play('tap'); ov.remove(); });
+      ov.querySelector('#obj-declare-btn').addEventListener('click', () => {
+        const name = ov.querySelector('#obj-name-input').value.trim();
+        const dateV = ov.querySelector('#obj-date-input').value;
+        if (!name) { spawnDropBanner('◆  Name the target first'); return; }
+        if (!dateV) { spawnDropBanner('◆  The System needs a deadline'); return; }
+        const end = new Date(dateV + 'T23:59:59');
+        if (!(end.getTime() > Date.now())) { spawnDropBanner('◆  The deadline must be ahead of you'); return; }
+        ov.remove();
+        declare(name, selType, end.getTime());
+      });
+    }
+
+    // Card sits below the Quest Board — active campaign, fresh verdict, or the declare teaser
+    function renderCard(p) {
+      document.getElementById('objective-card')?.remove();
+      _resolveIfDue(p);
+      const o = p.objective;
+      const card = document.createElement('div');
+      card.id = 'objective-card';
+      card.style.cssText = 'margin:0 16px 16px;padding:16px 20px;background:rgba(255,200,87,0.03);border:1px solid rgba(255,200,87,0.18);border-radius:16px;font-family:\'JetBrains Mono\',monospace;text-align:center;position:relative;overflow:hidden;';
+      if (o && o.status === 'active') {
+        const total = _totalDays(o), kept = _keptDays(o), left = _daysLeft(o);
+        const pct = Math.min(100, Math.round((kept / total) * 100));
+        const needPct = Math.round(KEEP_RATIO * 100);
+        const late = tplFor(o).endsWith('_hard');
+        card.innerHTML = `
+          <p style="font-size:9px;letter-spacing:0.3em;color:rgba(255,200,87,0.6);text-transform:uppercase;margin:0 0 6px">⟐ Prime Objective — ${TYPES[o.type]?.label || 'TARGET'}</p>
+          <p style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.92);margin:0 0 8px">${_esc(o.name)}</p>
+          <p style="font-size:22px;font-family:'Cinzel',serif;letter-spacing:0.12em;color:${late ? '#FFC857' : 'rgba(255,255,255,0.85)'};margin:0 0 8px">${left} DAY${left === 1 ? '' : 'S'} REMAIN</p>
+          <div style="height:5px;border-radius:3px;background:rgba(255,255,255,0.07);overflow:hidden;margin:0 8px 7px">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,rgba(255,200,87,0.55),rgba(255,200,87,0.9));border-radius:3px"></div>
+          </div>
+          <p style="font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.4);margin:0">${kept}/${total} DAYS KEPT · NEED ${needPct}%${late ? ' · <span style="color:#FFC857">FINAL STRETCH — DEMANDS RAISED</span>' : ''}</p>`;
+      } else if (o && (o.status === 'done' || o.status === 'failed') && Date.now() - (o.resolvedAt || 0) < 172800000) {
+        const won = o.status === 'done';
+        card.innerHTML = `
+          <p style="font-size:9px;letter-spacing:0.3em;color:${won ? 'rgba(255,200,87,0.7)' : 'rgba(230,57,70,0.6)'};text-transform:uppercase;margin:0 0 6px">⟐ Prime Objective — ${won ? 'Complete' : 'Failed'}</p>
+          <p style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:rgba(255,255,255,0.9);margin:0 0 8px">${_esc(o.name)}</p>
+          <p style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;margin:0 0 12px">${won ? `${_keptDays(o)}/${_totalDays(o)} days kept. "You said you would. Then you did. The System remembers both kinds of people."` : `${_keptDays(o)}/${_totalDays(o)} days kept. "The record stands. What you do next decides what it means."`}</p>
+          <button id="obj-new-btn" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;background:transparent;border:1px solid rgba(255,200,87,0.4);border-radius:8px;color:#FFC857;padding:10px 18px;cursor:pointer;-webkit-tap-highlight-color:transparent">Declare New Objective →</button>`;
+      } else {
+        card.innerHTML = `
+          <p style="font-size:9px;letter-spacing:0.3em;color:rgba(255,200,87,0.55);text-transform:uppercase;margin:0 0 8px">⟐ Prime Objective — None Declared</p>
+          <p style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.65;margin:0 0 12px">"Give the System a real target — an exam, a body, a skill.<br>It will hold you to it, every single day."</p>
+          <button id="obj-new-btn" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;background:transparent;border:1px solid rgba(255,200,87,0.4);border-radius:8px;color:#FFC857;padding:10px 18px;cursor:pointer;-webkit-tap-highlight-color:transparent">Declare →</button>`;
+      }
+      card.querySelector('#obj-new-btn')?.addEventListener('click', () => { Sound.play('tap'); _openOverlay(); });
+      const dirCard = document.getElementById('directive-card');
+      if (dirCard && dirCard.parentNode) dirCard.parentNode.insertBefore(card, dirCard.nextSibling);
+      else {
+        const forgeCard = document.getElementById('forge-card');
+        if (forgeCard && forgeCard.parentNode) forgeCard.parentNode.insertBefore(card, forgeCard);
+      }
+    }
+
+    return { renderCard, declare, stampToday, isActive, tplFor };
   })();
 
   /* ══ OATH ENGINE — day-8+ weekly vows. The Awakened give orders now. ══

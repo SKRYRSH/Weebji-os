@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v373 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v373';
+// ── WEEBJI OS — Service Worker v374 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v374';
 // Images/fonts survive version bumps — deploys only re-fetch the HTML shell.
 // Bump ASSET_CACHE ONLY when an existing asset file is replaced in place
 // (same filename, new content). New filenames need no bump — cache-on-miss.

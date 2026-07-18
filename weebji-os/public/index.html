@@ -4267,10 +4267,14 @@
     try {
       service = await window.getDigitalGoodsService('https://play.google.com/billing');
       details = await service.getDetails([sku]);
-    } catch(_) {
+    } catch(e) {
+      // Which way did the probe die? Play-Console price edits propagate slowly
+      // (Play Store caches product data) — empty/throwing getDetails right after
+      // a price change is expected for a few hours. Log the stage so we can tell.
+      _ph('billing_probe_failed', { sku, plan, stage: 'getDetails_throw', error: e?.message, name: e?.name });
       return 'unavailable';
     }
-    if (!details?.length) return 'unavailable';
+    if (!details?.length) { _ph('billing_probe_failed', { sku, plan, stage: 'empty_details' }); return 'unavailable'; }
 
     // Genuine Play Store install confirmed — lock in Play Billing as the rail.
     localStorage.setItem('weebji_play_install', '1');

@@ -1233,6 +1233,26 @@
   .cw-form__save:active { transform: scale(0.97); }
   .cw-max-note { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #333355; text-align: center; margin-top: 6px; letter-spacing: 0.1em; }
 
+  /* ══ PRIME OBJECTIVE CEREMONY (v379) ════════ */
+  .obj-cer { position: absolute; inset: 0; z-index: 902; background: #020208; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; text-align: center; padding: 40px 28px; opacity: 0; transition: opacity 0.45s ease; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+  .obj-cer.on { opacity: 1; }
+  .obj-cer__rays { position: absolute; top: 50%; left: 50%; width: 360px; height: 360px; margin: -180px 0 0 -180px; border-radius: 50%; background: repeating-conic-gradient(rgba(255,200,87,0.13) 0deg 7deg, transparent 7deg 28deg); -webkit-mask-image: radial-gradient(circle, #000 22%, transparent 68%); mask-image: radial-gradient(circle, #000 22%, transparent 68%); animation: kf-obj-rays 16s linear infinite; pointer-events: none; }
+  @keyframes kf-obj-rays { to { transform: rotate(360deg); } }
+  .obj-cer__sigil { font-size: 62px; line-height: 1; color: #FFC857; text-shadow: 0 0 30px rgba(255,200,87,0.9), 0 0 80px rgba(255,200,87,0.4); opacity: 0; }
+  .obj-cer__sigil.in { animation: kf-obj-sigil 0.9s cubic-bezier(0.16,1,0.3,1) forwards; }
+  @keyframes kf-obj-sigil { from { opacity: 0; transform: scale(0.25) rotate(-18deg); } 60% { opacity: 1; transform: scale(1.18) rotate(4deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
+  .obj-cer__line { opacity: 0; transform: translateY(18px); }
+  .obj-cer__line.in { animation: kf-obj-line 0.7s cubic-bezier(0.16,1,0.3,1) forwards; }
+  @keyframes kf-obj-line { to { opacity: 1; transform: translateY(0); } }
+  .obj-cer__particle { position: absolute; bottom: -12px; border-radius: 50%; background: rgba(255,200,87,0.85); box-shadow: 0 0 6px rgba(255,200,87,0.9); opacity: 0; animation: kf-obj-rise linear infinite; pointer-events: none; }
+  @keyframes kf-obj-rise { from { transform: translateY(0) translateX(0); opacity: 0; } 12% { opacity: 0.9; } to { transform: translateY(-105vh) translateX(var(--dx, 0px)); opacity: 0; } }
+  .obj-strip-decree { animation: kf-obj-decree 4.5s ease-in-out infinite; }
+  @keyframes kf-obj-decree { 0%, 100% { box-shadow: 0 0 18px rgba(255,200,87,0.14), inset 0 0 22px rgba(255,200,87,0.05); } 50% { box-shadow: 0 0 26px rgba(255,200,87,0.28), inset 0 0 26px rgba(255,200,87,0.09); } }
+  @media (prefers-reduced-motion: reduce) {
+    .obj-cer__rays, .obj-cer__particle, .obj-strip-decree { animation: none !important; }
+    .obj-cer__sigil, .obj-cer__line { animation: none !important; opacity: 1 !important; transform: none !important; transition: opacity 0.3s ease; }
+  }
+
   /* ══ RATING PROMPT OVERLAY ══════════════════ */
   #rating-prompt { position: absolute; inset: 0; background: rgba(8,8,12,0.97); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 855; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px 32px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; text-align: center; }
   #rating-prompt.active { opacity: 1; pointer-events: all; }
@@ -7746,7 +7766,7 @@
         if (o && o.status === 'active') {
           const i = ObjectiveEngine.info(o);
           stripHtml = `
-          <div style="margin:0 0 14px;padding:12px 14px;background:linear-gradient(135deg,rgba(255,200,87,0.14),rgba(255,200,87,0.04) 55%,rgba(255,160,40,0.10));border:1px solid rgba(255,200,87,0.5);border-radius:12px;text-align:left;box-shadow:0 0 18px rgba(255,200,87,0.14),inset 0 0 22px rgba(255,200,87,0.05);position:relative;overflow:hidden">
+          <div class="obj-strip-decree" style="margin:0 0 14px;padding:12px 14px;background:linear-gradient(135deg,rgba(255,200,87,0.14),rgba(255,200,87,0.04) 55%,rgba(255,160,40,0.10));border:1px solid rgba(255,200,87,0.5);border-radius:12px;text-align:left;box-shadow:0 0 18px rgba(255,200,87,0.14),inset 0 0 22px rgba(255,200,87,0.05);position:relative;overflow:hidden">
             <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,220,130,0.8),transparent)"></div>
             <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
               <span style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:0.06em;color:#FFE9B8;text-shadow:0 0 12px rgba(255,200,87,0.55)">⟐ ${i.esc}</span>
@@ -8100,19 +8120,54 @@
       saveProgress(p); updateXPBar(p);
     }
 
+    // Declaration ceremony (v379) — black-out, rising gold embers, the sigil
+    // slams in under rotating rays, the name is spoken into the record. Tap-gated
+    // exit so the moment can't be skipped mid-slam.
+    function _playCeremony(o, onDone) {
+      document.getElementById('obj-ceremony')?.remove();
+      const days = _daysLeft(o);
+      const cer = document.createElement('div');
+      cer.id = 'obj-ceremony';
+      cer.className = 'obj-cer';
+      cer.innerHTML = `
+        <div class="obj-cer__rays"></div>
+        ${Array.from({ length: 14 }, () => `<div class="obj-cer__particle" style="left:${(5 + Math.random() * 90).toFixed(1)}%;width:${(2 + Math.random() * 4).toFixed(1)}px;height:${(2 + Math.random() * 4).toFixed(1)}px;--dx:${((Math.random() * 44 - 22) | 0)}px;animation-duration:${(5 + Math.random() * 5).toFixed(1)}s;animation-delay:${(Math.random() * 3).toFixed(1)}s"></div>`).join('')}
+        <p class="obj-cer__line" id="objc-eyebrow" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.4em;color:rgba(255,200,87,0.55);text-transform:uppercase;margin:0">The System Records</p>
+        <div class="obj-cer__sigil" id="objc-sigil">⟐</div>
+        <p class="obj-cer__line" id="objc-name" style="font-family:'Cinzel',serif;font-size:clamp(19px,6vw,26px);font-weight:700;letter-spacing:0.1em;color:#FFE9B8;text-shadow:0 0 24px rgba(255,200,87,0.6);margin:0">${_esc(o.name).toUpperCase()}</p>
+        <p class="obj-cer__line" id="objc-days" style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.3em;color:rgba(255,255,255,0.75);margin:0">${days} DAYS · SEALED IN THE RECORD</p>
+        <p class="obj-cer__line" id="objc-decree" style="font-family:'Inter',sans-serif;font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7;max-width:270px;margin:0">"Keep six days in ten. The System does not forget — and it does not forgive quietly."</p>
+        <p class="obj-cer__line" id="objc-tap" style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.3em;color:rgba(255,255,255,0.3);text-transform:uppercase;margin:8px 0 0">Tap to begin</p>`;
+      document.getElementById('app').appendChild(cer);
+      requestAnimationFrame(() => cer.classList.add('on'));
+      Sound.play('milestone');
+      haptic([60, 40, 60, 40, 180]);
+      const _in = (id, t) => setTimeout(() => document.getElementById(id)?.classList.add('in'), t);
+      _in('objc-eyebrow', 150);
+      _in('objc-sigil', 400);
+      _in('objc-name', 1050);
+      _in('objc-days', 1700);
+      _in('objc-decree', 2300);
+      let armed = false;
+      setTimeout(() => { armed = true; _in('objc-tap', 0); }, 2950);
+      cer.addEventListener('click', () => {
+        if (!armed) return;
+        Sound.play('check');
+        haptic([40, 30, 80]);
+        cer.classList.remove('on');
+        setTimeout(() => { cer.remove(); if (onDone) onDone(); }, 480);
+      });
+    }
+
     function declare(name, type, endTs) {
       const p = loadProgress();
       p.objective = { name: String(name).slice(0, 40), type, start: Date.now(), end: endTs, daysDone: {}, status: 'active' };
       saveProgress(p);
       const days = _daysLeft(p.objective);
       try { DirectiveEngine.addObjectiveQuest(tplFor(p.objective)); } catch (_) {}
-      spawnDropBanner('⟐ PRIME OBJECTIVE REGISTERED — ' + days + ' DAYS');
-      triggerFlash('flash-class', localStorage.getItem('weebji_color') || '#00F5FF', null);
-      Sound.play('milestone');
-      haptic([60, 40, 60, 40, 160]);
       try { SystemVoice.speakDirective('Prime objective registered. ' + days + ' days. The System will hold you to this.'); } catch (_) {}
       if (typeof posthog !== 'undefined') posthog.capture('objective_declared', { type, days });
-      DirectiveEngine.renderCard(p);
+      _playCeremony(p.objective, () => DirectiveEngine.renderCard(loadProgress()));
     }
 
     function _openOverlay() {

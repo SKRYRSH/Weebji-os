@@ -14076,6 +14076,18 @@
           bg:"url('assets/cutscenes/ch5-6.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 50%, rgba(20,40,60,0.4) 0%, #010305 70%)" },
       ],
       end: { line:'ACT ONE: COMPLETE.', sub:'you are already inside it.' } },
+    { id: 6, title: 'THE ARCHIVE', unlockText: 'LEVEL 10', unlockLevel: 10,
+      shots: [
+        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'ARCHIVE ACCESS GRANTED.', sub:'level ten. the vault opens for the first time.',
+          bg:"url('assets/cutscenes/ch6-1.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, rgba(0,60,90,0.5) 0%, #01060a 70%)" },
+        { id:'ch-shot-2', kb:'kb-pan-up',   line:'INSIDE: RECORDS OF A WAR.', sub:'not hunter against monster. hunter against silence.',
+          bg:"url('assets/cutscenes/ch6-2.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 60%, rgba(0,245,255,0.12) 0%, #010509 65%)" },
+        { id:'ch-shot-3', kb:'kb-zoom-out', line:'THE SYSTEM. AND SOMETHING OLDER.', sub:'it does not name what it fought. it never has.',
+          bg:"url('assets/cutscenes/ch6-3.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 45%, rgba(0,245,255,0.16) 0%, #010308 70%)" },
+        { id:'ch-shot-4', kb:'kb-zoom-in',  line:'AND THEN THE RECORDS—', sub:'▓ archive integrity 40.2% ▓', glitch:true, leak:'STOP READING',
+          bg:"url('assets/cutscenes/ch6-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 55% 40%, rgba(60,10,40,0.35) 0%, #030208 65%)" },
+      ],
+      end: { line:'THE ARCHIVE CLOSES.', sub:'you were not meant to read that far.' } },
   ];
   // Shot fields (bg/line/sub) may be functions — resolved at play time so
   // class-personalized shots read the player's current state.
@@ -14201,7 +14213,13 @@
       const day = getChapterDay();
       // Earliest unseen unlocked chapter plays; one transmission per boot keeps
       // the drip even when a returning veteran has several banked.
-      const next = CHAPTERS.find(c => c.shots && c.unlockDay && day >= c.unlockDay && !localStorage.getItem('weebji_ch' + c.id + '_seen'));
+      // Earned chapters (Ch6+) gate on progress values (level, etc.), not days.
+      const next = CHAPTERS.find(c => {
+        if (!c.shots || localStorage.getItem('weebji_ch' + c.id + '_seen')) return false;
+        if (c.unlockDay)   return day >= c.unlockDay;
+        if (c.unlockLevel) return (loadProgress().level || 1) >= c.unlockLevel;
+        return false;
+      });
       if (!next) return;
       // Mark seen at playback start — a mid-scene crash must never loop the cutscene
       localStorage.setItem('weebji_ch' + next.id + '_seen', '1');
@@ -14223,12 +14241,15 @@
     const ch3Seen = !!localStorage.getItem('weebji_ch3_seen');
     const ch4Seen = !!localStorage.getItem('weebji_ch4_seen');
     const ch5Seen = !!localStorage.getItem('weebji_ch5_seen');
+    const ch6Seen = !!localStorage.getItem('weebji_ch6_seen');
+    const level = loadProgress().level || 1;
     const rows = [
       { n:'I',   name:'THE AWAKENING',       state:'RECEIVED · REPLAY', locked:false },
       { n:'II',  name:'SIGNAL DECAY',        state: ch2Seen ? 'RECEIVED · REPLAY' : (days >= 2 ? 'INCOMING' : 'DAY 2'), locked: !ch2Seen && days < 2 },
       { n:'III', name:'THE OTHERS',          state: ch3Seen ? 'RECEIVED · REPLAY' : (days >= 3 ? 'INCOMING' : 'DAY 3'), locked: !ch3Seen && days < 3 },
       { n:'IV',  name:'WHAT THE VOID TAKES', state: ch4Seen ? 'RECEIVED · REPLAY' : (days >= 5 ? 'INCOMING' : 'DAY 5'), locked: !ch4Seen && days < 5 },
       { n:'V',   name:'THE AWAKENED',        state: ch5Seen ? 'RECEIVED · REPLAY' : (days >= 7 ? 'INCOMING' : 'DAY 7'), locked: !ch5Seen && days < 7 },
+      { n:'VI',  name:'THE ARCHIVE',         state: ch6Seen ? 'RECEIVED · REPLAY' : (level >= 10 ? 'INCOMING' : 'LEVEL 10'), locked: !ch6Seen && level < 10 },
       { n:'?',   name:'SIGNAL BURIED',       state:'EARN IT', locked:true },
     ];
     host.innerHTML = `<div class="tx-section"><div class="tx-title">◈ Transmissions — Season 1</div>` +
@@ -14257,6 +14278,11 @@
     if (ch5row && (ch5Seen || days >= 7)) {
       ch5row.style.cursor = 'pointer';
       ch5row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch5_seen', '1'); const ch5 = CHAPTERS.find(c => c.id === 5); ch5._ret = 'profile'; playChapterCutscene(ch5); };
+    }
+    const ch6row = host.querySelector('[data-tx="5"]');
+    if (ch6row && (ch6Seen || level >= 10)) {
+      ch6row.style.cursor = 'pointer';
+      ch6row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch6_seen', '1'); const ch6 = CHAPTERS.find(c => c.id === 6); ch6._ret = 'profile'; playChapterCutscene(ch6); };
     }
   }
 

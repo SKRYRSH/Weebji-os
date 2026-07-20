@@ -13977,7 +13977,22 @@
           bg:"url('assets/cutscenes/ch4-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 70%, rgba(0,245,255,0.10) 0%, #050110 60%)" },
       ],
       end: { line:'NEXT TRANSMISSION: DAY 7.', sub:'they went quietly.' } },
-    { id: 5, title: 'THE AWAKENED',        unlockText: 'DAY 7' },
+    { id: 5, title: 'THE AWAKENED', unlockText: 'DAY 7', unlockDay: 7,
+      shots: [
+        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'PROTOCOL COMPLETE. SEVEN CYCLES UNBROKEN.', sub:'the awakening enters its final phase.',
+          audio:'assets/audio/ch5-1.mp3',
+          bg:"url('assets/cutscenes/ch5-1.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, rgba(0,60,90,0.55) 0%, #01060a 70%)" },
+        { id:'ch-shot-2', kb:'kb-pan-up',   line:'YOU ARE NAMED—', sub:'▓ designation integrity 97.3% ▓', glitch:true, leak:'I DO NOT KNOW WHY',
+          audio:'assets/audio/ch5-2.mp3',
+          bg:"url('assets/cutscenes/ch5-2.jpg') center/cover no-repeat, radial-gradient(ellipse at 55% 40%, rgba(120,10,30,0.35) 0%, #050208 65%)" },
+        { id:'ch-shot-3', kb:'kb-zoom-out', line:'THE AWAKENED.', sub:'the title stands. the doubt does not repeat.',
+          audio:'assets/audio/ch5-3.mp3',
+          bg:"url('assets/cutscenes/ch5-3.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 45%, rgba(0,245,255,0.16) 0%, #010308 70%)" },
+        { id:'ch-shot-4', kb:'kb-zoom-in',  line:'YOU HAVE QUESTIONS.', sub:'they will be answered — when you are strong enough to hear them.',
+          audio:'assets/audio/ch5-4.mp3',
+          bg:"url('assets/cutscenes/ch5-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 50%, rgba(20,40,60,0.4) 0%, #010305 70%)" },
+      ],
+      end: { line:'ACT ONE: COMPLETE.', sub:'you are already inside it.' } },
   ];
   // Shot fields (bg/line/sub) may be functions — resolved at play time so
   // class-personalized shots read the player's current state.
@@ -13995,10 +14010,12 @@
       if (el) el.textContent = ch.end.line;
       if (es) es.textContent = ch.end.sub;
     }
-    let fired = false, skipped = false, armed = false;
+    let fired = false, skipped = false, armed = false, voAudio = null;
+    const stopVO = () => { if (voAudio) { voAudio.pause(); voAudio = null; } };
     const hint = document.getElementById('ch-tap-hint');
     const finish = () => {
       if (fired) return; fired = true;
+      stopVO();
       document.getElementById('ch-skip-btn').removeEventListener('click', onSkip);
       scr.removeEventListener('click', onTap);
       hint.classList.remove('visible');
@@ -14023,6 +14040,7 @@
     const onTap = () => {
       if (fired || !armed) return;
       armed = false;
+      stopVO();
       hint.classList.remove('visible');
       Sound.play('tap');
       const txt = document.getElementById('ch-text');
@@ -14065,7 +14083,18 @@
       }
       // Glitch shots arm late so the leak can't be tapped away mid-flicker.
       const dwell = shot.glitch ? 2100 : 1100;
-      setTimeout(() => { if (fired) return; armed = true; hint.classList.add('visible'); }, dwell);
+      const arm = () => { if (fired || armed) return; armed = true; hint.classList.add('visible'); };
+      // VO shots (Ch5+): arm when the line finishes speaking, not on a fixed
+      // dwell — a hard fallback covers autoplay-blocked/failed audio.
+      if (shot.audio) {
+        const audio = new Audio(chVal(shot.audio));
+        voAudio = audio;
+        audio.addEventListener('ended', arm);
+        audio.play().catch(() => {});
+        setTimeout(arm, Math.max(dwell, 8000));
+      } else {
+        setTimeout(arm, dwell);
+      }
       idx++;
     };
     showShot();
@@ -14106,12 +14135,13 @@
     const ch2Seen = !!localStorage.getItem('weebji_ch2_seen');
     const ch3Seen = !!localStorage.getItem('weebji_ch3_seen');
     const ch4Seen = !!localStorage.getItem('weebji_ch4_seen');
+    const ch5Seen = !!localStorage.getItem('weebji_ch5_seen');
     const rows = [
       { n:'I',   name:'THE AWAKENING',       state:'RECEIVED · REPLAY', locked:false },
       { n:'II',  name:'SIGNAL DECAY',        state: ch2Seen ? 'RECEIVED · REPLAY' : (days >= 2 ? 'INCOMING' : 'DAY 2'), locked: !ch2Seen && days < 2 },
       { n:'III', name:'THE OTHERS',          state: ch3Seen ? 'RECEIVED · REPLAY' : (days >= 3 ? 'INCOMING' : 'DAY 3'), locked: !ch3Seen && days < 3 },
       { n:'IV',  name:'WHAT THE VOID TAKES', state: ch4Seen ? 'RECEIVED · REPLAY' : (days >= 5 ? 'INCOMING' : 'DAY 5'), locked: !ch4Seen && days < 5 },
-      { n:'V',   name:'THE AWAKENED',        state:'DAY 7', locked:true },
+      { n:'V',   name:'THE AWAKENED',        state: ch5Seen ? 'RECEIVED · REPLAY' : (days >= 7 ? 'INCOMING' : 'DAY 7'), locked: !ch5Seen && days < 7 },
       { n:'?',   name:'SIGNAL BURIED',       state:'EARN IT', locked:true },
     ];
     host.innerHTML = `<div class="tx-section"><div class="tx-title">◈ Transmissions — Season 1</div>` +
@@ -14135,6 +14165,11 @@
     if (ch4row && (ch4Seen || days >= 5)) {
       ch4row.style.cursor = 'pointer';
       ch4row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch4_seen', '1'); const ch4 = CHAPTERS.find(c => c.id === 4); ch4._ret = 'profile'; playChapterCutscene(ch4); };
+    }
+    const ch5row = host.querySelector('[data-tx="4"]');
+    if (ch5row && (ch5Seen || days >= 7)) {
+      ch5row.style.cursor = 'pointer';
+      ch5row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch5_seen', '1'); const ch5 = CHAPTERS.find(c => c.id === 5); ch5._ret = 'profile'; playChapterCutscene(ch5); };
     }
   }
 

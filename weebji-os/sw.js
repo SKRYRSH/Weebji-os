@@ -1,5 +1,5 @@
-// ── WEEBJI OS — Service Worker v379 ────────────────────────────────────────────
-const CACHE_NAME = 'weebji-os-v379';
+// ── WEEBJI OS — Service Worker v380 ────────────────────────────────────────────
+const CACHE_NAME = 'weebji-os-v380';
 // Images/fonts survive version bumps — deploys only re-fetch the HTML shell.
 // Bump ASSET_CACHE ONLY when an existing asset file is replaced in place
 // (same filename, new content). New filenames need no bump — cache-on-miss.
@@ -48,6 +48,14 @@ const BG_IMAGES = [
   'assets/cutscenes/ch3-3.jpg','assets/cutscenes/ch3-4.jpg',
   'assets/cutscenes/ch4-1.jpg','assets/cutscenes/ch4-2.jpg',
   'assets/cutscenes/ch4-3.jpg','assets/cutscenes/ch4-4.jpg',
+  // Ch5 stills pending (Sahil, Gemini) — safe to list now, pre-warm skips missing files.
+  // 6 shots (not 4) — Ch5 caps Act 1, first VO chapter since the Awakening, gets more room.
+  'assets/cutscenes/ch5-1.jpg','assets/cutscenes/ch5-2.jpg',
+  'assets/cutscenes/ch5-3.jpg','assets/cutscenes/ch5-4.jpg',
+  'assets/cutscenes/ch5-5.jpg','assets/cutscenes/ch5-6.jpg',
+  'assets/audio/ch5-1.mp3','assets/audio/ch5-2.mp3',
+  'assets/audio/ch5-3.mp3','assets/audio/ch5-4.mp3',
+  'assets/audio/ch5-5.mp3','assets/audio/ch5-6.mp3',
 ];
 
 self.addEventListener('activate', e => {
@@ -127,6 +135,8 @@ const NOTIF_CFG = {
   boss_taunt:         { vibrate: [300,80,120,80,300],   tag: 'weebji-boss',     requireInteraction: false },
   day2_transmission:  { vibrate: [80,60,80,60,240],     tag: 'weebji-ch2',      requireInteraction: true  },
   day3_transmission:  { vibrate: [80,60,80,60,240],     tag: 'weebji-ch3',      requireInteraction: true  },
+  day5_transmission:  { vibrate: [80,60,80,60,240],     tag: 'weebji-ch4',      requireInteraction: true  },
+  day7_transmission:  { vibrate: [80,60,80,60,240],     tag: 'weebji-ch5',      requireInteraction: true  },
   hp_critical:        { vibrate: [400,150,400,150,800], tag: 'weebji-hp',       requireInteraction: true  },
   power_window:       { vibrate: [100,50,100],          tag: 'weebji-power',    requireInteraction: false },
   morning_activation: { vibrate: [100,50,100,50,100],   tag: 'weebji-morning',  requireInteraction: false },

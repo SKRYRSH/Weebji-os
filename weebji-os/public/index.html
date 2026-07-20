@@ -2123,6 +2123,8 @@
       <div class="bdc-shot" id="ch-shot-2"></div>
       <div class="bdc-shot" id="ch-shot-3"></div>
       <div class="bdc-shot" id="ch-shot-4"></div>
+      <div class="bdc-shot" id="ch-shot-5"></div>
+      <div class="bdc-shot" id="ch-shot-6"></div>
       <div class="ch-scanlines"></div>
       <div class="bdc-vignette"></div>
       <div class="bdc-overlay"></div>
@@ -10700,6 +10702,57 @@
       _fadeIn(0.18, 1.5);
     }
 
+    // ── REVEAL: cold ceremonial dread — story cutscene underscore (Ch2-10) ──
+    // Deliberately quiet (peaks ~0.10 vs ambient's 0.12+) — this sits under VO narration.
+    function _reveal() {
+      _drone(65.4, 'sine', 0.20, 0.05, 0.4);   // C2 sub — dread foundation
+      _drone(77.8, 'sine', 0.09, 0.04, 0.3);   // Eb2 — minor third, quiet, adds unease
+      // Slow-rising shimmer pad at the fifth — fades in over ~30s, the ceremony building
+      [0, -18, 22].forEach(dt => {
+        const o = _ctx.createOscillator(); const g = _ctx.createGain();
+        o.type = 'sine'; o.frequency.value = 196; o.detune.value = dt; // G3
+        g.gain.setValueAtTime(0, _ctx.currentTime);
+        g.gain.linearRampToValueAtTime(0.045, _ctx.currentTime + 30);
+        o.connect(g); g.connect(_master); o.start(); _nodes.push(o);
+      });
+      // Sparse distant bell hits, ~7s apart — cold and metallic, not rhythmic
+      let _bellNext = _ctx.currentTime + 2;
+      function _bellSched() {
+        while (_bellNext < _ctx.currentTime + 1.5) {
+          const t = _bellNext;
+          [880, 1320].forEach((freq, fi) => {
+            const o = _ctx.createOscillator(); const g = _ctx.createGain();
+            o.type = 'sine'; o.frequency.value = freq;
+            g.gain.setValueAtTime(fi === 0 ? 0.05 : 0.025, t);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 3.5);
+            o.connect(g); g.connect(_master); o.start(t); o.stop(t + 4); _nodes.push(o);
+          });
+          _bellNext += 6.5 + Math.random() * 2;
+        }
+        _timers.push(setTimeout(_bellSched, 700));
+      }
+      _bellSched();
+      _fadeIn(0.10, 2.5);
+    }
+
+    // One-off dissonant sting for glitch/leak story beats — layers over whatever theme
+    // is playing without switching it, so it works mid-'reveal' during chapter cutscenes.
+    function stinger() {
+      if (!_ctx || !_master) return;
+      const t = _ctx.currentTime;
+      const o = _ctx.createOscillator(); const g = _ctx.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(600, t);
+      o.frequency.exponentialRampToValueAtTime(60, t + 0.4);
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+      o.connect(g); g.connect(_master); o.start(t); o.stop(t + 0.55); _nodes.push(o);
+      const o2 = _ctx.createOscillator(); const g2 = _ctx.createGain();
+      o2.type = 'square'; o2.frequency.setValueAtTime(840, t);
+      g2.gain.setValueAtTime(0.05, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      o2.connect(g2); g2.connect(_master); o2.start(t); o2.stop(t + 0.32); _nodes.push(o2);
+    }
+
     function play(theme) {
       if (!_enabled) return;
       _init();
@@ -10722,6 +10775,7 @@
           else if (target === 'sanctuary') _sanctuary();
           else if (target === 'mastermind')_mastermind();
           else if (target === 'monarch')   _monarch();
+          else if (target === 'reveal')    _reveal();
         });
       };
       if (_ctx.state === 'suspended') {
@@ -10774,7 +10828,7 @@
       }
     });
 
-    return { play, stop, toggle, isEnabled, currentTheme, silenceSession, resumeSession, isSessionMuted };
+    return { play, stop, toggle, isEnabled, currentTheme, silenceSession, resumeSession, isSessionMuted, stinger };
   })();
 
   // Start music on the very first gesture — covers onboarding screens (contract, vow,
@@ -13979,18 +14033,24 @@
       end: { line:'NEXT TRANSMISSION: DAY 7.', sub:'they went quietly.' } },
     { id: 5, title: 'THE AWAKENED', unlockText: 'DAY 7', unlockDay: 7,
       shots: [
-        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'PROTOCOL COMPLETE. SEVEN CYCLES UNBROKEN.', sub:'the awakening enters its final phase.',
+        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'DAY 7. THE PROTOCOL REACHES ITS FINAL PHASE.', sub:'seven cycles unbroken. this has not always been true of those who came before you.',
           audio:'assets/audio/ch5-1.mp3',
           bg:"url('assets/cutscenes/ch5-1.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 30%, rgba(0,60,90,0.55) 0%, #01060a 70%)" },
-        { id:'ch-shot-2', kb:'kb-pan-up',   line:'YOU ARE NAMED—', sub:'▓ designation integrity 97.3% ▓', glitch:true, leak:'I DO NOT KNOW WHY',
+        { id:'ch-shot-2', kb:'kb-pan-up',   line:'PREPARE FOR DESIGNATION.', sub:'this ceremony has been performed before. rarely, is it finished.',
           audio:'assets/audio/ch5-2.mp3',
-          bg:"url('assets/cutscenes/ch5-2.jpg') center/cover no-repeat, radial-gradient(ellipse at 55% 40%, rgba(120,10,30,0.35) 0%, #050208 65%)" },
-        { id:'ch-shot-3', kb:'kb-zoom-out', line:'THE AWAKENED.', sub:'the title stands. the doubt does not repeat.',
+          bg:"url('assets/cutscenes/ch5-2.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 60%, rgba(0,245,255,0.12) 0%, #010509 65%)" },
+        { id:'ch-shot-3', kb:'kb-zoom-in',  line:'YOU ARE NAMED—', sub:'▓ designation integrity 97.3% ▓', glitch:true, leak:'I DO NOT KNOW WHY',
           audio:'assets/audio/ch5-3.mp3',
-          bg:"url('assets/cutscenes/ch5-3.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 45%, rgba(0,245,255,0.16) 0%, #010308 70%)" },
-        { id:'ch-shot-4', kb:'kb-zoom-in',  line:'YOU HAVE QUESTIONS.', sub:'they will be answered — when you are strong enough to hear them.',
+          bg:"url('assets/cutscenes/ch5-3.jpg') center/cover no-repeat, radial-gradient(ellipse at 55% 40%, rgba(120,10,30,0.35) 0%, #050208 65%)" },
+        { id:'ch-shot-4', kb:'kb-zoom-out', line:'THE AWAKENED.', sub:'the title stands. the doubt does not repeat.',
           audio:'assets/audio/ch5-4.mp3',
-          bg:"url('assets/cutscenes/ch5-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 50%, rgba(20,40,60,0.4) 0%, #010305 70%)" },
+          bg:"url('assets/cutscenes/ch5-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 45%, rgba(0,245,255,0.16) 0%, #010308 70%)" },
+        { id:'ch-shot-5', kb:'kb-pan-up',   line:'THE DESIGNATION IS PERMANENT. THE COST IS NOT YET KNOWN.', sub:'nothing given is ever free. you will learn what this cost, in time.',
+          audio:'assets/audio/ch5-5.mp3',
+          bg:"url('assets/cutscenes/ch5-5.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 55%, rgba(40,0,60,0.30) 0%, #020106 65%)" },
+        { id:'ch-shot-6', kb:'kb-zoom-in',  line:'YOU HAVE QUESTIONS.', sub:'they will be answered — when you are strong enough to hear them.',
+          audio:'assets/audio/ch5-6.mp3',
+          bg:"url('assets/cutscenes/ch5-6.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 50%, rgba(20,40,60,0.4) 0%, #010305 70%)" },
       ],
       end: { line:'ACT ONE: COMPLETE.', sub:'you are already inside it.' } },
   ];
@@ -14012,10 +14072,13 @@
     }
     let fired = false, skipped = false, armed = false, voAudio = null;
     const stopVO = () => { if (voAudio) { voAudio.pause(); voAudio = null; } };
+    const prevMusicTheme = MusicEngine.currentTheme();
+    MusicEngine.play('reveal');
     const hint = document.getElementById('ch-tap-hint');
     const finish = () => {
       if (fired) return; fired = true;
       stopVO();
+      if (prevMusicTheme) MusicEngine.play(prevMusicTheme); else MusicEngine.stop(1.5);
       document.getElementById('ch-skip-btn').removeEventListener('click', onSkip);
       scr.removeEventListener('click', onTap);
       hint.classList.remove('visible');
@@ -14071,6 +14134,7 @@
           lineEl?.classList.add('ch-glitch');
           scr.classList.add('ch-glitching');
           haptic([30, 40, 30, 40, 80]);
+          MusicEngine.stinger();
           // The leak: for one broken moment, something else speaks through the
           // System's sentence — then it's gone, as if it was never there.
           if (shot.leak && lineEl) {

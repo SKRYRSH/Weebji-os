@@ -8951,6 +8951,9 @@
       });
       row.addEventListener('click', e => {
         if (e.target.closest('.custom-task-edit')) return;
+        // Row is in rename mode — its .quest-check is gone, so a tap here
+        // would crash onQuestTap. Let the edit controls handle it.
+        if (e.target.closest('.custom-task-input-row')) return;
         onQuestTap(i, row, quests);
       });
       list.appendChild(row);
@@ -9008,6 +9011,8 @@
       row.addEventListener('click', e => {
         if (e.target.closest('.custom-task-delete')) return;
         if (e.target.closest('.custom-task-edit')) return;
+        // Rename mode replaced the row body — .quest-check no longer exists
+        if (e.target.closest('.custom-task-input-row')) return;
         onCustomTaskTap(t, row);
       });
       row.querySelector('.custom-task-delete').addEventListener('click', e => {
@@ -9088,6 +9093,8 @@
   }
 
   function onCustomTaskTap(task, row) {
+    // Defensive: rename mode removes .quest-check from the row
+    if (!row.querySelector('.quest-check')) return;
     const p = loadProgress();
     const done = (p.customDone || []).includes(task.id);
     if (done) {
@@ -9171,6 +9178,9 @@
   }
 
   function onQuestTap(index, row, quests) {
+    // Defensive: any path that swaps the row body (rename mode) leaves no
+    // .quest-check — writing innerHTML on null was an uncaught crash.
+    if (!row.querySelector('.quest-check')) return;
     const p = loadProgress();
     if (p.questsChecked.includes(index)) {
       p.xp = Math.max(0, p.xp - quests[index].xp);

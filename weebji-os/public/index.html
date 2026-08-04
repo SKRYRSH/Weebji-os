@@ -4027,6 +4027,7 @@
       voidSessions      : parseInt(localStorage.getItem('weebji_void_sessions')   || '0'),
       ghostWhisperEarned: localStorage.getItem('weebji_ghost_whisper') === 'true',
       penanceSurvived   : localStorage.getItem('weebji_penance_survived') === 'true',
+      bossesDefeated    : parseInt(localStorage.getItem('weebji_bosses_defeated')  || '0'),
       shadowSlayerEarned: localStorage.getItem('weebji_shadow_slayer') === 'true',
       streakLostToday   : localStorage.getItem('weebji_streak_lost_today') === 'true',
       dailyChallengeDone: (localStorage.getItem('weebji_dc_done') || '').startsWith(today),
@@ -4167,6 +4168,7 @@
     if (p.voidSessions !== undefined)   localStorage.setItem('weebji_void_sessions',   p.voidSessions);
     if (p.ghostWhisperEarned)           localStorage.setItem('weebji_ghost_whisper',   'true');
     if (p.penanceSurvived)              localStorage.setItem('weebji_penance_survived','true');
+    if (p.bossesDefeated !== undefined) localStorage.setItem('weebji_bosses_defeated', p.bossesDefeated);
     if (p.shadowSlayerEarned)           localStorage.setItem('weebji_shadow_slayer',   'true');
     localStorage.setItem('weebji_prestige',          p.prestige || 0);
     localStorage.setItem('weebji_streak_lost_today', p.streakLostToday ? 'true' : 'false');
@@ -5130,6 +5132,12 @@
         const p = loadProgress();
         p.xp += 300;
         p.hp = Math.min(3, (p.hp || 0) + 1);
+        // Lifetime tally — state.defeated is per-week and resets every Monday, so
+        // it can't gate Ch7 ("first boss ever felled"). Name is stashed for the
+        // cutscene to read back the designation the player just put down.
+        p.bossesDefeated = (p.bossesDefeated || 0) + 1;
+        const _slain = _bossForWeek(state.yearWeek);
+        if (_slain && _slain.boss) localStorage.setItem('weebji_last_boss_slain', _slain.boss);
         const leveled = checkLevelUp(p);
         saveProgress(p);
         updateXPBar(p);
@@ -5161,7 +5169,14 @@
       if (subEl)  subEl.textContent  = (boss.quote || '').replace(/^"|"$/g,'');
       ov.classList.add('active');
       const btn = document.getElementById('boss-defeat-dismiss');
-      if (btn) btn.onclick = () => { ov.classList.remove('active'); renderDungeonCard(); };
+      // Ch7 ECHOES OF THE FALLEN lands on the kill itself, not a later boot. Fires
+      // on dismiss so it never overlaps this overlay, and reuses the boot gate so
+      // the seen-flag / penance / onboarding guards all still apply.
+      if (btn) btn.onclick = () => {
+        ov.classList.remove('active');
+        renderDungeonCard();
+        setTimeout(() => { try { checkChapterOnBoot(); } catch(_) {} }, 700);
+      };
     }
 
     return { init, getState, dealDamage, HP_MAX: BOSS_HP_MAX };
@@ -14238,6 +14253,19 @@
           bg:"url('assets/cutscenes/ch6-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 55% 40%, rgba(60,10,40,0.35) 0%, #030208 65%)" },
       ],
       end: { line:'THE ARCHIVE CLOSES.', sub:'you were not meant to read that far.' } },
+    { id: 7, title: 'ECHOES OF THE FALLEN', unlockText: 'FIRST BOSS FELLED', unlockBoss: 1,
+      shots: [
+        { id:'ch-shot-1', kb:'kb-zoom-in',  line:'THE SIEGE IS ENDED.', sub:'you struck it until it stopped moving. that was correct.',
+          bg:"url('assets/cutscenes/ch7-1.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 35%, rgba(255,215,0,0.10) 0%, #01060a 70%)" },
+        { id:'ch-shot-2', kb:'kb-pan-up',   line:'IT CARRIED A DESIGNATION ONCE.',
+          sub:() => { const b = localStorage.getItem('weebji_last_boss_slain'); return b ? 'recovered from the wreck: ' + b.toLowerCase() : 'the designation survived it. the hunter did not.'; },
+          bg:"url('assets/cutscenes/ch7-2.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 65%, rgba(150,180,200,0.13) 0%, #020409 62%)" },
+        { id:'ch-shot-3', kb:'kb-zoom-in',  line:'EVERY SIEGE YOU HAVE FOUGHT WAS ONE OF—', sub:'▓ containment integrity 62.8% ▓', glitch:true, leak:'IT KNEW YOUR NAME',
+          bg:"url('assets/cutscenes/ch7-3.jpg') center/cover no-repeat, radial-gradient(ellipse at 55% 42%, rgba(120,10,30,0.36) 0%, #050208 65%)" },
+        { id:'ch-shot-4', kb:'kb-zoom-out', line:'YOU DID NOT KILL A MONSTER, HUNTER.', sub:'you freed one.',
+          bg:"url('assets/cutscenes/ch7-4.jpg') center/cover no-repeat, radial-gradient(ellipse at 50% 50%, rgba(0,245,255,0.14) 0%, #010308 70%)" },
+      ],
+      end: { line:'ANOTHER RISES IN SEVEN DAYS.', sub:'it will also have been someone.' } },
   ];
   // Shot fields (bg/line/sub) may be functions — resolved at play time so
   // class-personalized shots read the player's current state.
@@ -14368,6 +14396,7 @@
         if (!c.shots || localStorage.getItem('weebji_ch' + c.id + '_seen')) return false;
         if (c.unlockDay)   return day >= c.unlockDay;
         if (c.unlockLevel) return (loadProgress().level || 1) >= c.unlockLevel;
+        if (c.unlockBoss)  return (loadProgress().bossesDefeated || 0) >= c.unlockBoss;
         return false;
       });
       if (!next) return;
@@ -14392,7 +14421,10 @@
     const ch4Seen = !!localStorage.getItem('weebji_ch4_seen');
     const ch5Seen = !!localStorage.getItem('weebji_ch5_seen');
     const ch6Seen = !!localStorage.getItem('weebji_ch6_seen');
-    const level = loadProgress().level || 1;
+    const ch7Seen = !!localStorage.getItem('weebji_ch7_seen');
+    const _txp   = loadProgress();
+    const level  = _txp.level || 1;
+    const bosses = _txp.bossesDefeated || 0;
     const rows = [
       { n:'I',   name:'THE AWAKENING',       state:'RECEIVED · REPLAY', locked:false },
       { n:'II',  name:'SIGNAL DECAY',        state: ch2Seen ? 'RECEIVED · REPLAY' : (days >= 2 ? 'INCOMING' : 'DAY 2'), locked: !ch2Seen && days < 2 },
@@ -14400,6 +14432,7 @@
       { n:'IV',  name:'WHAT THE VOID TAKES', state: ch4Seen ? 'RECEIVED · REPLAY' : (days >= 5 ? 'INCOMING' : 'DAY 5'), locked: !ch4Seen && days < 5 },
       { n:'V',   name:'THE AWAKENED',        state: ch5Seen ? 'RECEIVED · REPLAY' : (days >= 7 ? 'INCOMING' : 'DAY 7'), locked: !ch5Seen && days < 7 },
       { n:'VI',  name:'THE ARCHIVE',         state: ch6Seen ? 'RECEIVED · REPLAY' : (level >= 10 ? 'INCOMING' : 'LEVEL 10'), locked: !ch6Seen && level < 10 },
+      { n:'VII', name:'ECHOES OF THE FALLEN',state: ch7Seen ? 'RECEIVED · REPLAY' : (bosses >= 1 ? 'INCOMING' : 'DEFEAT A BOSS'), locked: !ch7Seen && bosses < 1 },
       { n:'?',   name:'SIGNAL BURIED',       state:'EARN IT', locked:true },
     ];
     host.innerHTML = `<div class="tx-section"><div class="tx-title">◈ Transmissions — Season 1</div>` +
@@ -14433,6 +14466,11 @@
     if (ch6row && (ch6Seen || level >= 10)) {
       ch6row.style.cursor = 'pointer';
       ch6row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch6_seen', '1'); const ch6 = CHAPTERS.find(c => c.id === 6); ch6._ret = 'profile'; playChapterCutscene(ch6); };
+    }
+    const ch7row = host.querySelector('[data-tx="6"]');
+    if (ch7row && (ch7Seen || bosses >= 1)) {
+      ch7row.style.cursor = 'pointer';
+      ch7row.onclick = () => { Sound.play('tap'); localStorage.setItem('weebji_ch7_seen', '1'); const ch7 = CHAPTERS.find(c => c.id === 7); ch7._ret = 'profile'; playChapterCutscene(ch7); };
     }
   }
 
@@ -15667,7 +15705,7 @@ DEV.skipSplash()      → go straight to class select (if no session)
           titles: p.titles, mmSessions: p.mmSessions, voidSessions: p.voidSessions,
           prevStreak: p.prevStreak, lastDate: p.lastDate, yesterdayCount: p.yesterdayCount,
           ghostWhisperEarned: p.ghostWhisperEarned, penanceSurvived: p.penanceSurvived,
-          shadowSlayerEarned: p.shadowSlayerEarned,
+          shadowSlayerEarned: p.shadowSlayerEarned, bossesDefeated: p.bossesDefeated,
           customWorkouts: JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]'),
           penanceActive: localStorage.getItem('weebji_penance_active') === '1',
           prestige: p.prestige || 0,
@@ -15902,6 +15940,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.lastDate && !p.lastDate) p.lastDate = d.lastDate;
           if (d.ghostWhisperEarned)  p.ghostWhisperEarned  = true;
           if (d.penanceSurvived)     p.penanceSurvived     = true;
+          // Counter, not a flag — take the max so a stale device can't un-earn Ch7.
+          if ((d.bossesDefeated || 0) > (p.bossesDefeated || 0)) p.bossesDefeated = d.bossesDefeated;
           if (d.shadowSlayerEarned)  p.shadowSlayerEarned  = true;
           // Restore identity on new device — name/class/color live in localStorage, sync from DB if missing.
           // Returning-user login (_loginMode) ALWAYS wins with cloud identity — the local copy

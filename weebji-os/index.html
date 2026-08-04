@@ -337,7 +337,9 @@
   /* ══ SCREEN 05 — DASHBOARD ═══════════════════ */
   #dashboard { overflow: hidden; background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,8,0.95) 100%), radial-gradient(ellipse at 50% 10%, rgba(0,70,255,0.11) 0%, transparent 60%), radial-gradient(ellipse at 15% 90%, rgba(61,0,255,0.07) 0%, transparent 40%), #03030A; }
   #dashboard.bg-monarch    { background: linear-gradient(rgba(0,8,22,0.75), rgba(0,4,14,0.90)), url('assets/bg-monarch.jpeg') center center / cover no-repeat, #03030A; }
-  #dashboard.bg-mastermind { background: linear-gradient(rgba(20,0,2,0.45), rgba(10,0,1,0.65)), url('assets/bg-mastermind.jpeg') center center / cover no-repeat, #03030A; }
+  /* Scrim matched to the other two pillars — was 0.45/0.65, which let the red art
+     through at ~2x monarch/monk and made the whole screen read as red. */
+  #dashboard.bg-mastermind { background: linear-gradient(rgba(14,1,4,0.74), rgba(7,1,2,0.89)), url('assets/bg-mastermind.jpeg') center center / cover no-repeat, #03030A; }
   #dashboard.bg-monk       { background: linear-gradient(rgba(0,14,6,0.72), rgba(0,8,3,0.88)), url('assets/bg-monk.jpeg') center center / cover no-repeat, #03030A; }
   #dashboard::before { content:''; position:absolute; inset:0; pointer-events:none; z-index:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='stone'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' seed='3'/%3E%3CfeColorMatrix type='matrix' values='0.22 0.22 0.22 0 0.06 0.22 0.22 0.22 0 0.06 0.28 0.28 0.28 0 0.08 0 0 0 0.22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23stone)'/%3E%3C/svg%3E"); opacity:0.55; mix-blend-mode:screen; }
   @keyframes kf-mist-drift { 0%,100%{transform:translateX(-5%) scaleX(1);opacity:0.35;} 50%{transform:translateX(5%) scaleX(1.04);opacity:0.55;} }
@@ -446,6 +448,7 @@
   .ex-name   { font-family: 'Inter', sans-serif; font-size: 14px; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.3s ease; }
   .ex-row.done .ex-name { text-decoration: line-through; color: #444466; }
   .ex-sets   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555577; margin-top: 2px; }
+  .ex-drop-tag { display:inline-block; font-size:8px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; padding:1px 5px; margin-left:5px; border-radius:3px; background:rgba(0,245,255,0.1); color:rgba(0,245,255,0.6); vertical-align:1px; }
   .ex-set-dots { display:flex; align-items:center; gap:5px; margin-top:6px; flex-wrap:wrap; }
   .ex-set-dot { width:7px; height:7px; border-radius:50%; border:1px solid rgba(0,245,255,0.35); transition:background 0.2s, box-shadow 0.2s; flex-shrink:0; }
   .ex-set-dot.filled { background:#00F5FF; box-shadow:0 0 6px rgba(0,245,255,0.7); border-color:#00F5FF; }
@@ -574,7 +577,7 @@
   .pillar-panel-inner::-webkit-scrollbar { display:none; }
   /* Mastermind — red scanline sweep */
   .pillar-scan { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
-    background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(230,57,70,0.045) 3px, rgba(230,57,70,0.045) 4px); }
+    background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(230,57,70,0.022) 3px, rgba(230,57,70,0.022) 4px); }
   @keyframes kf-scan-drift { from { background-position: 0 0 } to { background-position: 0 200px } }
   .pillar-scan { animation: kf-scan-drift 7s linear infinite; }
   /* Monk — floating particle drift */
@@ -959,7 +962,7 @@
   /* ══ PHASE 3 — PROFILE SCREEN ═══════════════ */
   #profile { overflow: hidden; }
   #profile.bg-monarch    { background: linear-gradient(to bottom, rgba(0,8,22,0.85) 0%, rgba(0,4,14,0.97) 55%), url('assets/bg-monarch.jpeg') top center / cover no-repeat, #03030A; }
-  #profile.bg-mastermind { background: linear-gradient(to bottom, rgba(20,0,2,0.50) 0%, rgba(10,0,1,0.82) 55%), url('assets/bg-mastermind.jpeg') top center / cover no-repeat, #03030A; }
+  #profile.bg-mastermind { background: linear-gradient(to bottom, rgba(14,1,4,0.80) 0%, rgba(7,1,2,0.96) 55%), url('assets/bg-mastermind.jpeg') top center / cover no-repeat, #03030A; }
   #profile.bg-monk       { background: linear-gradient(to bottom, rgba(0,14,6,0.78) 0%, rgba(0,8,3,0.96) 55%), url('assets/bg-monk.jpeg') top center / cover no-repeat, #03030A; }
   .profile-header { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 52px 20px 8px; }
   .profile-back { background: none; border: none; color: #555577; cursor: pointer; padding: 8px; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
@@ -3404,7 +3407,7 @@
   /* ══ DATA ════════════════════════════════════ */
   const XP_PER_LEVEL = 150;
   const DAY_ABBRS    = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
-  const SCHEDULE     = ['PUSH','PULL','LEGS','REST','PUSH','PULL','LEGS'];
+  // Weekly split now lives in SCHEDULES (per workout mode) — see activeSchedule()
 
   const WORKOUTS = {
     PUSH: [
@@ -3454,6 +3457,85 @@
       { name: 'Machine Calf Raises',    sets: 4, reps: 20, xp: 8  },
     ],
   };
+
+  /* ── THE LAZY METHOD (Field Manual 01 / the Toji video) ───────────────────
+        Three sessions a week, zero equipment. The rest days are load-bearing —
+        they are the method, not a gap in it. Every main lift ends with ONE
+        dropset: last set to failure, then straight into the easier variant.
+        Deliberately NOT difficulty-scaled — 3×10 is the target, and you get
+        harder by hardening the exercise, never by adding reps or days. ────── */
+  const LAZY_WORKOUTS = {
+    PUSH: [
+      { name: 'Push-ups',            sets: 3, reps: 10,           xp: 7, drop: 'Knee Push-ups' },
+      { name: 'Dips',                sets: 3, reps: 10,           xp: 7, drop: 'Bench Dips' },
+      { name: 'Pike Push-ups',       sets: 3, reps: 10,           xp: 7, drop: 'Hands-elevated Pike Push-ups' },
+      { name: 'L-sit → Knee Raises', sets: 1, reps: '10s + drop', xp: 6 },
+    ],
+    PULL: [
+      { name: 'Pull-ups',            sets: 3, reps: 10,           xp: 7, drop: 'Australian Rows' },
+      { name: 'Australian Rows',     sets: 3, reps: 10,           xp: 7, drop: 'Rows with the bar raised higher' },
+      { name: 'Chin-ups',            sets: 3, reps: 10,           xp: 7, drop: 'Negatives — slow lower only' },
+      { name: 'L-sit → Knee Raises', sets: 1, reps: '10s + drop', xp: 6 },
+    ],
+    LEGS: [
+      { name: 'Horse Stance Hold',   sets: 3, reps: '30s',        xp: 6 },
+      { name: 'Jump Squats',         sets: 3, reps: 10,           xp: 8, drop: 'Bodyweight Squats' },
+      { name: 'Lunges',              sets: 2, reps: 10,           xp: 6 },
+      { name: 'Calf Raises',         sets: 3, reps: 10,           xp: 7, drop: 'Calf Raises off the floor' },
+    ],
+  };
+
+  /* Per-mode weekly schedule. Home/Gym keep the original 6-day split; Lazy is
+     train / rest / train / rest / train / rest / rest — 3 sessions, always a
+     rest day in between. Weekday-anchored so the week bar, month calendar and
+     rest-day logic all keep working unchanged. */
+  const SCHEDULES = {
+    home: ['PUSH','PULL','LEGS','REST','PUSH','PULL','LEGS'],
+    gym:  ['PUSH','PULL','LEGS','REST','PUSH','PULL','LEGS'],
+    lazy: ['PUSH','REST','PULL','REST','LEGS','REST','REST'],
+  };
+  const WMODE_LABELS = { home: '🏠 Home', gym: '🏋️ Gym', lazy: '🌙 Lazy' };
+  function getWorkoutMode() {
+    const m = localStorage.getItem('weebji_workout_mode');
+    return SCHEDULES.hasOwnProperty(m) ? m : 'home';
+  }
+  function setWorkoutMode(m) {
+    if (!SCHEDULES.hasOwnProperty(m)) m = 'home';
+    localStorage.setItem('weebji_workout_mode', m);
+    try { if (typeof posthog !== 'undefined') posthog.capture('workout_mode_set', { mode: m }); } catch(_) {}
+  }
+  function activeSchedule() { return SCHEDULES[getWorkoutMode()]; }
+  /* Exercise list for a mode+day, honouring per-mode custom overrides.
+     Lazy skips applyDifficulty on purpose (see the block comment above). */
+  function baseWorkoutFor(wMode, type) {
+    if (!type || type === 'REST') return [];
+    const ov = JSON.parse(localStorage.getItem('weebji_ex_overrides') || '{}');
+    const key = `${wMode}_${type}`;
+    if (ov[key] && ov[key].length >= 1) return ov[key];
+    if (wMode === 'lazy') return LAZY_WORKOUTS[type].map(e => ({ ...e }));
+    return applyDifficulty(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]);
+  }
+  function wModeToggleHTML(idPrefix) {
+    const cur = getWorkoutMode();
+    return `<div class="forge-mode-toggle">${Object.entries(WMODE_LABELS).map(([k,v]) =>
+      `<button class="forge-mode-btn${cur===k?' active':''}" id="${idPrefix}-mode-${k}">${v}</button>`).join('')}</div>`;
+  }
+  function bindWModeToggle(root, idPrefix, rerender) {
+    Object.keys(WMODE_LABELS).forEach(k => {
+      root.querySelector(`#${idPrefix}-mode-${k}`)?.addEventListener('click', () => {
+        if (getWorkoutMode() === k) return;
+        setWorkoutMode(k);
+        if (k === 'lazy') spawnDropBanner('🌙 LAZY METHOD — 3 sessions a week. Rest is the plan.');
+        renderWeekBar(); // the split changed — the week strip must follow
+        rerender();
+      });
+    });
+  }
+  /* Shown instead of the difficulty toggle in Lazy mode — the method's own rule. */
+  const LAZY_DOCTRINE_HTML = `<div style="margin:8px 0 12px;padding:9px 12px;border-left:2px solid rgba(0,245,255,0.35);background:rgba(0,245,255,0.03);border-radius:0 8px 8px 0">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.28em;color:rgba(0,245,255,0.45);text-transform:uppercase;margin-bottom:5px">Lazy Method · 3 sessions / week</div>
+    <div style="font-family:'Inter',sans-serif;font-size:11.5px;line-height:1.6;color:rgba(255,255,255,0.45)">3 × 10 is the target, not a step toward 3 × 30. When it gets easy, make the <em>exercise</em> harder — never add reps or days. Last set of each lift goes to failure, then straight into the easier version. That's the dropset.</div>
+  </div>`;
 
   /* ── Difficulty tiers — moderate = original values, scaling keeps list length
         and indexes stable so workoutChecked never desyncs ──────────────────── */
@@ -3548,6 +3630,14 @@
     'Leg Press':             { tip: 'Feet hip-width. Full range of motion — don\'t lock knees at top. Drive through heels, not toes.' },
     'Leg Curls':             { tip: 'Slow 3s negative. Don\'t hyperextend hips into the pad. Curl to full contraction, toes neutral.' },
     'Machine Calf Raises':   { tip: 'Full stretch at the bottom — pause there. 2s hold at the top. High reps (15–25) for calf hypertrophy.' },
+    // Lazy Method — regressions are baked into the tip. The regression IS the exercise until it isn't.
+    'Dips':                  { tip: 'Actual dips on parallel bars or two surfaces — not push-ups. Elbows drive back, lean slightly forward. Can\'t do one yet? Bench dips: hands behind you on a chair, feet on the floor.' },
+    'Pull-ups':              { tip: 'Overhand grip, chin over the bar, control the way down. Can\'t do one yet? Negatives — jump to the top and lower as slowly as you can. 3 × 3 is plenty.' },
+    'Australian Rows':       { tip: 'Bar or table at hip height, body straight as a plank, pull your chest to it. Too hard? Raise the bar — the more upright you are, the easier it gets.' },
+    'Chin-ups':              { tip: 'Underhand grip. This is your entire bicep programme — you do not need curls. Can\'t do one? Negatives, same as pull-ups.' },
+    'L-sit → Knee Raises':   { tip: 'Hold the L-sit 10 seconds. The moment you drop, go straight into knee raises until you can\'t. No rest between. Legs won\'t straighten yet? Tucked L-sit — knees to chest.' },
+    'Horse Stance Hold':     { tip: 'Thighs parallel to the floor, back straight, and sit in it. Do this FIRST while you\'re fresh — it\'s a skill, not a finisher. It will burn. That\'s the point.' },
+    'Lunges':                { tip: 'Per leg. Keep it light — this is accessory work, not the main event of leg day. Front knee stays over the ankle.' },
   };
 
   // Class-specific daily quests
@@ -3841,7 +3931,7 @@
     const d = new Date().getDay(); // 0=Sun … 6=Sat
     return d === 0 ? 6 : d - 1;   // 0=Mon … 6=Sun
   }
-  function todayWorkoutType() { return SCHEDULE[todayIndex()]; }
+  function todayWorkoutType() { return activeSchedule()[todayIndex()]; }
 
   /* ══ PROGRESS (localStorage) ═════════════════ */
   function loadProgress() {
@@ -8571,6 +8661,7 @@
   /* ── Week bar ────────────────────────────── */
   function renderWeekBar() {
     const bar = document.getElementById('week-bar'), today = todayIndex();
+    if (!bar) return;
     const color = State.selectedColor || localStorage.getItem('weebji_color') || '#00F5FF';
     const cls   = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
     const ri = parseInt(color.slice(1,3),16), gi = parseInt(color.slice(3,5),16), bi = parseInt(color.slice(5,7),16);
@@ -8589,7 +8680,7 @@
     });
     bar.innerHTML = '';
     DAY_ABBRS.forEach((abbr, i) => {
-      const type = SCHEDULE[i], isRest = type === 'REST';
+      const type = activeSchedule()[i], isRest = type === 'REST';
       const isToday = i === today;
       const isPast  = i < today;
       const isDone  = grid.includes(weekDates[i]);
@@ -8676,6 +8767,13 @@
       titleEl.textContent = 'REST DAY';
       titleEl.style.color = '#8888AA'; titleEl.style.textShadow = '0 0 8px rgba(136,136,170,0.3)';
       subEl.textContent = ''; bonusEl.classList.add('hidden');
+      // Mode toggle must stay reachable on rest days — Lazy has four of them a
+      // week, so without this you can't switch back out of Lazy from the Forge.
+      const mwr = document.getElementById('forge-mode-wrap');
+      if (mwr) {
+        mwr.innerHTML = wModeToggleHTML('forge');
+        bindWModeToggle(mwr, 'forge', () => renderForgeArea(loadProgress(), cls));
+      }
       renderRestContent(p);
     } else {
       forgeCard.classList.add('dash-card--cyan');
@@ -8688,20 +8786,18 @@
         renderForgeCalibration(document.getElementById('exercise-list'), () => renderForgeArea(loadProgress(), cls));
         return;
       }
-      const wMode = localStorage.getItem('weebji_workout_mode') || 'home';
+      const wMode = getWorkoutMode();
       const mw = document.getElementById('forge-mode-wrap');
       if (mw) {
-        mw.innerHTML = `<div class="forge-mode-toggle"><button class="forge-mode-btn${wMode==='home'?' active':''}" id="forge-home-btn">🏠 Home</button><button class="forge-mode-btn${wMode==='gym'?' active':''}" id="forge-gym-btn">🏋️ Gym</button></div>` + diffToggleHTML('forge') + `<button class="forge-cust-btn" id="forge-cust-btn" title="Customize exercises">✎</button>`;
-        mw.querySelector('#forge-home-btn').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','home'); renderForgeArea(loadProgress(), cls); });
-        mw.querySelector('#forge-gym-btn').addEventListener('click', () => { localStorage.setItem('weebji_workout_mode','gym'); renderForgeArea(loadProgress(), cls); });
-        bindDiffToggle(mw, 'forge', () => renderForgeArea(loadProgress(), cls));
+        // Lazy is a fixed 3×10 prescription — the difficulty scaler would fight it.
+        mw.innerHTML = wModeToggleHTML('forge')
+          + (wMode === 'lazy' ? LAZY_DOCTRINE_HTML : diffToggleHTML('forge'))
+          + `<button class="forge-cust-btn" id="forge-cust-btn" title="Customize exercises">✎</button>`;
+        bindWModeToggle(mw, 'forge', () => renderForgeArea(loadProgress(), cls));
+        if (wMode !== 'lazy') bindDiffToggle(mw, 'forge', () => renderForgeArea(loadProgress(), cls));
         mw.querySelector('#forge-cust-btn').addEventListener('click', () => openExCustomize(wMode, type, cls));
       }
-      // Use per-mode exercise overrides if set, else fall back to defaults
-      const _exKey = `${wMode}_${type}`;
-      const _exOv  = JSON.parse(localStorage.getItem('weebji_ex_overrides') || '{}');
-      const _baseEx = (_exOv[_exKey] && _exOv[_exKey].length >= 1) ? _exOv[_exKey] : applyDifficulty(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]);
-      renderExercises(p, _baseEx);
+      renderExercises(p, baseWorkoutFor(wMode, type));
     }
     // Monarch: calendar + PR board appended after exercise list (clear first to prevent duplication)
     requestAnimationFrame(() => {
@@ -8883,14 +8979,15 @@
         <div class="ex-check">${done ? CHECK_SVG : ''}</div>
         <div class="ex-middle">
           <div class="ex-name">${ex.name}</div>
-          <div class="ex-sets">${ex.sets} × ${ex.reps}</div>
+          <div class="ex-sets">${ex.sets} × ${ex.reps}${ex.drop ? ' <span class="ex-drop-tag">+ drop</span>' : ''}</div>
           <div class="ex-set-dots">${dots}</div>
           <button class="ex-log-set">▶ Log Set</button>
         </div>
         <div class="ex-xp">+${ex.xp} XP</div>
-        ${_exInfo ? `<button class="ex-info-btn">ℹ</button>
+        ${_exInfo || ex.drop ? `<button class="ex-info-btn">ℹ</button>
         <div class="ex-info-panel">
-          <div class="ex-form-tip">${_exInfo.tip}</div>
+          ${_exInfo ? `<div class="ex-form-tip">${_exInfo.tip}</div>` : ''}
+          ${ex.drop ? `<div class="ex-form-tip" style="color:rgba(0,245,255,0.6)"><b>Dropset:</b> on your last set go past ${ex.reps} until you physically can't, then straight into <b>${ex.drop}</b> with no rest — until you can't do those either.</div>` : ''}
           <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' proper form tutorial')}" target="_blank" rel="noopener" class="ex-yt-link">▶ Watch Tutorial</a>
         </div>` : ''}`;
       // Log set button
@@ -10040,14 +10137,13 @@
       renderForgeCalibration(el, () => renderSecondaryMonarch(p, el));
       return;
     }
-    const workoutMode = localStorage.getItem('weebji_workout_mode') || 'home';
+    const workoutMode = getWorkoutMode();
     const customs = JSON.parse(localStorage.getItem('weebji_custom_workouts') || '[]');
-    const allExercises = [...applyDifficulty(workoutMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]), ...customs];
-    el.innerHTML = `<div class="forge-mode-toggle" style="margin-bottom:12px">
-      <button class="forge-mode-btn${workoutMode==='home'?' active':''}" id="sec-mode-home">🏠 Home</button>
-      <button class="forge-mode-btn${workoutMode==='gym'?' active':''}" id="sec-mode-gym">🏋️ Gym</button>
-    </div>` + diffToggleHTML('sec');
-    bindDiffToggle(el, 'sec', () => renderSecondaryMonarch(p, el));
+    const allExercises = [...baseWorkoutFor(workoutMode, type), ...customs];
+    el.innerHTML = wModeToggleHTML('sec')
+      + (workoutMode === 'lazy' ? LAZY_DOCTRINE_HTML : diffToggleHTML('sec'));
+    bindWModeToggle(el, 'sec', () => renderSecondaryMonarch(loadProgress(), el));
+    if (workoutMode !== 'lazy') bindDiffToggle(el, 'sec', () => renderSecondaryMonarch(p, el));
     el.appendChild(renderForgeTimerWidget());
     allExercises.forEach((ex, i) => {
       const done = p.workoutChecked.includes(i);
@@ -10061,7 +10157,7 @@
         <div class="ex-check" style="cursor:pointer">${done ? CHECK_SVG : ''}</div>
         <div class="ex-middle">
           <div class="ex-name">${ex.name}</div>
-          <div class="ex-sets">${ex.sets} × ${ex.reps}</div>
+          <div class="ex-sets">${ex.sets} × ${ex.reps}${ex.drop ? ' <span class="ex-drop-tag">+ drop</span>' : ''}</div>
           <div class="ex-set-dots">${dots}</div>
           <button class="ex-log-set">▶ Log Set</button>
         </div>
@@ -10076,14 +10172,6 @@
         onExerciseTap(i, row, allExercises);
       });
       el.appendChild(row);
-    });
-    el.querySelector('#sec-mode-home')?.addEventListener('click', () => {
-      localStorage.setItem('weebji_workout_mode', 'home');
-      renderSecondaryMonarch(p, el);
-    });
-    el.querySelector('#sec-mode-gym')?.addEventListener('click', () => {
-      localStorage.setItem('weebji_workout_mode', 'gym');
-      renderSecondaryMonarch(p, el);
     });
     el.appendChild(renderPRBoard(p));
   }
@@ -10124,14 +10212,15 @@
   ];
   const PR_DEFS_ALL = [...PR_DEFS_HOME, ...PR_DEFS_GYM];
   function getActivePRDefs() {
-    return (localStorage.getItem('weebji_workout_mode') || 'home') === 'gym' ? PR_DEFS_GYM : PR_DEFS_HOME;
+    // Lazy is bodyweight — it shares the Home PR set (max push-ups, pull-ups, etc.)
+    return getWorkoutMode() === 'gym' ? PR_DEFS_GYM : PR_DEFS_HOME;
   }
 
   function renderPRBoard(p) {
     const board = document.createElement('div');
     board.className = 'pr-board';
     const defs = getActivePRDefs();
-    const mode = (localStorage.getItem('weebji_workout_mode') || 'home') === 'gym' ? 'Gym' : 'Home';
+    const mode = { home: 'Home', gym: 'Gym', lazy: 'Lazy' }[getWorkoutMode()];
     board.innerHTML = `<div class="pr-board__label">Personal Records — ${mode}</div>` +
       defs.map(def => {
         const val = p.prs[def.key] || 0;
@@ -11618,7 +11707,7 @@
     const focusStreak = _calcGridStreak(p.mmGrid);
     const totalFocusHrs = Math.floor(totalFocusMins / 60);
     panel.innerHTML = `
-      <div class="pillar-ambient" style="background:radial-gradient(circle, rgba(230,57,70,0.38) 0%, transparent 65%)"></div>
+      <div class="pillar-ambient" style="background:radial-gradient(circle, rgba(230,57,70,0.24) 0%, transparent 65%)"></div>
       <div class="pillar-scan"></div>
       <div class="pillar-panel-inner">
         <div style="text-align:center;padding:52px 20px 8px">
@@ -12544,33 +12633,22 @@
   function renderWorkoutModeToggle(color) {
     const el = document.getElementById('profile-workout-mode');
     if (!el) return;
-    const mode = localStorage.getItem('weebji_workout_mode') || 'home';
-    const c = hexRgba(color, 0.1);
-    const cb = hexRgba(color, 0.55);
+    const mode = getWorkoutMode();
     el.innerHTML = `
       <div class="cw-card" style="border-color:${hexRgba(color,0.1)}">
         <div class="cw-header">
           <span class="cw-title" style="color:${hexRgba(color,0.55)}">Workout Mode</span>
         </div>
-        <div class="forge-mode-toggle" style="margin-top:8px">
-          <button class="forge-mode-btn${mode==='home'?' active':''}" id="pm-mode-home">🏠 Home</button>
-          <button class="forge-mode-btn${mode==='gym'?' active':''}" id="pm-mode-gym">🏋️ Gym</button>
-        </div>
-        <p style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.2);margin:8px 0 0;text-transform:uppercase;">Used for dungeon gate checks &amp; workout tracking</p>
+        ${wModeToggleHTML('pm').replace('class="forge-mode-toggle"', 'class="forge-mode-toggle" style="margin-top:8px"')}
+        <p style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.2);margin:8px 0 0;text-transform:uppercase;">${mode === 'lazy' ? 'Lazy — 3 sessions a week, rest days built in' : 'Used for dungeon gate checks &amp; workout tracking'}</p>
       </div>`;
-    el.querySelector('#pm-mode-home').addEventListener('click', () => {
-      localStorage.setItem('weebji_workout_mode', 'home');
+    bindWModeToggle(el, 'pm', () => {
       renderWorkoutModeToggle(color);
       const _pcls = localStorage.getItem('weebji_class') || 'monarch';
       renderForgeArea(loadProgress(), _pcls);
-      spawnDropBanner('🏠  Workout mode → HOME');
-    });
-    el.querySelector('#pm-mode-gym').addEventListener('click', () => {
-      localStorage.setItem('weebji_workout_mode', 'gym');
-      renderWorkoutModeToggle(color);
-      const _pcls = localStorage.getItem('weebji_class') || 'monarch';
-      renderForgeArea(loadProgress(), _pcls);
-      spawnDropBanner('🏋️  Workout mode → GYM');
+      // bindWModeToggle already banners the Lazy switch — don't double it
+      const _m = getWorkoutMode();
+      if (_m !== 'lazy') spawnDropBanner(`${WMODE_LABELS[_m].split(' ')[0]}  Workout mode → ${_m.toUpperCase()}`);
     });
   }
 
@@ -13441,9 +13519,7 @@
   /* ══ EXERCISE / RITUAL CUSTOMIZATION ════════ */
   function openExCustomize(wMode, type, cls) {
     const exKey = `${wMode}_${type}`;
-    const allOv  = JSON.parse(localStorage.getItem('weebji_ex_overrides') || '{}');
-    const defaultEx = applyDifficulty(wMode === 'gym' ? GYM_WORKOUTS[type] : WORKOUTS[type]);
-    let exercises = (allOv[exKey] && allOv[exKey].length >= 1) ? allOv[exKey].map(e => ({...e})) : defaultEx.map(e => ({...e}));
+    let exercises = baseWorkoutFor(wMode, type).map(e => ({...e}));
     const overlay = document.getElementById('ex-customize-overlay');
     const listEl  = document.getElementById('ex-cust-list');
     document.getElementById('ex-cust-title').textContent = `${type} DAY — ${wMode.toUpperCase()}`;
@@ -15292,8 +15368,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
       const cls = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
       const p = loadProgress();
       const type = todayWorkoutType();
-      if (type !== 'REST' && WORKOUTS[type]) {
-        const wl = applyDifficulty(WORKOUTS[type]);
+      if (type !== 'REST') {
+        const wl = baseWorkoutFor(getWorkoutMode(), type);
         wl.forEach((_, i) => { if (!p.workoutChecked.includes(i)) p.workoutChecked.push(i); });
         p.xp += wl.reduce((s, w) => s + w.xp, 0) + 25; p.workoutBonus = true;
       }

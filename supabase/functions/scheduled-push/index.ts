@@ -230,15 +230,22 @@ Deno.serve(async (req) => {
         sent++;
       } catch (e: unknown) {
         failed++;
-        console.error('webpush error', sub.endpoint?.slice(-20), (e as Error).message, (e as { statusCode?: number }).statusCode);
-        if ((e as { statusCode?: number }).statusCode === 410) {
+        const _sc = (e as { statusCode?: number }).statusCode;
+        console.error('webpush error', sub.endpoint?.slice(-20), (e as Error).message, _sc);
+        // 404 is as terminal as 410 — FCM returns it for an unknown registration.
+        // Pruning only on 410 left dead endpoints in the table forever, so every
+        // later send retried them and logged a failure that could never clear.
+        if (_sc === 410 || _sc === 404) {
           try { await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint); } catch { /* ignore */ }
         }
       }
     }
 
     try {
-      await sb.from('push_log').insert({ type, targeted: userIds.length, recipients: sent, ok: sent > 0, error: failed > 0 ? `${failed} failed` : null });
+      // targeted counts USERS, recipients counts SUBSCRIPTIONS — a targeted user with
+      // no push row can never be a recipient, so the raw ratio reads as false failure.
+      // Record the sub count so the gap is attributable.
+      await sb.from('push_log').insert({ type, targeted: userIds.length, recipients: sent, ok: sent > 0, error: failed > 0 ? `${failed} failed of ${subs?.length ?? 0} subs` : null });
     } catch { /* table may not exist */ }
 
     return new Response(JSON.stringify({ ok: true, targeted: userIds.length, subscriptions: subs?.length ?? 0, sent, failed }), {

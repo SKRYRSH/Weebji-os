@@ -3042,34 +3042,69 @@
       return out;
     }
 
+    // A subscription is only reusable if it was minted against the VAPID key we
+    // still sign with — reusing one from a rotated key would keep pushes 403ing.
+    function _sameVapid(sub) {
+      try {
+        const cur = sub?.options?.applicationServerKey;
+        if (!cur) return false;
+        const a = new Uint8Array(cur), b = _urlB64ToUint8(VAPID_PUBLIC_KEY);
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+        return true;
+      } catch(_) { return false; }
+    }
+
     let _userId = null;
     function setUser(id) { _userId = id; }
     function linkUser(id) { _userId = id; }
 
+    let _saveSubInFlight = null;
+
+    // Returns true only when the endpoint is actually stored server-side. Callers
+    // MUST NOT report "notifications on" on a falsy return — subscribe() has already
+    // revoked the old endpoint by then, so a dropped request leaves the DB pointing
+    // at a dead one and every push 410s in silence until the next app open.
     async function _saveSub(sub) {
-      if (!_userId || !sub) return;
+      if (!_userId || !sub) return false;
       const j = sub.toJSON();
-      if (typeof SupabaseSync === 'undefined') return;
+      if (typeof SupabaseSync === 'undefined') return false;
       const c = SupabaseSync._client();
-      if (!c) return;
-      try {
+      if (!c) return false;
+      // Supabase fires two auth events on every open (INITIAL_SESSION + SIGNED_IN),
+      // so autoSubscribe ran this twice in parallel — two edge-fn invokes, two
+      // duplicate js_errors per failure. Share one in-flight call instead.
+      if (_saveSubInFlight) return _saveSubInFlight;
+      _saveSubInFlight = (async () => {
         // Save via edge fn (service role): a direct upsert can't re-own an endpoint
         // row created under a previously signed-in account — RLS blocks the update
         // silently, leaving this device's pushes bound to the wrong user forever.
-        const { data: { session: subSess } } = await c.auth.getSession();
-        const { error } = await c.functions.invoke('save-push-sub', {
-          body: {
-            endpoint: j.endpoint,
-            p256dh:   j.keys?.p256dh,
-            auth:     j.keys?.auth,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          },
-          ...(subSess?.access_token ? { headers: { Authorization: `Bearer ${subSess.access_token}` } } : {}),
-        });
-        if (error && typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: error.message });
-      } catch(e) {
-        if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: e?.message });
-      }
+        const body = {
+          endpoint: j.endpoint,
+          p256dh:   j.keys?.p256dh,
+          auth:     j.keys?.auth,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const last = attempt === 1;
+          try {
+            const { data: { session: subSess } } = await c.auth.getSession();
+            const { error } = await c.functions.invoke('save-push-sub', {
+              body,
+              ...(subSess?.access_token ? { headers: { Authorization: `Bearer ${subSess.access_token}` } } : {}),
+            });
+            if (!error) return true;
+            if (last && typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: error.message, attempts: 2 });
+          } catch(e) {
+            if (last && typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_save_sub', error: e?.message, attempts: 2 });
+          }
+          // Flaky mobile data drops the first request and the old endpoint is
+          // already gone — one retry turns a dead subscription into a live one.
+          if (!last) await new Promise(r => setTimeout(r, 2000));
+        }
+        return false;
+      })();
+      try { return await _saveSubInFlight; } finally { _saveSubInFlight = null; }
     }
 
     async function subscribe() {
@@ -3082,13 +3117,38 @@
         if (Notification.permission !== 'granted') return false;
         const reg = await navigator.serviceWorker.ready;
         const existing = await reg.pushManager.getSubscription();
+        // Reuse a live subscription instead of unsubscribe-then-resubscribe. That
+        // churn is what FCM rejects with "Registration failed - push service error",
+        // and it revoked the working endpoint BEFORE the replacement was saved —
+        // the gap that left a user silently unsubscribed for 42h on Jul 31.
+        if (existing && _sameVapid(existing)) {
+          // No signed-in user yet (onboarding): the browser subscription is all we
+          // can do — autoSubscribe() persists it on the next auth event.
+          if (!_userId || await _saveSub(existing)) {
+            localStorage.removeItem('weebji_push_opted_out');
+            return true;
+          }
+        }
         if (existing) await existing.unsubscribe();
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: _urlB64ToUint8(VAPID_PUBLIC_KEY),
-        });
-        await _saveSub(sub);
+        let sub = null;
+        for (let attempt = 0; attempt < 2 && !sub; attempt++) {
+          try {
+            sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: _urlB64ToUint8(VAPID_PUBLIC_KEY),
+            });
+          } catch(e) {
+            // Transient FCM / Play-Services hiccup — one retry clears most of them.
+            if (attempt === 1) throw e;
+            await new Promise(r => setTimeout(r, 1500));
+          }
+        }
+        const saved = await _saveSub(sub);
         localStorage.removeItem('weebji_push_opted_out');
+        // Browser-side subscribe succeeded but the server never got the endpoint —
+        // returning true here is what made the UI say "reminders armed" to a user
+        // who would then receive nothing. Fall through to the retry banner instead.
+        if (!saved && _userId) return 'save failed';
         return true;
       } catch(e) {
         if (typeof posthog !== 'undefined') posthog.capture('js_error', { context: 'push_subscribe', error: e?.message });
@@ -6088,7 +6148,7 @@
       xp:         parseInt(localStorage.getItem('weebji_xp')           || '0'),
       level:      parseInt(localStorage.getItem('weebji_level')        || '1'),
       streak:     parseInt(localStorage.getItem('weebji_streak')       || '0'),
-      hp:         parseInt(localStorage.getItem('weebji_hp')           || '5'),
+      hp:         parseInt(localStorage.getItem('weebji_hp')           || '3'), // cap is 3 — a '5' default self-reports as suspicious below
       bestStreak: parseInt(localStorage.getItem('weebji_best_streak')  || '0'),
       ghostTokens:parseInt(localStorage.getItem('weebji_ghost_tokens') || '0'),
     };
@@ -12144,7 +12204,9 @@
           const result = await Notification.requestPermission();
           if (result === 'granted') {
             if (nSub) nSub.textContent = 'Subscribing...';
-            await WeebjPush.subscribe();
+            // renderProfile() reads Notification.permission, not save state — without
+            // this the toggle flips to ON even when the endpoint never reached the DB.
+            if (await WeebjPush.subscribe() !== true) spawnDropBanner('◆  Could not subscribe — check connection and tap again');
             renderProfile();
           } else if (inTWA) {
             // Still blocked at the browser level — jump to this app's OS
@@ -12162,7 +12224,9 @@
         notifBtn.onclick = async () => {
           if (nSub) nSub.textContent = 'Refreshing...';
           notifBtn.style.pointerEvents = 'none';
-          await WeebjPush.subscribe();
+          // This is the button a user taps when pushes stopped arriving — it must
+          // not settle back to "Active" if the refresh didn't actually land.
+          if (await WeebjPush.subscribe() !== true) spawnDropBanner('◆  Refresh failed — check connection and tap again');
           renderProfile();
         };
       } else {
@@ -14055,7 +14119,7 @@
         escBtn.onclick = () => {
           const _p = loadProgress();
           _p.ghostTokens = Math.max(0, (_p.ghostTokens || 0) - 1);
-          _p.hp = Math.min(5, _p.hp + 1);
+          _p.hp = Math.min(3, _p.hp + 1); // cap 3 — matches every other ghost-token heal
           localStorage.removeItem('weebji_penance_active');
           _p.penanceSurvived = true;
           checkSecretTitles(_p, localStorage.getItem('weebji_class'));
@@ -15329,9 +15393,9 @@ DEV.skipSplash()      → go straight to class select (if no session)
     },
 
     setHP(n) {
-      const p = loadProgress(); p.hp = Math.max(1, Math.min(5, n)); saveProgress(p);
+      const p = loadProgress(); p.hp = Math.max(1, Math.min(3, n)); saveProgress(p);
       renderHearts(p.hp); updateStats(p);
-      console.log(`%c→ HP set to ${p.hp} (${p.hp*20}/100)`, 'color:#00F5FF;font-family:monospace');
+      console.log(`%c→ HP set to ${p.hp}/3`, 'color:#00F5FF;font-family:monospace');
     },
 
     setXP(n) {
@@ -15787,7 +15851,11 @@ DEV.skipSplash()      → go straight to class select (if no session)
           p.level = data.level; p.xp = data.xp;
         }
         // HP, streak, tokens — always take cloud (authoritative for these)
-        p.hp = Math.min(5, Math.max(0, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
+        // Cap at 3, not 5. An uncapped restore re-poisoned local HP from a legacy
+        // cloud row on every open, which tripped _verifyIntegrity at the next boot
+        // and silently skipped that session's first pushProgress + guild sync.
+        // (data.hp > 5 = the old 0-100 scale, /20 back into hearts.)
+        p.hp = Math.min(3, Math.max(0, data.hp > 5 ? Math.round(data.hp / 20) : data.hp));
         // v223: cross-device streak recovery — if local fired streakLostToday but server
         // shows lastDate = yesterday, the local check was wrong (user was active on another
         // device). Cancel the false loss and restore the server streak.

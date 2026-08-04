@@ -61,7 +61,11 @@ Deno.serve(async (req) => {
         sent++;
       } catch (e: unknown) {
         failed++;
-        if ((e as { statusCode?: number }).statusCode === 410) {
+        // 404 is as terminal as 410 — FCM returns it for an unknown registration.
+        // Pruning only on 410 left dead endpoints in the table forever, so every
+        // later send retried them and logged a failure that could never clear.
+        const _sc = (e as { statusCode?: number }).statusCode;
+        if (_sc === 410 || _sc === 404) {
           try { await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint); } catch { /* ignore */ }
         }
       }

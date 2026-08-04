@@ -65,6 +65,15 @@ const COMEBACK_LOCAL_HOUR = 17;
 const MORNING_LOCAL_HOUR = 9;
 const STREAK_LOCAL_HOUR  = 20;
 
+// midday_check / midweek_check / week_close shipped with copy but no targeting:
+// midday_check fell through to `return true` and the other two to the catch-all
+// "every subscription" branch. Either one on an hourly cron = up to 24 pushes a
+// day per user. Same gate as every other type — cron fires hourly, the hour picks
+// the single send. All three are untrained-users-only (the trainedToday check above).
+const MIDDAY_LOCAL_HOUR     = 12;
+const MIDWEEK_LOCAL_HOUR    = 18; // Wednesday only
+const WEEK_CLOSE_LOCAL_HOUR = 19; // Sunday only
+
 // Same Doze-deferral fix send-push already has — without this, Android can sit on
 // the push for hours and it lands well after the "haven't trained today" window meant it for.
 const PUSH_OPTS = { TTL: 86400, urgency: 'high' as const };
@@ -107,10 +116,19 @@ Deno.serve(async (req) => {
       } catch { return now.getUTCHours(); }
     }
 
+    // 0=Sun..6=Sat in the USER's timezone — a UTC weekday would fire midweek/week_close
+    // on the wrong day for anyone far enough east or west.
+    const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    function localWeekday(tz: string | null): number {
+      try {
+        return WEEKDAYS.indexOf(new Intl.DateTimeFormat('en-US', { timeZone: tz || 'UTC', weekday: 'short' }).format(now));
+      } catch { return now.getUTCDay(); }
+    }
+
     let userIds: string[] = [];
     let streakMap = new Map<string, number>();
 
-    if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check' || type === 'daily_complete' || type === 'boss_taunt') {
+    if (type === 'morning_activation' || type === 'streak_reminder' || type === 'midday_check' || type === 'daily_complete' || type === 'boss_taunt' || type === 'midweek_check' || type === 'week_close') {
       const { data: subs } = await sb.from('push_subscriptions').select('user_id, timezone');
       const allIds = (subs || []).map(r => r.user_id);
       if (allIds.length) {
@@ -136,6 +154,9 @@ Deno.serve(async (req) => {
             const active = !!upd && (Date.now() - new Date(upd).getTime()) < 72 * 3600 * 1000;
             return active && localHour(tz) === BOSS_TAUNT_LOCAL_HOUR;
           }
+          if (type === 'midday_check')  return localHour(tz) === MIDDAY_LOCAL_HOUR;
+          if (type === 'midweek_check') return localWeekday(tz) === 3 && localHour(tz) === MIDWEEK_LOCAL_HOUR;
+          if (type === 'week_close')    return localWeekday(tz) === 0 && localHour(tz) === WEEK_CLOSE_LOCAL_HOUR;
           return true;
         });
       }

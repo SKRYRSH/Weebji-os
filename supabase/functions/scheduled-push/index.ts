@@ -266,7 +266,12 @@ Deno.serve(async (req) => {
       // targeted counts USERS, recipients counts SUBSCRIPTIONS — a targeted user with
       // no push row can never be a recipient, so the raw ratio reads as false failure.
       // Record the sub count so the gap is attributable.
-      await sb.from('push_log').insert({ type, targeted: userIds.length, recipients: sent, ok: sent > 0, error: failed > 0 ? `${failed} failed of ${subs?.length ?? 0} subs` : null });
+      // `attempted` is that sub count persisted on EVERY fire, not just failing ones —
+      // it used to live only inside the error text, so a clean run threw away the one
+      // number that makes a delivery rate computable. recipients/attempted is the real
+      // rate (same units); recipients/targeted is NOT and will read >100% for anyone
+      // running two devices. Muting shows up as attempted flat while recipients falls.
+      await sb.from('push_log').insert({ type, targeted: userIds.length, attempted: subs?.length ?? 0, recipients: sent, ok: sent > 0, error: failed > 0 ? `${failed} failed of ${subs?.length ?? 0} subs` : null });
     } catch { /* table may not exist */ }
 
     return new Response(JSON.stringify({ ok: true, targeted: userIds.length, subscriptions: subs?.length ?? 0, sent, failed }), {

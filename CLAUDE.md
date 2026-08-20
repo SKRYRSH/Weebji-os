@@ -18,7 +18,8 @@
 - Single-file PWA: `weebji-os/index.html` (also copy to `weebji-os/public/index.html`)
 - SW: `weebji-os/public/sw.js` — increment CACHE_NAME on every deploy, copy to `weebji-os/sw.js`
 - Supabase project: see memory for edge function names and DB schema
-- Models: Sonnet only — NEVER Opus (drained credits, user banned it)
+- Models: Sahil's call — any model is fine, he picks via /model. Default to Sonnet for routine
+  execution (posts, fixes, grinding); bigger models when he chooses them. No model is banned.
 - Deploy: `git add weebji-os/index.html weebji-os/public/ && git commit && git push` → GitHub Pages
 
 ## Security

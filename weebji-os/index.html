@@ -2727,7 +2727,7 @@
     <div id="penance-protocol">
       <p class="penance__eyebrow">Dark Night Protocol</p>
       <h2 class="penance__title">RETREATED</h2>
-      <p class="penance__verse">"The System does not forget. Your streak is ash. To walk these halls again, you must earn it back with your words."</p>
+      <p class="penance__verse">"The System does not forget. Your streak is on the line. To walk these halls again, you must earn it back with your words — or spend a token and let it stand."</p>
       <div class="penance__manifest" id="penance-manifest">
         <span class="penance__manifest-label">You said:</span>
         <span id="penance-manifest-text"></span>
@@ -14130,11 +14130,29 @@
     if (escBtn) {
       const tokens = p.ghostTokens || 0;
       if (tokens > 0) {
-        escBtn.textContent = `👻 Use Ghost Token to skip penance (${tokens} left)`;
+        // Label has to name the streak — users spend a paid token expecting it saved
+        const _willSave = p.streakLostToday && streak > 0;
+        escBtn.textContent = _willSave
+          ? `👻 Use Ghost Token — save your ${streak}-day streak (${tokens} left)`
+          : `👻 Use Ghost Token to skip penance (${tokens} left)`;
         escBtn.onclick = () => {
           const _p = loadProgress();
           _p.ghostTokens = Math.max(0, (_p.ghostTokens || 0) - 1);
           _p.hp = Math.min(3, _p.hp + 1); // cap 3 — matches every other ghost-token heal
+          // A Ghost Token means the same thing everywhere: the streak survives.
+          // Before this, penance suppressed checkGhostIntervention (~line 13729) and its
+          // own escape never restored the streak — so a user in penance could NOT save a
+          // streak no matter how many tokens they held, while still being charged one.
+          // GUARD on streakLostToday: penance ALSO fires when the weekly boss survives
+          // (~line 5099), where no streak was lost and prevStreak is stale — restoring
+          // there would clobber a live streak.
+          let _saved = 0;
+          if (_p.streakLostToday && _p.prevStreak) {
+            _saved = _p.prevStreak;
+            _p.streak = _p.prevStreak;
+            _p.streakLostToday = false;
+            if (_saved >= 7) _p.ghostWhisperEarned = true; // matches the intervention path
+          }
           localStorage.removeItem('weebji_penance_active');
           _p.penanceSurvived = true;
           checkSecretTitles(_p, localStorage.getItem('weebji_class'));
@@ -14147,7 +14165,9 @@
           overlay.classList.remove('active');
           updateStats(_p); updateXPBar(_p);
           Sound.play('milestone');
-          SystemVoice.say('Ghost Token consumed. The System forgives this once.');
+          SystemVoice.say(_saved
+            ? `Ghost Token consumed. Your ${_saved}-day streak endures.`
+            : 'Ghost Token consumed. The System forgives this once.');
         };
       } else {
         escBtn.textContent = '👻 Buy a Ghost Token — ₹29';

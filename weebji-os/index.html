@@ -2640,6 +2640,9 @@
           </div>
           <p class="fd-instruction" id="fd-instruction"></p>
           <p class="fd-sub" id="fd-sub">The System is watching.</p>
+          <!-- v389: the directive no longer auto-completes. The ring running out
+               is not proof of anything — the hunter must confirm they did it. -->
+          <button class="mb__btn" id="fd-confirm-btn" style="display:none">I COMPLETED IT →</button>
         </div>
       </div>
     </div>
@@ -4019,6 +4022,7 @@
       monarchGrid    : JSON.parse(localStorage.getItem('weebji_monarch_grid')  || '[]'),
       mmGrid         : JSON.parse(localStorage.getItem('weebji_mm_grid')       || '[]'),
       mmDaily        : JSON.parse(localStorage.getItem('weebji_mm_daily')      || '{}'),
+      firstActionAt  : localStorage.getItem('weebji_first_action_at')          || null,
       prs            : JSON.parse(localStorage.getItem('weebji_prs')           || '{"pushups":0,"squats":0,"plank":0}'),
       reflections    : JSON.parse(localStorage.getItem('weebji_reflections')   || '[]'),
       lastDate          : localStorage.getItem('weebji_last_date') || '',
@@ -4106,10 +4110,16 @@
         if (!grid.includes(p.lastDate)) { grid.push(p.lastDate); p.monkGrid = grid; }
       }
       // Monarch grid: mark day done on workoutBonus OR most checks (3+/4) — v207 looser
+      // v389: the counter increment used to sit OUTSIDE the includes() guard, so a
+      // re-run of this block on an already-credited day inflated totalWorkoutDays.
+      // Now both writes share one guard, which also makes creditTodayIfEarned()
+      // (which credits the day live) safe to run against the same day.
       if (p.lastDate && (p.workoutBonus || (p.workoutChecked || []).length >= 2)) {
         const grid = p.monarchGrid || [];
-        if (!grid.includes(p.lastDate)) { grid.push(p.lastDate); p.monarchGrid = grid; }
-        p.totalWorkoutDays = (p.totalWorkoutDays || 0) + 1;
+        if (!grid.includes(p.lastDate)) {
+          grid.push(p.lastDate); p.monarchGrid = grid;
+          p.totalWorkoutDays = (p.totalWorkoutDays || 0) + 1;
+        }
       }
       // MM grid: if any Pomodoro sessions were completed yesterday, mark it
       if (p.lastDate && p.mmSessions > 0) {
@@ -4151,6 +4161,9 @@
     localStorage.setItem('weebji_monk_checked',     JSON.stringify(p.monkChecked  || []));
     localStorage.setItem('weebji_monk_bonus',       p.monkBonus || false);
     localStorage.setItem('weebji_mm_sessions',      p.mmSessions || 0);
+    // v389: first REAL action timestamp. Must persist in both loadProgress and
+    // saveProgress or it silently resets — see gotcha_progress_object_fields.
+    if (p.firstActionAt) localStorage.setItem('weebji_first_action_at', p.firstActionAt);
     localStorage.setItem('weebji_monk_grid',        JSON.stringify(p.monkGrid     || []));
     localStorage.setItem('weebji_monarch_grid',     JSON.stringify(p.monarchGrid  || []));
     localStorage.setItem('weebji_mm_grid',          JSON.stringify(p.mmGrid       || []));
@@ -7625,7 +7638,11 @@
       // Overlay killed externally (e.g. sign-out) — stop cleanly
       if (!overlay.classList.contains('active')) { clearInterval(tick); overlay.classList.remove('directive-live', 'fd-final', 'fd-breathe-in', 'fd-breathe-out'); return; }
       left -= 1;
-      if (left < 0) { clearInterval(tick); finishFirstDirective(cls, overlay); return; }
+      // v389: the ring closing used to call finishFirstDirective() directly, so a
+      // user who sat still for 30s was recorded as "activated" and first_action_
+      // completed fired for them. Activation read 100% while only 26% of accounts
+      // ever logged a real rep. The timer now only OPENS the confirm step.
+      if (left < 0) { clearInterval(tick); awaitFirstDirectiveConfirm(cls, overlay); return; }
       countEl.textContent = left;
       fg.style.strokeDashoffset = C * (1 - left / TOTAL);
       if (cls === 'monk') {
@@ -7640,15 +7657,45 @@
     }, 1000);
   }
 
+  /* v389: the confirm gate. The ring closing proves only that 30 seconds passed;
+     this step is where the hunter asserts they actually did the work. Nothing is
+     recorded until they tap. If they never tap, they are correctly counted as
+     NOT activated instead of silently inflating the funnel. */
+  function awaitFirstDirectiveConfirm(cls, overlay) {
+    const btn = document.getElementById('fd-confirm-btn');
+    const instrEl = document.getElementById('fd-instruction');
+    const countEl = document.getElementById('fd-count');
+    overlay.classList.remove('fd-final', 'fd-breathe-in', 'fd-breathe-out');
+    const ringWrap = overlay.querySelector('.fd-ring-wrap');
+    if (ringWrap) ringWrap.classList.remove('fd-pulse', 'fd-breathing');
+    if (countEl) countEl.textContent = '0';
+    if (instrEl) instrEl.textContent = 'TIME COMPLETE';
+    const subEl = document.getElementById('fd-sub');
+    if (subEl) subEl.textContent = 'The System does not assume. Confirm what you did.';
+    // Fallback: if the button is missing for any reason, do not trap the user in
+    // onboarding forever — complete it rather than dead-ending the app.
+    if (!btn) { finishFirstDirective(cls, overlay); return; }
+    btn.style.display = '';
+    btn.onclick = () => {
+      btn.onclick = null;
+      btn.style.display = 'none';
+      Sound.play('tap');
+      finishFirstDirective(cls, overlay);
+    };
+  }
+
   function finishFirstDirective(cls, overlay) {
     localStorage.setItem('weebji_mission_done', '1');
     localStorage.setItem('weebji_first_directive_done', '1');
     // Day-1 sealed: protocol day 2 unlocks at next local midnight
     DirectiveEngine.beginProtocol();
-    if (!localStorage.getItem('weebji_first_action_done')) {
-      localStorage.setItem('weebji_first_action_done', '1');
-      if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: cls, via: 'first_directive' });
-    }
+    const _btn = document.getElementById('fd-confirm-btn');
+    if (_btn) { _btn.style.display = 'none'; _btn.onclick = null; }
+    // v389: route through markFirstActionDone() so this stamps the same persisted,
+    // cloud-synced firstActionAt that every real check writes. Previously it set
+    // the flag inline, which never reached the database — making "did this user
+    // ever act?" unanswerable in SQL.
+    markFirstActionDone();
     overlay.classList.remove('fd-final', 'fd-breathe-in', 'fd-breathe-out');
     const fdCount = document.getElementById('fd-count');
     fdCount.textContent = '✓';
@@ -7697,6 +7744,17 @@
     // Directive completion is now detected by DirectiveEngine.evaluate() via updateStats
     if (localStorage.getItem('weebji_first_action_done')) return;
     localStorage.setItem('weebji_first_action_done', '1');
+    // v389: stamp a REAL first-action timestamp that reaches the database. The
+    // localStorage flag alone was invisible server-side, so "did this user ever
+    // act?" could only be inferred from grids that the rollover wrote a day late.
+    // This is only ever called from a genuine logged action.
+    try {
+      if (!localStorage.getItem('weebji_first_action_at')) {
+        const _ts = new Date().toISOString();
+        localStorage.setItem('weebji_first_action_at', _ts);
+        if (typeof SupabaseSync !== 'undefined' && SupabaseSync.getUser()) SupabaseSync.pushProgress().catch(() => {});
+      }
+    } catch (_) { /* never block the check that triggered this */ }
     if (typeof posthog !== 'undefined') posthog.capture('first_action_completed', { class: localStorage.getItem('weebji_class') });
     // Ch2 day-2 appointment seed (STORY_BIBLE §5) — planted at the peak moment.
     // Data (Jul 2026): 100% reach this event, then 80% never return. This line is the hook.
@@ -9287,6 +9345,42 @@
     if (leveled) triggerLevelUp(p.level);
   }
 
+  /* ══ LIVE DAY CREDIT ═════════════════════════
+     v389. Before this, monarchGrid / monkGrid / totalWorkoutDays were written ONLY
+     inside the next-day rollover in loadProgress, and they credited *yesterday*.
+     A user who trained on day 0 and never came back therefore recorded as having
+     done nothing — byte-identical in the DB to someone who never acted at all.
+     That made the whole activation funnel unreadable (see the 2026-08-22 pull:
+     74% "never acted" contains an unknown number of train-once-and-leave users).
+     Credit the day the moment its threshold is met instead.
+
+     Idempotent by design: every write is guarded on grid membership, so the
+     rollover path re-running over the same day is a no-op. Thresholds MUST stay
+     identical to the rollover block (~line 4103) or the two disagree.
+     Deliberate: credit is never revoked by un-checking. Earned is earned, it
+     matches how streaks already behave, and it avoids a same-day toggle war. */
+  function creditTodayIfEarned(p) {
+    if (!p) return;
+    try {
+      const ds = new Date().toDateString();
+      // Monarch: full-protocol bonus, or 2+ exercises checked
+      if (p.workoutBonus || (p.workoutChecked || []).length >= 2) {
+        const g = p.monarchGrid || [];
+        if (!g.includes(ds)) {
+          g.push(ds); p.monarchGrid = g;
+          p.totalWorkoutDays = (p.totalWorkoutDays || 0) + 1;
+        }
+      }
+      // Monk: half the ritual list, minimum 4 — mirrors the rollover threshold
+      const _need = Math.max(4, Math.ceil(getMonkRituals().length / 2));
+      if ((p.monkChecked || []).length >= _need) {
+        const g = p.monkGrid || [];
+        if (!g.includes(ds)) { g.push(ds); p.monkGrid = g; }
+      }
+      // Mastermind: mmGrid is already written immediately on session completion.
+    } catch (_) { /* never let day-credit break a check tap */ }
+  }
+
   /* ══ INTERACTION HANDLERS ════════════════════ */
   function onExerciseTap(index, row, exercises) {
     const p = loadProgress();
@@ -9327,6 +9421,7 @@
         setTimeout(() => spawnXPFloat(25, bonusEl), 380);
       }
     }
+    creditTodayIfEarned(p);
     const leveled = checkLevelUp(p);
     checkSecretTitles(p, localStorage.getItem('weebji_class'));
     saveProgress(p); updateXPBar(p); updateStats(p);
@@ -9343,7 +9438,9 @@
       p.workoutChecked.push(0); row.classList.add('done'); row.querySelector('.rest-check').innerHTML = CHECK_SVG;
       popCheck(row.querySelector('.rest-check'));
       p.xp += rollCriticalDrop(15, row.querySelector('.rest-xp'), p); Sound.play('check');
+      markFirstActionDone(); // v389: rest days were never counted as a first action
     }
+    creditTodayIfEarned(p);
     const leveled = checkLevelUp(p);
     saveProgress(p); updateXPBar(p); updateStats(p);
     if (leveled) triggerLevelUp(p.level);
@@ -9931,6 +10028,7 @@
       popCheck(row.querySelector('.monk-check'));
       p.xp += rollCriticalDrop(getMonkRituals()[index].xp, row.querySelector('.monk-ritual-xp'), p);
       Sound.play('check');
+      markFirstActionDone(); // v389: monk rituals never fired the first-action event
       BossSiege.dealDamage(20);
       if (p.monkChecked.length === getMonkRituals().length && !p.monkBonus) {
         p.monkBonus = true; p.xp += 25;
@@ -9950,6 +10048,7 @@
       }
     }
     document.getElementById('forge-sub').textContent = `${p.monkChecked.length}/${getMonkRituals().length} TODAY`;
+    creditTodayIfEarned(p);
     const leveled = checkLevelUp(p);
     checkSecretTitles(p, localStorage.getItem('weebji_class'));
     saveProgress(p); updateXPBar(p); updateStats(p);
@@ -15721,6 +15820,8 @@ DEV.skipSplash()      → go straight to class select (if no session)
       try {
         richData = {
           monkGrid: p.monkGrid, monarchGrid: p.monarchGrid, mmGrid: p.mmGrid,
+          // v389: first REAL logged action, so activation is answerable in SQL
+          firstActionAt: localStorage.getItem('weebji_first_action_at') || null,
           mmDaily: p.mmDaily, prs: p.prs, reflections: p.reflections,
           titles: p.titles, mmSessions: p.mmSessions, voidSessions: p.voidSessions,
           prevStreak: p.prevStreak, lastDate: p.lastDate, yesterdayCount: p.yesterdayCount,
@@ -15944,6 +16045,16 @@ DEV.skipSplash()      → go straight to class select (if no session)
           if (d.monkGrid?.length)    p.monkGrid    = d.monkGrid;
           if (d.monarchGrid?.length) p.monarchGrid = d.monarchGrid;
           if (d.mmGrid?.length)      p.mmGrid      = d.mmGrid;
+          // v389: keep the EARLIEST first-action stamp — a reinstall must not
+          // reset it, or the same user reads as newly-activated twice.
+          if (d.firstActionAt) {
+            const _localFA = localStorage.getItem('weebji_first_action_at');
+            if (!_localFA || d.firstActionAt < _localFA) {
+              localStorage.setItem('weebji_first_action_at', d.firstActionAt);
+              localStorage.setItem('weebji_first_action_done', '1');
+              p.firstActionAt = d.firstActionAt;
+            }
+          }
           if (d.mmDaily && Object.keys(d.mmDaily).length) p.mmDaily = d.mmDaily;
           // v207: merge PRs key-by-key — never let stale cloud wipe a fresh local PR.
           if (d.prs && typeof d.prs === 'object') {

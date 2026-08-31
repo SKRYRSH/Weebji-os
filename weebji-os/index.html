@@ -1999,7 +1999,10 @@
   .photos__day { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:14px; }
   .photos__day__top { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:8px; }
   .photos__day__date { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:rgba(255,255,255,0.45); text-transform:uppercase; }
+  .photos__day__right { display:flex; align-items:baseline; gap:10px; }
   .photos__day__weight { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:#00F5FF; text-shadow:0 0 8px rgba(0,245,255,0.4); }
+  .photos__day__del { background:rgba(230,57,70,0.06); border:1px solid rgba(230,57,70,0.2); color:rgba(230,57,70,0.75); font-size:11px; line-height:1; width:22px; height:22px; border-radius:50%; cursor:pointer; -webkit-tap-highlight-color:transparent; display:flex; align-items:center; justify-content:center; padding:0; }
+  .photos__day__del:active { background:rgba(230,57,70,0.15); }
   .photos__day__comment { font-family:'Inter',sans-serif; font-size:12.5px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:8px; }
   .photos__day__thumbs { display:flex; gap:8px; flex-wrap:wrap; }
   .photos__thumb { position:relative; width:72px; height:72px; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); cursor:pointer; -webkit-tap-highlight-color:transparent; }
@@ -2587,7 +2590,7 @@
       </div>
       <div class="profile-scroll">
         <div class="photos__disclaimer">📵 Stored only on this device — not backed up to the cloud. Uninstalling the app or clearing site data deletes them for good.</div>
-        <input type="file" id="photos-file-input" accept="image/*" capture="environment" style="display:none;">
+        <input type="file" id="photos-file-input" accept="image/*" style="display:none;">
         <div class="photos__actions">
           <button class="photos__add-btn" id="photos-add-btn">+ Add Photo</button>
           <button class="photos__add-btn photos__add-btn--ghost" id="weight-only-btn">+ Log Weight</button>
@@ -6029,6 +6032,28 @@
       });
     }
 
+    async function deleteDayLog(date) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(LOG_STORE, 'readwrite');
+        tx.objectStore(LOG_STORE).delete(date);
+        tx.oncomplete = () => resolve();
+        tx.onerror    = () => reject(tx.error);
+      });
+    }
+
+    async function deleteDayEntry(date, photoIds) {
+      const db = await openDB();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        const store = tx.objectStore(STORE);
+        photoIds.forEach(id => store.delete(id));
+        tx.oncomplete = () => resolve();
+        tx.onerror    = () => reject(tx.error);
+      });
+      await deleteDayLog(date);
+    }
+
     async function upsertDayLog(date, { weight, comment }) {
       const db = await openDB();
       return new Promise((resolve, reject) => {
@@ -6084,7 +6109,10 @@
         return `<div class="photos__day">
           <div class="photos__day__top">
             <span class="photos__day__date">${_esc(_fmtDate(date))}</span>
-            ${g.weight != null ? `<span class="photos__day__weight">${_esc(String(g.weight))} kg</span>` : ''}
+            <div class="photos__day__right">
+              ${g.weight != null ? `<span class="photos__day__weight">${_esc(String(g.weight))} kg</span>` : ''}
+              <button class="photos__day__del" data-date="${date}" title="Delete entry">✕</button>
+            </div>
           </div>
           ${g.comment ? `<div class="photos__day__comment">"${_esc(g.comment)}"</div>` : ''}
           ${thumbs ? `<div class="photos__day__thumbs">${thumbs}</div>` : ''}
@@ -6093,6 +6121,18 @@
 
       logEl.querySelectorAll('.photos__thumb').forEach(el => {
         el.addEventListener('click', () => openViewer(parseInt(el.dataset.id, 10), photos, byDate));
+      });
+
+      logEl.querySelectorAll('.photos__day__del').forEach(el => {
+        el.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const date = el.dataset.date;
+          if (!confirm('Delete this entry? This cannot be undone.')) return;
+          Sound.play('tap');
+          const photoIds = byDate[date].photos.map(p => p.id);
+          await deleteDayEntry(date, photoIds);
+          render();
+        });
       });
     }
 

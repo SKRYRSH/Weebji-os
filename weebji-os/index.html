@@ -4820,6 +4820,18 @@
     Sound.play('tap');
     const el = document.getElementById('plus-sheet-content');
     if (!el) return;
+    if (SupabaseSync.isPremium()) {
+      el.innerHTML = `
+        <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:900;letter-spacing:0.1em;color:rgba(255,210,60,0.9);margin-bottom:10px;text-align:center">◆ WEEBJI+</div>
+        <div class="profile-plus-active" style="text-align:center;margin-bottom:14px">WEEBJI+ ACTIVE</div>
+        <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');window.open('https://play.google.com/store/account/subscriptions?package=io.github.skryrsh.twa','_blank','noopener,noreferrer')" style="margin-bottom:8px;border-color:rgba(255,255,255,0.14);color:rgba(255,255,255,0.62);">⚙ Manage Subscription</button>
+        <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token_3')" style="margin-bottom:6px;border-color:rgba(139,92,246,0.5);color:rgba(180,130,255,0.95);">👻 3 Ghost Tokens — ₹59 <span style="font-size:8px;opacity:0.6;margin-left:4px;">SAVE 32%</span></button>
+        <button class="ghost-shop-btn" onclick="closePlusSheet();Sound.play('tap');_openCheckout('ghost_token')">👻 1 Ghost Token — ₹29</button>`;
+      document.getElementById('plus-sheet').classList.add('active');
+      document.getElementById('plus-sheet-backdrop').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      return;
+    }
     const trialActive = isInVoiceTrial();
     const dLeft = voiceTrialDaysLeft();
     const trialBanner = trialActive
@@ -14235,7 +14247,7 @@
       upsell.innerHTML = `
         <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token_3')" style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(139,92,246,0.7);background:rgba(139,92,246,0.15);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.16em;color:rgba(200,160,255,1);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;position:relative;">👻 3 Ghost Tokens — ₹59 <span style="font-family:'JetBrains Mono',monospace;font-size:8px;opacity:0.7;margin-left:4px;">SAVE 32%</span></button>
         <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');_openCheckout('ghost_token')" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(139,92,246,0.3);background:transparent;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:400;letter-spacing:0.14em;color:rgba(139,92,246,0.7);cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">👻 1 Token — ₹29</button>
-        <button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showPlusSheet()" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">◆ 5 Tokens/mo — WEEBJI+ ₹149</button>`;
+        ${SupabaseSync.isPremium() ? '' : `<button onclick="Sound.play('tap');document.getElementById('ghost-intervention').classList.remove('active');showPlusSheet()" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,210,60,0.3);background:rgba(255,210,60,0.05);font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:0.14em;color:#FFD700;cursor:pointer;text-transform:uppercase;-webkit-tap-highlight-color:transparent;">◆ 5 Tokens/mo — WEEBJI+ ₹149</button>`}`;
       useBtn.parentElement.insertBefore(upsell, useBtn);
     } else {
       useBtn.disabled = false;

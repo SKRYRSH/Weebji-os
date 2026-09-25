@@ -2201,6 +2201,47 @@
   .qh-next { display: flex; align-items: center; gap: 10px; min-height: 18px; }
   .qh-next b { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.22em; color: rgba(255,255,255,0.5); font-weight: 700; }
   .qh-next span { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* v397 — Profile: identity + story first, every knob behind ⚙ Settings */
+  #profile .profile-scroll { display: flex; flex-direction: column; }
+  #profile .profile-scroll > * { flex-shrink: 0; order: 30; }
+  #profile-avatar { order: 1 !important; }
+  #profile-hero { order: 2 !important; }
+  #profile-stats { order: 3 !important; }
+  #profile-auth-section { order: 4 !important; }
+  #profile-arc { order: 5 !important; }
+  #profile-titles { order: 6 !important; }
+  #profile-transmissions { order: 7 !important; }
+  #profile-share-btn { order: 8 !important; }
+  #profile-leaderboard { order: 9 !important; }
+  #profile-friends { order: 10 !important; }
+  #profile-enemy { order: 11 !important; }
+  #profile-manifest { order: 12 !important; }
+  .profile-tokens { order: 13 !important; }
+  #notif-toggle-btn { order: 14 !important; }
+  #profile-plus-toggle { order: 15 !important; }
+  #profile-plus-section { order: 16 !important; }
+  #profile-analytics { order: 16 !important; }
+  #profile:not(.plus-open) #profile-plus-section,
+  #profile:not(.plus-open) #profile-analytics { display: none !important; }
+  .profile-plus-toggle { border-color: rgba(255,210,60,0.3); background: rgba(255,210,60,0.05); color: #FFD23C; margin-top: 4px; }
+  #profile.plus-open .profile-plus-toggle .pst-chev { transform: rotate(180deg); }
+  #profile:not(.settings-open) .profile-settings-toggle:not(.profile-plus-toggle) .pst-chev,
+  #profile:not(.plus-open) .profile-plus-toggle .pst-chev { transform: none; }
+  #profile-guild-section { order: 17 !important; }
+  #profile-settings-toggle { order: 40 !important; }
+  #profile-edit-section, #ritual-clock-card, #profile-custom-workouts, #voice-toggle-btn, #penance-toggle-btn, #tour-replay-btn, #profile-legal { order: 41 !important; }
+  #profile:not(.settings-open) #profile-edit-section,
+  #profile:not(.settings-open) #ritual-clock-card,
+  #profile:not(.settings-open) #profile-custom-workouts,
+  #profile:not(.settings-open) #voice-toggle-btn,
+  #profile:not(.settings-open) #penance-toggle-btn,
+  #profile:not(.settings-open) #tour-replay-btn,
+  #profile:not(.settings-open) #profile-legal { display: none !important; }
+  #profile-share-arc-btn { display: none !important; } /* duplicate of #profile-share-btn */
+  .profile-settings-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0 12px; padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.8); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #profile.settings-open .pst-chev { transform: rotate(180deg); }
+  .pst-chev { transition: transform 0.2s ease; }
+
   /* v395 — START buttons (logging happens only inside the HUD) */
   #exercise-list > .ex-row .ex-log-set, #monarch-panel-list > .ex-row .ex-log-set { display: none !important; }
   #exercise-list > .ex-row .ex-check, #monarch-panel-list > .ex-row .ex-check { pointer-events: none; }
@@ -2860,7 +2901,10 @@
           Share Your Arc
         </button>
         <button class="tour-replay-btn" id="tour-replay-btn">◈ Replay Feature Guide</button>
+        <!-- v397: every knob folds behind one row -->
+        <button class="profile-settings-toggle" id="profile-settings-toggle" type="button" onclick="Sound.play('tap');document.getElementById('profile').classList.toggle('settings-open')"><span>⚙ Settings &amp; Customization</span><span class="pst-chev">▾</span></button>
         <div id="profile-auth-section"></div>
+        <button class="profile-settings-toggle profile-plus-toggle" id="profile-plus-toggle" type="button" onclick="Sound.play('tap');document.getElementById('profile').classList.toggle('plus-open')"><span>◆ WEEBJI+ &amp; Deep Analytics</span><span class="pst-chev">▾</span></button>
         <div id="profile-plus-section"></div>
         <div id="profile-analytics"></div>
         <div id="profile-leaderboard"></div>
@@ -4053,6 +4097,8 @@
       setDifficulty(b.dataset.diff);
       spawnDropBanner(`⚔️ Training intensity → ${b.dataset.diff.toUpperCase()}`);
       rerender();
+      // v397: the choice IS the start — drop straight into quest mode
+      setTimeout(() => { try { if (typeof HomeUX !== 'undefined' && HomeUX) HomeUX.openHud(listEl); } catch (_) {} }, 450);
     }));
   }
 
@@ -8091,14 +8137,14 @@
       checkPenanceOnBoot();
       checkChapterOnBoot();
       checkGhostIntervention(p);
-      showInstallPromptWhenReady();
-      maybeShowNotifPrompt();
+      PopupGate.when('install', showInstallPromptWhenReady);
+      PopupGate.when('notif', maybeShowNotifPrompt);
       RitualClock.check();
-      setTimeout(() => WhatsNew.check(), 2600);
-      if (!fromOnboarding) setTimeout(() => maybeOfferAwakeningLore(), 3400);
-      maybeShowSignInNudge();
-      maybeShowRatingPrompt();
-      setTimeout(() => maybeShowQuestBriefing(State.selectedClass || localStorage.getItem('weebji_class') || 'monarch'), 5000);
+      setTimeout(() => PopupGate.when('whatsnew', () => WhatsNew.check()), 2600);
+      if (!fromOnboarding) setTimeout(() => PopupGate.when('lore', () => maybeOfferAwakeningLore()), 3400);
+      PopupGate.when('signin-nudge', maybeShowSignInNudge);
+      PopupGate.when('rating', maybeShowRatingPrompt);
+      setTimeout(() => PopupGate.when('briefing', () => maybeShowQuestBriefing(State.selectedClass || localStorage.getItem('weebji_class') || 'monarch')), 5000);
       if (window._shortcutAction === 'profile') {
         window._shortcutAction = null;
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'profile'));
@@ -8112,6 +8158,34 @@
   }
 
   /* ══ DASHBOARD INIT ══════════════════════════ */
+  /* ══ POPUP GATE v397 — one auto-popup at a time, max 2 per launch ══════
+     Launch used to fire ~10 prompts in 5s (what's new, lore, rating, briefing,
+     weekly report, anomaly, push/notif/install/sign-in nudges). Non-critical
+     ones now queue here: never over a full-screen moment, spaced 8s apart, and
+     anything past the 2-per-launch budget simply waits for a later open (each
+     popup keeps its own once-per/snooze rules). Critical flows (streak-loss
+     ghost intervention, story chapters, penance) do NOT go through this. */
+  var PopupGate = (() => {
+    const BUSY = '#levelup-overlay.active, #levelup-cutscene.active, #mission-briefing.active, #anomaly-overlay.active, #ghost-intervention.active, #quest-briefing.active, #rating-prompt.active, #boss-defeat-overlay.active, #void-overlay.active, #quest-hud.show, #sanct-hud.show, #tour-overlay[style*="block"], #awakening-cutscene.active, #chapter-cutscene.active, #penance-cutscene.active, #boss-defeat-cutscene.active, #weekly-report-overlay, #arc-card-overlay.active, #sign-in-gate.active, #notif-prompt.visible, #push-enable-banner, #goodwill-overlay.active, #lore-prompt.visible, #whats-new-overlay';
+    const GAP = 8000, MAX = 2;
+    let _last = 0, _shown = 0;
+    const busy = () => !!document.querySelector(BUSY);
+    // popups either match BUSY or get appended straight to <body> (nudge/toast) — nothing else counts,
+    // so ordinary UI class toggles can't burn the budget
+    const _sig = () => document.body.childElementCount + document.querySelectorAll(BUSY).length;
+    function when(name, fn, tries) {
+      tries = tries === undefined ? 30 : tries;
+      if (_shown >= MAX) return; // budget spent — try again next launch
+      if (busy() || Date.now() - _last < GAP) { if (tries > 0) setTimeout(() => when(name, fn, tries - 1), 2500); return; }
+      const before = _sig(), prevLast = _last;
+      _last = Date.now(); // lock first — several of these fire in the same tick at boot
+      try { fn(); } catch (_) {}
+      // only count it if something actually appeared (most checks are once-per and bail early)
+      setTimeout(() => { if (_sig() > before) { _last = Date.now(); _shown++; } else _last = prevLast; }, 400);
+    }
+    return { when, busy };
+  })();
+
   function initDashboard() {
     const name  = State.playerName   || localStorage.getItem('weebji_name')  || 'Hunter';
     const cls   = State.selectedClass || localStorage.getItem('weebji_class') || 'monarch';
@@ -8186,7 +8260,7 @@
     // Premium hype card (free users only)
     renderPremiumHypeCard();
     // Weekly report — show once per week on first open after Sunday
-    setTimeout(showWeeklyReport, 1500);
+    setTimeout(() => PopupGate.when('weekly', showWeeklyReport), 1500);
 
     // Best streak: gold pulse if new best was set this session
     if (p.streak > 0 && p.streak >= p.bestStreak) {
@@ -8226,13 +8300,13 @@
     // One-time anomaly announcement (post-onboarding users only — veterans predate the mission flag)
     if ((localStorage.getItem('weebji_mission_done') || (p.level || 1) >= 2) && !localStorage.getItem('weebji_anomaly_notice')) {
       localStorage.setItem('weebji_anomaly_notice', '1');
-      setTimeout(() => spawnAnomalyNotice(color), 2500);
+      setTimeout(() => PopupGate.when('anomaly', () => spawnAnomalyNotice(color)), 2500);
     }
     // First Directive — fullscreen overlay on very first dashboard visit (never for veterans past level 1)
     if (!localStorage.getItem('weebji_mission_done') && (p.level || 1) < 2) setTimeout(() => showMissionBriefing(cls, color), 1200);
     // YouTube Notice Board removed — CORS proxy was fragile
     // Push permission banner — needs a real tap to trigger the browser prompt
-    if (typeof WeebjPush !== 'undefined') setTimeout(() => WeebjPush.maybeShowEnableBanner(), 2500);
+    if (typeof WeebjPush !== 'undefined') setTimeout(() => PopupGate.when('push', () => WeebjPush.maybeShowEnableBanner()), 2500);
     // v393 Home UX layer — streak chip, nav locks, Forge hero, world tiles, quest bar
     try { if (typeof HomeUX !== 'undefined' && HomeUX) HomeUX.apply(p, cls); } catch (e) {}
   }

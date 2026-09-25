@@ -10063,7 +10063,7 @@
       }
       const n = lit.slice(7 - age).filter(Boolean).length, pct = Math.round(100 * n / age);
       const [state, c] = n === 0 ? (age <= 1 ? ['AWAITING', 'rgba(255,255,255,0.6)'] : ['LOST', '#FF4757']) : pct >= 70 ? ['STABLE', 'var(--cls-color, #00F5FF)'] : pct >= 40 ? ['WEAKENING', '#FFB02E'] : ['DECAYING', '#FF4757'];
-      const key = lit.join('') + state;
+      const key = lit.join('') + state + pct;
       if (el.dataset.key === key) return;
       el.dataset.key = key;
       el.style.setProperty('--sig-c', c);
@@ -10077,7 +10077,10 @@
         AWAITING: 'AWAITING FIRST SIGNAL. Complete your first quest to bring the System online.',
       };
       const st = $('ssi-state'); if (st) st.textContent = lines[state] || '';
-      el.innerHTML = `<span class="sys-bars">${lit.map((on, i) => `<i class="${on ? 'on' : ''}" style="height:${5 + i * 1.5}px"></i>`).join('')}</span>`
+      // Bars = signal STRENGTH (phone-signal style), not which days were trained —
+      // otherwise a day-1 Hunter reads "100% STABLE" with one bar lit.
+      const barsOn = n === 0 ? 0 : Math.max(1, Math.round(7 * pct / 100));
+      el.innerHTML = `<span class="sys-bars">${[0, 1, 2, 3, 4, 5, 6].map(i => `<i class="${i < barsOn ? 'on' : ''}" style="height:${5 + i * 1.5}px"></i>`).join('')}</span>`
         + `<span class="sys-sig-txt">System Signal · ${pct}%</span><span class="sys-sig-state">${state}</span>`;
     }
     function _navLocks(p, cls) {

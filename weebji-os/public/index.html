@@ -2201,8 +2201,80 @@
   .qh-next { display: flex; align-items: center; gap: 10px; min-height: 18px; }
   .qh-next b { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.22em; color: rgba(255,255,255,0.5); font-weight: 700; }
   .qh-next span { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* v395 — START buttons (logging happens only inside the HUD) */
+  #exercise-list > .ex-row .ex-log-set, #monarch-panel-list > .ex-row .ex-log-set { display: none !important; }
+  #exercise-list > .ex-row .ex-check, #monarch-panel-list > .ex-row .ex-check { pointer-events: none; }
+  #exercise-list .sanctuary-ring-wrap, #exercise-list .sanctuary-timer, #exercise-list .sanctuary-start,
+  #monk-panel-list .sanctuary-ring-wrap, #monk-panel-list .sanctuary-timer, #monk-panel-list .sanctuary-start { display: none !important; }
+  .hux-cta { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin: 4px 0 12px; border: none; border-radius: 16px; background: var(--cls-color, #00F5FF); color: #041215; font-family: 'Cinzel', serif; font-size: 16px; font-weight: 900; letter-spacing: 0.1em; cursor: pointer; box-shadow: 0 0 22px var(--cls-glow, rgba(0,245,255,0.45)); -webkit-tap-highlight-color: transparent; animation: kf-cta-breathe 2.6s ease-in-out infinite; }
+  #monarch-panel-list > .hux-cta { background: #00F5FF; box-shadow: 0 0 22px rgba(0,245,255,0.45); }
+  .hux-cta.monk, #monk-panel-list > .hux-cta { background: #34D399; box-shadow: 0 0 22px rgba(52,211,153,0.45); }
+  .hux-cta.cleared { background: rgba(255,215,0,0.1); color: #FFD700; border: 1px solid rgba(255,215,0,0.4); box-shadow: 0 0 14px rgba(255,215,0,0.15); animation: none; }
+  .hux-cta:active { transform: scale(0.97); }
+  .hux-cta { white-space: nowrap; font-size: 15px; }
+  #monarch-panel-list > .forge-timer-widget { display: none !important; }
+  .hux-cta.mm, #mm-panel-list > .hux-cta { background: #E63946; color: #FFFFFF; box-shadow: 0 0 22px rgba(230,57,70,0.5); }
+  #exercise-list .mm-controls, #mm-panel-list .mm-controls { display: none !important; }
+  @keyframes kf-cta-breathe { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.15); } }
+
+  /* v395 — hit FX: shockwave, slam text, avatar hit-flash, screen shake */
+  .hx-wave { position: absolute; width: 120px; height: 120px; margin-left: -60px; border-radius: 50%; border: 3px solid var(--cls-color); box-shadow: 0 0 30px var(--cls-glow), inset 0 0 20px var(--cls-glow); pointer-events: none; z-index: 3; animation: kf-hx-wave 0.7s cubic-bezier(0.16,1,0.3,1) forwards; }
+  @keyframes kf-hx-wave { from { transform: scale(0.4); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
+  .hx-slam { position: absolute; left: 0; right: 0; top: 36%; text-align: center; font-family: 'Cinzel', serif; font-weight: 900; font-size: 38px; letter-spacing: 0.08em; color: #FFFFFF; text-shadow: 0 0 18px var(--cls-glow), 0 0 40px var(--cls-glow); pointer-events: none; z-index: 4; animation: kf-hx-slam 1s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .hx-slam.big { font-size: 40px; color: #FFD700; text-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 50px rgba(255,180,0,0.5); }
+  @keyframes kf-hx-slam { 0% { opacity: 0; transform: scale(2.2); } 18% { opacity: 1; transform: scale(0.95); } 28% { transform: scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-20px); } }
+  .hx-flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 70%, rgba(255,255,255,0.55), transparent 60%); pointer-events: none; z-index: 5; animation: kf-hx-flash 0.45s ease-out forwards; }
+  @keyframes kf-hx-flash { from { opacity: 1; } to { opacity: 0; } }
+  .qh-art.hit { animation: kf-hx-hit 0.35s ease-out; }
+  @keyframes kf-hx-hit { 0% { filter: brightness(1.9) saturate(1.4); } 100% { filter: none; } }
+  #quest-hud.shake, #sanct-hud.shake { animation: kf-hx-shake 0.45s; }
+  @keyframes kf-hx-shake { 0%,100% { transform: none; } 20% { transform: translate(-6px,3px); } 40% { transform: translate(5px,-4px); } 60% { transform: translate(-4px,2px); } 80% { transform: translate(3px,-1px); } }
+  .qh-sets i.pop { animation: kf-hx-seg 0.5s ease-out; }
+  @keyframes kf-hx-seg { 0% { transform: scaleY(2.2); filter: brightness(2); } 100% { transform: none; } }
+  .void__ring.pulse { animation: kf-void-ring 0.9s ease-out; }
+  @keyframes kf-void-ring { 0% { transform: scale(1.06); filter: brightness(1.8); } 100% { transform: none; filter: none; } }
+  .qh-music { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); background: rgba(5,5,8,0.5); color: #FFFFFF; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+  .qh-music.off { color: rgba(255,255,255,0.35); text-decoration: line-through; }
+  .qh-left { display: flex; align-items: center; gap: 4px; }
+
+  /* v394 — Monk: Sanctuary HUD (shares the .qh-* parts with the quest HUD) */
+  #sanct-hud { position: absolute; inset: 0; z-index: 60; background: #050508; display: none; overflow: hidden; font-family: 'Inter', sans-serif; color: #FFFFFF; }
+  #sanct-hud.show { display: block; animation: kf-hud-in 0.38s cubic-bezier(0.16,1,0.3,1); }
+  #sanct-hud .qh-art { opacity: 0.55; }
+  .sh-center { position: absolute; left: 0; right: 0; top: calc(92px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .sh-ring-wrap { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+  .sh-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--cls-color); box-shadow: 0 0 30px var(--cls-glow), inset 0 0 30px rgba(var(--cls-rgb,52,211,153),0.15); background: radial-gradient(circle, rgba(var(--cls-rgb,52,211,153),0.12), rgba(5,5,8,0.35) 70%); transform: scale(0.78); transition: transform 4s ease-in-out; }
+  .sh-ring-inner { position: absolute; inset: 36px; border-radius: 50%; border: 1px solid rgba(var(--cls-rgb,52,211,153),0.35); transform: scale(0.85); transition: transform 4s ease-in-out; }
+  .sh-ring.in, .sh-ring-inner.in { transform: scale(1.08); }
+  .sh-phase { position: relative; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 0 12px var(--cls-glow); text-align: center; padding: 0 20px; }
+  .sh-timer { font-family: 'JetBrains Mono', monospace; font-size: 44px; font-weight: 700; letter-spacing: 0.06em; color: var(--cls-color); text-shadow: 0 0 18px var(--cls-glow); line-height: 1; }
+  .sh-mode { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+  .sh-hex-row { display: flex; justify-content: center; }
+  .sh-rit-btn { flex-shrink: 0; margin-left: auto; height: 36px; padding: 0 14px; border: none; background: var(--cls-color); color: #041215; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; cursor: pointer; box-shadow: 0 0 14px var(--cls-glow); -webkit-tap-highlight-color: transparent; }
+  .sh-rit-btn:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); box-shadow: none; cursor: default; }
+
+  /* v394 — Mastermind: The Void levelled up (art, countdown ring, boss chip, reward line) */
+  .void__art { position: absolute; inset: 0; background-size: cover; background-position: 50% 12%; opacity: 0.5; pointer-events: none; }
+  .void__art::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(200,80,255,0.06) 0 1px, transparent 1px 4px), linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.88)); }
+  .void__ring { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; }
+  .void__ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .void__ring .vr-bg { fill: none; stroke: rgba(180,60,220,0.16); stroke-width: 6; }
+  .void__ring .vr-fg { fill: none; stroke: #BB44EE; stroke-width: 6; stroke-linecap: round; filter: drop-shadow(0 0 8px rgba(190,70,255,0.8)); transition: stroke-dashoffset 0.9s linear; }
+  .void__ring .void__timer { margin: 0; font-size: 52px; }
+  .void__boss { position: absolute; top: calc(18px + env(safe-area-inset-top, 0px)); right: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 6px 8px; background: rgba(20,4,8,0.78); border: 1px solid rgba(255,71,87,0.5); }
+  .void__boss b { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.18em; color: #FF7A8A; }
+  .void__boss .qh-boss-bar { width: 60px; }
+  .void__reward { position: relative; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.16em; color: #FFD700; text-shadow: 0 0 8px rgba(255,215,0,0.5); }
+
+  /* v394 — Mastermind Home: history/heatmap/music behind the ⚙ like the Forge */
+  #forge-card:not(.forge-extras-open) .mm-topic-breakdown,
+  #forge-card:not(.forge-extras-open) .deep-work-heatmap,
+  #forge-card:not(.forge-extras-open) .mm-xp-info,
+  #forge-card:not(.forge-extras-open) div:has(> #mm-mute-btn) { display: none !important; }
+
   @media (prefers-reduced-motion: reduce) {
-    #quest-bar, #quest-hud.show, .qh-pop { animation: none !important; }
+    #quest-bar, #quest-hud.show, #sanct-hud.show, .qh-pop { animation: none !important; }
+    .sh-ring, .sh-ring-inner, .void__ring .vr-fg { transition: none !important; }
   }
 
   /* ══ DEV PANEL ═══════════════════════════════ */
@@ -2576,9 +2648,9 @@
       <!-- v393: QUEST ACTIVE bar + full-screen quest HUD (drive the Forge's own LOG SET buttons) -->
       <button id="quest-bar" type="button" aria-label="Open active quest">
         <i class="qb-corner tl"></i><i class="qb-corner tr"></i><i class="qb-corner bl"></i><i class="qb-corner br"></i>
-        <div class="qb-bang">!</div>
+        <div class="qb-bang" id="qb-bang">!</div>
         <div class="qb-mid">
-          <span class="qb-eyebrow">QUEST ACTIVE</span>
+          <span class="qb-eyebrow" id="qb-eyebrow">QUEST ACTIVE</span>
           <span class="qb-line" id="qb-line"></span>
         </div>
         <div class="qb-right">
@@ -2592,7 +2664,7 @@
         <div class="qh-scan"></div>
         <div class="qh-fade"></div>
         <div class="qh-top">
-          <button class="qh-close" id="qh-close" aria-label="Minimise quest"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="qh-left"><button class="qh-close" id="qh-close" aria-label="Minimise quest"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><button class="qh-music" id="qh-music" aria-label="Toggle music">♪</button></div>
           <div class="qh-title"><span class="qh-eyebrow" id="qh-eyebrow">! QUEST ACTIVE</span><span class="qh-sub" id="qh-sub">THE FORGE</span></div>
           <div class="qh-boss"><b id="qh-boss-label">BOSS</b><div class="qh-boss-bar"><i id="qh-boss-fill"></i></div></div>
         </div>
@@ -2617,6 +2689,37 @@
             <button class="qh-skip" id="qh-skip" style="display:none">SKIP</button>
           </div>
           <div class="qh-next" id="qh-next-row"><b>NEXT TARGET</b><span id="qh-next-name"></span></div>
+        </div>
+      </div>
+      <!-- v394: Sanctuary HUD (Monk) — drives #sanctuary-start and the ritual rows -->
+      <div id="sanct-hud" role="dialog" aria-label="The Sanctuary">
+        <div class="qh-art" id="sh-art"></div>
+        <div class="qh-scan"></div>
+        <div class="qh-fade"></div>
+        <div class="qh-top">
+          <div class="qh-left"><button class="qh-close" id="sh-close" aria-label="Minimise"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><button class="qh-music" id="sh-music" aria-label="Toggle music">♪</button></div>
+          <div class="qh-title"><span class="qh-eyebrow">☯ THE SANCTUARY</span><span class="qh-sub" id="sh-sub">STILLNESS IS POWER</span></div>
+          <div class="qh-boss"><b id="sh-boss-label">BOSS</b><div class="qh-boss-bar"><i id="sh-boss-fill"></i></div></div>
+        </div>
+        <div class="qh-pops" id="sh-pops"></div>
+        <div class="sh-center">
+          <div class="sh-ring-wrap">
+            <div class="sh-ring" id="sh-ring"></div>
+            <div class="sh-ring-inner" id="sh-ring-inner"></div>
+            <span class="sh-phase" id="sh-phase">Awaiting</span>
+          </div>
+          <div class="sh-timer" id="sh-timer">10:00</div>
+          <div class="sh-mode" id="sh-mode"></div>
+        </div>
+        <div class="qh-body">
+          <div class="sh-hex-row"><div class="qh-hex-wrap"><button class="qh-hex" id="sh-hex" aria-label="Begin or pause session"><span>☯</span><b id="sh-hex-label">BEGIN</b></button></div></div>
+          <div class="qh-sets" id="sh-rit-segs"></div>
+          <div class="qh-panel">
+            <i class="qb-corner tl"></i><i class="qb-corner br"></i>
+            <span class="qh-plabel" id="sh-rit-label">RITUAL</span>
+            <span class="qh-phint" id="sh-rit-name"></span>
+            <button class="sh-rit-btn" id="sh-rit-btn">✓ DONE</button>
+          </div>
         </div>
       </div>
 
@@ -2983,10 +3086,16 @@
     <div id="void-overlay">
       <div class="void__penalty-flash" id="void-penalty-flash"></div>
       <div class="void__breach-banner" id="void-breach-banner">⚠ FOCUS BREACH — HP DRAINED</div>
+      <div class="void__art" id="void-art"></div>
+      <div class="void__boss"><b id="void-boss-label">BOSS</b><div class="qh-boss-bar"><i id="void-boss-fill"></i></div></div>
       <p class="void__eyebrow">Focus Protocol Active</p>
       <h2 class="void__title">THE VOID</h2>
-      <div class="void__timer ticking" id="void-timer">00:00</div>
+      <div class="void__ring">
+        <svg viewBox="0 0 250 250" aria-hidden="true"><circle class="vr-bg" cx="125" cy="125" r="118"/><circle class="vr-fg" id="void-ring-fg" cx="125" cy="125" r="118" stroke-dasharray="741.4" stroke-dashoffset="0"/></svg>
+        <div class="void__timer ticking" id="void-timer">00:00</div>
+      </div>
       <div class="void__mode-label" id="void-mode-label">Standard Session</div>
+      <div class="void__reward" id="void-reward"></div>
       <div class="void__clock" id="void-clock">--:--</div>
       <p class="void__warning">"The System is watching. Leave this screen and you bleed. Stay. Ascend."</p>
       <button class="mm-mute-btn" id="void-mute-btn" title="Toggle session music" style="margin-bottom:8px">🔊 Sound</button>
@@ -9574,7 +9683,7 @@
           // Rest over → phonk resumes
           MusicEngine.play('monarch');
           Sound.play('check');
-        });
+        }, row && row.parentElement); // v395: secondary Forge rows live in #monarch-panel-list, not #exercise-list
         MusicEngine.play('ambient'); // quiet during rest
         Sound.play('tap');
       }
@@ -9588,11 +9697,10 @@
       ).join('');
     }
 
-    function _startRest(secs, onDone) {
+    function _startRest(secs, onDone, host) {
       _restRemain = secs;
-      const list = document.getElementById('exercise-list');
-      const existing = list.querySelector('.forge-rest-banner');
-      if (existing) existing.remove();
+      const list = host || document.getElementById('exercise-list');
+      document.querySelectorAll('.forge-rest-banner').forEach(b => b.remove());
       const banner = document.createElement('div');
       banner.className = 'forge-rest-banner';
       banner.innerHTML = `
@@ -9617,8 +9725,7 @@
 
     function _stopRest() {
       if (_restTimer) { clearInterval(_restTimer); _restTimer = null; }
-      const el = document.getElementById('exercise-list');
-      if (el) { const b = el.querySelector('.forge-rest-banner'); if (b) b.remove(); }
+      document.querySelectorAll('.forge-rest-banner').forEach(b => b.remove());
     }
 
     function _fmt(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
@@ -9758,8 +9865,28 @@
     const $ = id => document.getElementById(id);
     const _cls = () => localStorage.getItem('weebji_class') || 'monarch';
     let _bound = false, _hudOpen = false, _target = -1, _snap = null, _forgeKey = '', _openTile = null, _rafQueued = false;
+    let _hudRoot = null, _sp = '', _segKey = ''; // v395: which Forge list / Sanctuary mount the open HUD is driving
 
-    function _rows() { return [...document.querySelectorAll('#exercise-list > .ex-row')]; }
+    /* v395 — the HUDs follow the ACTIVITY, not the main class: Home (primary) or a
+       secondary pillar panel. Each view has its own mount of the Forge / Sanctuary. */
+    function _view() {
+      const d = $('dashboard'); if (!d || !d.classList.contains('active')) return null;
+      const s = document.querySelector('.dash-scroll');
+      if (s && s.style.display !== 'none') return 'home';
+      for (const k of ['monarch', 'mastermind', 'monk']) { const pn = $(k + '-panel'); if (pn && pn.style.display === 'flex') return k; }
+      return null;
+    }
+    function _act(v) { return v === 'home' ? _cls() : v; }
+    function _forgeRootFor(v) {
+      if (v === 'home') return _cls() === 'monarch' ? $('exercise-list') : null;
+      return v === 'monarch' ? $('monarch-panel-list') : null;
+    }
+    function _prefixFor(v) { return v === 'monk' ? 'sec-' : ''; }
+    function _sanctRoot(prefix) { return prefix ? $('monk-panel-list') : $('exercise-list'); }
+    function _rows(root) {
+      root = root || _hudRoot || _forgeRootFor(_view());
+      return root ? [...root.querySelectorAll(':scope > .ex-row')] : [];
+    }
     function _info(row, i) {
       const m = (row.querySelector('.ex-sets')?.textContent || '').match(/(\d+)\s*×\s*(\S+)/);
       const sets = m ? Math.max(1, parseInt(m[1], 10)) : 3;
@@ -9772,8 +9899,8 @@
         logged: done ? sets : Math.min(sets, ForgeTimer.getSets(i)),
       };
     }
-    function _infos() { return _rows().map(_info); }
-    function _resting() { return !!document.querySelector('#exercise-list .forge-rest-banner'); }
+    function _infos(root) { return _rows(root).map(_info); }
+    function _resting() { return !!document.querySelector('.forge-rest-banner'); }
     function _restText() { return ($('forge-rest-timer')?.textContent || '').replace(/^0(\d:)/, '$1'); }
     function _homeVisible() {
       const d = $('dashboard'), s = document.querySelector('.dash-scroll');
@@ -9811,10 +9938,123 @@
     }
 
     /* ── Forge hero: system line + move segments ── */
+    /* v394 — White Room + Sanctuary state, read from their own engines/DOM */
+    function _mmCfg() { return (typeof MM_MODES !== 'undefined' && typeof Pomo !== 'undefined') ? MM_MODES[Pomo.mode] : null; }
+    function _mmPaused() { const c = _mmCfg(); return !!c && !Pomo.running && Pomo.remaining > 0 && Pomo.remaining < c.mins * 60; }
+    function _rituals(prefix) {
+      const root = _sanctRoot(prefix === undefined ? _sp : prefix);
+      if (!root) return [];
+      // index by position — secondary rows carry no data-idx
+      return [...root.querySelectorAll('.monk-ritual-row')].map((row, i) => ({
+        row, i, done: row.classList.contains('done'),
+        name: (row.querySelector('.monk-ritual-name')?.textContent || '').trim(),
+        xp: parseInt((row.querySelector('.monk-ritual-xp')?.textContent || '').replace(/[^\d]/g, ''), 10) || 0,
+      }));
+    }
+    function _sanctState(prefix) {
+      const px = prefix === undefined ? _sp : prefix;
+      const start = ($(px + 'sanctuary-start')?.textContent || '').trim();
+      const root = _sanctRoot(px);
+      return {
+        present: !!$(px + 'sanctuary-start'),
+        running: typeof Sanctuary !== 'undefined' && Sanctuary.isRunning(),
+        paused: start === 'Resume',
+        timer: ($(px + 'sanctuary-timer')?.textContent || '').replace(/^0(\d:)/, '$1'),
+        phase: ($(px + 'sanctuary-phase')?.textContent || '').trim(),
+        ringIn: ['0', '1'].includes($(px + 'sanctuary-ring')?.dataset.phase || ''),
+        mode: (root?.querySelector('.sanctuary-mode-btn.active')?.innerText || '').replace(/\s+/g, ' ').trim(),
+        startLabel: start,
+      };
+    }
+
+    /* v395 — one big START button per activity mount; logging only happens in the HUD */
+    function _cta(root, key, label, cls, onClick) {
+      if (!root) return;
+      let b = root.querySelector(':scope > .hux-cta');
+      if (!b) {
+        b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'hux-cta';
+        b.addEventListener('click', e => { e.stopPropagation(); Sound.play('tap'); b._go && b._go(); });
+        root.prepend(b);
+      }
+      b._go = onClick;
+      if (b.dataset.key === key) return;
+      b.dataset.key = key;
+      b.className = 'hux-cta' + (cls ? ' ' + cls : '');
+      b.textContent = label;
+    }
+    function _forgeCta(root) {
+      const infos = _infos(root);
+      if (!infos.length) { root?.querySelector(':scope > .hux-cta')?.remove(); return; }
+      const left = infos.filter(x => !x.done);
+      const started = infos.some(x => x.done || x.logged > 0);
+      const nextIdx = left.length ? infos.indexOf(_pickTarget(infos)) + 1 : 0;
+      if (!left.length) _cta(root, 'clear', '✓ FORGE CLEARED', 'cleared', () => openHud(root));
+      else if (started) _cta(root, 'cont' + nextIdx, `▶ CONTINUE · MOVE ${nextIdx}/${infos.length}`, '', () => openHud(root));
+      else _cta(root, 'start', '▶ START WORKOUT', '', () => openHud(root));
+    }
+    function _sanctCta(prefix) {
+      const root = _sanctRoot(prefix);
+      if (!root || !$(prefix + 'sanctuary-start')) return;
+      const s = _sanctState(prefix);
+      const label = s.running ? '☯ RETURN TO MEDITATION' : s.paused ? '☯ RESUME MEDITATION' : '☯ START MEDITATION';
+      // START goes straight in: open the Sanctuary HUD with the session already running
+      _cta(root, label, label, 'monk', () => {
+        openSanct(prefix);
+        if (!_sanctState(prefix).running) { $(prefix + 'sanctuary-start')?.click(); setTimeout(refresh, 40); }
+      });
+    }
+    function _mmCta(root) {
+      if (!root || !_mmCfg()) return;
+      const c = _mmCfg();
+      const label = _mmPaused() ? '▶ RESUME DEEP WORK' : `▶ START DEEP WORK · ${c.mins}M`;
+      _cta(root, label, label, 'mm', () => { if (!Pomo.running) Pomo.start(); });
+    }
+    function _setSys(key, html, cleared) {
+      if (key === _forgeKey) return false;
+      _forgeKey = key;
+      const sys = $('forge-sysline');
+      sys.className = cleared ? 'cleared' : '';
+      sys.innerHTML = html;
+      return true;
+    }
+    function _refreshMastermindCard() {
+      const c = _mmCfg(); if (!c) return;
+      // Sessions done today, from the card's own label — avoids a loadProgress() every tick
+      const m = ($('mm-session-label')?.textContent || '').match(/(\d+)/);
+      const done = m ? parseInt(m[1], 10) - (Pomo.running ? 1 : 0) : 0;
+      const paused = _mmPaused();
+      const key = `mm|${Pomo.mode}|${done}|${paused}|${Pomo.running}|${paused ? Math.floor(Pomo.remaining / 60) : ''}`;
+      const txt = paused
+        ? `SESSION PAUSED · ${Pomo.formatTime(Pomo.remaining)} LEFT · +${c.xp} XP ON COMPLETION`
+        : `SESSION ${done + 1} · ${c.label.toUpperCase()} ${c.mins}M · +${c.xp} XP`;
+      _mmCta($('exercise-list'));
+      if (_setSys(key, `<span class="fs-text">▸ ${txt}</span>`, false)) $('forge-segs').innerHTML = '';
+    }
+    function _refreshMonkCard() {
+      _sanctCta('');
+      const rs = _rituals('');
+      if (!rs.length) return;
+      const left = rs.filter(r => !r.done);
+      const key = 'monk|' + rs.map(r => r.done ? 1 : 0).join('');
+      const txt = left.length
+        ? `${rs.length - left.length}/${rs.length} RITUALS · +${left.reduce((s, r) => s + r.xp, 0)} XP LEFT`
+        : 'ALL RITUALS COMPLETE. THE SYSTEM ACKNOWLEDGES YOU.';
+      if (_setSys(key, `<span class="fs-text">▸ ${txt}</span>`, !left.length)) {
+        $('forge-segs').innerHTML = rs.map(r => `<div class="fseg"><i style="width:${r.done ? 100 : 0}%"></i></div>`).join('');
+      }
+    }
+
     function _refreshForge() {
       const sys = $('forge-sysline'), segs = $('forge-segs');
       if (!sys || !segs) return;
-      const infos = _cls() === 'monarch' ? _infos() : [];
+      const cls = _cls();
+      if (cls === 'mastermind') { _refreshMastermindCard(); return; }
+      if (cls === 'monk') { if (_rituals('').length) { _refreshMonkCard(); return; } }
+      const root = cls === 'monarch' ? $('exercise-list') : null;
+      const infos = root ? _infos(root) : [];
+      if (root) _forgeCta(root);
       if (!infos.length) { if (_forgeKey !== 'none') { sys.innerHTML = ''; segs.innerHTML = ''; sys.className = ''; _forgeKey = 'none'; } return; }
       const first = !localStorage.getItem('weebji_first_action_done');
       const key = infos.map(x => x.logged + (x.done ? 'd' : '') + x.xp).join(',') + '|' + first;
@@ -9824,12 +10064,18 @@
       const left = infos.filter(x => !x.done);
       let txt;
       if (!left.length) txt = 'FORGE CLEARED. THE SYSTEM ACKNOWLEDGES YOU.';
-      else if (first && !infos.some(x => x.logged > 0)) txt = 'LOG YOUR FIRST SET. THE SYSTEM IS WATCHING.';
+      else if (first && !infos.some(x => x.logged > 0)) txt = 'YOUR FIRST QUEST AWAITS. THE SYSTEM IS WATCHING.';
       else txt = `${left.length} MOVE${left.length > 1 ? 'S' : ''} LEFT · +${left.reduce((s, x) => s + x.xp, 0)} XP`;
       sys.className = left.length ? '' : 'cleared';
-      sys.innerHTML = `<span class="fs-text">▸ ${txt}</span>` + (left.length ? '<button class="fs-enter" id="fs-enter">⛶ QUEST MODE</button>' : '');
-      const en = $('fs-enter');
-      if (en) en.addEventListener('click', e => { e.stopPropagation(); Sound.play('tap'); openHud(); });
+      sys.innerHTML = `<span class="fs-text">▸ ${txt}</span>`;
+    }
+
+    /* v395 — START buttons + state for whichever secondary pillar is on screen */
+    function _refreshPanels() {
+      const v = _view();
+      if (v === 'monarch') _forgeCta($('monarch-panel-list'));
+      if (v === 'monk') _sanctCta('sec-');
+      if (v === 'mastermind') _mmCta($('mm-panel-list'));
     }
 
     /* ── QUEST ACTIVE bar ── */
@@ -9837,8 +10083,30 @@
       const bar = $('quest-bar'), dash = $('dashboard');
       if (!bar || !dash) return;
       let show = false;
-      if (_cls() === 'monarch' && !_hudOpen && _homeVisible()) {
-        const infos = _infos(), left = infos.filter(x => !x.done);
+      const v = _view();
+      const cls = v ? _act(v) : null;
+      const setBar = (glyph, eyebrow, line, sub, rlabel, rval, pct) => {
+        $('qb-bang').textContent = glyph; $('qb-eyebrow').textContent = eyebrow;
+        const l = $('qb-line'); l.textContent = line;
+        if (sub) { const sp = document.createElement('span'); sp.textContent = sub; l.appendChild(sp); }
+        $('qb-rlabel').textContent = rlabel; $('qb-rval').textContent = rval;
+        $('qb-prog').style.width = pct + '%';
+      };
+      if (cls === 'mastermind' && _mmPaused()) {
+        const c = _mmCfg();
+        show = true;
+        setBar('◆', 'FOCUS PAUSED', c.label + ' · ', `${Pomo.formatTime(Pomo.remaining)} left`, 'RESUME', '▸', Math.round(100 * (1 - Pomo.remaining / (c.mins * 60))));
+      }
+      if (cls === 'monk' && !_sanctOpen) {
+        const s = _sanctState(_prefixFor(v));
+        if (s.present && (s.running || s.paused)) {
+          show = true;
+          setBar('☯', s.running ? 'SESSION ACTIVE' : 'SESSION PAUSED', (s.running ? s.phase : 'Paused') + ' · ', s.mode.split(' ')[0] || 'Sanctuary', 'TIME', s.timer, 0);
+        }
+      }
+      if (cls === 'monarch' && !_hudOpen) {
+        $('qb-bang').textContent = '!'; $('qb-eyebrow').textContent = 'QUEST ACTIVE';
+        const infos = _infos(_forgeRootFor(v)), left = infos.filter(x => !x.done);
         const started = infos.some(x => x.done || x.logged > 0) || _resting();
         if (left.length && started) {
           show = true;
@@ -9858,6 +10126,49 @@
       dash.classList.toggle('qb-on', show);
     }
 
+    /* ── v395 hit FX + music toggle, shared by every HUD ── */
+    function _fx(hostId, kind, text, anchorId) {
+      const host = $(hostId); if (!host) return;
+      const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const add = (cls, setup) => {
+        const d = document.createElement('div'); d.className = cls;
+        if (setup) setup(d);
+        host.appendChild(d);
+        setTimeout(() => d.remove(), 1200);
+      };
+      const a = $(anchorId);
+      if (a && !reduce) {
+        const hr = host.getBoundingClientRect(), ar = a.getBoundingClientRect();
+        const waves = kind === 'set' ? 1 : 2;
+        for (let k = 0; k < waves; k++) setTimeout(() => add('hx-wave', d => {
+          d.style.top = (ar.top - hr.top + ar.height / 2 - 60) + 'px';
+          d.style.left = (ar.left - hr.left + ar.width / 2) + 'px';
+        }), k * 130);
+      }
+      if (text) add('hx-slam' + (kind === 'set' ? '' : ' big'), d => { d.textContent = text; });
+      const art = host.querySelector('.qh-art');
+      if (art && !reduce) { art.classList.remove('hit'); void art.offsetWidth; art.classList.add('hit'); }
+      if (kind !== 'set' && !reduce) {
+        add('hx-flash');
+        host.classList.remove('shake'); void host.offsetWidth; host.classList.add('shake');
+        setTimeout(() => host.classList.remove('shake'), 500);
+      }
+      try { haptic(kind === 'set' ? [35] : [60, 40, 120]); } catch (_) {}
+    }
+    function _syncMusic() {
+      const on = typeof MusicEngine !== 'undefined' && MusicEngine.isEnabled();
+      ['qh-music', 'sh-music'].forEach(id => { const b = $(id); if (b) b.classList.toggle('off', !on); });
+    }
+    function _toggleMusic(theme) {
+      try {
+        const on = MusicEngine.toggle();
+        if (on) MusicEngine.play(theme);
+        if (typeof _updateMusicBtn === 'function') _updateMusicBtn();
+      } catch (_) {}
+      Sound.play('tap');
+      _syncMusic();
+    }
+
     /* ── Quest HUD ── */
     function _pop(txt, kind) {
       const box = $('qh-pops'); if (!box) return;
@@ -9866,12 +10177,16 @@
       box.appendChild(d);
       setTimeout(() => d.remove(), 1700);
     }
-    function openHud() {
-      if (!_infos().length) return;
+    function openHud(root) {
+      root = root || _forgeRootFor(_view());
+      if (!_infos(root).length) return;
       const p = loadProgress(), cls = _cls();
+      _hudRoot = root;
       _hudOpen = true; _target = -1; _snap = null;
       $('qh-art').style.backgroundImage = `url('assets/avatars/${cls}-t${getAvatarTier(p.level || 1) + 1}.jpeg')`;
-      $('qh-sub').textContent = ('THE FORGE · ' + ($('forge-sub')?.textContent || '')).trim();
+      let _type = ''; try { _type = todayWorkoutType() + ' DAY'; } catch (_) {}
+      $('qh-sub').textContent = ('THE FORGE · ' + _type).trim();
+      _syncMusic();
       $('quest-hud').classList.add('show');
       try { WakeLock.request(); } catch (_) {}
       _renderHud(); _refreshBar();
@@ -9879,7 +10194,7 @@
     }
     function closeHud() {
       if (!_hudOpen) return;
-      _hudOpen = false;
+      _hudOpen = false; _hudRoot = null;
       $('quest-hud').classList.remove('show');
       try { WakeLock.release(); } catch (_) {}
       _refreshBar();
@@ -9888,11 +10203,20 @@
       const infos = _infos();
       if (!infos.length) { closeHud(); return; }
       const boss = BossSiege.getState();
+      let _popSeg = -1;
       if (_snap) {
+        const wasLeft = _snap.rows.filter(r => !r.done).length;
+        const nowLeft = infos.filter(x => !x.done).length;
         infos.forEach(x => {
           const prev = _snap.rows[x.i]; if (!prev) return;
-          if (x.done && !prev.done) _pop(`+${x.xp} XP`, 'xp');
-          else if (!x.done && x.logged > prev.logged) _pop(`SET ${x.logged} ✓`, 'set');
+          if (x.done && !prev.done) {
+            _pop(`+${x.xp} XP`, 'xp');
+            _fx('quest-hud', 'clear', wasLeft > 0 && nowLeft === 0 ? 'FORGE CLEARED' : 'MOVE CLEARED', 'qh-hex');
+          } else if (!x.done && x.logged > prev.logged) {
+            _pop(`SET ${x.logged} ✓`, 'set');
+            _fx('quest-hud', 'set', `SET ${x.logged}`, 'qh-hex');
+            _popSeg = x.logged - 1;
+          }
         });
         const dmg = _snap.bossHp - boss.hp;
         if (dmg > 0 && !boss.defeated) _pop(`−${dmg} BOSS HP`, 'dmg');
@@ -9908,7 +10232,7 @@
         $('qh-count').textContent = 'ALL TARGETS DOWN';
         $('qh-name').textContent = 'Forge Cleared';
         $('qh-reps').textContent = `${infos.length} MOVES · PERFECT SET`;
-        $('qh-sets').innerHTML = infos.map(() => '<i class="on"></i>').join('');
+        $('qh-sets').innerHTML = infos.map(() => '<i class="on"></i>').join(''); _segKey = '';
         hex.classList.add('cleared'); $('qh-hex-label').textContent = 'CLAIM';
         prev.disabled = next.disabled = true;
         $('qh-plabel').textContent = 'COMPLETE';
@@ -9923,9 +10247,14 @@
       $('qh-count').textContent = `MOVE ${infos.indexOf(t) + 1} OF ${infos.length}`;
       $('qh-name').textContent = t.name;
       $('qh-reps').textContent = `${t.sets} × ${t.reps} · SET ${Math.min(t.logged + 1, t.sets)} OF ${t.sets}`.toUpperCase();
-      let segs = '';
-      for (let k = 0; k < t.sets; k++) segs += `<i class="${k < t.logged ? 'on' : k === t.logged ? 'now' : ''}"></i>`;
-      $('qh-sets').innerHTML = segs;
+      let segs = '', base = '';
+      for (let k = 0; k < t.sets; k++) {
+        const c = k < t.logged ? 'on' : k === t.logged ? 'now' : '';
+        base += c + ',';
+        segs += `<i class="${c}${k === _popSeg ? ' pop' : ''}"></i>`;
+      }
+      // only redraw on change — a redraw every tick would cut the pop animation short
+      if (base + t.i !== _segKey || _popSeg >= 0) { _segKey = base + t.i; $('qh-sets').innerHTML = segs; }
       prev.disabled = next.disabled = left.length < 2;
       const rest = _resting();
       $('qh-plabel').textContent = rest ? 'RECOVER' : 'READY';
@@ -9956,6 +10285,89 @@
       _target = left[(idx + dir + left.length) % left.length].i;
       Sound.play('tap');
       _renderHud();
+    }
+
+    /* ── v394 Sanctuary HUD (Monk) — presses #sanctuary-start and the ritual rows ── */
+    let _sanctOpen = false, _sSnap = null, _vMin = null;
+    function _bossInto(labelId, fillId) {
+      const b = BossSiege.getState();
+      $(fillId).style.width = b.defeated ? '0%' : Math.round(100 * b.hp / BossSiege.HP_MAX) + '%';
+      $(labelId).textContent = b.defeated ? 'BOSS SLAIN' : `BOSS ${b.hp}`;
+      return b;
+    }
+    function _spop(txt, kind) {
+      const box = $('sh-pops'); if (!box) return;
+      const d = document.createElement('div');
+      d.className = 'qh-pop ' + kind; d.textContent = txt;
+      box.appendChild(d);
+      setTimeout(() => d.remove(), 1700);
+    }
+    function openSanct(prefix) {
+      _sp = prefix === undefined ? _prefixFor(_view()) : prefix;
+      if (!_sanctState().present) return;
+      const p = loadProgress();
+      _sanctOpen = true; _sSnap = null;
+      _syncMusic();
+      $('sh-art').style.backgroundImage = `url('assets/avatars/${_cls()}-t${getAvatarTier(p.level || 1) + 1}.jpeg')`;
+      $('sanct-hud').classList.add('show');
+      _renderSanct(); _refreshBar();
+      if (typeof posthog !== 'undefined') posthog.capture('sanctuary_hud_opened');
+    }
+    function closeSanct() {
+      if (!_sanctOpen) return;
+      _sanctOpen = false;
+      $('sanct-hud').classList.remove('show');
+      _refreshBar();
+    }
+    function _renderSanct() {
+      const s = _sanctState();
+      if (!s.present) { closeSanct(); return; }
+      const boss = _bossInto('sh-boss-label', 'sh-boss-fill');
+      const rs = _rituals(), left = rs.filter(r => !r.done);
+      if (_sSnap) {
+        const wasLeft = Object.values(_sSnap.rits).filter(d => !d).length;
+        rs.forEach(r => {
+          const prev = _sSnap.rits[r.i];
+          if (r.done && prev === false) {
+            _spop(`+${r.xp} XP`, 'xp');
+            _fx('sanct-hud', 'clear', wasLeft > 0 && !left.length ? 'SANCTUARY SEALED' : 'RITUAL SEALED', 'sh-rit-btn');
+          }
+        });
+        const dmg = _sSnap.bossHp - boss.hp;
+        if (dmg > 0 && !boss.defeated) _spop(`−${dmg} BOSS HP`, 'dmg');
+        if (s.running && !_sSnap.running) _fx('sanct-hud', 'set', 'BREATHE', 'sh-ring-inner');
+      }
+      _sSnap = { rits: Object.fromEntries(rs.map(r => [r.i, r.done])), bossHp: boss.hp, running: s.running };
+      $('sh-phase').textContent = s.running ? s.phase : (s.paused ? 'Paused' : 'Awaiting');
+      $('sh-ring').classList.toggle('in', s.running && s.ringIn);
+      $('sh-ring-inner').classList.toggle('in', s.running && s.ringIn);
+      $('sh-timer').textContent = s.timer;
+      $('sh-mode').textContent = s.mode;
+      $('sh-hex-label').textContent = s.running ? 'PAUSE' : (s.paused ? 'RESUME' : 'BEGIN');
+      $('sh-rit-segs').innerHTML = rs.map(r => `<i class="${r.done ? 'on' : ''}"></i>`).join('');
+      const next = left[0];
+      $('sh-rit-label').textContent = rs.length ? `RITUAL ${rs.length - left.length}/${rs.length}` : 'RITUALS';
+      $('sh-rit-name').textContent = next ? next.name : 'All rituals complete. The System acknowledges you.';
+      $('sh-rit-btn').disabled = !next;
+    }
+
+    /* ── v394 The Void (Mastermind) — countdown ring, boss chip, reward line ── */
+    function _refreshVoid() {
+      const ov = $('void-overlay');
+      if (!ov || !ov.classList.contains('active')) return;
+      const c = _mmCfg(); if (!c) return;
+      const pct = Math.max(0, Math.min(1, Pomo.remaining / (c.mins * 60)));
+      const fg = $('void-ring-fg'); if (fg) fg.style.strokeDashoffset = String(741.4 * (1 - pct));
+      // Every minute survived in the Void, the ring pulses — the Mastermind's "set logged"
+      const min = Math.floor(Pomo.remaining / 60);
+      if (_vMin !== null && min < _vMin) {
+        const ring = document.querySelector('.void__ring');
+        if (ring) { ring.classList.remove('pulse'); void ring.offsetWidth; ring.classList.add('pulse'); }
+        try { haptic([25]); } catch (_) {}
+      }
+      _vMin = Pomo.running ? min : null;
+      const rw = $('void-reward'); if (rw) rw.textContent = `ON COMPLETION · +${c.xp} XP · BOSS TAKES DAMAGE`;
+      _bossInto('void-boss-label', 'void-boss-fill');
     }
 
     /* ── "Your world" tiles — each opens an existing card in place ── */
@@ -10013,7 +10425,7 @@
     }
 
     function refresh() {
-      try { _refreshForge(); _refreshBar(); if (_hudOpen) _renderHud(); }
+      try { _refreshForge(); _refreshPanels(); _refreshBar(); if (_hudOpen) _renderHud(); if (_sanctOpen) _renderSanct(); _refreshVoid(); }
       catch (e) { console.warn('[HomeUX]', e); }
     }
     function _queue() {
@@ -10024,7 +10436,26 @@
     function _bindOnce() {
       if (_bound) return;
       _bound = true;
-      $('quest-bar')?.addEventListener('click', () => { Sound.play('tap'); openHud(); });
+      $('quest-bar')?.addEventListener('click', () => {
+        Sound.play('tap');
+        const v = _view(), act = v ? _act(v) : _cls();
+        if (act === 'mastermind') { if (_mmPaused()) Pomo.start(); return; }
+        if (act === 'monk') { openSanct(_prefixFor(v)); return; }
+        openHud(_forgeRootFor(v));
+      });
+      $('sh-close')?.addEventListener('click', () => { Sound.play('tap'); closeSanct(); });
+      $('sh-hex')?.addEventListener('click', () => { $(_sp + 'sanctuary-start')?.click(); setTimeout(refresh, 40); });
+      $('sh-rit-btn')?.addEventListener('click', () => {
+        const next = _rituals().find(r => !r.done);
+        if (next) { next.row.click(); setTimeout(refresh, 40); }
+      });
+      $('qh-music')?.addEventListener('click', () => _toggleMusic('monarch'));
+      $('sh-music')?.addEventListener('click', () => _toggleMusic('sanctuary'));
+      // Secondary pillar mounts re-render wholesale — watch them so START buttons reappear
+      ['monarch-panel', 'monk-panel', 'mastermind-panel'].forEach(id => {
+        const el = $(id);
+        if (el && typeof MutationObserver !== 'undefined') new MutationObserver(_queue).observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      });
       $('qh-close')?.addEventListener('click', () => { Sound.play('tap'); closeHud(); });
       $('qh-hex')?.addEventListener('click', () => {
         if ($('qh-hex').classList.contains('cleared')) { Sound.play('tap'); closeHud(); return; }
@@ -10042,6 +10473,7 @@
       setInterval(() => {
         if (document.hidden) return;
         if (_hudOpen && !$('dashboard')?.classList.contains('active')) closeHud();
+        if (_sanctOpen && !$('dashboard')?.classList.contains('active')) closeSanct();
         refresh();
       }, 700);
     }
@@ -10050,8 +10482,8 @@
       try {
         _bindOnce();
         _streak(p); _navLocks(p, cls);
-        const mb = $('forge-more-btn');
-        if (mb) mb.style.display = cls === 'mastermind' ? 'none' : '';
+        const va = $('void-art');
+        if (va) va.style.backgroundImage = `url('assets/avatars/${cls}-t${getAvatarTier(p.level || 1) + 1}.jpeg')`;
         _forgeKey = '';
         _buildTiles();
         setTimeout(() => { try { _buildTiles(); } catch (_) {} }, 1800); // battle/challenge cards render async

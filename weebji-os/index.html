@@ -323,7 +323,7 @@
   }
 
   /* ══ SCREEN 04 — IDENTITY ════════════════════ */
-  #identity { align-items: center; justify-content: center; overflow: hidden; position: relative; }
+  #identity { align-items: center; justify-content: center; overflow: hidden; }
   .identity__inner { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 40px 32px; }
   .identity__line { opacity: 0; transform: translateY(12px); transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1); }
   .identity__line.reveal { opacity: 1; transform: translateY(0); }
@@ -2075,6 +2075,136 @@
     background: none; border: none; cursor: pointer; padding: 6px;
   }
 
+  /* ══ HOME UX v393 — one hero, one button ═══════ */
+  /* Home is a flex column so card ORDER is set here, not by insertion point —
+     cards injected later (directive/oath/objective) default to order 5. */
+  .dash-scroll { display: flex; flex-direction: column; }
+  .dash-scroll > * { flex-shrink: 0; order: 5; }
+  #enemy-card { order: 1; }
+  #forge-card { order: 2; }
+  #quest-card { order: 3; }
+  #world-tiles { order: 7; }
+  .world-card { order: 8; }
+  #welcome-day1-card, .stats-strip, #secondary-pillars { display: none !important; }
+  .world-card:not(.world-open) { display: none !important; }
+
+  .dash-streak { display: inline-flex; align-items: center; gap: 3px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #FFB02E; text-shadow: 0 0 8px rgba(255,150,40,0.7); }
+  .dash-streak.cold { color: rgba(255,255,255,0.35); text-shadow: none; }
+  .dash-meta-row { display: flex; align-items: center; gap: 10px; }
+
+  .forge-head-right { display: flex; align-items: center; gap: 10px; }
+  .forge-more-btn { width: 30px; height: 30px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+  #forge-card.forge-extras-open .forge-more-btn { border-color: var(--cls-color); color: var(--cls-color); }
+  #forge-card:not(.forge-extras-open) #forge-mode-wrap,
+  #forge-card:not(.forge-extras-open) .forge-timer-widget,
+  #forge-card:not(.forge-extras-open) .dopamine-section,
+  #forge-card:not(.forge-extras-open) .pr-board { display: none !important; }
+  #forge-sysline { display: flex; align-items: center; gap: 10px; margin: -6px 0 10px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); line-height: 1.5; }
+  #forge-sysline:empty { display: none; }
+  #forge-sysline .fs-text { flex: 1; min-width: 0; }
+  #forge-sysline.cleared .fs-text { color: #FFD700; text-shadow: 0 0 8px rgba(255,215,0,0.5); }
+  .fs-enter { flex-shrink: 0; padding: 6px 10px; border-radius: 99px; border: 1px solid var(--cls-color); background: transparent; color: var(--cls-color); font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #forge-segs { display: flex; gap: 4px; margin-bottom: 6px; }
+  #forge-segs:empty { display: none; }
+  .fseg { flex: 1; height: 4px; border-radius: 99px; background: rgba(255,255,255,0.1); overflow: hidden; }
+  .fseg i { display: block; height: 100%; background: var(--cls-color); box-shadow: 0 0 8px var(--cls-glow); }
+
+  /* Active row gets the glowing pill; later rows keep a quiet ghost button */
+  .ex-row:not(.done) .ex-log-set { padding: 8px 14px; border-radius: 99px; border: none; background: var(--cls-color); color: #041215; font-weight: 700; font-size: 10px; box-shadow: 0 0 14px var(--cls-glow); }
+  .ex-row:not(.done) ~ .ex-row:not(.done) .ex-log-set { padding: 5px 10px; background: transparent; border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.5); box-shadow: none; font-size: 9px; font-weight: 400; }
+  .ex-sets { color: rgba(255,255,255,0.5); }
+
+  #world-tiles { margin: 6px 0 12px; }
+  #world-tiles:empty { display: none; }
+  .world-tiles__title { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: #FFFFFF; margin: 0 2px 10px; }
+  .world-tiles__grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+  .world-tile { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 10px 0 0; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #FFFFFF; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; transition: border-color 0.2s, background 0.2s; }
+  .world-tile.open { border-color: var(--cls-color); background: rgba(var(--cls-rgb,0,245,255),0.08); }
+  .world-tile__art { width: 56px; height: 56px; flex-shrink: 0; object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .world-tile__txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .world-tile__name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .world-tile__meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* First choice a new Hunter makes — must be readable at a glance */
+  .cal-btn { min-height: 48px; color: rgba(255,255,255,0.85) !important; border-color: rgba(0,245,255,0.3) !important; font-size: 11px !important; }
+  .cal-btn--rec { color: #041215 !important; background: #00F5FF !important; border-color: #00F5FF !important; box-shadow: 0 0 14px rgba(0,245,255,0.35); font-weight: 700; }
+
+  .nav-lock { position: absolute; top: 4px; left: calc(50% + 6px); padding: 1px 4px; border-radius: 5px; background: #1A1A26; border: 1px solid rgba(255,255,255,0.18); font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.75); pointer-events: none; }
+
+  /* QUEST ACTIVE bar — the System window that follows you around Home */
+  #quest-bar { position: absolute; left: 10px; right: 10px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 11; height: 60px; box-sizing: border-box; display: none; align-items: center; gap: 12px; padding: 0 12px; background: linear-gradient(90deg, rgba(6,18,22,0.97), rgba(5,8,12,0.97)); border: 1px solid rgba(var(--cls-rgb,0,245,255),0.35); box-shadow: 0 0 24px rgba(var(--cls-rgb,0,245,255),0.12), 0 12px 30px rgba(0,0,0,0.7); color: #FFFFFF; cursor: pointer; -webkit-tap-highlight-color: transparent; text-align: left; font-family: 'Inter', sans-serif; animation: kf-qb-in 0.35s cubic-bezier(0.16,1,0.3,1); }
+  #quest-bar.show { display: flex; }
+  #dashboard.qb-on .dash-scroll { padding-bottom: 84px; }
+  @keyframes kf-qb-in { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .qb-corner { position: absolute; width: 10px; height: 10px; border-color: var(--cls-color); border-style: solid; border-width: 0; }
+  .qb-corner.tl { top: -2px; left: -2px; border-top-width: 2px; border-left-width: 2px; }
+  .qb-corner.tr { top: -2px; right: -2px; border-top-width: 2px; border-right-width: 2px; }
+  .qb-corner.bl { bottom: -2px; left: -2px; border-bottom-width: 2px; border-left-width: 2px; }
+  .qb-corner.br { bottom: -2px; right: -2px; border-bottom-width: 2px; border-right-width: 2px; }
+  .qb-bang { width: 36px; height: 36px; box-sizing: border-box; flex-shrink: 0; border: 1.5px solid var(--cls-color); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: var(--cls-color); text-shadow: 0 0 8px var(--cls-glow); box-shadow: inset 0 0 12px rgba(var(--cls-rgb,0,245,255),0.12); }
+  .qb-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .qb-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.24em; color: var(--cls-color); }
+  .qb-line { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qb-line span { color: rgba(255,255,255,0.6); font-weight: 500; }
+  .qb-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+  .qb-rlabel { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.2em; color: rgba(255,255,255,0.55); }
+  .qb-rval { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--cls-color); text-shadow: 0 0 10px var(--cls-glow); }
+  .qb-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(255,255,255,0.08); }
+  .qb-prog i { display: block; height: 100%; background: var(--cls-color); box-shadow: 0 0 8px var(--cls-color); transition: width 0.4s ease; }
+
+  /* QUEST HUD — full-screen combat view for logging sets */
+  #quest-hud { position: absolute; inset: 0; z-index: 60; background: #050508; display: none; overflow: hidden; font-family: 'Inter', sans-serif; color: #FFFFFF; }
+  #quest-hud.show { display: block; animation: kf-hud-in 0.38s cubic-bezier(0.16,1,0.3,1); }
+  @keyframes kf-hud-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  .qh-art { position: absolute; top: 0; left: 0; right: 0; height: 66%; background-size: cover; background-position: 50% 14%; }
+  .qh-scan { position: absolute; top: 0; left: 0; right: 0; height: 66%; background: repeating-linear-gradient(0deg, rgba(var(--cls-rgb,0,245,255),0.05) 0 1px, transparent 1px 4px); pointer-events: none; }
+  .qh-fade { position: absolute; top: 0; left: 0; right: 0; height: 67%; background: linear-gradient(180deg, rgba(5,5,8,0.8) 0%, rgba(5,5,8,0) 18%, rgba(5,5,8,0) 48%, rgba(5,5,8,0.92) 86%, #050508 100%); pointer-events: none; }
+  .qh-top { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .qh-close { width: 44px; height: 44px; border: none; background: none; color: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+  .qh-title { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+  .qh-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.3em; color: var(--cls-color); text-shadow: 0 0 8px var(--cls-glow); }
+  .qh-sub { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: rgba(255,255,255,0.8); white-space: nowrap; }
+  .qh-boss { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 6px 8px; background: rgba(20,4,8,0.78); border: 1px solid rgba(255,71,87,0.5); }
+  .qh-boss b { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.18em; color: #FF7A8A; }
+  .qh-boss-bar { width: 60px; height: 4px; background: rgba(255,255,255,0.12); }
+  .qh-boss-bar i { display: block; height: 100%; background: #FF4757; box-shadow: 0 0 6px #FF4757; transition: width 0.6s ease; }
+  .qh-pops { position: absolute; right: 22px; top: 32%; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }
+  .qh-pop { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; animation: kf-qh-pop 1.6s ease forwards; }
+  .qh-pop.xp { color: #FFD700; text-shadow: 0 0 8px rgba(255,215,0,0.9), 0 0 20px rgba(255,215,0,0.4); }
+  .qh-pop.dmg { color: #FF6B7A; text-shadow: 0 0 8px rgba(255,71,87,0.9); }
+  .qh-pop.set { color: var(--cls-color); text-shadow: 0 0 8px var(--cls-glow); }
+  @keyframes kf-qh-pop { 0% { opacity: 0; transform: translateY(10px) scale(0.9); } 15% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px); } }
+  .qh-body { position: absolute; left: 22px; right: 22px; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; }
+  .qh-move { display: flex; flex-direction: column; gap: 6px; }
+  .qh-count { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.26em; color: rgba(255,255,255,0.6); }
+  .qh-name { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; letter-spacing: 0.03em; line-height: 1.05; text-shadow: 0 4px 20px rgba(0,0,0,0.9); }
+  .qh-reps { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: rgba(255,255,255,0.75); }
+  .qh-sets { display: flex; gap: 6px; }
+  .qh-sets i { flex: 1; height: 12px; border-radius: 3px; background: rgba(255,255,255,0.08); box-sizing: border-box; }
+  .qh-sets i.on { background: var(--cls-color); box-shadow: 0 0 6px var(--cls-glow), 0 0 14px rgba(var(--cls-rgb,0,245,255),0.3); }
+  .qh-sets i.now { background: rgba(var(--cls-rgb,0,245,255),0.12); border: 1px solid var(--cls-color); }
+  .qh-ctrl { display: flex; align-items: center; justify-content: space-between; }
+  .qh-nav { width: 52px; height: 52px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.15); background: rgba(5,5,8,0.5); color: rgba(255,255,255,0.85); cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+  .qh-nav:disabled { opacity: 0.25; cursor: default; }
+  .qh-hex-wrap { filter: drop-shadow(0 0 14px var(--cls-glow)) drop-shadow(0 0 28px var(--cls-glow)); }
+  .qh-hex { width: 124px; height: 108px; border: none; cursor: pointer; background: var(--cls-color); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #041215; -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease; }
+  .qh-hex:active { transform: scale(0.92); }
+  .qh-hex span { font-size: 22px; line-height: 1; }
+  .qh-hex b { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.16em; }
+  .qh-hex.cleared { background: #FFD700; }
+  .qh-panel { position: relative; box-sizing: border-box; padding: 12px 14px; min-height: 50px; display: flex; align-items: center; gap: 12px; background: rgba(6,16,20,0.9); border: 1px solid rgba(var(--cls-rgb,0,245,255),0.3); }
+  .qh-panel .qb-corner { width: 10px; height: 10px; }
+  .qh-plabel { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.22em; color: rgba(255,255,255,0.6); }
+  .qh-ptimer { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--cls-color); text-shadow: 0 0 10px var(--cls-glow); }
+  .qh-phint { flex: 1; font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.4; }
+  .qh-skip { margin-left: auto; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.18); background: transparent; color: rgba(255,255,255,0.85); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .qh-next { display: flex; align-items: center; gap: 10px; min-height: 18px; }
+  .qh-next b { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.22em; color: rgba(255,255,255,0.5); font-weight: 700; }
+  .qh-next span { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (prefers-reduced-motion: reduce) {
+    #quest-bar, #quest-hud.show, .qh-pop { animation: none !important; }
+  }
+
   /* ══ DEV PANEL ═══════════════════════════════ */
   </style>
 </head>
@@ -2331,7 +2461,10 @@
           <div class="avatar" id="dash-avatar">W</div>
           <div class="dash-header__meta">
             <span class="dash-name" id="dash-name">Hunter</span>
-            <span class="lvl-badge" id="dash-level">LVL 1</span>
+            <div class="dash-meta-row">
+              <span class="lvl-badge" id="dash-level">LVL 1</span>
+              <span class="dash-streak cold" id="dash-streak"></span>
+            </div>
             <span class="hunter-badge" id="dash-hunter">#----</span>
           </div>
         </div>
@@ -2365,8 +2498,13 @@
         <div class="dash-card" id="forge-card">
           <div class="dash-card__head">
             <h3 class="dash-card__title" id="forge-title">THE FORGE</h3>
-            <span class="dash-card__sub"  id="forge-sub"></span>
+            <div class="forge-head-right">
+              <span class="dash-card__sub"  id="forge-sub"></span>
+              <button class="forge-more-btn" id="forge-more-btn" aria-label="Forge settings" title="Mode, difficulty, timer &amp; history">⚙</button>
+            </div>
           </div>
+          <div id="forge-sysline"></div>
+          <div id="forge-segs"></div>
           <div id="forge-mode-wrap"></div>
           <div id="exercise-list"></div>
           <div class="forge-bonus hidden" id="forge-bonus">+25 BONUS XP — PERFECT SET</div>
@@ -2429,7 +2567,57 @@
         <!-- Daily Challenge -->
         <div id="daily-challenge-container"></div>
 
-        <div style="height:8px"></div>
+        <!-- v393: "Your world" tiles — each opens one of the cards above in place -->
+        <div id="world-tiles"></div>
+
+        <div style="height:8px;order:9"></div>
+      </div>
+
+      <!-- v393: QUEST ACTIVE bar + full-screen quest HUD (drive the Forge's own LOG SET buttons) -->
+      <button id="quest-bar" type="button" aria-label="Open active quest">
+        <i class="qb-corner tl"></i><i class="qb-corner tr"></i><i class="qb-corner bl"></i><i class="qb-corner br"></i>
+        <div class="qb-bang">!</div>
+        <div class="qb-mid">
+          <span class="qb-eyebrow">QUEST ACTIVE</span>
+          <span class="qb-line" id="qb-line"></span>
+        </div>
+        <div class="qb-right">
+          <span class="qb-rlabel" id="qb-rlabel"></span>
+          <span class="qb-rval" id="qb-rval"></span>
+        </div>
+        <div class="qb-prog"><i id="qb-prog"></i></div>
+      </button>
+      <div id="quest-hud" role="dialog" aria-label="Quest active">
+        <div class="qh-art" id="qh-art"></div>
+        <div class="qh-scan"></div>
+        <div class="qh-fade"></div>
+        <div class="qh-top">
+          <button class="qh-close" id="qh-close" aria-label="Minimise quest"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="qh-title"><span class="qh-eyebrow" id="qh-eyebrow">! QUEST ACTIVE</span><span class="qh-sub" id="qh-sub">THE FORGE</span></div>
+          <div class="qh-boss"><b id="qh-boss-label">BOSS</b><div class="qh-boss-bar"><i id="qh-boss-fill"></i></div></div>
+        </div>
+        <div class="qh-pops" id="qh-pops"></div>
+        <div class="qh-body">
+          <div class="qh-move">
+            <span class="qh-count" id="qh-count"></span>
+            <span class="qh-name" id="qh-name"></span>
+            <span class="qh-reps" id="qh-reps"></span>
+          </div>
+          <div class="qh-sets" id="qh-sets"></div>
+          <div class="qh-ctrl">
+            <button class="qh-nav" id="qh-prev" aria-label="Previous move"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <div class="qh-hex-wrap"><button class="qh-hex" id="qh-hex" aria-label="Log set"><span>▲</span><b id="qh-hex-label">LOG SET</b></button></div>
+            <button class="qh-nav" id="qh-next" aria-label="Next move"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
+          <div class="qh-panel" id="qh-panel">
+            <i class="qb-corner tl"></i><i class="qb-corner br"></i>
+            <span class="qh-plabel" id="qh-plabel">READY</span>
+            <span class="qh-ptimer" id="qh-ptimer" style="display:none"></span>
+            <span class="qh-phint" id="qh-phint"></span>
+            <button class="qh-skip" id="qh-skip" style="display:none">SKIP</button>
+          </div>
+          <div class="qh-next" id="qh-next-row"><b>NEXT TARGET</b><span id="qh-next-name"></span></div>
+        </div>
       </div>
 
       <!-- Mastermind pillar panel -->
@@ -3302,6 +3490,11 @@
       if (!('Notification' in window) || !('PushManager' in window)) return;
       if (Notification.permission === 'granted') return;
       if (document.getElementById('push-enable-banner')) return;
+      // v393: never stack on a full-screen moment (first mission, level-up, quest HUD) — wait it out
+      if (document.querySelector('#mission-briefing.active, #levelup-overlay.active, #anomaly-overlay.active, #quest-hud.show')) {
+        setTimeout(maybeShowEnableBanner, 10000);
+        return;
+      }
       const color = localStorage.getItem('weebji_color') || '#00F5FF';
 
       if (Notification.permission === 'denied') {
@@ -3741,9 +3934,9 @@
         <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.25em;color:#00F5FF;text-shadow:0 0 10px rgba(0,245,255,0.5)">CALIBRATION REQUIRED</div>
         <p style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:rgba(255,255,255,0.45);margin:10px 0 14px;line-height:1.7">The System must measure your limits.<br>Choose your training intensity.</p>
         <div class="forge-mode-toggle" style="flex-direction:column;gap:8px">
-          <button class="forge-mode-btn" data-diff="easy">Easy — build the habit</button>
-          <button class="forge-mode-btn" data-diff="moderate">Moderate — the standard path</button>
-          <button class="forge-mode-btn" data-diff="hard">Hard — no mercy</button>
+          <button class="forge-mode-btn cal-btn" data-diff="easy">Easy — build the habit</button>
+          <button class="forge-mode-btn cal-btn cal-btn--rec" data-diff="moderate">Moderate — the standard path</button>
+          <button class="forge-mode-btn cal-btn" data-diff="hard">Hard — no mercy</button>
         </div>
         <p style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,255,255,0.2);margin:12px 0 0;text-transform:uppercase">Can be changed anytime in The Forge</p>
       </div>`;
@@ -4095,7 +4288,9 @@
     const p = {
       xp             : parseInt(localStorage.getItem('weebji_xp')         || '0'),
       level          : parseInt(localStorage.getItem('weebji_level')      || '1'),
-      hp             : parseInt(localStorage.getItem('weebji_hp')         || '5'),
+      // v393: default was '5' — new users showed "HP 5/3" and tripped the anticheat
+      // (p.hp > 3), which skips that save's cloud push. Player HP max is 3.
+      hp             : Math.min(3, parseInt(localStorage.getItem('weebji_hp') || '3')),
       streak         : parseInt(localStorage.getItem('weebji_streak')     || '0'),
       bestStreak     : parseInt(localStorage.getItem('weebji_best_streak') || '0'),
       ghostTokens    : parseInt(localStorage.getItem('weebji_ghost_tokens')|| '1'),
@@ -7360,6 +7555,8 @@
         });
         document.getElementById('identity-skip-btn').addEventListener('click', () => {
           if (typeof posthog !== 'undefined') posthog.capture('push_onboarding_skipped');
+          // v393: they just said no — don't re-ask with the Home banner seconds later (3-day cooldown)
+          localStorage.setItem('weebji_push_banner_dismissed_at', String(Date.now()));
           enterDashboard(true);
         });
       }, _identityDelay);
@@ -7923,6 +8120,8 @@
     // YouTube Notice Board removed — CORS proxy was fragile
     // Push permission banner — needs a real tap to trigger the browser prompt
     if (typeof WeebjPush !== 'undefined') setTimeout(() => WeebjPush.maybeShowEnableBanner(), 2500);
+    // v393 Home UX layer — streak chip, nav locks, Forge hero, world tiles, quest bar
+    try { if (typeof HomeUX !== 'undefined' && HomeUX) HomeUX.apply(p, cls); } catch (e) {}
   }
 
   /* ── Day-1 Welcome Card ──────────────────── */
@@ -9226,7 +9425,8 @@
       if (isDone && !isToday) cls2 += ' done';
       pill.className = cls2;
       // Dot indicator for done days
-      const dot = isDone && !isToday ? `<span style="width:5px;height:5px;border-radius:50%;background:rgba(${ri},${gi},${bi},0.8);display:block;margin-top:1px;"></span>` : '';
+      // v393: done days burn like a streak — flame dot, today's dot lights once credited
+      const dot = isDone ? `<span style="width:6px;height:6px;border-radius:50%;background:#FFB02E;box-shadow:0 0 6px rgba(255,176,46,0.9);display:block;margin-top:1px;"></span>` : '';
       const typeLabel = cls === 'monarch' ? `<span class="day-pill__type">${type}</span>` : '';
       pill.innerHTML = `<span class="day-pill__abbr">${abbr}</span>${typeLabel}${dot}`;
       if (isToday && !isRest) {
@@ -9548,6 +9748,321 @@
       list.appendChild(row);
     });
   }
+
+  /* ══ HOME UX v393 — Forge hero, QUEST ACTIVE bar, quest HUD, world tiles ══
+     UI layer only. The HUD never touches progress: it presses the Forge row's own
+     .ex-log-set button and reads state back from the DOM + ForgeTimer, so XP,
+     boss damage, streak credit and saves all run through the existing handlers.
+     `var` (not const) so early callers hit undefined, not a TDZ ReferenceError. */
+  var HomeUX = (() => {
+    const $ = id => document.getElementById(id);
+    const _cls = () => localStorage.getItem('weebji_class') || 'monarch';
+    let _bound = false, _hudOpen = false, _target = -1, _snap = null, _forgeKey = '', _openTile = null, _rafQueued = false;
+
+    function _rows() { return [...document.querySelectorAll('#exercise-list > .ex-row')]; }
+    function _info(row, i) {
+      const m = (row.querySelector('.ex-sets')?.textContent || '').match(/(\d+)\s*×\s*(\S+)/);
+      const sets = m ? Math.max(1, parseInt(m[1], 10)) : 3;
+      const done = row.classList.contains('done');
+      return {
+        row, i, sets, done,
+        name: (row.querySelector('.ex-name')?.textContent || 'Move').trim(),
+        reps: m ? m[2] : '',
+        xp: parseInt((row.querySelector('.ex-xp')?.textContent || '').replace(/[^\d]/g, ''), 10) || 0,
+        logged: done ? sets : Math.min(sets, ForgeTimer.getSets(i)),
+      };
+    }
+    function _infos() { return _rows().map(_info); }
+    function _resting() { return !!document.querySelector('#exercise-list .forge-rest-banner'); }
+    function _restText() { return ($('forge-rest-timer')?.textContent || '').replace(/^0(\d:)/, '$1'); }
+    function _homeVisible() {
+      const d = $('dashboard'), s = document.querySelector('.dash-scroll');
+      return !!(d && d.classList.contains('active') && s && s.style.display !== 'none');
+    }
+    function _pickTarget(infos) {
+      const left = infos.filter(x => !x.done);
+      return left.find(x => x.i === _target) || left.find(x => x.logged > 0) || left[0] || null;
+    }
+
+    /* ── header streak + nav lock badges ── */
+    function _streak(p) {
+      const el = $('dash-streak'); if (!el) return;
+      // Display-only: p.streak counts days BEFORE today (it ticks at rollover, if
+      // yesterday had any activity — same sum as the rollover block). Acting today
+      // lights the flame and shows the streak including today; until then it's grey.
+      const todayActive = ((p.workoutChecked || []).length + (p.questsChecked || []).length + (p.monkChecked || []).length
+        + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length) > 0;
+      const s = (p.streak || 0) + (todayActive ? 1 : 0);
+      el.classList.toggle('cold', !todayActive);
+      el.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3.5 5 6 5 11a5 5 0 01-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 1-9.5z"/></svg>${s} DAY${s === 1 ? '' : 'S'}`;
+    }
+    function _navLocks(p, cls) {
+      document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => {
+        btn.querySelector('.nav-lock')?.remove();
+        const tab = btn.dataset.tab;
+        if (!['monarch', 'mastermind', 'monk'].includes(tab) || tab === cls) return;
+        const req = _secondaryUnlockLevel(cls, tab);
+        if ((p.level || 1) < req && !isWeebjiPlus()) {
+          const s = document.createElement('span');
+          s.className = 'nav-lock'; s.textContent = 'LV' + req;
+          btn.appendChild(s);
+        }
+      });
+    }
+
+    /* ── Forge hero: system line + move segments ── */
+    function _refreshForge() {
+      const sys = $('forge-sysline'), segs = $('forge-segs');
+      if (!sys || !segs) return;
+      const infos = _cls() === 'monarch' ? _infos() : [];
+      if (!infos.length) { if (_forgeKey !== 'none') { sys.innerHTML = ''; segs.innerHTML = ''; sys.className = ''; _forgeKey = 'none'; } return; }
+      const first = !localStorage.getItem('weebji_first_action_done');
+      const key = infos.map(x => x.logged + (x.done ? 'd' : '') + x.xp).join(',') + '|' + first;
+      if (key === _forgeKey) return;
+      _forgeKey = key;
+      segs.innerHTML = infos.map(x => `<div class="fseg"><i style="width:${Math.round(100 * x.logged / x.sets)}%"></i></div>`).join('');
+      const left = infos.filter(x => !x.done);
+      let txt;
+      if (!left.length) txt = 'FORGE CLEARED. THE SYSTEM ACKNOWLEDGES YOU.';
+      else if (first && !infos.some(x => x.logged > 0)) txt = 'LOG YOUR FIRST SET. THE SYSTEM IS WATCHING.';
+      else txt = `${left.length} MOVE${left.length > 1 ? 'S' : ''} LEFT · +${left.reduce((s, x) => s + x.xp, 0)} XP`;
+      sys.className = left.length ? '' : 'cleared';
+      sys.innerHTML = `<span class="fs-text">▸ ${txt}</span>` + (left.length ? '<button class="fs-enter" id="fs-enter">⛶ QUEST MODE</button>' : '');
+      const en = $('fs-enter');
+      if (en) en.addEventListener('click', e => { e.stopPropagation(); Sound.play('tap'); openHud(); });
+    }
+
+    /* ── QUEST ACTIVE bar ── */
+    function _refreshBar() {
+      const bar = $('quest-bar'), dash = $('dashboard');
+      if (!bar || !dash) return;
+      let show = false;
+      if (_cls() === 'monarch' && !_hudOpen && _homeVisible()) {
+        const infos = _infos(), left = infos.filter(x => !x.done);
+        const started = infos.some(x => x.done || x.logged > 0) || _resting();
+        if (left.length && started) {
+          show = true;
+          const t = _pickTarget(infos);
+          const line = $('qb-line');
+          line.textContent = t.name + ' · ';
+          const sp = document.createElement('span');
+          sp.textContent = `set ${Math.min(t.logged + 1, t.sets)} of ${t.sets}`;
+          line.appendChild(sp);
+          const rest = _resting();
+          $('qb-rlabel').textContent = rest ? 'RECOVER' : 'ENTER';
+          $('qb-rval').textContent = rest ? _restText() : '▸';
+          $('qb-prog').style.width = Math.round(100 * (infos.length - left.length) / infos.length) + '%';
+        }
+      }
+      bar.classList.toggle('show', show);
+      dash.classList.toggle('qb-on', show);
+    }
+
+    /* ── Quest HUD ── */
+    function _pop(txt, kind) {
+      const box = $('qh-pops'); if (!box) return;
+      const d = document.createElement('div');
+      d.className = 'qh-pop ' + kind; d.textContent = txt;
+      box.appendChild(d);
+      setTimeout(() => d.remove(), 1700);
+    }
+    function openHud() {
+      if (!_infos().length) return;
+      const p = loadProgress(), cls = _cls();
+      _hudOpen = true; _target = -1; _snap = null;
+      $('qh-art').style.backgroundImage = `url('assets/avatars/${cls}-t${getAvatarTier(p.level || 1) + 1}.jpeg')`;
+      $('qh-sub').textContent = ('THE FORGE · ' + ($('forge-sub')?.textContent || '')).trim();
+      $('quest-hud').classList.add('show');
+      try { WakeLock.request(); } catch (_) {}
+      _renderHud(); _refreshBar();
+      if (typeof posthog !== 'undefined') posthog.capture('quest_hud_opened');
+    }
+    function closeHud() {
+      if (!_hudOpen) return;
+      _hudOpen = false;
+      $('quest-hud').classList.remove('show');
+      try { WakeLock.release(); } catch (_) {}
+      _refreshBar();
+    }
+    function _renderHud() {
+      const infos = _infos();
+      if (!infos.length) { closeHud(); return; }
+      const boss = BossSiege.getState();
+      if (_snap) {
+        infos.forEach(x => {
+          const prev = _snap.rows[x.i]; if (!prev) return;
+          if (x.done && !prev.done) _pop(`+${x.xp} XP`, 'xp');
+          else if (!x.done && x.logged > prev.logged) _pop(`SET ${x.logged} ✓`, 'set');
+        });
+        const dmg = _snap.bossHp - boss.hp;
+        if (dmg > 0 && !boss.defeated) _pop(`−${dmg} BOSS HP`, 'dmg');
+      }
+      _snap = { rows: infos.map(x => ({ done: x.done, logged: x.logged })), bossHp: boss.hp };
+      $('qh-boss-fill').style.width = boss.defeated ? '0%' : Math.round(100 * boss.hp / BossSiege.HP_MAX) + '%';
+      $('qh-boss-label').textContent = boss.defeated ? 'BOSS SLAIN' : `BOSS ${boss.hp}`;
+
+      const left = infos.filter(x => !x.done);
+      const hex = $('qh-hex'), prev = $('qh-prev'), next = $('qh-next');
+      $('qh-eyebrow').textContent = left.length ? '! QUEST ACTIVE' : '✓ QUEST COMPLETE';
+      if (!left.length) {
+        $('qh-count').textContent = 'ALL TARGETS DOWN';
+        $('qh-name').textContent = 'Forge Cleared';
+        $('qh-reps').textContent = `${infos.length} MOVES · PERFECT SET`;
+        $('qh-sets').innerHTML = infos.map(() => '<i class="on"></i>').join('');
+        hex.classList.add('cleared'); $('qh-hex-label').textContent = 'CLAIM';
+        prev.disabled = next.disabled = true;
+        $('qh-plabel').textContent = 'COMPLETE';
+        $('qh-ptimer').style.display = 'none'; $('qh-skip').style.display = 'none';
+        $('qh-phint').textContent = 'The System acknowledges you. Return tomorrow.';
+        $('qh-next-row').style.display = 'none';
+        return;
+      }
+      const t = _pickTarget(infos);
+      _target = t.i;
+      hex.classList.remove('cleared'); $('qh-hex-label').textContent = 'LOG SET';
+      $('qh-count').textContent = `MOVE ${infos.indexOf(t) + 1} OF ${infos.length}`;
+      $('qh-name').textContent = t.name;
+      $('qh-reps').textContent = `${t.sets} × ${t.reps} · SET ${Math.min(t.logged + 1, t.sets)} OF ${t.sets}`.toUpperCase();
+      let segs = '';
+      for (let k = 0; k < t.sets; k++) segs += `<i class="${k < t.logged ? 'on' : k === t.logged ? 'now' : ''}"></i>`;
+      $('qh-sets').innerHTML = segs;
+      prev.disabled = next.disabled = left.length < 2;
+      const rest = _resting();
+      $('qh-plabel').textContent = rest ? 'RECOVER' : 'READY';
+      $('qh-ptimer').style.display = rest ? '' : 'none';
+      $('qh-ptimer').textContent = rest ? _restText() : '';
+      $('qh-skip').style.display = rest ? '' : 'none';
+      $('qh-phint').textContent = rest ? '' : 'Complete the set, then tap ▲.';
+      const after = left[(left.indexOf(t) + 1) % left.length];
+      const nr = $('qh-next-row');
+      if (after && after !== t) {
+        nr.style.display = '';
+        $('qh-next-name').textContent = `${after.name} · ${after.sets} × ${after.reps}`;
+      } else nr.style.display = 'none';
+    }
+    function _logSet() {
+      const infos = _infos(), t = _pickTarget(infos);
+      if (!t) { closeHud(); return; }
+      const btn = t.row.querySelector('.ex-log-set');
+      if (btn) btn.click();
+      try { haptic([30]); } catch (_) {}
+      setTimeout(() => { _renderHud(); _refreshBar(); }, 30);
+    }
+    function _step(dir) {
+      const left = _infos().filter(x => !x.done);
+      if (left.length < 2) return;
+      const cur = _pickTarget(_infos());
+      const idx = Math.max(0, left.findIndex(x => x.i === cur.i));
+      _target = left[(idx + dir + left.length) % left.length].i;
+      Sound.play('tap');
+      _renderHud();
+    }
+
+    /* ── "Your world" tiles — each opens an existing card in place ── */
+    const TILES = [
+      { id: 'boss',      name: 'Weekly Boss',     cards: ['dungeon-card'] },
+      { id: 'challenge', name: 'Daily Challenge', cards: ['daily-challenge-container'] },
+      { id: 'shadow',    name: 'Your Shadow',     cards: ['shadow-card', 'rival-line'] },
+      { id: 'battles',   name: 'Friend Battles',  cards: ['battle-card'] },
+      { id: 'progress',  name: 'Progress Log',    cards: ['progress-log-card'], direct: true },
+      { id: 'plus',      name: 'WEEBJI+',         cards: ['premium-hype-card', 'trial-urgency-bar'] },
+    ];
+    function _tileAvail(t) {
+      const el = $(t.cards[0]); if (!el) return false;
+      if (t.id === 'shadow') return !el.classList.contains('hidden');
+      if (t.id === 'battles') return !!el.innerHTML.trim() && el.style.display !== 'none';
+      if (t.id === 'progress') return true;
+      return !!el.innerHTML.trim();
+    }
+    function _tileLook(t, p, cls) {
+      const glyph = (g, bg, c) => `<div class="world-tile__art" style="background:${bg};color:${c}">${g}</div>`;
+      if (t.id === 'boss') {
+        const st = BossSiege.getState(), img = document.querySelector('#dungeon-card img')?.getAttribute('src');
+        return { art: img ? `<img class="world-tile__art" src="${img}" alt="">` : glyph('⚔', 'rgba(255,60,0,0.12)', '#FF6B4A'),
+                 meta: st.defeated ? 'SLAIN' : `${st.hp} / ${BossSiege.HP_MAX} HP`, mc: '#FF7A8A' };
+      }
+      if (t.id === 'shadow') return { art: `<img class="world-tile__art" style="filter:grayscale(1) brightness(0.55)" src="assets/avatars/${cls}-t${getAvatarTier(p.level || 1) + 1}.jpeg" alt="">`, meta: 'Race your past self', mc: '#FFD23C' };
+      if (t.id === 'challenge') return { art: glyph('⚡', 'rgba(var(--cls-rgb,0,245,255),0.1)', 'var(--cls-color)'), meta: 'Bonus XP today', mc: 'rgba(255,255,255,0.6)' };
+      if (t.id === 'battles') return { art: glyph('⚔', 'rgba(255,215,0,0.08)', '#FFD23C'), meta: 'Beat a friend', mc: 'rgba(255,255,255,0.6)' };
+      if (t.id === 'progress') return { art: glyph('📸', 'rgba(127,211,255,0.1)', '#7FD3FF'), meta: 'Photo · weight · notes', mc: 'rgba(255,255,255,0.6)' };
+      return { art: glyph('◆', 'rgba(255,210,60,0.1)', '#FFD23C'), meta: isWeebjiPlus() ? 'Active' : 'Unlock more', mc: '#FFD23C' };
+    }
+    function _applyOpen() {
+      TILES.forEach(t => t.cards.forEach(id => { const el = $(id); if (el) el.classList.toggle('world-open', !t.direct && t.id === _openTile); }));
+      document.querySelectorAll('.world-tile').forEach(b => b.classList.toggle('open', b.dataset.tile === _openTile));
+    }
+    function _buildTiles() {
+      const wrap = $('world-tiles'); if (!wrap) return;
+      const p = loadProgress(), cls = _cls();
+      TILES.forEach(t => t.cards.forEach(id => $(id)?.classList.add('world-card')));
+      const avail = TILES.filter(_tileAvail);
+      if (_openTile && !avail.some(t => t.id === _openTile)) _openTile = null;
+      wrap.innerHTML = `<div class="world-tiles__title">Your world</div><div class="world-tiles__grid">${avail.map(t => {
+        const lk = _tileLook(t, p, cls);
+        return `<button class="world-tile" data-tile="${t.id}">${lk.art}<div class="world-tile__txt"><span class="world-tile__name">${t.name}</span><span class="world-tile__meta" style="color:${lk.mc}">${lk.meta}</span></div></button>`;
+      }).join('')}</div>`;
+      wrap.querySelectorAll('.world-tile').forEach(b => b.addEventListener('click', () => {
+        Sound.play('tap');
+        const t = TILES.find(x => x.id === b.dataset.tile);
+        if (t.direct) { $(t.cards[0])?.click(); return; }
+        _openTile = _openTile === t.id ? null : t.id;
+        _applyOpen();
+        if (_openTile) requestAnimationFrame(() => $(t.cards[0])?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      }));
+      _applyOpen();
+    }
+
+    function refresh() {
+      try { _refreshForge(); _refreshBar(); if (_hudOpen) _renderHud(); }
+      catch (e) { console.warn('[HomeUX]', e); }
+    }
+    function _queue() {
+      if (_rafQueued) return;
+      _rafQueued = true;
+      requestAnimationFrame(() => { _rafQueued = false; refresh(); });
+    }
+    function _bindOnce() {
+      if (_bound) return;
+      _bound = true;
+      $('quest-bar')?.addEventListener('click', () => { Sound.play('tap'); openHud(); });
+      $('qh-close')?.addEventListener('click', () => { Sound.play('tap'); closeHud(); });
+      $('qh-hex')?.addEventListener('click', () => {
+        if ($('qh-hex').classList.contains('cleared')) { Sound.play('tap'); closeHud(); return; }
+        _logSet();
+      });
+      $('qh-prev')?.addEventListener('click', () => _step(-1));
+      $('qh-next')?.addEventListener('click', () => _step(1));
+      $('qh-skip')?.addEventListener('click', () => { $('forge-rest-skip')?.click(); setTimeout(refresh, 30); });
+      $('forge-more-btn')?.addEventListener('click', e => {
+        e.stopPropagation(); Sound.play('tap');
+        $('forge-card').classList.toggle('forge-extras-open');
+      });
+      const list = $('exercise-list');
+      if (list && typeof MutationObserver !== 'undefined') new MutationObserver(_queue).observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      setInterval(() => {
+        if (document.hidden) return;
+        if (_hudOpen && !$('dashboard')?.classList.contains('active')) closeHud();
+        refresh();
+      }, 700);
+    }
+
+    function apply(p, cls) {
+      try {
+        _bindOnce();
+        _streak(p); _navLocks(p, cls);
+        const mb = $('forge-more-btn');
+        if (mb) mb.style.display = cls === 'mastermind' ? 'none' : '';
+        _forgeKey = '';
+        _buildTiles();
+        setTimeout(() => { try { _buildTiles(); } catch (_) {} }, 1800); // battle/challenge cards render async
+        refresh();
+      } catch (e) { console.warn('[HomeUX] apply', e); }
+    }
+    function onStats(p) {
+      try { _streak(p); _navLocks(p, _cls()); renderWeekBar(); _buildTiles(); refresh(); } catch (e) { console.warn('[HomeUX] stats', e); }
+    }
+    return { apply, onStats, refresh, openHud, closeHud };
+  })();
 
   function renderRestContent(p) {
     const done = p.workoutChecked.includes(0);
@@ -11665,6 +12180,7 @@
         }, 600);
       }
     }
+    try { if (typeof HomeUX !== 'undefined' && HomeUX) HomeUX.onStats(p); } catch (e) {}
     const streakEl = document.getElementById('stat-streak');
     if (p.streak === 0) {
       streakEl.textContent = '0d';
@@ -14186,6 +14702,10 @@
     if (!cls || !localStorage.getItem('weebji_class')) return; // not onboarded yet
     const today = new Date().toDateString();
     if (localStorage.getItem('weebji_quest_briefing_seen') === today) return;
+    // v393: was a full-screen wall on EVERY daily open. Quests are editable inline (✎),
+    // so the briefing now shows at most once a week.
+    const _lastSeen = Date.parse(localStorage.getItem('weebji_quest_briefing_seen') || '');
+    if (!isNaN(_lastSeen) && Date.now() - _lastSeen < 7 * 24 * 60 * 60 * 1000) return;
     const hour = new Date().getHours();
     const isMorning = hour < 18;
     const isEvening = hour >= 18;

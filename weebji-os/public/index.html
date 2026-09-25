@@ -2324,6 +2324,14 @@
   .nav-btn svg { color: rgba(255,255,255,0.5); }
   .sys-signal { flex-shrink: 0; display: flex; align-items: center; gap: 10px; margin: 2px 16px 6px; padding: 7px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.8); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .sys-signal:empty { display: none; }
+  .sys-signal-info { flex-shrink: 0; margin: -2px 16px 8px; padding: 12px 14px; border-radius: 0 0 10px 10px; border: 1px solid rgba(255,255,255,0.07); border-top: none; background: rgba(6,10,16,0.92); animation: kf-ssi-in 0.3s ease; }
+  .sys-signal-info[hidden] { display: none; }
+  @keyframes kf-ssi-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .ssi-eyebrow { margin: 0 0 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.3em; color: var(--sig-c, #00F5FF); text-transform: uppercase; }
+  .ssi-lore { margin: 0; font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.82); }
+  .ssi-lore b { color: #FFFFFF; }
+  .ssi-state { margin: 8px 0 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; line-height: 1.5; color: var(--sig-c, #00F5FF); }
+  .sys-signal[aria-expanded="true"] { border-radius: 10px 10px 0 0; }
   .sys-bars { display: flex; align-items: flex-end; gap: 2px; height: 14px; }
   .sys-bars i { width: 4px; border-radius: 1px; background: rgba(255,255,255,0.12); }
   .sys-bars i.on { background: var(--sig-c); box-shadow: 0 0 5px var(--sig-c); }
@@ -2626,7 +2634,12 @@
         <p class="xp-label" id="xp-label">0 / 150 XP</p>
       </div>
       <!-- v398: System Signal — last 7 days of discipline, the story's "signal" made visible -->
-      <button class="sys-signal" id="sys-signal" type="button" aria-label="System signal"></button>
+      <button class="sys-signal" id="sys-signal" type="button" aria-label="System signal" aria-expanded="false" aria-controls="sys-signal-info"></button>
+      <div class="sys-signal-info" id="sys-signal-info" hidden>
+        <p class="ssi-eyebrow">◈ System Transmission</p>
+        <p class="ssi-lore">The System is dying. It survives on one thing — <b>your discipline</b>. Every day you act, its signal grows stronger. Every day you skip, it decays. Let it reach zero, and the System goes dark.</p>
+        <p class="ssi-state" id="ssi-state"></p>
+      </div>
 
       <div class="dash-scroll">
 
@@ -10054,6 +10067,16 @@
       if (el.dataset.key === key) return;
       el.dataset.key = key;
       el.style.setProperty('--sig-c', c);
+      const info = $('sys-signal-info');
+      if (info) info.style.setProperty('--sig-c', c);
+      const lines = {
+        STABLE: 'SIGNAL STABLE. The System feeds on your consistency. Hold the line.',
+        WEAKENING: 'SIGNAL WEAKENING. Missed days are bleeding it. One quest today steadies it.',
+        DECAYING: 'SIGNAL DECAYING. The System is fading. Only action restores it.',
+        LOST: 'SIGNAL LOST. The System has gone dark. Complete a quest to reignite it.',
+        AWAITING: 'AWAITING FIRST SIGNAL. Complete your first quest to bring the System online.',
+      };
+      const st = $('ssi-state'); if (st) st.textContent = lines[state] || '';
       el.innerHTML = `<span class="sys-bars">${lit.map((on, i) => `<i class="${on ? 'on' : ''}" style="height:${5 + i * 1.5}px"></i>`).join('')}</span>`
         + `<span class="sys-sig-txt">System Signal · ${pct}%</span><span class="sys-sig-state">${state}</span>`;
     }
@@ -10610,7 +10633,10 @@
       });
       $('sys-signal')?.addEventListener('click', () => {
         Sound.play('tap');
-        spawnDropBanner('◈ The System lives on your discipline. Every day you act, the signal strengthens. Skip, and it decays.');
+        const btn = $('sys-signal'), info = $('sys-signal-info');
+        const open = info.hidden;
+        info.hidden = !open;
+        btn.setAttribute('aria-expanded', String(open));
       });
       $('void-pause-btn')?.addEventListener('click', () => { Sound.play('tap'); try { Pomo.pause(); } catch (_) {} setTimeout(refresh, 40); });
       $('qh-music')?.addEventListener('click', () => _toggleMusic('monarch'));

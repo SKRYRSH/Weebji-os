@@ -1880,16 +1880,16 @@
   #void-overlay.active { opacity:1; pointer-events:all; }
   /* Void session covers the dashboard entirely — pause its background animations so the GPU isn't compositing hidden blur/particle layers for the full session length */
   body.void-active #dashboard * { animation-play-state: paused !important; }
-  .void__eyebrow { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.45em; color:rgba(210,140,255,0.7); text-transform:uppercase; position:relative; }
+  .void__eyebrow { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.4em; color:rgba(232,200,255,0.92); text-shadow:0 1px 8px #000; text-transform:uppercase; position:relative; }
   .void__title { font-family:'Cinzel',serif; font-size:30px; font-weight:900; letter-spacing:0.28em; color:#CC44FF; animation:kf-void-pulse 3s ease-in-out infinite; position:relative; }
   .void__timer { font-family:'JetBrains Mono',monospace; font-size:64px; font-weight:700; letter-spacing:0.06em; color:rgba(180,60,220,0.35); margin:8px 0; transition:color 0.4s, text-shadow 0.4s; position:relative; }
-  .void__timer.ticking { color:#BB44EE; text-shadow:0 0 30px rgba(160,0,220,0.5), 0 0 80px rgba(120,0,180,0.25); }
-  .void__mode-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.3em; color:rgba(220,170,255,0.65); text-transform:uppercase; position:relative; }
-  .void__clock { font-family:'JetBrains Mono',monospace; font-size:15px; letter-spacing:0.18em; color:rgba(230,200,255,0.75); margin-top:6px; position:relative; }
-  .void__warning { font-family:'Inter',sans-serif; font-size:13px; color:rgba(220,180,255,0.75); font-style:italic; max-width:260px; line-height:1.9; position:relative; animation:kf-void-breathe 5s ease-in-out infinite; }
+  .void__timer.ticking { color:#DDA0FF; text-shadow:0 0 30px rgba(160,0,220,0.5), 0 0 80px rgba(120,0,180,0.25); }
+  .void__mode-label { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.28em; color:rgba(240,220,255,0.92); text-shadow:0 1px 8px #000; text-transform:uppercase; position:relative; }
+  .void__clock { font-family:'JetBrains Mono',monospace; font-size:15px; letter-spacing:0.18em; color:rgba(245,232,255,0.92); text-shadow:0 1px 8px #000; margin-top:6px; position:relative; }
+  .void__warning { font-family:'Inter',sans-serif; font-size:13px; color:rgba(245,235,255,0.92); text-shadow:0 1px 10px #000, 0 0 2px #000; font-style:italic; max-width:260px; line-height:1.9; position:relative; animation:kf-void-breathe 5s ease-in-out infinite; }
   .void__penalty-flash { position:absolute; inset:0; background:rgba(200,0,0,0.25); opacity:0; pointer-events:none; transition:opacity 0.1s; }
   .void__penalty-flash.flash { opacity:1; }
-  .void__surrender { margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:rgba(150,50,180,0.4); text-decoration:underline; cursor:pointer; background:none; border:none; -webkit-tap-highlight-color:transparent; text-transform:uppercase; position:relative; transition:color 0.2s; }
+  .void__surrender { margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:rgba(225,185,255,0.7); text-decoration:underline; cursor:pointer; background:none; border:none; -webkit-tap-highlight-color:transparent; text-transform:uppercase; position:relative; transition:color 0.2s; }
   .void__surrender:active { color:rgba(200,100,240,0.7); }
   .void__breach-banner { position:absolute; top:0; left:0; right:0; padding:14px 20px; background:rgba(160,0,0,0.92); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#FF5555; text-transform:uppercase; text-align:center; transform:translateY(-100%); transition:transform 0.3s ease; }
 
@@ -2247,16 +2247,16 @@
   #exercise-list > .ex-row .ex-check, #monarch-panel-list > .ex-row .ex-check { pointer-events: none; }
   #exercise-list .sanctuary-ring-wrap, #exercise-list .sanctuary-timer, #exercise-list .sanctuary-start,
   #monk-panel-list .sanctuary-ring-wrap, #monk-panel-list .sanctuary-timer, #monk-panel-list .sanctuary-start { display: none !important; }
-  .hux-cta { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin: 4px 0 12px; border: none; border-radius: 16px; background: var(--cls-color, #00F5FF); color: #041215; font-family: 'Cinzel', serif; font-size: 16px; font-weight: 900; letter-spacing: 0.1em; cursor: pointer; box-shadow: 0 0 22px var(--cls-glow, rgba(0,245,255,0.45)); -webkit-tap-highlight-color: transparent; animation: kf-cta-breathe 2.6s ease-in-out infinite; }
-  #monarch-panel-list > .hux-cta { background: #00F5FF; box-shadow: 0 0 22px rgba(0,245,255,0.45); }
-  .hux-cta.monk, #monk-panel-list > .hux-cta { background: #34D399; box-shadow: 0 0 22px rgba(52,211,153,0.45); }
+  .hux-cta { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin: 4px 0 12px; border: none; border-radius: 16px; background: color-mix(in srgb, var(--cls-color, #00F5FF) 78%, #03060A); color: #03080C; font-family: 'Cinzel', serif; font-size: 16px; font-weight: 900; letter-spacing: 0.1em; cursor: pointer; box-shadow: 0 0 12px var(--cls-glow, rgba(0,245,255,0.3)); -webkit-tap-highlight-color: transparent; animation: kf-cta-breathe 2.6s ease-in-out infinite; }
+  #monarch-panel-list > .hux-cta { background: #06C4CC; box-shadow: 0 0 12px rgba(0,245,255,0.3); }
+  .hux-cta.monk, #monk-panel-list > .hux-cta { background: #29A97B; box-shadow: 0 0 12px rgba(52,211,153,0.3); }
   .hux-cta.cleared { background: rgba(255,215,0,0.1); color: #FFD700; border: 1px solid rgba(255,215,0,0.4); box-shadow: 0 0 14px rgba(255,215,0,0.15); animation: none; }
   .hux-cta:active { transform: scale(0.97); }
   .hux-cta { white-space: nowrap; font-size: 15px; }
   #monarch-panel-list > .forge-timer-widget { display: none !important; }
-  .hux-cta.mm, #mm-panel-list > .hux-cta { background: #E63946; color: #FFFFFF; box-shadow: 0 0 22px rgba(230,57,70,0.5); }
+  .hux-cta.mm, #mm-panel-list > .hux-cta { background: #B92D39; color: #FFFFFF; box-shadow: 0 0 12px rgba(230,57,70,0.35); }
   #exercise-list .mm-controls, #mm-panel-list .mm-controls { display: none !important; }
-  @keyframes kf-cta-breathe { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.15); } }
+  @keyframes kf-cta-breathe { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.07); } }
 
   /* v395 — hit FX: shockwave, slam text, avatar hit-flash, screen shake */
   .hx-wave { position: absolute; width: 120px; height: 120px; margin-left: -60px; border-radius: 50%; border: 3px solid var(--cls-color); box-shadow: 0 0 30px var(--cls-glow), inset 0 0 20px var(--cls-glow); pointer-events: none; z-index: 3; animation: kf-hx-wave 0.7s cubic-bezier(0.16,1,0.3,1) forwards; }
@@ -2295,7 +2295,8 @@
   .sh-rit-btn:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); box-shadow: none; cursor: default; }
 
   /* v394 — Mastermind: The Void levelled up (art, countdown ring, boss chip, reward line) */
-  .void__art { position: absolute; inset: 0; background-size: cover; background-position: 50% 12%; opacity: 0.5; pointer-events: none; }
+  .void__art { position: absolute; inset: 0; background-size: cover; background-position: 50% 12%; opacity: 0.42; pointer-events: none; }
+  .void__art::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 55% at 50% 52%, rgba(0,0,0,0.55), transparent 75%); z-index: 1; }
   .void__art::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(200,80,255,0.06) 0 1px, transparent 1px 4px), linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.88)); }
   .void__ring { position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; }
   .void__ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
@@ -2305,6 +2306,33 @@
   .void__boss { position: absolute; top: calc(18px + env(safe-area-inset-top, 0px)); right: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding: 6px 8px; background: rgba(20,4,8,0.78); border: 1px solid rgba(255,71,87,0.5); }
   .void__boss b { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.18em; color: #FF7A8A; }
   .void__boss .qh-boss-bar { width: 60px; }
+  /* v398 — readability sweep (WCAG-ish contrast on the dark base) */
+  #dashboard .hunter-badge { color: rgba(255,255,255,0.42) !important; }
+  #hp-label { font-size: 9px !important; color: rgba(255,255,255,0.6) !important; }
+  .day-pill__abbr { color: rgba(255,255,255,0.62); }
+  .day-pill__type { font-size: 8px; color: rgba(255,255,255,0.5); }
+  .xp-label { color: rgba(255,255,255,0.58); }
+  .dash-card__sub { color: rgba(255,255,255,0.58); }
+  .ex-row.done .ex-name { color: rgba(255,255,255,0.45); }
+  .custom-task-add { color: rgba(255,255,255,0.6); }
+  .profile-header-label, .profile-hunter-num, .profile-stat__label, .profile-arc__label, .profile-arc__note,
+  .tx-row__state, .profile-tokens__label, .profile-voice__sub, .gate__or { color: rgba(255,255,255,0.6) !important; }
+  .profile-voice__label { color: rgba(255,255,255,0.85) !important; }
+  .profile-stat__label, .tx-row__state { font-size: 9px !important; }
+  #profile .auth-send-btn { color: rgba(255,255,255,0.78) !important; }
+  .nav-btn span { color: rgba(255,255,255,0.58); }
+  .nav-btn svg { color: rgba(255,255,255,0.5); }
+  .sys-signal { flex-shrink: 0; display: flex; align-items: center; gap: 10px; margin: 2px 16px 6px; padding: 7px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.8); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .sys-signal:empty { display: none; }
+  .sys-bars { display: flex; align-items: flex-end; gap: 2px; height: 14px; }
+  .sys-bars i { width: 4px; border-radius: 1px; background: rgba(255,255,255,0.12); }
+  .sys-bars i.on { background: var(--sig-c); box-shadow: 0 0 5px var(--sig-c); }
+  .sys-sig-txt { flex: 1; text-align: left; }
+  .sys-sig-state { font-weight: 700; color: var(--sig-c); }
+  .void__pause { position: relative; min-height: 44px; padding: 0 22px; border-radius: 99px; border: 1px solid rgba(221,160,255,0.55); background: rgba(120,40,170,0.18); color: #F0DCFF; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .void__pause:active { background: rgba(160,60,220,0.3); }
+  .void__pause { display: inline-flex; align-items: center; gap: 8px; }
+  #void-mute-btn { color: rgba(240,220,255,0.85) !important; border-color: rgba(221,160,255,0.35) !important; position: relative; }
   .void__reward { position: relative; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.16em; color: #FFD700; text-shadow: 0 0 8px rgba(255,215,0,0.5); }
 
   /* v394 — Mastermind Home: history/heatmap/music behind the ⚙ like the Forge */
@@ -2597,6 +2625,8 @@
         <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
         <p class="xp-label" id="xp-label">0 / 150 XP</p>
       </div>
+      <!-- v398: System Signal — last 7 days of discipline, the story's "signal" made visible -->
+      <button class="sys-signal" id="sys-signal" type="button" aria-label="System signal"></button>
 
       <div class="dash-scroll">
 
@@ -3143,6 +3173,7 @@
       <div class="void__clock" id="void-clock">--:--</div>
       <p class="void__warning">"The System is watching. Leave this screen and you bleed. Stay. Ascend."</p>
       <button class="mm-mute-btn" id="void-mute-btn" title="Toggle session music" style="margin-bottom:8px">🔊 Sound</button>
+      <button class="void__pause" id="void-pause-btn" type="button"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>Pause Session</button>
       <button class="void__surrender" id="void-surrender-btn">Surrender Session</button>
     </div>
 
@@ -5156,7 +5187,7 @@
   async function _fetchPremiumCount() {
     try {
       const client = SupabaseSync._client ? SupabaseSync._client() : null;
-      if (!client) return;
+      if (!client || !SupabaseSync.getUser()) return; // v398: RLS denies guests — skip instead of a 401
       const { count } = await client.from('user_plans').select('*', { count: 'exact', head: true }).eq('plan', 'plus').gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString());
       const el = document.getElementById('plus-social-proof');
       if (!el) return;
@@ -5250,7 +5281,7 @@
     (async () => {
       try {
         const c = SupabaseSync._client ? SupabaseSync._client() : null;
-        if (!c) return;
+        if (!c || !SupabaseSync.getUser()) return; // v398: RLS denies guests — skip instead of a 401
         const { count } = await c.from('user_plans').select('*',{count:'exact',head:true}).eq('plan','plus').gte('created_at',new Date(Date.now()-30*86400000).toISOString());
         const se = document.getElementById('plus-sheet-social');
         if (!se) return;
@@ -6716,7 +6747,8 @@
 
   // Void surrender button
   document.getElementById('void-surrender-btn').addEventListener('click', () => {
-    Pomo.pause();
+    // v398: Surrender ends the session (it used to just pause — there's a real Pause button now)
+    Pomo.cancel();
     TheVoid.exit();
     Sound.play('tap');
     SystemVoice.say('Session surrendered. The System records this.');
@@ -10001,6 +10033,30 @@
       el.classList.toggle('cold', !todayActive);
       el.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3.5 5 6 5 11a5 5 0 01-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 1-9.5z"/></svg>${s} DAY${s === 1 ? '' : 'S'}`;
     }
+    /* v398 — System Signal: display-only, derived from the existing day grids.
+       7 bars = last 7 days (oldest left), lit if the Hunter showed up that day. */
+    function _signal(p) {
+      const el = $('sys-signal'); if (!el) return;
+      const days = new Set([...(p.monarchGrid || []), ...(p.mmGrid || []), ...(p.monkGrid || [])]);
+      const todayActive = ((p.workoutChecked || []).length + (p.questsChecked || []).length + (p.monkChecked || []).length
+        + (p.mmSessions > 0 ? 1 : 0) + (p.customDone || []).length) > 0;
+      // A new Hunter is only judged on the days they've existed — day 1 with a rep = 100%, not "14% decaying"
+      const start = Date.parse(localStorage.getItem('weebji_start_date') || '');
+      const age = isNaN(start) ? 7 : Math.max(1, Math.min(7, Math.floor((Date.now() - start) / 86400000) + 1));
+      const lit = [];
+      for (let k = 6; k >= 0; k--) {
+        const d = new Date(); d.setDate(d.getDate() - k);
+        lit.push(days.has(d.toDateString()) || (k === 0 && todayActive));
+      }
+      const n = lit.slice(7 - age).filter(Boolean).length, pct = Math.round(100 * n / age);
+      const [state, c] = n === 0 ? (age <= 1 ? ['AWAITING', 'rgba(255,255,255,0.6)'] : ['LOST', '#FF4757']) : pct >= 70 ? ['STABLE', 'var(--cls-color, #00F5FF)'] : pct >= 40 ? ['WEAKENING', '#FFB02E'] : ['DECAYING', '#FF4757'];
+      const key = lit.join('') + state;
+      if (el.dataset.key === key) return;
+      el.dataset.key = key;
+      el.style.setProperty('--sig-c', c);
+      el.innerHTML = `<span class="sys-bars">${lit.map((on, i) => `<i class="${on ? 'on' : ''}" style="height:${5 + i * 1.5}px"></i>`).join('')}</span>`
+        + `<span class="sys-sig-txt">System Signal · ${pct}%</span><span class="sys-sig-state">${state}</span>`;
+    }
     function _navLocks(p, cls) {
       document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => {
         btn.querySelector('.nav-lock')?.remove();
@@ -10552,6 +10608,11 @@
         const next = _rituals().find(r => !r.done);
         if (next) { next.row.click(); setTimeout(refresh, 40); }
       });
+      $('sys-signal')?.addEventListener('click', () => {
+        Sound.play('tap');
+        spawnDropBanner('◈ The System lives on your discipline. Every day you act, the signal strengthens. Skip, and it decays.');
+      });
+      $('void-pause-btn')?.addEventListener('click', () => { Sound.play('tap'); try { Pomo.pause(); } catch (_) {} setTimeout(refresh, 40); });
       $('qh-music')?.addEventListener('click', () => _toggleMusic('monarch'));
       $('sh-music')?.addEventListener('click', () => _toggleMusic('sanctuary'));
       // Secondary pillar mounts re-render wholesale — watch them so START buttons reappear
@@ -10584,7 +10645,7 @@
     function apply(p, cls) {
       try {
         _bindOnce();
-        _streak(p); _navLocks(p, cls);
+        _streak(p); _signal(p); _navLocks(p, cls);
         const va = $('void-art');
         if (va) va.style.backgroundImage = `url('assets/avatars/${cls}-t${getAvatarTier(p.level || 1) + 1}.jpeg')`;
         _forgeKey = '';
@@ -10594,7 +10655,7 @@
       } catch (e) { console.warn('[HomeUX] apply', e); }
     }
     function onStats(p) {
-      try { _streak(p); _navLocks(p, _cls()); renderWeekBar(); _buildTiles(); refresh(); } catch (e) { console.warn('[HomeUX] stats', e); }
+      try { _streak(p); _signal(p); _navLocks(p, _cls()); renderWeekBar(); _buildTiles(); refresh(); } catch (e) { console.warn('[HomeUX] stats', e); }
     }
     return { apply, onStats, refresh, openHud, closeHud };
   })();

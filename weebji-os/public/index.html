@@ -8039,8 +8039,12 @@
       const launches = parseInt(localStorage.getItem('weebji_launch_count') || '0') + 1;
       localStorage.setItem('weebji_launch_count', String(launches));
       if (fromOnboarding) {
+        // v396: no sign-up wall before the first rep. New Hunters go straight in;
+        // HomeUX asks them to lock in their progress right after their first quest.
         localStorage.setItem('weebji_pending_contract', '1');
-        showSignInGate(false);
+        localStorage.setItem('weebji_signin_after_first', '1');
+        if (typeof posthog !== 'undefined') posthog.capture('signin_deferred_to_first_quest');
+        _launchDashboard(true);
         return;
       }
       if (launches >= 3) { showSignInGate(true); return; }
@@ -10424,7 +10428,32 @@
       _applyOpen();
     }
 
+    /* v396 — deferred sign-in: after the FIRST real quest, when no full-screen moment is up */
+    let _lockInAt = 0;
+    function _maybeLockIn() {
+      if (!localStorage.getItem('weebji_signin_after_first')) return;
+      if ((typeof SupabaseSync !== 'undefined' && SupabaseSync.getUser()) || localStorage.getItem('weebji_account_linked')) {
+        localStorage.removeItem('weebji_signin_after_first'); return;
+      }
+      if (_hudOpen || _sanctOpen || !_view() || document.querySelector('#levelup-overlay.active, #levelup-cutscene.active, #mission-briefing.active, #void-overlay.active, #anomaly-overlay.active, #boss-defeat-overlay.active, #ghost-intervention.active, #quest-briefing.active, #rating-prompt.active')) { _lockInAt = 0; return; }
+      const p = loadProgress();
+      const didQuest = (p.workoutChecked || []).length + (p.monkChecked || []).length + (p.questsChecked || []).length + (p.mmSessions || 0) > 0;
+      if (!didQuest) return;
+      if (!_lockInAt) { _lockInAt = Date.now() + 1800; return; } // let the win land first
+      if (Date.now() < _lockInAt) return;
+      localStorage.removeItem('weebji_signin_after_first');
+      showSignInGate(true);
+      $('gate-eyebrow').textContent = 'Quest Complete — Lock It In';
+      $('gate-title').textContent = 'Don’t Lose This';
+      $('gate-send-btn').textContent = 'Save My Progress';
+      const sub = document.querySelector('#sign-in-gate .gate__sub');
+      if (sub) sub.innerHTML = 'You just earned your first XP and struck the boss. Guest progress lives only on this phone — one cache clear and it’s gone.<br><br>Save it in seconds with Google or an email code. No password.';
+      const sk = $('gate-skip-btn'); if (sk) sk.textContent = 'Not now — keep playing →';
+      if (typeof posthog !== 'undefined') posthog.capture('lockin_prompt_shown');
+    }
+
     function refresh() {
+      try { _maybeLockIn(); } catch (e) {}
       try { _refreshForge(); _refreshPanels(); _refreshBar(); if (_hudOpen) _renderHud(); if (_sanctOpen) _renderSanct(); _refreshVoid(); }
       catch (e) { console.warn('[HomeUX]', e); }
     }
@@ -11618,11 +11647,17 @@
           popCheck(row.querySelector('.monk-check'));
           p2.xp += rollCriticalDrop(r.xp, row.querySelector('.monk-ritual-xp'), p2);
           Sound.play('check');
+          // v396: parity with the primary onMonkRitualTap — the secondary pillar
+          // gave XP but no boss damage and never counted as a first action
+          markFirstActionDone();
+          BossSiege.dealDamage(20);
           if (p2.monkChecked.length === getMonkRituals().length && !p2.monkBonus) {
             p2.monkBonus = true; p2.xp += 25; Sound.play('milestone');
           }
         }
+        creditTodayIfEarned(p2); // v396: day credit (monkGrid) like the primary path
         const leveled = checkLevelUp(p2);
+        checkSecretTitles(p2, localStorage.getItem('weebji_class'));
         saveProgress(p2); updateXPBar(p2); updateStats(p2);
         if (leveled) triggerLevelUp(p2.level);
       });

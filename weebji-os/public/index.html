@@ -4961,6 +4961,19 @@
     // Genuine Play Store install confirmed — lock in Play Billing as the rail.
     localStorage.setItem('weebji_play_install', '1');
 
+    // Guests (deferred sign-in, v396) must sign in BEFORE paying — the server
+    // needs a session to attach the purchase to, and charging first strands it.
+    try {
+      const { data: { session: _pre } } = await SupabaseSync._client().auth.getSession();
+      if (!_pre?.access_token) {
+        _ph('billing_blocked_guest', { sku, plan });
+        try { closePlusSheet(); } catch(_) {}
+        spawnDropBanner('◆  Sign in first — your purchase needs an account to live on');
+        showSignInGate(true);
+        return true;
+      }
+    } catch(_) {}
+
     try {
       // Reconcile any unconsumed/unacknowledged purchases before initiating new one.
       // Google blocks new purchases of the same consumable if a prior one wasn't consumed.
@@ -5578,7 +5591,12 @@
     const STORAGE_KEY = 'weebji_boss_siege';
 
     function _getWeekKey() {
+      // Boss weeks run Sat→Fri. Key off the week's Saturday so Jan 1 doesn't
+      // restart the week mid-way (that fired a false penance every New Year).
+      // Identical keys to the old formula for every week inside one year.
       const now = new Date();
+      now.setDate(now.getDate() - ((now.getDay() + 1) % 7));
+      now.setHours(12, 0, 0, 0);
       const startOfYear = new Date(now.getFullYear(), 0, 1);
       const weekNum = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
       return `${now.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
@@ -5970,7 +5988,9 @@
     if (!localStorage.getItem('weebji_tour_done')) return; // don't stack on the onboarding tour
     const now = new Date();
     if (now.getDay() === 0) return; // Sunday — week still ongoing
-    const thisWeekKey = `${now.getFullYear()}-W${_weekNum(now)}`;
+    // ISO week-year = year of this week's Thursday (Jan 1-3 can belong to last year's W53)
+    const _thu = new Date(now); _thu.setDate(now.getDate() + 3 - (now.getDay() + 6) % 7);
+    const thisWeekKey = `${_thu.getFullYear()}-W${_weekNum(now)}`;
     if (localStorage.getItem('weebji_last_report_week') === thisWeekKey) return;
 
     const p = loadProgress();

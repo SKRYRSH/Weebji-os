@@ -56,19 +56,19 @@ Deno.serve(async (req) => {
     if (!authHeader) return new Response('Unauthorized', { status: 401 });
 
     const token = authHeader.replace('Bearer ', '');
-    let userId: string;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-      if (!payload.sub) throw new Error('no sub');
-      userId = payload.sub;
-    } catch(e) {
-      return new Response(JSON.stringify({ error: 'Invalid token', detail: (e as Error).message }), { status: 401, headers: CORS });
-    }
 
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
+
+    // Verify the JWT signature server-side (verify_jwt is off for this fn) —
+    // a hand-decoded `sub` could be forged to attach a purchase to any account.
+    const { data: authData, error: authErr } = await adminClient.auth.getUser(token);
+    if (authErr || !authData?.user?.id) {
+      return new Response(JSON.stringify({ error: 'Invalid token', detail: authErr?.message || 'no user' }), { status: 401, headers: CORS });
+    }
+    const userId: string = authData.user.id;
 
     const { purchaseToken, sku } = await req.json();
     if (!purchaseToken || !sku) return new Response(JSON.stringify({ error: 'Missing purchaseToken or sku' }), { status: 400, headers: CORS });
@@ -122,21 +122,41 @@ Deno.serve(async (req) => {
       if (purchase.purchaseState !== 0) {
         return new Response(JSON.stringify({ error: 'Purchase not completed' }), { status: 402, headers: CORS });
       }
-      await fetch(
+      const consume = () => fetch(
         `${playBase}/${packageName}/purchases/products/${sku}/tokens/${purchaseToken}:consume`,
         { method: 'POST', headers: authBearerH }
       );
-    }
-
-    if (dbPlan === 'ghost_token' || dbPlan === 'ghost_token_3') {
+      // Idempotency: each purchaseToken grants exactly once. Client retries and
+      // the listPurchases reconcile loop can re-send the same token.
+      // consumptionState 1 = consumed by the pre-ledger code, which consumed BEFORE granting.
+      if (purchase.consumptionState === 1) {
+        return new Response(JSON.stringify({ success: true, plan: dbPlan, already: true }), { headers: { ...CORS, 'Content-Type': 'application/json' } });
+      }
+      const { data: claimed, error: ledgerErr } = await adminClient.from('play_purchase_ledger')
+        .upsert({ purchase_token: purchaseToken, user_id: userId, sku }, { onConflict: 'purchase_token', ignoreDuplicates: true })
+        .select('purchase_token');
+      if (ledgerErr) throw new Error(`ledger: ${ledgerErr.message}`);
+      if (!claimed?.length) {
+        await consume();
+        return new Response(JSON.stringify({ success: true, plan: dbPlan, already: true }), { headers: { ...CORS, 'Content-Type': 'application/json' } });
+      }
       const addCount = dbPlan === 'ghost_token_3' ? 3 : 1;
-      const { data: prog } = await adminClient.from('progress').select('ghost_tokens').eq('user_id', userId).single();
+      const { data: prog } = await adminClient.from('progress').select('ghost_tokens').eq('user_id', userId).maybeSingle();
       const current = (prog?.ghost_tokens as number) || 0;
-      await adminClient.from('progress').upsert(
+      const { error: grantErr } = await adminClient.from('progress').upsert(
         { user_id: userId, ghost_tokens: current + addCount, updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       );
-    } else {
+      if (grantErr) {
+        // Release the claim so a retry can grant; don't consume (Play keeps it pending)
+        await adminClient.from('play_purchase_ledger').delete().eq('purchase_token', purchaseToken);
+        throw new Error(`grant: ${grantErr.message}`);
+      }
+      // Consume only AFTER the grant landed — an unconsumed purchase is recoverable, a lost grant isn't
+      await consume();
+    }
+
+    if (isSubscription) {
       // Never overwrite a later expires_at with an earlier one (test subs expire fast)
       let finalExpiresAt = expiresAt;
       if (expiresAt) {
